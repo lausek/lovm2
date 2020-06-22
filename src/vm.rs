@@ -64,10 +64,26 @@ impl Vm {
                     },
                     Instruction::Dup => {}
                     Instruction::Swap => {}
-                    Instruction::Add => {}
-                    Instruction::Sub => {}
-                    Instruction::Mul => {}
-                    Instruction::Div => {}
+                    Instruction::Add => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first + second);
+                    }
+                    Instruction::Sub => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first - second);
+                    }
+                    Instruction::Mul => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first * second);
+                    }
+                    Instruction::Div => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first / second);
+                    }
                     Instruction::Mod => {}
                     Instruction::And => {}
                     Instruction::Or => {}

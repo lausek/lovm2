@@ -34,3 +34,41 @@ fn store_global() {
 
     assert_eq!(RuValue::Int(42), vm.context_mut().globals.get("globaln").cloned().unwrap());
 }
+
+#[test]
+fn calculation() {
+    let mut vm = Vm::new();
+    let co = define_code! {
+        consts { CoValue::Int(2), CoValue::Int(3) }
+        globals { result_add, result_sub, result_mul, result_div }
+
+        {
+            Pushc 0, 1;
+            Pushc 0, 0;
+            Add;
+            Moveg 0, 0;
+
+            Pushc 0, 1;
+            Pushc 0, 0;
+            Sub;
+            Moveg 0, 1;
+            
+            Pushc 0, 1;
+            Pushc 0, 0;
+            Mul;
+            Moveg 0, 2;
+
+            Pushc 0, 1;
+            Pushc 0, 0;
+            Div;
+            Moveg 0, 3;
+        }
+    };
+
+    vm.run_object(&co);
+
+    assert_eq!(RuValue::Int(5), vm.context_mut().globals.get("result_add").cloned().unwrap());
+    assert_eq!(RuValue::Int(-1), vm.context_mut().globals.get("result_sub").cloned().unwrap());
+    assert_eq!(RuValue::Int(6), vm.context_mut().globals.get("result_mul").cloned().unwrap());
+    assert_eq!(RuValue::Int(0), vm.context_mut().globals.get("result_div").cloned().unwrap());
+}
