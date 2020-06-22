@@ -72,3 +72,43 @@ fn calculation() {
     assert_eq!(RuValue::Int(6), vm.context_mut().globals.get("result_mul").cloned().unwrap());
     assert_eq!(RuValue::Int(0), vm.context_mut().globals.get("result_div").cloned().unwrap());
 }
+
+#[test]
+fn jumping() {
+    let mut vm = Vm::new();
+    let co = define_code! {
+        consts { CoValue::Int(0), CoValue::Int(1), CoValue::Int(10), CoValue::Str("a".to_string()) }
+        globals { output }
+        locals { i }
+
+        {
+            Pushc 0, 1;
+            Movel 0, 0;
+
+            Pushc 0, 3;
+            Moveg 0, 1;
+
+            Pushl 0, 0;
+            Pushc 0, 1;
+            Add;
+
+            Pushg 0, 0;
+            Pushc 0, 3;
+            Add;
+            Moveg 0, 1;
+
+            Dup;
+            Movel 0, 0;
+            
+            Pushc 0, 2;
+            Cmp;
+            Jeq 0, 17;
+
+            Jmp 0, 4;
+        }
+    };
+
+    vm.run_object(&co);
+
+    assert_eq!(RuValue::Str("aaaaaaaaaa".to_string()), vm.context_mut().globals.get("output").cloned().unwrap());
+}

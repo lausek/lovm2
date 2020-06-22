@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::value::RuValue;
 
 macro_rules! auto_implement {
@@ -84,4 +86,31 @@ auto_implement!{
     1, std::ops::Not, not;
     Bool => (|a: bool| !a);
     Int => (|a: i64| !a);
+}
+
+impl std::cmp::PartialOrd for RuValue {
+    fn partial_cmp(&self, other: &RuValue) -> Option<Ordering> {
+        match (self, other) {
+            (RuValue::Int(a), RuValue::Int(b)) => a.partial_cmp(b),
+            (RuValue::Float(a), RuValue::Float(b)) => a.partial_cmp(b),
+            (RuValue::Str(a), RuValue::Str(b)) => a.partial_cmp(b),
+            _ => None,
+        }
+    }
+
+    fn lt(&self, other: &RuValue) -> bool { 
+        unimplemented!()
+    }
+
+    fn le(&self, other: &RuValue) -> bool { 
+        unimplemented!()
+    }
+
+    fn gt(&self, other: &RuValue) -> bool { 
+        unimplemented!()
+    }
+
+    fn ge(&self, other: &RuValue) -> bool { 
+        unimplemented!()
+    }
 }

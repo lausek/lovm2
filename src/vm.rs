@@ -1,7 +1,9 @@
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::context::Context;
+use crate::value::RuValue;
 
+const ADDR_WIDTH: usize = 2;
 const CONST_WIDTH: usize = 2;
 const LOCAL_WIDTH: usize = 2;
 const GLOBAL_WIDTH: usize = 2;
@@ -62,7 +64,10 @@ impl Vm {
                         let value = self.ctx.pop_value().unwrap();
                         self.ctx.globals.insert(variable.clone(), value);
                     },
-                    Instruction::Dup => {}
+                    Instruction::Dup => {
+                        let last = self.ctx.stack_mut().last().cloned().unwrap();
+                        self.ctx.push_value(last);
+                    }
                     Instruction::Swap => {}
                     Instruction::Add => {
                         let first = self.ctx.pop_value().unwrap();
@@ -103,8 +108,29 @@ impl Vm {
                         let first = self.ctx.pop_value().unwrap();
                         self.ctx.push_value(!first);
                     }
-                    Instruction::Jmp => {}
-                    Instruction::Jeq => {}
+                    Instruction::Cmp => {
+                        use std::cmp::Ordering;
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        let ordering = first.partial_cmp(&second).unwrap();
+                        match ordering {
+                            Ordering::Less => self.ctx.push_value(RuValue::Int(-1)),
+                            Ordering::Equal => self.ctx.push_value(RuValue::Int(0)),
+                            Ordering::Greater => self.ctx.push_value(RuValue::Int(1)),
+                        }
+                    }
+                    Instruction::Jmp => {
+                        ip = take_bytes(&object.code, &mut ip, ADDR_WIDTH);
+                        continue;
+                    }
+                    Instruction::Jeq => {
+                        let addr = take_bytes(&object.code, &mut ip, ADDR_WIDTH);
+                        let first = self.ctx.pop_value().unwrap();
+                        if first == RuValue::Int(0) {
+                            ip = addr;
+                            continue;
+                        }
+                    }
                     Instruction::Jgt => {}
                     Instruction::Jlt => {}
                     Instruction::Call => {}
