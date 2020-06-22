@@ -1,7 +1,9 @@
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
+use crate::code::CodeObjectRef;
 use crate::context::Context;
 use crate::value::RuValue;
+use crate::var::Variable;
 
 pub struct Vm {
     ctx: Context,
@@ -16,6 +18,13 @@ impl Vm {
 
     pub fn context_mut(&mut self) -> &mut Context {
         &mut self.ctx
+    }
+
+    fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {
+        for module in self.ctx.modules.iter() {
+
+        }
+        None
     }
 
     pub fn run_object(&mut self, object: &CodeObject) {
@@ -123,8 +132,18 @@ impl Vm {
                 }
                 Instruction::Jgt(addr) => {}
                 Instruction::Jlt(addr) => {}
-                Instruction::Call(argn, gidx) => {}
-                Instruction::Ret => {}
+                Instruction::Call(argn, gidx) => {
+                    let func = &object.globals[*gidx as usize];
+
+                    if let Some(co_object) = self.lookup_code_object(func) {
+                        self.ctx.push_frame(*argn);
+                        self.run_object(&*co_object);
+                        self.ctx.pop_frame();
+                    } else {
+                        unimplemented!();
+                    }
+                }
+                Instruction::Ret => break,
                 Instruction::Interrupt(n) => {}
             }
 

@@ -1,6 +1,10 @@
+use std::rc::Rc;
+
 use crate::bytecode::Instruction;
 use crate::value::CoValue;
 use crate::var::Variable;
+
+pub type CodeObjectRef = Rc<CodeObject>;
 
 pub struct CodeObject {
     pub(crate) consts: Vec<CoValue>,
