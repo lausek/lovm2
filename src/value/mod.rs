@@ -14,6 +14,7 @@ pub type RuListRef = Rc<RefCell<RuList>>;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CoValue {
+    Bool(bool),
     Int(i64),
     Float(f64),
     Str(String),
@@ -23,6 +24,7 @@ pub enum CoValue {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RuValue {
+    Bool(bool),
     Int(i64),
     Float(f64),
     Str(String),
@@ -32,6 +34,8 @@ pub enum RuValue {
 
 pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
     match covalue {
+        CoValue::Bool(n) => RuValue::Bool(*n),
+        CoValue::Int(n) => RuValue::Int(*n),
         CoValue::Int(n) => RuValue::Int(*n),
         CoValue::Float(n) => RuValue::Float(*n),
         CoValue::Str(n) => RuValue::Str(n.clone()),

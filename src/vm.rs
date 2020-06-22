@@ -84,10 +84,25 @@ impl Vm {
                         let second = self.ctx.pop_value().unwrap();
                         self.ctx.push_value(first / second);
                     }
-                    Instruction::Mod => {}
-                    Instruction::And => {}
-                    Instruction::Or => {}
-                    Instruction::Not => {}
+                    Instruction::Mod => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first % second);
+                    }
+                    Instruction::And => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first & second);
+                    }
+                    Instruction::Or => {
+                        let first = self.ctx.pop_value().unwrap();
+                        let second = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(first | second);
+                    }
+                    Instruction::Not => {
+                        let first = self.ctx.pop_value().unwrap();
+                        self.ctx.push_value(!first);
+                    }
                     Instruction::Jmp => {}
                     Instruction::Jeq => {}
                     Instruction::Jgt => {}
