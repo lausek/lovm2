@@ -1,7 +1,7 @@
 #[repr(u8)]
 pub enum Instruction {
     // push local variable
-    Pushl,
+    Pushl = 1,
     // push global variable
     Pushg,
     // push constant

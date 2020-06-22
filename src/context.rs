@@ -18,6 +18,10 @@ impl Context {
             vstack: vec![],
         }
     }
+    
+    pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {
+        &mut self.vstack
+    }
 
     pub fn frame_mut(&mut self) -> Option<&mut Frame> {
         self.lstack.last_mut()
