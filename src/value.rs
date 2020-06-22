@@ -18,6 +18,7 @@ pub enum CoValue {
     List(Vec<Box<CoValue>>),
 }
 
+#[derive(Clone)]
 pub enum RuValue {
     Int(i64),
     Float(f64),
