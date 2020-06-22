@@ -45,10 +45,17 @@ impl Vm {
                     Instruction::Pushg => {}
                     Instruction::Pushc => {
                         use crate::value;
-                        let lidx = take_bytes(&mut it, CONST_WIDTH);
-                        let value = value::instantiate(&mut self.ctx, &object.consts[lidx]);
+                        let cidx = take_bytes(&mut it, CONST_WIDTH);
+                        let value = value::instantiate(&mut self.ctx, &object.consts[cidx]);
                         self.ctx.push_value(value);
                     }
+                    Instruction::Movel => {},
+                    Instruction::Moveg => {
+                        let gidx = take_bytes(&mut it, GLOBAL_WIDTH);
+                        let variable = &object.globals[gidx];
+                        let value = self.ctx.pop_value().unwrap();
+                        self.ctx.globals.insert(variable.clone(), value);
+                    },
                     Instruction::Dup => {}
                     Instruction::Swap => {}
                     Instruction::Add => {}

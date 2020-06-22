@@ -1,24 +1,29 @@
+use std::collections::HashMap;
+
 use crate::frame::Frame;
 use crate::module::Module;
 use crate::value::RuValue;
+use crate::var::Variable;
 
 pub struct Context {
-    pub(crate) modules: Vec<Module>,
+    pub modules: Vec<Module>,
+    pub globals: HashMap<Variable, RuValue>,
 
-    lstack: Vec<Frame>,
-    vstack: Vec<RuValue>,
+    pub lstack: Vec<Frame>,
+    pub vstack: Vec<RuValue>,
 }
 
 impl Context {
     pub fn new() -> Self {
         Self {
             modules: vec![],
+            globals: HashMap::new(),
 
             lstack: vec![],
             vstack: vec![],
         }
     }
-    
+
     pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {
         &mut self.vstack
     }
