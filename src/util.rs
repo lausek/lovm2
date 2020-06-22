@@ -16,11 +16,13 @@ macro_rules! define_code {
 
         let mut c = vec![
             $(
-                Instruction::$inx as u8,
-                $( $args , )*
+                define_code! { compile_inx $inx $(, $args)* },
             )*
         ];
 
         builder.code(c).build().unwrap()
     }};
+
+    { compile_inx $inx:ident } => { Instruction::$inx };
+    { compile_inx $inx:ident $(, $args:expr)+ } => { Instruction::$inx($($args),*) };
 }

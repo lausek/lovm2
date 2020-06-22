@@ -1,3 +1,4 @@
+use crate::bytecode::Instruction;
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -6,7 +7,7 @@ pub struct CodeObject {
     pub(crate) locals: Vec<Variable>,
     pub(crate) globals: Vec<Variable>,
     
-    pub(crate) code: Vec<u8>,
+    pub(crate) code: Vec<Instruction>,
 }
 
 pub struct CodeObjectBuilder {
@@ -14,7 +15,7 @@ pub struct CodeObjectBuilder {
     locals: Vec<Variable>,
     globals: Vec<Variable>,
     
-    code: Option<Vec<u8>>,
+    code: Option<Vec<Instruction>>,
 }
 
 impl CodeObjectBuilder {
@@ -43,7 +44,7 @@ impl CodeObjectBuilder {
         self
     }
 
-    pub fn code(mut self, code: Vec<u8>) -> Self {
+    pub fn code(mut self, code: Vec<Instruction>) -> Self {
         self.code = Some(code);
         self
     }

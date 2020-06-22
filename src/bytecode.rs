@@ -1,15 +1,14 @@
-#[repr(u8)]
 pub enum Instruction {
     // push local variable
-    Pushl = 1,
+    Pushl(u16),
     // push global variable
-    Pushg,
+    Pushg(u16),
     // push constant
-    Pushc,
+    Pushc(u16),
     // store into local variable
-    Movel,
+    Movel(u16),
     // store into global variable
-    Moveg,
+    Moveg(u16),
     Dup,
     Swap,
 
@@ -24,17 +23,18 @@ pub enum Instruction {
     Not,
     Cmp,
 
-    Jmp,
-    Jeq,
-    Jgt,
-    Jlt,
+    Jmp(u16),
+    Jeq(u16),
+    Jgt(u16),
+    Jlt(u16),
 
-    Call,
+    Call(u8, u16),
     Ret,
 
-    Interrupt,
+    Interrupt(u16),
 }
 
+/*
 impl Instruction {
     pub fn from(code: u8) -> Option<Self> {
         let inx = match code {
@@ -66,3 +66,4 @@ impl Instruction {
         Some(inx)
     }
 }
+*/

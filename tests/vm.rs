@@ -7,7 +7,7 @@ fn pushing_constant() {
         consts { CoValue::Int(2) }
 
         {
-            Pushc 0, 0;
+            Pushc 0;
         }
     };
 
@@ -25,8 +25,8 @@ fn store_global() {
         globals { globaln }
 
         {
-            Pushc 0, 0;
-            Moveg 0, 0;
+            Pushc 0;
+            Moveg 0;
         }
     };
 
@@ -43,25 +43,25 @@ fn calculation() {
         globals { result_add, result_sub, result_mul, result_div }
 
         {
-            Pushc 0, 1;
-            Pushc 0, 0;
+            Pushc 1;
+            Pushc 0;
             Add;
-            Moveg 0, 0;
+            Moveg 0;
 
-            Pushc 0, 1;
-            Pushc 0, 0;
+            Pushc 1;
+            Pushc 0;
             Sub;
-            Moveg 0, 1;
+            Moveg 1;
             
-            Pushc 0, 1;
-            Pushc 0, 0;
+            Pushc 1;
+            Pushc 0;
             Mul;
-            Moveg 0, 2;
+            Moveg 2;
 
-            Pushc 0, 1;
-            Pushc 0, 0;
+            Pushc 1;
+            Pushc 0;
             Div;
-            Moveg 0, 3;
+            Moveg 3;
         }
     };
 
@@ -82,29 +82,29 @@ fn jumping() {
         locals { i }
 
         {
-            Pushc 0, 1;
-            Movel 0, 0;
+            Pushc 1;
+            Movel 0;
 
-            Pushc 0, 3;
-            Moveg 0, 1;
+            Pushc 3;
+            Moveg 0;
 
-            Pushl 0, 0;
-            Pushc 0, 1;
+            Pushl 0;
+            Pushc 1;
             Add;
 
-            Pushg 0, 0;
-            Pushc 0, 3;
+            Pushg 0;
+            Pushc 3;
             Add;
-            Moveg 0, 1;
+            Moveg 0;
 
             Dup;
-            Movel 0, 0;
+            Movel 0;
             
-            Pushc 0, 2;
+            Pushc 2;
             Cmp;
-            Jeq 0, 17;
+            Jeq 17;
 
-            Jmp 0, 4;
+            Jmp 4;
         }
     };
 
