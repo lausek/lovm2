@@ -1,4 +1,6 @@
+pub mod co_value;
 pub mod operations;
+pub mod ru_value;
 
 use std::collections::HashMap;
 use std::cell::RefCell;
@@ -7,30 +9,8 @@ use std::rc::Rc;
 use crate::context::Context;
 use crate::var::Variable;
 
-pub type RuDict = HashMap<Variable, RuValue>;
-pub type RuDictRef = Rc<RefCell<RuDict>>;
-pub type RuList = Vec<RuValue>;
-pub type RuListRef = Rc<RefCell<RuList>>;
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum CoValue {
-    Bool(bool),
-    Int(i64),
-    Float(f64),
-    Str(String),
-    Dict(HashMap<Variable, Box<CoValue>>),
-    List(Vec<Box<CoValue>>),
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum RuValue {
-    Bool(bool),
-    Int(i64),
-    Float(f64),
-    Str(String),
-    Dict(RuDictRef),
-    List(RuListRef),
-}
+pub use self::co_value::CoValue;
+pub use self::ru_value::RuValue;
 
 pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
     match covalue {

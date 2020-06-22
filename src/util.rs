@@ -9,7 +9,7 @@ macro_rules! define_code {
         }
     } => {{
         let builder = CodeObjectBuilder::new()
-            $(.consts(vec![$( $cval ),*]))?
+            $(.consts(vec![$( CoValue::from($cval) ),*]))?
             $(.locals(vec![$( Variable::from(stringify!($lname)) ),*]))?
             $(.globals(vec![$( Variable::from(stringify!($gname)) ),*]))?
             ;

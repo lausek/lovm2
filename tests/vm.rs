@@ -4,7 +4,7 @@ use lovm2::{CodeObjectBuilder, CoValue, define_code, Instruction, RuValue, Varia
 fn pushing_constant() {
     let mut vm = Vm::new();
     let co = define_code! {
-        consts { CoValue::Int(2) }
+        consts { 2 }
 
         {
             Pushc 0;
@@ -21,7 +21,7 @@ fn pushing_constant() {
 fn store_global() {
     let mut vm = Vm::new();
     let co = define_code! {
-        consts { CoValue::Int(42) }
+        consts { 42 }
         globals { globaln }
 
         {
@@ -39,7 +39,7 @@ fn store_global() {
 fn calculation() {
     let mut vm = Vm::new();
     let co = define_code! {
-        consts { CoValue::Int(2), CoValue::Int(3) }
+        consts { 2, 3 }
         globals { result_add, result_sub, result_mul, result_div }
 
         {
@@ -77,7 +77,7 @@ fn calculation() {
 fn jumping() {
     let mut vm = Vm::new();
     let co = define_code! {
-        consts { CoValue::Int(0), CoValue::Int(1), CoValue::Int(10), CoValue::Str("a".to_string()) }
+        consts { 0, 1, 10, "a" }
         globals { output }
         locals { i }
 
