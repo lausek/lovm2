@@ -6,11 +6,13 @@ const CONST_WIDTH: usize = 2;
 const LOCAL_WIDTH: usize = 2;
 const GLOBAL_WIDTH: usize = 2;
 
-fn take_bytes(it: &mut dyn Iterator<Item = &u8>, n: usize) -> usize {
+fn take_bytes(code: &Vec<u8>, ip: &mut usize, n: usize) -> usize {
     let mut idx = 0usize;
-    for byte in it.take(n) {
+    for _ in 0..n {
+        *ip += 1;
+        let byte = code.get(*ip).unwrap();
         idx <<= 8;
-        idx += *byte as usize;
+        idx |= *byte as usize;
     }
     idx
 }
@@ -31,13 +33,17 @@ impl Vm {
     }
 
     pub fn run_object(&mut self, object: &CodeObject) {
-        let mut it = object.code.iter();
-        while let Some(code) = it.next() {
-            println!("{}", code);
+        let mut ip = 0;
+        loop {
+            let code = object.code.get(ip);
+            if code.is_none() {
+                break;
+            }
+            let code = code.unwrap();
             if let Some(inx) = Instruction::from(*code) {
                 match inx {
                     Instruction::Pushl => {
-                        let lidx = take_bytes(&mut it, LOCAL_WIDTH);
+                        let lidx = take_bytes(&object.code, &mut ip, LOCAL_WIDTH);
                         let variable = &object.locals[lidx];
                         let local = self.ctx.frame_mut().unwrap().locals.get(variable).cloned();
                         self.ctx.push_value(local.unwrap());
@@ -45,13 +51,13 @@ impl Vm {
                     Instruction::Pushg => {}
                     Instruction::Pushc => {
                         use crate::value;
-                        let cidx = take_bytes(&mut it, CONST_WIDTH);
+                        let cidx = take_bytes(&object.code, &mut ip, CONST_WIDTH);
                         let value = value::instantiate(&mut self.ctx, &object.consts[cidx]);
                         self.ctx.push_value(value);
                     }
                     Instruction::Movel => {},
                     Instruction::Moveg => {
-                        let gidx = take_bytes(&mut it, GLOBAL_WIDTH);
+                        let gidx = take_bytes(&object.code, &mut ip, GLOBAL_WIDTH);
                         let variable = &object.globals[gidx];
                         let value = self.ctx.pop_value().unwrap();
                         self.ctx.globals.insert(variable.clone(), value);
@@ -77,6 +83,8 @@ impl Vm {
             } else {
                 unimplemented!();
             }
+
+            ip += 1;
         }
     }
 
