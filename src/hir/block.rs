@@ -1,3 +1,3 @@
 use crate::hir::HIRElement;
 
-pub type Block = Vec<HIRElement>;
+pub struct Block(Vec<HIRElement>);

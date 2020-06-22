@@ -1,7 +1,7 @@
+use crate::hir::lowering::{Lowering, LoweringRuntime};
+
 pub struct Repeat {}
 
-/*
-impl Repeat {
-    pub fn new() -> Self {}
+impl Lowering for Repeat {
+    fn lower(self, runtime: &mut LoweringRuntime) {}
 }
-*/

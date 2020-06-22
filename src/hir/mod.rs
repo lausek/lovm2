@@ -3,11 +3,14 @@ pub mod block;
 pub mod branch;
 pub mod element;
 pub mod expr;
+pub mod lowering;
 pub mod repeat;
 
 use crate::branch::Branch;
+use crate::code::{CodeObject, CodeObjectBuilder};
 use crate::element::HIRElement;
 use crate::expr::Expr;
+use crate::lowering::{Lowering, LoweringRuntime};
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -28,6 +31,10 @@ impl HIR {
 
             code: vec![],
         }
+    }
+
+    pub fn build(self) -> Result<CodeObject, String> {
+        LoweringRuntime::complete(self)
     }
 
     pub fn branch(&mut self) -> &mut Branch {

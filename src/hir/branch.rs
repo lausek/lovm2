@@ -1,5 +1,6 @@
 use crate::block::Block;
 use crate::expr::Expr;
+use crate::hir::lowering::{Lowering, LoweringRuntime};
 
 pub struct Branch {
     branches: Vec<(Expr, Block)>,
@@ -13,4 +14,8 @@ impl Branch {
             default: None,
         }
     }
+}
+
+impl Lowering for Branch {
+    fn lower(self, runtime: &mut LoweringRuntime) {}
 }
