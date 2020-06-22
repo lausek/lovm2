@@ -1,22 +1,15 @@
-use lovm2::{CodeObjectBuilder, CoValue, Instruction, RuValue, Variable, vm::Vm};
+use lovm2::{CodeObjectBuilder, CoValue, define_code, Instruction, RuValue, Variable, vm::Vm};
 
 #[test]
 fn pushing_constant() {
     let mut vm = Vm::new();
-    let co = CodeObjectBuilder::new()
-        .consts(
-            vec![
-                CoValue::Int(2),
-            ]
-        )
-        .code(
-            vec![
-                Instruction::Pushc as u8,
-                0, 0,
-            ]
-        )
-        .build()
-        .unwrap();
+    let co = define_code! {
+        consts { CoValue::Int(2) }
+
+        {
+            Pushc 0, 0;
+        }
+    };
 
     vm.run_object(&co);
 
@@ -27,27 +20,15 @@ fn pushing_constant() {
 #[test]
 fn store_global() {
     let mut vm = Vm::new();
-    let co = CodeObjectBuilder::new()
-        .consts(
-            vec![
-                CoValue::Int(42),
-            ]
-        )
-        .globals(
-            vec![
-                Variable::from("globaln"),
-            ]
-        )
-        .code(
-            vec![
-                Instruction::Pushc as u8,
-                0, 0,
-                Instruction::Moveg as u8,
-                0, 0,
-            ]
-        )
-        .build()
-        .unwrap();
+    let co = define_code! {
+        consts { CoValue::Int(42) }
+        globals { globaln }
+
+        {
+            Pushc 0, 0;
+            Moveg 0, 0;
+        }
+    };
 
     vm.run_object(&co);
 
