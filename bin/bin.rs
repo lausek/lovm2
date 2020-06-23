@@ -17,7 +17,7 @@ fn create_call_example() -> ModuleBuilder {
 
     let mut main_hir = HIR::new();
     main_hir.push(Assign::local("n".into(), CoValue::Int(2).into()));
-    main_hir.push(Call::new("nop"));
+    main_hir.push(Call::new("print").arg(CoValue::Str("hej".to_string())));
 
     builder.add("main").hir(main_hir);
     builder.add("nop").hir(nop_hir);

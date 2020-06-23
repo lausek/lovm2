@@ -1,9 +1,7 @@
 use crate::bytecode::Instruction;
-use crate::code::CallProtocol;
-use crate::code::CodeObject;
-use crate::code::CodeObjectRef;
+use crate::code::{CallProtocol, CodeObject, CodeObjectRef};
 use crate::context::Context;
-use crate::module::Module;
+use crate::module::{Module, create_standard_module};
 use crate::value::RuValue;
 use crate::var::Variable;
 
@@ -15,8 +13,10 @@ pub struct Vm {
 
 impl Vm {
     pub fn new() -> Self {
+        let mut ctx = Context::new();
+        ctx.load_and_import_all(create_standard_module());
         Self {
-            ctx: Context::new(),
+            ctx,
         }
     }
 

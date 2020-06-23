@@ -2,23 +2,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::code::CodeObject;
-use crate::code::CodeObjectBuilder;
-use crate::code::CodeObjectRef;
 use crate::hir::HIR;
+use crate::module::Module;
 use crate::var::Variable;
-
-#[derive(Debug)]
-pub struct Module {
-    pub slots: HashMap<Variable, CodeObjectRef>,
-}
-
-impl Module {
-    pub fn new() -> Self {
-        Self {
-            slots: HashMap::new(),
-        }
-    }
-}
 
 pub struct ModuleBuilder {
     slots: HashMap<Variable, ModuleBuilderSlot>,
