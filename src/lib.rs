@@ -1,3 +1,5 @@
+extern crate lovm2_internals;
+
 pub mod bytecode;
 pub mod code;
 pub mod context;
@@ -8,6 +10,8 @@ pub mod util;
 pub mod value;
 pub mod var;
 pub mod vm;
+
+pub use lovm2_internals::lovm2_builtin;
 
 pub use self::bytecode::*;
 pub use self::code::*;

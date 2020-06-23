@@ -12,6 +12,5 @@ path = "bin/bin.rs"
 name = "lovm2"
 path = "src/lib.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+lovm2_internals = { path = "src/lovm2_internals" }
