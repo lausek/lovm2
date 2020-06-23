@@ -23,8 +23,7 @@ pub struct CodeObject {
 
 impl CallProtocol for CodeObject {
     fn run(&self, ctx: &mut Context) -> Result<(), String> {
-        run_bytecode(self, ctx);
-        Ok(())
+        run_bytecode(self, ctx)
     }
 }
 

@@ -47,7 +47,7 @@ impl LoweringRuntime {
 
     pub fn complete(hir: HIR) -> Result<CodeObject, String> {
         let mut lowru = LoweringRuntime::new();
-        let mut hir_elements = hir.code.into_iter();
+        let hir_elements = hir.code.into_iter();
 
         for element in hir_elements {
             match element {

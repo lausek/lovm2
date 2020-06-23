@@ -17,5 +17,5 @@ impl Branch {
 }
 
 impl Lowering for Branch {
-    fn lower(self, runtime: &mut LoweringRuntime) {}
+    fn lower(self, _runtime: &mut LoweringRuntime) {}
 }

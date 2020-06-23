@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
-use crate::lovm2_builtin;
 use crate::code::CallProtocol;
 use crate::context::Context;
+use crate::lovm2_builtin;
 use crate::module::Module;
 use crate::value::RuValue;
 
@@ -19,7 +19,7 @@ fn print(ctx: &mut Context) -> Result<(), String> {
 
 #[lovm2_builtin]
 fn input(ctx: &mut Context) -> Result<(), String> {
-    use std::io::{BufRead, stdin};
+    use std::io::stdin;
 
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
@@ -32,8 +32,12 @@ fn input(ctx: &mut Context) -> Result<(), String> {
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 
-    module.slots.insert("input".into(), InputBuiltin::instantiate());
-    module.slots.insert("print".into(), PrintBuiltin::instantiate());
+    module
+        .slots
+        .insert("input".into(), InputBuiltin::instantiate());
+    module
+        .slots
+        .insert("print".into(), PrintBuiltin::instantiate());
 
     module
 }

@@ -1,9 +1,8 @@
 use crate::bytecode::Instruction;
-use crate::code::{CallProtocol, CodeObject, CodeObjectRef};
+use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::module::{Module, create_standard_module};
+use crate::module::{create_standard_module, Module};
 use crate::value::RuValue;
-use crate::var::Variable;
 
 pub const ENTRY_POINT: &str = "main";
 
@@ -14,10 +13,8 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
-        ctx.load_and_import_all(create_standard_module());
-        Self {
-            ctx,
-        }
+        ctx.load_and_import_all(create_standard_module()).unwrap();
+        Self { ctx }
     }
 
     pub fn context_mut(&mut self) -> &mut Context {
@@ -28,21 +25,23 @@ impl Vm {
         self.ctx.load_and_import_all(module)
     }
 
-    pub fn run_object(&mut self, co: &dyn CallProtocol) {
+    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Result<(), String> {
         self.ctx.push_frame(0);
-        co.run(&mut self.ctx);
+        co.run(&mut self.ctx)?;
         self.ctx.pop_frame();
+
+        Ok(())
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&mut self) -> Result<(), String> {
         match self.ctx.lookup_code_object(&ENTRY_POINT.into()) {
             Some(co) => self.run_object(co.as_ref()),
-            None => unimplemented!(),
+            None => Err(format!("no entry function called `{}`", ENTRY_POINT)),
         }
     }
 }
 
-pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) {
+pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
         match inx {
@@ -140,23 +139,25 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) {
                     continue;
                 }
             }
-            Instruction::Jgt(addr) => {}
-            Instruction::Jlt(addr) => {}
+            Instruction::Jgt(_addr) => {}
+            Instruction::Jlt(_addr) => {}
             Instruction::Call(argn, gidx) => {
                 let func = &co.globals[*gidx as usize];
 
                 if let Some(other_co) = ctx.lookup_code_object(func) {
                     ctx.push_frame(*argn);
-                    other_co.run(ctx);
+                    other_co.run(ctx)?;
                     ctx.pop_frame();
                 } else {
                     unimplemented!();
                 }
             }
             Instruction::Ret => break,
-            Instruction::Interrupt(n) => {}
+            Instruction::Interrupt(_n) => {}
         }
 
         ip += 1;
     }
+
+    Ok(())
 }

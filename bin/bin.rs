@@ -37,7 +37,7 @@ fn create_greet() -> ModuleBuilder {
 }
 
 fn main() {
-    let mut builder = create_greet();
+    let builder = create_greet();
 
     match builder.build() {
         Ok(result) => {
@@ -45,7 +45,7 @@ fn main() {
 
             let mut vm = Vm::new();
             vm.load_and_import_all(result).unwrap();
-            vm.run();
+            vm.run().unwrap();
         }
         Err(msg) => println!("{}", msg),
     }

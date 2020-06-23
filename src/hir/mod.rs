@@ -10,10 +10,10 @@ pub mod repeat;
 pub mod prelude;
 
 use crate::branch::Branch;
-use crate::code::{CodeObject, CodeObjectBuilder};
+use crate::code::CodeObject;
 use crate::element::HIRElement;
 use crate::expr::Expr;
-use crate::lowering::{Lowering, LoweringRuntime};
+use crate::lowering::LoweringRuntime;
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -48,13 +48,12 @@ impl HIR {
     }
 
     pub fn branch(&mut self) -> &mut Branch {
-        let mut branch = Branch::new();
-        self.code.push(branch.into());
+        self.code.push(Branch::new().into());
         match self.code.last_mut().unwrap() {
             HIRElement::Branch(ref mut r) => r,
             _ => unreachable!(),
         }
     }
 
-    pub fn repeat(&mut self, condition: Option<Expr>) {}
+    pub fn repeat(&mut self, _condition: Option<Expr>) {}
 }

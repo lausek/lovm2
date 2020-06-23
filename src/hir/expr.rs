@@ -122,7 +122,7 @@ impl Lowering for Expr {
                 let cidx = runtime.index_const(&val);
                 runtime.emit(Instruction::Pushc(cidx as u16));
             }
-            Expr::Variable(var) => {}
+            Expr::Variable(_var) => {}
         }
     }
 }

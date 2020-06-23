@@ -7,7 +7,6 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::context::Context;
-use crate::var::Variable;
 
 pub use self::co_value::CoValue;
 pub use self::ru_value::RuValue;
@@ -15,7 +14,6 @@ pub use self::ru_value::RuValue;
 pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
     match covalue {
         CoValue::Bool(n) => RuValue::Bool(*n),
-        CoValue::Int(n) => RuValue::Int(*n),
         CoValue::Int(n) => RuValue::Int(*n),
         CoValue::Float(n) => RuValue::Float(*n),
         CoValue::Str(n) => RuValue::Str(n.clone()),
