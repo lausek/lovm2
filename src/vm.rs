@@ -2,6 +2,7 @@ use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::code::CodeObjectRef;
 use crate::context::Context;
+use crate::module::Module;
 use crate::value::RuValue;
 use crate::var::Variable;
 
@@ -18,6 +19,10 @@ impl Vm {
 
     pub fn context_mut(&mut self) -> &mut Context {
         &mut self.ctx
+    }
+
+    pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
+        self.ctx.load_and_import_all(module)
     }
 
     fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {

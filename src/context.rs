@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::code::CodeObjectRef;
 use crate::frame::Frame;
 use crate::module::Module;
 use crate::value::RuValue;
@@ -8,6 +9,7 @@ use crate::var::Variable;
 pub struct Context {
     pub modules: Vec<Module>,
     pub globals: HashMap<Variable, RuValue>,
+    pub scope: HashMap<Variable, CodeObjectRef>,
 
     pub lstack: Vec<Frame>,
     pub vstack: Vec<RuValue>,
@@ -18,10 +20,23 @@ impl Context {
         Self {
             modules: vec![],
             globals: HashMap::new(),
+            scope: HashMap::new(),
 
             lstack: vec![],
             vstack: vec![],
         }
+    }
+
+    pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
+        for (key, co_object) in module.slots.iter() {
+            if let Some(_) = self.scope.insert(key.clone(), co_object.clone()) {
+                return Err(format!("import conflict: {} is already defined", key));
+            }
+        }
+
+        self.modules.push(module);
+
+        Ok(())
     }
 
     pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {
