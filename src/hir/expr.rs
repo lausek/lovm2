@@ -1,3 +1,4 @@
+use crate::hir::call::Call;
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -38,7 +39,7 @@ pub enum Operator1 {
 pub enum Expr {
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Operation1(Operator1, Box<Expr>),
-    Call(Variable, Vec<Expr>),
+    Call(Call),
     Value(CoValue),
     Variable(Variable),
 }

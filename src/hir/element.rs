@@ -1,6 +1,7 @@
 
 use crate::hir::assign::Assign;
 use crate::hir::branch::Branch;
+use crate::hir::call::Call;
 use crate::hir::expr::Expr;
 use crate::hir::repeat::{Break, Continue, Repeat};
 
@@ -8,6 +9,7 @@ pub enum HIRElement {
     Assign(Assign),
     Branch(Branch),
     Break(Break),
+    Call(Call),
     Continue(Continue),
     Repeat(Repeat),
 }
