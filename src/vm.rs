@@ -26,10 +26,7 @@ impl Vm {
     }
 
     fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {
-        for module in self.ctx.modules.iter() {
-
-        }
-        None
+        self.ctx.scope.get(name).cloned()
     }
 
     pub fn run_object(&mut self, object: &CodeObject) {
