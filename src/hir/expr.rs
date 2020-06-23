@@ -1,4 +1,5 @@
 use crate::hir::call::Call;
+use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -72,5 +73,10 @@ impl From<CoValue> for Expr {
 impl From<Variable> for Expr {
     fn from(v: Variable) -> Expr {
         Expr::Variable(v)
+    }
+}
+
+impl Lowering for Expr {
+    fn lower(self, runtime: &mut LoweringRuntime) {
     }
 }

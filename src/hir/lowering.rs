@@ -69,6 +69,36 @@ impl LoweringRuntime {
             .build()
     }
 
+    pub fn index_const(&mut self, val: &CoValue) -> usize {
+        match self.consts.iter().position(|item| item == val) {
+            Some(pos) => pos,
+            None => {
+                self.consts.push(val.clone());
+                self.consts.len() - 1
+            },
+        }
+    }
+
+    pub fn index_local(&mut self, var: &Variable) -> usize {
+        match self.locals.iter().position(|item| item == var) {
+            Some(pos) => pos,
+            None => {
+                self.locals.push(var.clone());
+                self.locals.len() - 1
+            },
+        }
+    }
+
+    pub fn index_global(&mut self, var: &Variable) -> usize {
+        match self.globals.iter().position(|item| item == var) {
+            Some(pos) => pos,
+            None => {
+                self.globals.push(var.clone());
+                self.globals.len() - 1
+            },
+        }
+    }
+
     pub fn push_loop(&mut self) {
         self.loop_stack.push(LoweringLoop::from(self.code.len()));
     }
