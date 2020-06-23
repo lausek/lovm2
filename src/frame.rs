@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::var::Variable;
 use crate::value::RuValue;
+use crate::var::Variable;
 
 pub struct Frame {
     pub(crate) argn: u8,

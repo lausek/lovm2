@@ -1,5 +1,5 @@
-use lovm2::hir::*;
 use lovm2::hir::prelude::*;
+use lovm2::hir::*;
 use lovm2::module::ModuleBuilder;
 use lovm2::vm::Vm;
 

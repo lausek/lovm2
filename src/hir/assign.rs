@@ -5,7 +5,7 @@ use crate::var::Variable;
 
 pub enum AssignScope {
     Local,
-    Global
+    Global,
 }
 
 pub struct Assign {

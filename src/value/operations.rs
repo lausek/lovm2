@@ -9,7 +9,7 @@ macro_rules! auto_implement {
     } => {
         impl $tr for RuValue {
             type Output = RuValue;
-        
+
             fn $method(self) -> RuValue {
                 match self {
                     $(
@@ -29,7 +29,7 @@ macro_rules! auto_implement {
     } => {
         impl $tr for RuValue {
             type Output = RuValue;
-        
+
             fn $method(self, other: RuValue) -> RuValue {
                 match (self, other) {
                     $(
@@ -44,45 +44,45 @@ macro_rules! auto_implement {
     };
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::Add, add;
     Int, Float => (|a, b| a + b);
     Str => (|a, b| format!("{}{}", a, b));
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::Sub, sub;
     Int, Float => (|a, b| a - b);
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::Mul, mul;
     Int, Float => (|a, b| a * b);
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::Div, div;
     Int, Float => (|a, b| a / b);
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::Rem, rem;
     Int, Float => (|a, b| a % b);
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::BitAnd, bitand;
     Bool => (|a, b| a && b);
     Int => (|a, b| a & b);
 }
 
-auto_implement!{
+auto_implement! {
     2, std::ops::BitOr, bitor;
     Bool => (|a, b| a || b);
     Int => (|a, b| a | b);
 }
 
-auto_implement!{
+auto_implement! {
     1, std::ops::Not, not;
     Bool => (|a: bool| !a);
     Int => (|a: i64| !a);
@@ -98,19 +98,19 @@ impl std::cmp::PartialOrd for RuValue {
         }
     }
 
-    fn lt(&self, other: &RuValue) -> bool { 
+    fn lt(&self, other: &RuValue) -> bool {
         unimplemented!()
     }
 
-    fn le(&self, other: &RuValue) -> bool { 
+    fn le(&self, other: &RuValue) -> bool {
         unimplemented!()
     }
 
-    fn gt(&self, other: &RuValue) -> bool { 
+    fn gt(&self, other: &RuValue) -> bool {
         unimplemented!()
     }
 
-    fn ge(&self, other: &RuValue) -> bool { 
+    fn ge(&self, other: &RuValue) -> bool {
         unimplemented!()
     }
 }

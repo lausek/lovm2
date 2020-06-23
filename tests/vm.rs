@@ -1,4 +1,4 @@
-use lovm2::{CodeObjectBuilder, CoValue, define_code, Instruction, RuValue, Variable, vm::Vm};
+use lovm2::{define_code, vm::Vm, CoValue, CodeObjectBuilder, Instruction, RuValue, Variable};
 
 #[test]
 fn pushing_constant() {
@@ -32,7 +32,10 @@ fn store_global() {
 
     vm.run_object(&co);
 
-    assert_eq!(RuValue::Int(42), vm.context_mut().globals.get("globaln").cloned().unwrap());
+    assert_eq!(
+        RuValue::Int(42),
+        vm.context_mut().globals.get("globaln").cloned().unwrap()
+    );
 }
 
 #[test]
@@ -52,7 +55,7 @@ fn calculation() {
             Pushc 0;
             Sub;
             Moveg 1;
-            
+
             Pushc 1;
             Pushc 0;
             Mul;
@@ -67,10 +70,22 @@ fn calculation() {
 
     vm.run_object(&co);
 
-    assert_eq!(RuValue::Int(5), vm.context_mut().globals.get("result_add").cloned().unwrap());
-    assert_eq!(RuValue::Int(-1), vm.context_mut().globals.get("result_sub").cloned().unwrap());
-    assert_eq!(RuValue::Int(6), vm.context_mut().globals.get("result_mul").cloned().unwrap());
-    assert_eq!(RuValue::Int(0), vm.context_mut().globals.get("result_div").cloned().unwrap());
+    assert_eq!(
+        RuValue::Int(5),
+        vm.context_mut().globals.get("result_add").cloned().unwrap()
+    );
+    assert_eq!(
+        RuValue::Int(-1),
+        vm.context_mut().globals.get("result_sub").cloned().unwrap()
+    );
+    assert_eq!(
+        RuValue::Int(6),
+        vm.context_mut().globals.get("result_mul").cloned().unwrap()
+    );
+    assert_eq!(
+        RuValue::Int(0),
+        vm.context_mut().globals.get("result_div").cloned().unwrap()
+    );
 }
 
 #[test]
@@ -99,7 +114,7 @@ fn jumping() {
 
             Dup;
             Movel 0;
-            
+
             Pushc 2;
             Cmp;
             Jeq 17;
@@ -110,5 +125,8 @@ fn jumping() {
 
     vm.run_object(&co);
 
-    assert_eq!(RuValue::Str("aaaaaaaaaa".to_string()), vm.context_mut().globals.get("output").cloned().unwrap());
+    assert_eq!(
+        RuValue::Str("aaaaaaaaaa".to_string()),
+        vm.context_mut().globals.get("output").cloned().unwrap()
+    );
 }

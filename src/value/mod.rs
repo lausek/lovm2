@@ -2,8 +2,8 @@ pub mod co_value;
 pub mod operations;
 pub mod ru_value;
 
-use std::collections::HashMap;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::context::Context;
@@ -25,10 +25,10 @@ pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
                 rumap.insert(key.clone(), instantiate(ctx, value));
             }
             RuValue::Dict(Rc::new(RefCell::new(rumap)))
-        },
+        }
         CoValue::List(ls) => {
             let ruls = ls.iter().map(|item| instantiate(ctx, &item)).collect();
             RuValue::List(Rc::new(RefCell::new(ruls)))
-        },
+        }
     }
 }

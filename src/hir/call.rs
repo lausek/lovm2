@@ -10,7 +10,8 @@ pub struct Call {
 
 impl Call {
     pub fn new<T>(name: T) -> Self
-        where T: Into<Variable>
+    where
+        T: Into<Variable>,
     {
         Self {
             name: name.into(),
@@ -19,7 +20,8 @@ impl Call {
     }
 
     pub fn arg<T>(mut self, expr: T) -> Self
-        where T: Into<Expr>
+    where
+        T: Into<Expr>,
     {
         self.args.push(expr.into());
         self

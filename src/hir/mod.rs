@@ -40,8 +40,9 @@ impl HIR {
         LoweringRuntime::complete(self)
     }
 
-    pub fn push<T>(&mut self, element: T) 
-        where T: Into<HIRElement>
+    pub fn push<T>(&mut self, element: T)
+    where
+        T: Into<HIRElement>,
     {
         self.code.push(element.into());
     }
@@ -55,6 +56,5 @@ impl HIR {
         }
     }
 
-    pub fn repeat(&mut self, condition: Option<Expr>) {
-    }
+    pub fn repeat(&mut self, condition: Option<Expr>) {}
 }

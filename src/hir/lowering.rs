@@ -1,6 +1,6 @@
 use crate::bytecode::Instruction;
 use crate::code::{CodeObject, CodeObjectBuilder};
-use crate::hir::{HIR, HIRElement};
+use crate::hir::{HIRElement, HIR};
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -23,8 +23,7 @@ impl LoweringLoop {
         }
     }
 
-    pub fn complete(self) {
-    }
+    pub fn complete(self) {}
 }
 
 pub struct LoweringRuntime {
@@ -79,7 +78,7 @@ impl LoweringRuntime {
             None => {
                 self.consts.push(val.clone());
                 self.consts.len() - 1
-            },
+            }
         }
     }
 
@@ -89,7 +88,7 @@ impl LoweringRuntime {
             None => {
                 self.locals.push(var.clone());
                 self.locals.len() - 1
-            },
+            }
         }
     }
 
@@ -99,7 +98,7 @@ impl LoweringRuntime {
             None => {
                 self.globals.push(var.clone());
                 self.globals.len() - 1
-            },
+            }
         }
     }
 

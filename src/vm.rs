@@ -64,7 +64,10 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) {
             Instruction::Movel(lidx) => {
                 let first = ctx.pop_value().unwrap();
                 let variable = &co.locals[*lidx as usize];
-                ctx.frame_mut().unwrap().locals.insert(variable.clone(), first);
+                ctx.frame_mut()
+                    .unwrap()
+                    .locals
+                    .insert(variable.clone(), first);
             }
             Instruction::Moveg(gidx) => {
                 let variable = &co.globals[*gidx as usize];

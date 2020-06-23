@@ -31,8 +31,9 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add<T>(&mut self, name: T) -> &mut ModuleBuilderSlot 
-        where T: Into<Variable>
+    pub fn add<T>(&mut self, name: T) -> &mut ModuleBuilderSlot
+    where
+        T: Into<Variable>,
     {
         let name: Variable = name.into();
         self.slots.insert(name.clone(), ModuleBuilderSlot::new());
@@ -61,9 +62,7 @@ pub struct ModuleBuilderSlot {
 
 impl ModuleBuilderSlot {
     pub fn new() -> Self {
-        Self {
-            hir: None,
-        }
+        Self { hir: None }
     }
 
     pub fn hir(&mut self, hir: HIR) {

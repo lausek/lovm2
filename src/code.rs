@@ -17,7 +17,7 @@ pub struct CodeObject {
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
-    
+
     pub code: Vec<Instruction>,
 }
 
@@ -33,7 +33,7 @@ pub struct CodeObjectBuilder {
     consts: Vec<CoValue>,
     locals: Vec<Variable>,
     globals: Vec<Variable>,
-    
+
     code: Option<Vec<Instruction>>,
 }
 
@@ -43,7 +43,7 @@ impl CodeObjectBuilder {
             consts: vec![],
             locals: vec![],
             globals: vec![],
-            
+
             code: None,
         }
     }
@@ -67,7 +67,7 @@ impl CodeObjectBuilder {
         self.code = Some(code);
         self
     }
-    
+
     pub fn build(self) -> Result<CodeObject, String> {
         if self.code.is_none() {
             return Err("code missing".to_string());
@@ -76,7 +76,7 @@ impl CodeObjectBuilder {
             consts: self.consts,
             locals: self.locals,
             globals: self.globals,
-            
+
             code: self.code.unwrap(),
         })
     }
