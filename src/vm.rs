@@ -1,4 +1,5 @@
 use crate::bytecode::Instruction;
+use crate::code::CallProtocol;
 use crate::code::CodeObject;
 use crate::code::CodeObjectRef;
 use crate::context::Context;
@@ -27,140 +28,132 @@ impl Vm {
         self.ctx.load_and_import_all(module)
     }
 
-    fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {
-        self.ctx.scope.get(name).cloned()
-    }
-
-    pub fn run_object(&mut self, object: &CodeObject) {
+    pub fn run_object(&mut self, co: &dyn CallProtocol) {
         self.ctx.push_frame(0);
-
-        let mut ip = 0;
-        loop {
-            let code = object.code.get(ip);
-            if code.is_none() {
-                break;
-            }
-
-            let inx = code.unwrap();
-            match inx {
-                Instruction::Pushl(lidx) => {
-                    let variable = &object.locals[*lidx as usize];
-                    let local = self.ctx.frame_mut().unwrap().locals.get(variable).cloned();
-                    self.ctx.push_value(local.unwrap());
-                }
-                Instruction::Pushg(gidx) => {
-                    let variable = &object.globals[*gidx as usize];
-                    let global = self.ctx.globals.get(variable).cloned();
-                    self.ctx.push_value(global.unwrap());
-                }
-                Instruction::Pushc(cidx) => {
-                    use crate::value;
-                    let value = value::instantiate(&mut self.ctx, &object.consts[*cidx as usize]);
-                    self.ctx.push_value(value);
-                }
-                Instruction::Movel(lidx) => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let variable = &object.locals[*lidx as usize];
-                    self.ctx.frame_mut().unwrap().locals.insert(variable.clone(), first);
-                }
-                Instruction::Moveg(gidx) => {
-                    let variable = &object.globals[*gidx as usize];
-                    let value = self.ctx.pop_value().unwrap();
-                    self.ctx.globals.insert(variable.clone(), value);
-                }
-                Instruction::Dup => {
-                    let last = self.ctx.stack_mut().last().cloned().unwrap();
-                    self.ctx.push_value(last);
-                }
-                Instruction::Swap => {}
-                Instruction::Add => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first + second);
-                }
-                Instruction::Sub => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first - second);
-                }
-                Instruction::Mul => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first * second);
-                }
-                Instruction::Div => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first / second);
-                }
-                Instruction::Mod => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first % second);
-                }
-                Instruction::And => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first & second);
-                }
-                Instruction::Or => {
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(first | second);
-                }
-                Instruction::Not => {
-                    let first = self.ctx.pop_value().unwrap();
-                    self.ctx.push_value(!first);
-                }
-                Instruction::Cmp => {
-                    use std::cmp::Ordering;
-                    let first = self.ctx.pop_value().unwrap();
-                    let second = self.ctx.pop_value().unwrap();
-                    let ordering = first.partial_cmp(&second).unwrap();
-                    match ordering {
-                        Ordering::Less => self.ctx.push_value(RuValue::Int(-1)),
-                        Ordering::Equal => self.ctx.push_value(RuValue::Int(0)),
-                        Ordering::Greater => self.ctx.push_value(RuValue::Int(1)),
-                    }
-                }
-                Instruction::Jmp(addr) => {
-                    ip = *addr as usize;
-                    continue;
-                }
-                Instruction::Jeq(addr) => {
-                    let first = self.ctx.pop_value().unwrap();
-                    if first == RuValue::Int(0) {
-                        ip = *addr as usize;
-                        continue;
-                    }
-                }
-                Instruction::Jgt(addr) => {}
-                Instruction::Jlt(addr) => {}
-                Instruction::Call(argn, gidx) => {
-                    let func = &object.globals[*gidx as usize];
-
-                    if let Some(co_object) = self.lookup_code_object(func) {
-                        self.ctx.push_frame(*argn);
-                        self.run_object(&*co_object);
-                        self.ctx.pop_frame();
-                    } else {
-                        unimplemented!();
-                    }
-                }
-                Instruction::Ret => break,
-                Instruction::Interrupt(n) => {}
-            }
-
-            ip += 1;
-        }
-
+        co.run(&mut self.ctx);
         self.ctx.pop_frame();
     }
 
     pub fn run(&mut self) {
-        match self.lookup_code_object(&ENTRY_POINT.into()) {
+        match self.ctx.lookup_code_object(&ENTRY_POINT.into()) {
             Some(co) => self.run_object(co.as_ref()),
             None => unimplemented!(),
         }
+    }
+}
+
+pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) {
+    let mut ip = 0;
+    while let Some(inx) = co.code.get(ip) {
+        match inx {
+            Instruction::Pushl(lidx) => {
+                let variable = &co.locals[*lidx as usize];
+                let local = ctx.frame_mut().unwrap().locals.get(variable).cloned();
+                ctx.push_value(local.unwrap());
+            }
+            Instruction::Pushg(gidx) => {
+                let variable = &co.globals[*gidx as usize];
+                let global = ctx.globals.get(variable).cloned();
+                ctx.push_value(global.unwrap());
+            }
+            Instruction::Pushc(cidx) => {
+                use crate::value;
+                let value = value::instantiate(ctx, &co.consts[*cidx as usize]);
+                ctx.push_value(value);
+            }
+            Instruction::Movel(lidx) => {
+                let first = ctx.pop_value().unwrap();
+                let variable = &co.locals[*lidx as usize];
+                ctx.frame_mut().unwrap().locals.insert(variable.clone(), first);
+            }
+            Instruction::Moveg(gidx) => {
+                let variable = &co.globals[*gidx as usize];
+                let value = ctx.pop_value().unwrap();
+                ctx.globals.insert(variable.clone(), value);
+            }
+            Instruction::Dup => {
+                let last = ctx.stack_mut().last().cloned().unwrap();
+                ctx.push_value(last);
+            }
+            Instruction::Swap => {}
+            Instruction::Add => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first + second);
+            }
+            Instruction::Sub => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first - second);
+            }
+            Instruction::Mul => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first * second);
+            }
+            Instruction::Div => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first / second);
+            }
+            Instruction::Mod => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first % second);
+            }
+            Instruction::And => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first & second);
+            }
+            Instruction::Or => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(first | second);
+            }
+            Instruction::Not => {
+                let first = ctx.pop_value().unwrap();
+                ctx.push_value(!first);
+            }
+            Instruction::Cmp => {
+                use std::cmp::Ordering;
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                let ordering = first.partial_cmp(&second).unwrap();
+                match ordering {
+                    Ordering::Less => ctx.push_value(RuValue::Int(-1)),
+                    Ordering::Equal => ctx.push_value(RuValue::Int(0)),
+                    Ordering::Greater => ctx.push_value(RuValue::Int(1)),
+                }
+            }
+            Instruction::Jmp(addr) => {
+                ip = *addr as usize;
+                continue;
+            }
+            Instruction::Jeq(addr) => {
+                let first = ctx.pop_value().unwrap();
+                if first == RuValue::Int(0) {
+                    ip = *addr as usize;
+                    continue;
+                }
+            }
+            Instruction::Jgt(addr) => {}
+            Instruction::Jlt(addr) => {}
+            Instruction::Call(argn, gidx) => {
+                let func = &co.globals[*gidx as usize];
+
+                if let Some(other_co) = ctx.lookup_code_object(func) {
+                    ctx.push_frame(*argn);
+                    other_co.run(ctx);
+                    ctx.pop_frame();
+                } else {
+                    unimplemented!();
+                }
+            }
+            Instruction::Ret => break,
+            Instruction::Interrupt(n) => {}
+        }
+
+        ip += 1;
     }
 }

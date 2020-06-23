@@ -1,10 +1,16 @@
 use std::rc::Rc;
 
 use crate::bytecode::Instruction;
+use crate::context::Context;
 use crate::value::CoValue;
 use crate::var::Variable;
+use crate::vm::run_bytecode;
 
-pub type CodeObjectRef = Rc<CodeObject>;
+pub type CodeObjectRef = Rc<dyn CallProtocol>;
+
+pub trait CallProtocol: std::fmt::Debug {
+    fn run(&self, ctx: &mut Context) -> Result<(), String>;
+}
 
 #[derive(Debug)]
 pub struct CodeObject {
@@ -13,6 +19,13 @@ pub struct CodeObject {
     pub globals: Vec<Variable>,
     
     pub code: Vec<Instruction>,
+}
+
+impl CallProtocol for CodeObject {
+    fn run(&self, ctx: &mut Context) -> Result<(), String> {
+        run_bytecode(self, ctx);
+        Ok(())
+    }
 }
 
 #[derive(Debug)]

@@ -30,13 +30,17 @@ impl Context {
     pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
         for (key, co_object) in module.slots.iter() {
             if let Some(_) = self.scope.insert(key.clone(), co_object.clone()) {
-                return Err(format!("import conflict: {} is already defined", key));
+                return Err(format!("import conflict: `{}` is already defined", key));
             }
         }
 
         self.modules.push(module);
 
         Ok(())
+    }
+
+    pub fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {
+        self.scope.get(name).cloned()
     }
 
     pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {
