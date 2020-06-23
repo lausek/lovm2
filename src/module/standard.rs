@@ -17,9 +17,22 @@ fn print(ctx: &mut Context) -> Result<(), String> {
     Ok(())
 }
 
+#[lovm2_builtin]
+fn input(ctx: &mut Context) -> Result<(), String> {
+    use std::io::{BufRead, stdin};
+
+    let mut input = String::new();
+    stdin().read_line(&mut input).unwrap();
+
+    ctx.push_value(RuValue::Str(input));
+
+    Ok(())
+}
+
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 
+    module.slots.insert("input".into(), InputBuiltin::instantiate());
     module.slots.insert("print".into(), PrintBuiltin::instantiate());
 
     module

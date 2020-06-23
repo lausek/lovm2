@@ -25,8 +25,19 @@ fn create_call_example() -> ModuleBuilder {
     builder
 }
 
+fn create_greet() -> ModuleBuilder {
+    let mut builder = ModuleBuilder::new();
+
+    let mut main_hir = HIR::new();
+    main_hir.push(Call::new("print").arg(Call::new("input")));
+
+    builder.add("main").hir(main_hir);
+
+    builder
+}
+
 fn main() {
-    let mut builder = create_call_example();
+    let mut builder = create_greet();
 
     match builder.build() {
         Ok(result) => {

@@ -65,6 +65,12 @@ impl Expr {
     auto_implement!(1, Not, not);
 }
 
+impl From<Call> for Expr {
+    fn from(call: Call) -> Expr {
+        Expr::Call(call)
+    }
+}
+
 impl From<CoValue> for Expr {
     fn from(val: CoValue) -> Expr {
         Expr::Value(val)
