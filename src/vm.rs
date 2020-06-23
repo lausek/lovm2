@@ -6,6 +6,8 @@ use crate::module::Module;
 use crate::value::RuValue;
 use crate::var::Variable;
 
+pub const ENTRY_POINT: &str = "main";
+
 pub struct Vm {
     ctx: Context,
 }
@@ -156,7 +158,9 @@ impl Vm {
     }
 
     pub fn run(&mut self) {
-        for module in self.ctx.modules.iter() {
+        match self.lookup_code_object(&ENTRY_POINT.into()) {
+            Some(co) => self.run_object(co.as_ref()),
+            None => unimplemented!(),
         }
     }
 }

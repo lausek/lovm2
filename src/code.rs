@@ -15,6 +15,7 @@ pub struct CodeObject {
     pub code: Vec<Instruction>,
 }
 
+#[derive(Debug)]
 pub struct CodeObjectBuilder {
     consts: Vec<CoValue>,
     locals: Vec<Variable>,
