@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
@@ -6,10 +7,13 @@ use crate::module::Module;
 use crate::value::RuValue;
 use crate::var::Variable;
 
+pub type InterruptFn = dyn Fn(&mut Context) -> ();
+
 pub struct Context {
     pub modules: Vec<Module>,
     pub globals: HashMap<Variable, RuValue>,
     pub scope: HashMap<Variable, CodeObjectRef>,
+    pub interrupts: [Option<Rc<Box<InterruptFn>>>; 256],
 
     pub lstack: Vec<Frame>,
     pub vstack: Vec<RuValue>,
@@ -21,6 +25,7 @@ impl Context {
             modules: vec![],
             globals: HashMap::new(),
             scope: HashMap::new(),
+            interrupts: [None; 256],
 
             lstack: vec![],
             vstack: vec![],
@@ -41,6 +46,12 @@ impl Context {
 
     pub fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {
         self.scope.get(name).cloned()
+    }
+
+    pub fn set_interrupt<T>(&mut self, n: u16, func: T)
+        where T: Fn(&mut Context) -> () + Sized + 'static,
+    {
+        self.interrupts[n as usize] = Some(Rc::new(Box::new(func)));
     }
 
     pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {

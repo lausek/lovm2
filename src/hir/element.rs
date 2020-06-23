@@ -1,6 +1,7 @@
 use crate::hir::assign::Assign;
 use crate::hir::branch::Branch;
 use crate::hir::call::Call;
+use crate::hir::interrupt::Interrupt;
 use crate::hir::repeat::{Break, Continue, Repeat};
 
 pub enum HIRElement {
@@ -9,6 +10,7 @@ pub enum HIRElement {
     Break(Break),
     Call(Call),
     Continue(Continue),
+    Interrupt(Interrupt),
     Repeat(Repeat),
 }
 
@@ -39,6 +41,12 @@ impl From<Call> for HIRElement {
 impl From<Continue> for HIRElement {
     fn from(cmd: Continue) -> Self {
         HIRElement::Continue(cmd)
+    }
+}
+
+impl From<Interrupt> for HIRElement {
+    fn from(interrupt: Interrupt) -> Self {
+        HIRElement::Interrupt(interrupt)
     }
 }
 

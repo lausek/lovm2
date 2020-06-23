@@ -1,3 +1,5 @@
+#![feature(const_in_array_repeat_expressions)]
+
 extern crate lovm2_internals;
 
 pub mod bytecode;

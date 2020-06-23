@@ -4,8 +4,8 @@ use crate::value::RuValue;
 use crate::var::Variable;
 
 pub struct Frame {
-    pub(crate) argn: u8,
-    pub(crate) locals: HashMap<Variable, RuValue>,
+    pub argn: u8,
+    pub locals: HashMap<Variable, RuValue>,
 }
 
 impl Frame {

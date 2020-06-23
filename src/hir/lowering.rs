@@ -56,6 +56,7 @@ impl LoweringRuntime {
                 HIRElement::Break(cmd) => cmd.lower(&mut lowru),
                 HIRElement::Call(call) => call.lower(&mut lowru),
                 HIRElement::Continue(cmd) => cmd.lower(&mut lowru),
+                HIRElement::Interrupt(interrupt) => interrupt.lower(&mut lowru),
                 HIRElement::Repeat(repeat) => repeat.lower(&mut lowru),
             }
         }

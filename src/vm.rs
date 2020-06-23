@@ -21,6 +21,7 @@ impl Vm {
         &mut self.ctx
     }
 
+    // TODO: add `ImportOptions` parameter to specify what names to import
     pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
         self.ctx.load_and_import_all(module)
     }
@@ -153,7 +154,11 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 }
             }
             Instruction::Ret => break,
-            Instruction::Interrupt(_n) => {}
+            Instruction::Interrupt(n) => {
+                if let Some(func) = &ctx.interrupts[*n as usize] {
+                    func.clone()(ctx);
+                }
+            }
         }
 
         ip += 1;
