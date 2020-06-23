@@ -38,6 +38,7 @@ pub enum Operator1 {
 pub enum Expr {
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Operation1(Operator1, Box<Expr>),
+    Call(Variable, Vec<Expr>),
     Value(CoValue),
     Variable(Variable),
 }

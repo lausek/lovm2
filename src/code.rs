@@ -7,11 +7,11 @@ use crate::var::Variable;
 pub type CodeObjectRef = Rc<CodeObject>;
 
 pub struct CodeObject {
-    pub(crate) consts: Vec<CoValue>,
-    pub(crate) locals: Vec<Variable>,
-    pub(crate) globals: Vec<Variable>,
+    pub consts: Vec<CoValue>,
+    pub locals: Vec<Variable>,
+    pub globals: Vec<Variable>,
     
-    pub(crate) code: Vec<Instruction>,
+    pub code: Vec<Instruction>,
 }
 
 pub struct CodeObjectBuilder {

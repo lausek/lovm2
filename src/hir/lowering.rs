@@ -1,6 +1,8 @@
 use crate::bytecode::Instruction;
 use crate::code::{CodeObject, CodeObjectBuilder};
 use crate::hir::{HIR, HIRElement};
+use crate::value::CoValue;
+use crate::var::Variable;
 
 pub trait Lowering {
     fn lower(self, runtime: &mut LoweringRuntime);
@@ -26,6 +28,9 @@ impl LoweringLoop {
 }
 
 pub struct LoweringRuntime {
+    pub consts: Vec<CoValue>,
+    pub locals: Vec<Variable>,
+    pub globals: Vec<Variable>,
     pub code: Vec<Instruction>,
     loop_stack: Vec<LoweringLoop>,
 }
@@ -33,6 +38,9 @@ pub struct LoweringRuntime {
 impl LoweringRuntime {
     pub fn new() -> Self {
         Self {
+            consts: vec![],
+            locals: vec![],
+            globals: vec![],
             code: vec![],
             loop_stack: vec![],
         }
@@ -41,20 +49,23 @@ impl LoweringRuntime {
     pub fn complete(hir: HIR) -> Result<CodeObject, String> {
         let mut lowru = LoweringRuntime::new();
         let mut hir_elements = hir.code.into_iter();
-        let mut code_builder = CodeObjectBuilder::new()
-                                .consts(hir.consts)
-                                .locals(hir.locals)
-                                .globals(hir.globals);
 
         for element in hir_elements {
             match element {
                 HIRElement::Assign(assign) => assign.lower(&mut lowru),
                 HIRElement::Branch(branch) => branch.lower(&mut lowru),
+                HIRElement::Break(cmd) => cmd.lower(&mut lowru),
+                HIRElement::Continue(cmd) => cmd.lower(&mut lowru),
                 HIRElement::Repeat(repeat) => repeat.lower(&mut lowru),
             }
         }
 
-        code_builder.code(lowru.code).build()
+        CodeObjectBuilder::new()
+            .consts(lowru.consts)
+            .locals(lowru.locals)
+            .globals(lowru.globals)
+            .code(lowru.code)
+            .build()
     }
 
     pub fn push_loop(&mut self) {
