@@ -7,6 +7,8 @@ pub mod expr;
 pub mod lowering;
 pub mod repeat;
 
+pub mod prelude;
+
 use crate::branch::Branch;
 use crate::code::{CodeObject, CodeObjectBuilder};
 use crate::element::HIRElement;
@@ -36,6 +38,12 @@ impl HIR {
 
     pub fn build(self) -> Result<CodeObject, String> {
         LoweringRuntime::complete(self)
+    }
+
+    pub fn push<T>(&mut self, element: T) 
+        where T: Into<HIRElement>
+    {
+        self.code.push(element.into());
     }
 
     pub fn branch(&mut self) -> &mut Branch {

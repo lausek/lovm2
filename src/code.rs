@@ -6,6 +6,7 @@ use crate::var::Variable;
 
 pub type CodeObjectRef = Rc<CodeObject>;
 
+#[derive(Debug)]
 pub struct CodeObject {
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,

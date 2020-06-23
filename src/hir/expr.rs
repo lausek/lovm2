@@ -1,3 +1,4 @@
+use crate::bytecode::Instruction;
 use crate::hir::call::Call;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::value::CoValue;
@@ -78,5 +79,46 @@ impl From<Variable> for Expr {
 
 impl Lowering for Expr {
     fn lower(self, runtime: &mut LoweringRuntime) {
+        match self {
+            Expr::Operation2(op, expr1, expr2) => {
+                expr1.lower(runtime);
+                expr2.lower(runtime);
+                let inx = match op {
+                    Operator2::Add => Instruction::Add,
+                    Operator2::Sub => Instruction::Sub,
+                    Operator2::Mul => Instruction::Mul,
+                    Operator2::Div => Instruction::Div,
+                    // Operator2::Rem => Instruction::Rem,
+                    Operator2::And => Instruction::And,
+                    Operator2::Or => Instruction::Or,
+
+                    _ => unimplemented!(),
+                    /*
+                    Operator2::Equal => Instruction::Mul,
+                    Operator2::NotEqual => Instruction::Mul,
+                    Operator2::GreaterEqual => Instruction::Mul,
+                    Operator2::GreaterThan => Instruction::Mul,
+                    Operator2::LessEqual => Instruction::Mul,
+                    Operator2::LessThan => Instruction::Mul,
+                    */
+                };
+                runtime.emit(inx);
+            }
+            Expr::Operation1(op, expr) => {
+                expr.lower(runtime);
+                let inx = match op {
+                    Operator1::Not => Instruction::Not,
+                };
+                runtime.emit(inx);
+            }
+            Expr::Call(call) => call.lower(runtime),
+            Expr::Value(val) => {
+                let cidx = runtime.index_const(&val);
+                runtime.emit(Instruction::Pushc(cidx as u16));
+            }
+            Expr::Variable(var) => {
+
+            }
+        }
     }
 }

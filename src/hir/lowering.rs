@@ -69,6 +69,10 @@ impl LoweringRuntime {
             .build()
     }
 
+    pub fn emit(&mut self, inx: Instruction) {
+        self.code.push(inx);
+    }
+
     pub fn index_const(&mut self, val: &CoValue) -> usize {
         match self.consts.iter().position(|item| item == val) {
             Some(pos) => pos,

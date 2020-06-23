@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
+[[bin]]
+name = "lovm2-repl"
+path = "bin/bin.rs"
+
 [lib]
 name = "lovm2"
 path = "src/lib.rs"

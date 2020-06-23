@@ -1,3 +1,4 @@
+#[derive(Clone, Copy, Debug)]
 pub enum Instruction {
     // push local variable
     Pushl(u16),
@@ -28,6 +29,7 @@ pub enum Instruction {
     Jgt(u16),
     Jlt(u16),
 
+    // call function with `argn`, `global index`
     Call(u8, u16),
     Ret,
 

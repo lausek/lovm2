@@ -32,6 +32,12 @@ impl From<Break> for HIRElement {
     }
 }
 
+impl From<Call> for HIRElement {
+    fn from(call: Call) -> Self {
+        HIRElement::Call(call)
+    }
+}
+
 impl From<Continue> for HIRElement {
     fn from(cmd: Continue) -> Self {
         HIRElement::Continue(cmd)

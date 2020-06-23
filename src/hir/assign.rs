@@ -38,11 +38,11 @@ impl Lowering for Assign {
         match self.scope {
             AssignScope::Local => {
                 let lidx = runtime.index_local(&self.variable);
-                runtime.code.push(Instruction::Movel(lidx as u16));
+                runtime.emit(Instruction::Movel(lidx as u16));
             }
             AssignScope::Global => {
                 let gidx = runtime.index_global(&self.variable);
-                runtime.code.push(Instruction::Moveg(gidx as u16));
+                runtime.emit(Instruction::Moveg(gidx as u16));
             }
         };
     }
