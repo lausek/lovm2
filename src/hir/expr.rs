@@ -87,14 +87,14 @@ impl Lowering for Expr {
     fn lower(self, runtime: &mut LoweringRuntime) {
         match self {
             Expr::Operation2(op, expr1, expr2) => {
-                expr1.lower(runtime);
                 expr2.lower(runtime);
+                expr1.lower(runtime);
                 let inx = match op {
                     Operator2::Add => Instruction::Add,
                     Operator2::Sub => Instruction::Sub,
                     Operator2::Mul => Instruction::Mul,
                     Operator2::Div => Instruction::Div,
-                    // Operator2::Rem => Instruction::Rem,
+                    Operator2::Rem => Instruction::Rem,
                     Operator2::And => Instruction::And,
                     Operator2::Or => Instruction::Or,
 

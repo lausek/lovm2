@@ -99,7 +99,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 let second = ctx.pop_value().unwrap();
                 ctx.push_value(first / second);
             }
-            Instruction::Mod => {
+            Instruction::Rem => {
                 let first = ctx.pop_value().unwrap();
                 let second = ctx.pop_value().unwrap();
                 ctx.push_value(first % second);

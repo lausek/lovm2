@@ -69,3 +69,17 @@ fn assign_local_add() {
         })
     }
 }
+
+#[test]
+fn rem_lowering() {
+    define_test! {
+        main {
+            Assign::local("rest".into(), Expr::rem(CoValue::Int(1).into(), CoValue::Int(2).into()));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(1), *frame.locals.get("rest").unwrap());
+        })
+    }
+}
