@@ -11,7 +11,7 @@ fn pushing_constant() {
         }
     };
 
-    vm.run_object(&co);
+    vm.run_object(&co).unwrap();
 
     assert_eq!(1, vm.context_mut().stack_mut().len());
     assert_eq!(RuValue::Int(2), vm.context_mut().pop_value().unwrap());
@@ -30,7 +30,7 @@ fn store_global() {
         }
     };
 
-    vm.run_object(&co);
+    vm.run_object(&co).unwrap();
 
     assert_eq!(
         RuValue::Int(42),
@@ -68,7 +68,7 @@ fn calculation() {
         }
     };
 
-    vm.run_object(&co);
+    vm.run_object(&co).unwrap();
 
     assert_eq!(
         RuValue::Int(5),
@@ -123,7 +123,7 @@ fn jumping() {
         }
     };
 
-    vm.run_object(&co);
+    vm.run_object(&co).unwrap();
 
     assert_eq!(
         RuValue::Str("aaaaaaaaaa".to_string()),

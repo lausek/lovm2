@@ -49,7 +49,8 @@ impl Context {
     }
 
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)
-        where T: Fn(&mut Context) -> () + Sized + 'static,
+    where
+        T: Fn(&mut Context) -> () + Sized + 'static,
     {
         self.interrupts[n as usize] = Some(Rc::new(Box::new(func)));
     }

@@ -122,7 +122,15 @@ impl Lowering for Expr {
                 let cidx = runtime.index_const(&val);
                 runtime.emit(Instruction::Pushc(cidx as u16));
             }
-            Expr::Variable(_var) => {}
+            Expr::Variable(ref var) => {
+                if runtime.locals.contains(var) {
+                    let lidx = runtime.index_local(var);
+                    runtime.emit(Instruction::Pushl(lidx as u16));
+                } else {
+                    let gidx = runtime.index_global(var);
+                    runtime.emit(Instruction::Pushg(gidx as u16));
+                }
+            }
         }
     }
 }
