@@ -1,6 +1,28 @@
+use lovm2::expr::Expr;
 use lovm2::hir::prelude::*;
 use lovm2::module::ModuleBuilder;
 use lovm2::vm::Vm;
+
+fn looping() -> ModuleBuilder {
+    let mut builder = ModuleBuilder::new();
+
+    let mut hir = HIR::new();
+    let repeat = Repeat::until(Expr::eq(
+        Variable::from("n").into(),
+        CoValue::Int(10).into(),
+    ))
+    .push(Call::new("print").arg(Variable::from("n")))
+    .push(Assign::local(
+        "n".into(),
+        Expr::add(Variable::from("n").into(), CoValue::Int(1).into()),
+    ));
+    hir.push(Assign::local("n".into(), CoValue::Int(0).into()));
+    hir.push(repeat);
+
+    builder.add("main").hir(hir);
+
+    builder
+}
 
 fn simple(hir: &mut HIR) {
     hir.push(Assign::local("n".into(), CoValue::Int(2).into()));
@@ -36,7 +58,7 @@ fn create_greet() -> ModuleBuilder {
 }
 
 fn main() {
-    let builder = create_greet();
+    let builder = looping();
 
     match builder.build() {
         Ok(result) => {

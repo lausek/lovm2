@@ -116,8 +116,8 @@ fn jumping() {
             Movel 0;
 
             Pushc 2;
-            Cmp;
-            Jeq 17;
+            Eq;
+            Jt 17;
 
             Jmp 4;
         }

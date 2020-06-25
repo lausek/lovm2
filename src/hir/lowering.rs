@@ -10,6 +10,7 @@ pub trait Lowering {
 
 pub struct LoweringLoop {
     pub start: usize,
+    pub end: Option<usize>,
     pub breaks: Vec<usize>,
     pub continues: Vec<usize>,
 }
@@ -18,9 +19,18 @@ impl LoweringLoop {
     pub fn from(start: usize) -> Self {
         Self {
             start,
+            end: None,
             breaks: vec![],
             continues: vec![],
         }
+    }
+
+    pub fn add_break(&mut self, idx: usize) {
+        self.breaks.push(idx);
+    }
+
+    pub fn add_continue(&mut self, idx: usize) {
+        self.continues.push(idx);
     }
 }
 
@@ -41,6 +51,10 @@ impl LoweringRuntime {
             code: vec![],
             loop_stack: vec![],
         }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.code.len() - 1
     }
 
     pub fn complete(hir: HIR) -> Result<CodeObject, String> {
@@ -93,11 +107,22 @@ impl LoweringRuntime {
         }
     }
 
-    pub fn push_loop(&mut self) {
+    pub fn loop_mut(&mut self) -> Option<&mut LoweringLoop> {
+        self.loop_stack.last_mut()
+    }
+
+    pub fn push_loop(&mut self) -> &mut LoweringLoop {
         self.loop_stack.push(LoweringLoop::from(self.code.len()));
+        self.loop_stack.last_mut().unwrap()
     }
 
     pub fn pop_loop(&mut self) -> Option<LoweringLoop> {
-        self.loop_stack.pop()
+        if let Some(mut lowering_loop) = self.loop_stack.pop() {
+            // point at offset after block
+            lowering_loop.end = Some(self.offset() + 1);
+            Some(lowering_loop)
+        } else {
+            None
+        }
     }
 }

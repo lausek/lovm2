@@ -97,16 +97,12 @@ impl Lowering for Expr {
                     Operator2::Rem => Instruction::Rem,
                     Operator2::And => Instruction::And,
                     Operator2::Or => Instruction::Or,
-
-                    _ => unimplemented!(),
-                    /*
-                    Operator2::Equal => Instruction::Mul,
-                    Operator2::NotEqual => Instruction::Mul,
-                    Operator2::GreaterEqual => Instruction::Mul,
-                    Operator2::GreaterThan => Instruction::Mul,
-                    Operator2::LessEqual => Instruction::Mul,
-                    Operator2::LessThan => Instruction::Mul,
-                    */
+                    Operator2::Equal => Instruction::Eq,
+                    Operator2::NotEqual => Instruction::Ne,
+                    Operator2::GreaterEqual => Instruction::Ge,
+                    Operator2::GreaterThan => Instruction::Gt,
+                    Operator2::LessEqual => Instruction::Le,
+                    Operator2::LessThan => Instruction::Lt,
                 };
                 runtime.emit(inx);
             }

@@ -118,30 +118,36 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 let first = ctx.pop_value().unwrap();
                 ctx.push_value(!first);
             }
-            Instruction::Cmp => {
-                use std::cmp::Ordering;
+            Instruction::Eq => {
                 let first = ctx.pop_value().unwrap();
                 let second = ctx.pop_value().unwrap();
-                let ordering = first.partial_cmp(&second).unwrap();
-                match ordering {
-                    Ordering::Less => ctx.push_value(RuValue::Int(-1)),
-                    Ordering::Equal => ctx.push_value(RuValue::Int(0)),
-                    Ordering::Greater => ctx.push_value(RuValue::Int(1)),
-                }
+                ctx.push_value(RuValue::Bool(first == second));
             }
+            Instruction::Ne => unimplemented!(),
+            Instruction::Ge => unimplemented!(),
+            Instruction::Gt => unimplemented!(),
+            Instruction::Le => unimplemented!(),
+            Instruction::Lt => unimplemented!(),
             Instruction::Jmp(addr) => {
                 ip = *addr as usize;
                 continue;
             }
-            Instruction::Jeq(addr) => {
+            Instruction::Jt(addr) => {
                 let first = ctx.pop_value().unwrap();
-                if first == RuValue::Int(0) {
+                // TODO: allow to_bool conversion
+                if first == RuValue::Bool(true) {
                     ip = *addr as usize;
                     continue;
                 }
             }
-            Instruction::Jgt(_addr) => {}
-            Instruction::Jlt(_addr) => {}
+            Instruction::Jf(addr) => {
+                let first = ctx.pop_value().unwrap();
+                // TODO: allow to_bool conversion
+                if first == RuValue::Bool(false) {
+                    ip = *addr as usize;
+                    continue;
+                }
+            }
             Instruction::Call(argn, gidx) => {
                 let func = &co.globals[*gidx as usize];
 

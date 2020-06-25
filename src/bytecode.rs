@@ -22,12 +22,17 @@ pub enum Instruction {
     And,
     Or,
     Not,
-    Cmp,
+
+    Eq,
+    Ne,
+    Ge,
+    Gt,
+    Le,
+    Lt,
 
     Jmp(u16),
-    Jeq(u16),
-    Jgt(u16),
-    Jlt(u16),
+    Jt(u16),
+    Jf(u16),
 
     // call function with `argn`, `global index`
     Call(u8, u16),
