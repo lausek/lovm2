@@ -1,6 +1,6 @@
 use crate::bytecode::Instruction;
 use crate::code::{CodeObject, CodeObjectBuilder};
-use crate::hir::{HIRElement, HIR};
+use crate::hir::HIR;
 use crate::value::CoValue;
 use crate::var::Variable;
 

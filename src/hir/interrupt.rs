@@ -1,6 +1,5 @@
 use crate::bytecode::Instruction;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
-use crate::hir::HIRElement;
 
 pub struct Interrupt {
     n: u16,

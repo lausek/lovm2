@@ -14,7 +14,6 @@ use crate::branch::Branch;
 use crate::code::CodeObject;
 use crate::element::HIRElement;
 use crate::expr::Expr;
-use crate::interrupt::Interrupt;
 use crate::lowering::LoweringRuntime;
 use crate::value::CoValue;
 use crate::var::Variable;
