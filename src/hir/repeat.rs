@@ -53,7 +53,7 @@ impl Repeat {
     where
         T: Into<HIRElement>,
     {
-        self.block.push(hir.into());
+        self.block.push_inplace(hir.into());
         self
     }
 }

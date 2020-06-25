@@ -8,7 +8,15 @@ impl Block {
         Self(vec![])
     }
 
-    pub fn push<T>(&mut self, hir: T)
+    pub fn push<T>(mut self, hir: T) -> Self
+    where
+        T: Into<HIRElement>,
+    {
+        self.0.push(hir.into());
+        self
+    }
+
+    pub fn push_inplace<T>(&mut self, hir: T)
     where
         T: Into<HIRElement>,
     {

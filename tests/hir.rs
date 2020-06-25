@@ -1,3 +1,4 @@
+use lovm2::block::Block;
 use lovm2::expr::Expr;
 use lovm2::hir::prelude::*;
 use lovm2::value::RuValue;
@@ -114,6 +115,30 @@ fn explicit_break() {
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(RuValue::Int(1), *frame.locals.get("n").unwrap());
+        })
+    }
+}
+
+#[test]
+fn true_branching() {
+    define_test! {
+        main {
+            Assign::local("n".into(), CoValue::Int(0).into());
+            Branch::new()
+                    .add_condition(
+                        Expr::not(CoValue::Bool(true).into()),
+                        Block::new()
+                                .push(Assign::local("n".into(), CoValue::Int(2).into()))
+                    )
+                    .default_condition(
+                        Block::new()
+                                .push(Assign::local("n".into(), CoValue::Int(1).into()))
+                    );
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(2), *frame.locals.get("n").unwrap());
         })
     }
 }

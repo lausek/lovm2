@@ -14,6 +14,16 @@ impl Branch {
             default: None,
         }
     }
+
+    pub fn add_condition(mut self, condition: Expr, block: Block) -> Self {
+        self.branches.push((condition, block));
+        self
+    }
+
+    pub fn default_condition(mut self, block: Block) -> Self {
+        self.default = Some(block);
+        self
+    }
 }
 
 // TODO: lowering for branches:

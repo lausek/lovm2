@@ -27,6 +27,7 @@ impl Vm {
     }
 
     pub fn run_object(&mut self, co: &dyn CallProtocol) -> Result<(), String> {
+        // TODO: refactor this into an own function and use in `run_bytecode` as well
         self.ctx.push_frame(0);
         co.run(&mut self.ctx)?;
         self.ctx.pop_frame();
@@ -79,6 +80,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 ctx.push_value(last);
             }
             Instruction::Swap => {}
+            // TODO: create macro for these simple operations; rely on std::ops trait, not operator
             Instruction::Add => {
                 let first = ctx.pop_value().unwrap();
                 let second = ctx.pop_value().unwrap();
