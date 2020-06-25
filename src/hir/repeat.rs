@@ -81,12 +81,9 @@ impl Lowering for Repeat {
 
         // add a jump to the start of the loop. this is equal to
         // a continue statement.
-        runtime.emit(Instruction::Jmp(std::u16::MAX));
-        let offset = runtime.offset();
-        runtime.loop_mut().unwrap().add_continue(offset);
+        Continue::new().lower(runtime);
 
         let lowering_loop = runtime.pop_loop().unwrap();
-
         patch_addr(runtime, &lowering_loop.breaks, lowering_loop.end.unwrap());
         patch_addr(runtime, &lowering_loop.continues, lowering_loop.start);
     }
@@ -95,11 +92,31 @@ impl Lowering for Repeat {
 pub struct Break {}
 
 impl Lowering for Break {
-    fn lower(self, _runtime: &mut LoweringRuntime) {}
+    fn lower(self, runtime: &mut LoweringRuntime) {
+        runtime.emit(Instruction::Jmp(std::u16::MAX));
+        let offset = runtime.offset();
+        runtime.loop_mut().unwrap().add_break(offset);
+    }
+}
+
+impl Break {
+    pub fn new() -> Self {
+        Self {}
+    }
 }
 
 pub struct Continue {}
 
+impl Continue {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl Lowering for Continue {
-    fn lower(self, _runtime: &mut LoweringRuntime) {}
+    fn lower(self, runtime: &mut LoweringRuntime) {
+        runtime.emit(Instruction::Jmp(std::u16::MAX));
+        let offset = runtime.offset();
+        runtime.loop_mut().unwrap().add_continue(offset);
+    }
 }

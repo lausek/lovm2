@@ -41,5 +41,8 @@ impl Branch {
 //        - repeat until all addresses are patched
 impl Lowering for Branch {
     fn lower(self, _runtime: &mut LoweringRuntime) {
+        if self.branches.is_empty() && self.default.is_some() {
+            panic!("cannot lower branch: no conditions");
+        }
     }
 }

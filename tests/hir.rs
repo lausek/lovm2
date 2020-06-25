@@ -100,3 +100,20 @@ fn easy_loop() {
         })
     }
 }
+
+#[test]
+fn explicit_break() {
+    define_test! {
+        main {
+            Assign::local("n".into(), CoValue::Int(0).into());
+            Repeat::endless()
+                    .push(Assign::local("n".into(), Expr::add(Variable::from("n").into(), CoValue::Int(1).into())))
+                    .push(Break::new());
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(1), *frame.locals.get("n").unwrap());
+        })
+    }
+}
