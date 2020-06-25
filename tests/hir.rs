@@ -9,7 +9,7 @@ use lovm2::ModuleBuilder;
 macro_rules! define_test {
     {
         $( $fname:ident { $( $inx:expr ; )* } )*
-        #ensure $ensure:tt
+            #ensure $ensure:tt
     } => {{
         let mut builder = ModuleBuilder::new();
         let called = std::rc::Rc::new(std::cell::Cell::new(false));
@@ -20,7 +20,7 @@ macro_rules! define_test {
                 $(
                     hir.push($inx);
                 )*
-                hir.push(Interrupt::new(10));
+                    hir.push(Interrupt::new(10));
                 hir
             };
             builder.add(stringify!($fname)).hir(hir);
@@ -80,6 +80,23 @@ fn rem_lowering() {
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(RuValue::Int(1), *frame.locals.get("rest").unwrap());
+        })
+    }
+}
+
+#[test]
+fn easy_loop() {
+    define_test! {
+        main {
+            Assign::local("n".into(), CoValue::Int(0).into());
+            Repeat::until(Expr::eq(Variable::from("n").into(), CoValue::Int(10).into()))
+                    .push(Call::new("print").arg(Variable::from("n")))
+                    .push(Assign::local("n".into(), Expr::add(Variable::from("n").into(), CoValue::Int(1).into())));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(10), *frame.locals.get("n").unwrap());
         })
     }
 }

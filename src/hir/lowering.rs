@@ -9,9 +9,9 @@ pub trait Lowering {
 }
 
 pub struct LoweringLoop {
-    start: usize,
-    breaks: Vec<usize>,
-    continues: Vec<usize>,
+    pub start: usize,
+    pub breaks: Vec<usize>,
+    pub continues: Vec<usize>,
 }
 
 impl LoweringLoop {
@@ -22,8 +22,6 @@ impl LoweringLoop {
             continues: vec![],
         }
     }
-
-    pub fn complete(self) {}
 }
 
 pub struct LoweringRuntime {
@@ -50,15 +48,7 @@ impl LoweringRuntime {
         let hir_elements = hir.code.into_iter();
 
         for element in hir_elements {
-            match element {
-                HIRElement::Assign(assign) => assign.lower(&mut lowru),
-                HIRElement::Branch(branch) => branch.lower(&mut lowru),
-                HIRElement::Break(cmd) => cmd.lower(&mut lowru),
-                HIRElement::Call(call) => call.lower(&mut lowru),
-                HIRElement::Continue(cmd) => cmd.lower(&mut lowru),
-                HIRElement::Interrupt(interrupt) => interrupt.lower(&mut lowru),
-                HIRElement::Repeat(repeat) => repeat.lower(&mut lowru),
-            }
+            element.lower(&mut lowru);
         }
 
         CodeObjectBuilder::new()

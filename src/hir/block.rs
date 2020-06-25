@@ -3,6 +3,23 @@ use crate::hir::HIRElement;
 
 pub struct Block(Vec<HIRElement>);
 
+impl Block {
+    pub fn new() -> Self {
+        Self(vec![])
+    }
+
+    pub fn push<T>(&mut self, hir: T)
+    where
+        T: Into<HIRElement>,
+    {
+        self.0.push(hir.into());
+    }
+}
+
 impl Lowering for Block {
-    fn lower(self, _runtime: &mut LoweringRuntime) {}
+    fn lower(self, runtime: &mut LoweringRuntime) {
+        for element in self.0.into_iter() {
+            element.lower(runtime);
+        }
+    }
 }
