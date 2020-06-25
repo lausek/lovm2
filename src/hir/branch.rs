@@ -27,7 +27,7 @@ impl Branch {
     }
 }
 
-// TODO: lowering for branches:
+// lowering for branches:
 // - push a new LoweringBranch onto branches_stack
 // - whenever a new condition gets lowered
 //    - create a new LoweringCondition in top LoweringBranch
@@ -59,7 +59,9 @@ impl Lowering for Branch {
         runtime.push_branch();
 
         for (condition, block) in self.branches.into_iter() {
-            let offset = runtime.offset();
+            // adjust offset by one, because no condition instruction
+            // was emitted yet
+            let offset = runtime.offset() + 1;
             runtime.branch_mut().unwrap().add_condition(offset);
 
             condition.lower(runtime);

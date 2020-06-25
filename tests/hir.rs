@@ -142,3 +142,32 @@ fn true_branching() {
         })
     }
 }
+
+#[test]
+fn multiple_branches() {
+    define_test! {
+        main {
+            Assign::local("n".into(), CoValue::Int(5).into());
+            Branch::new()
+                    .add_condition(
+                        Expr::eq(Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()), CoValue::Int(0).into()),
+                        Block::new()
+                                .push(Assign::local("result".into(), CoValue::Str("fizz".to_string()).into()))
+                    )
+                    .add_condition(
+                        Expr::eq(Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()), CoValue::Int(0).into()),
+                        Block::new()
+                                .push(Assign::local("result".into(), CoValue::Str("buzz".to_string()).into()))
+                    )
+                    .default_condition(
+                        Block::new()
+                                .push(Assign::local("result".into(), CoValue::Str("none".to_string()).into()))
+                    );
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Str("buzz".to_string()), *frame.locals.get("result").unwrap());
+        })
+    }
+}

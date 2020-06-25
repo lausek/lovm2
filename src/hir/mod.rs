@@ -39,6 +39,7 @@ impl HIR {
     }
 
     pub fn build(self) -> Result<CodeObject, String> {
+        // TODO: optimise codeobject here; eg. `Not, Jf` is equal to `Jt`
         LoweringRuntime::complete(self)
     }
 

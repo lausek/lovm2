@@ -10,11 +10,30 @@ fn true_branching() -> ModuleBuilder {
     let mut hir = HIR::new();
     let branch = Branch::new()
         .add_condition(
-            Expr::not(CoValue::Bool(true).into()),
-            Block::new().push(Assign::local("n".into(), CoValue::Int(2).into())),
+            Expr::eq(
+                Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()),
+                CoValue::Int(0).into(),
+            ),
+            Block::new().push(Assign::local(
+                "result".into(),
+                CoValue::Str("fizz".to_string()).into(),
+            )),
         )
-        .default_condition(Block::new().push(Assign::local("n".into(), CoValue::Int(1).into())));
-    hir.push(Assign::local("n".into(), CoValue::Int(0).into()));
+        .add_condition(
+            Expr::eq(
+                Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()),
+                CoValue::Int(0).into(),
+            ),
+            Block::new().push(Assign::local(
+                "result".into(),
+                CoValue::Str("buzz".to_string()).into(),
+            )),
+        )
+        .default_condition(Block::new().push(Assign::local(
+            "result".into(),
+            CoValue::Str("none".to_string()).into(),
+        )));
+    hir.push(Assign::local("n".into(), CoValue::Int(5).into()));
     hir.push(branch);
 
     builder.add("main").hir(hir);
