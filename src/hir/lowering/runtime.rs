@@ -4,41 +4,15 @@ use crate::hir::{HIRElement, HIR};
 use crate::value::CoValue;
 use crate::var::Variable;
 
-pub trait Lowering {
-    fn lower(self, runtime: &mut LoweringRuntime);
-}
-
-pub struct LoweringLoop {
-    pub start: usize,
-    pub end: Option<usize>,
-    pub breaks: Vec<usize>,
-    pub continues: Vec<usize>,
-}
-
-impl LoweringLoop {
-    pub fn from(start: usize) -> Self {
-        Self {
-            start,
-            end: None,
-            breaks: vec![],
-            continues: vec![],
-        }
-    }
-
-    pub fn add_break(&mut self, idx: usize) {
-        self.breaks.push(idx);
-    }
-
-    pub fn add_continue(&mut self, idx: usize) {
-        self.continues.push(idx);
-    }
-}
+use super::*;
 
 pub struct LoweringRuntime {
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
     pub code: Vec<Instruction>,
+
+    branch_stack: Vec<LoweringBranch>,
     loop_stack: Vec<LoweringLoop>,
 }
 
@@ -49,6 +23,8 @@ impl LoweringRuntime {
             locals: vec![],
             globals: vec![],
             code: vec![],
+
+            branch_stack: vec![],
             loop_stack: vec![],
         }
     }
@@ -121,6 +97,24 @@ impl LoweringRuntime {
             // point at offset after block
             lowering_loop.end = Some(self.offset() + 1);
             Some(lowering_loop)
+        } else {
+            None
+        }
+    }
+
+    pub fn branch_mut(&mut self) -> Option<&mut LoweringBranch> {
+        self.branch_stack.last_mut()
+    }
+
+    pub fn push_branch(&mut self) -> &mut LoweringBranch {
+        self.branch_stack.push(LoweringBranch::from(self.code.len()));
+        self.branch_stack.last_mut().unwrap()
+    }
+
+    pub fn pop_branch(&mut self) -> Option<LoweringBranch> {
+        if let Some(mut lowering_branch) = self.branch_stack.pop() {
+            lowering_branch.end = Some(self.offset() + 1);
+            Some(lowering_branch)
         } else {
             None
         }
