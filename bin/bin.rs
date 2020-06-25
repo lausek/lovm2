@@ -1,7 +1,26 @@
+use lovm2::block::Block;
 use lovm2::expr::Expr;
 use lovm2::hir::prelude::*;
 use lovm2::module::ModuleBuilder;
 use lovm2::vm::Vm;
+
+fn true_branching() -> ModuleBuilder {
+    let mut builder = ModuleBuilder::new();
+
+    let mut hir = HIR::new();
+    let branch = Branch::new()
+        .add_condition(
+            Expr::not(CoValue::Bool(true).into()),
+            Block::new().push(Assign::local("n".into(), CoValue::Int(2).into())),
+        )
+        .default_condition(Block::new().push(Assign::local("n".into(), CoValue::Int(1).into())));
+    hir.push(Assign::local("n".into(), CoValue::Int(0).into()));
+    hir.push(branch);
+
+    builder.add("main").hir(hir);
+
+    builder
+}
 
 fn looping() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
@@ -58,7 +77,7 @@ fn create_greet() -> ModuleBuilder {
 }
 
 fn main() {
-    let builder = looping();
+    let builder = true_branching();
 
     match builder.build() {
         Ok(result) => {

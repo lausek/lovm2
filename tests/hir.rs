@@ -126,7 +126,7 @@ fn true_branching() {
             Assign::local("n".into(), CoValue::Int(0).into());
             Branch::new()
                     .add_condition(
-                        Expr::not(CoValue::Bool(true).into()),
+                        Expr::not(CoValue::Bool(false).into()),
                         Block::new()
                                 .push(Assign::local("n".into(), CoValue::Int(2).into()))
                     )

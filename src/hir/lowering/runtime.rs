@@ -30,6 +30,7 @@ impl LoweringRuntime {
     }
 
     pub fn offset(&self) -> usize {
+        // TODO: avoid 0 - 1
         self.code.len() - 1
     }
 
@@ -107,7 +108,8 @@ impl LoweringRuntime {
     }
 
     pub fn push_branch(&mut self) -> &mut LoweringBranch {
-        self.branch_stack.push(LoweringBranch::from(self.code.len()));
+        self.branch_stack
+            .push(LoweringBranch::from(self.code.len()));
         self.branch_stack.last_mut().unwrap()
     }
 

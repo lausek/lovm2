@@ -2,27 +2,7 @@ use crate::bytecode::Instruction;
 use crate::hir::block::Block;
 use crate::hir::element::HIRElement;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
-
-fn patch_addr(runtime: &mut LoweringRuntime, positions: &Vec<usize>, addr: usize) {
-    let addr = addr as u16;
-    for pos in positions.iter() {
-        if let Some(inx) = runtime.code.get_mut(*pos) {
-            let unaddr = match inx {
-                Instruction::Jmp(ref mut unaddr) => unaddr,
-                Instruction::Jt(ref mut unaddr) => unaddr,
-                Instruction::Jf(ref mut unaddr) => unaddr,
-                _ => unimplemented!(),
-            };
-            if *unaddr != std::u16::MAX {
-                panic!("address is already initialized");
-            }
-            *unaddr = addr;
-        } else {
-            unreachable!();
-        }
-    }
-}
+use crate::hir::lowering::{patch_addrs, Lowering, LoweringRuntime};
 
 pub enum RepeatKind {
     Until(Expr),
@@ -84,8 +64,8 @@ impl Lowering for Repeat {
         Continue::new().lower(runtime);
 
         let lowering_loop = runtime.pop_loop().unwrap();
-        patch_addr(runtime, &lowering_loop.breaks, lowering_loop.end.unwrap());
-        patch_addr(runtime, &lowering_loop.continues, lowering_loop.start);
+        patch_addrs(runtime, &lowering_loop.breaks, lowering_loop.end.unwrap());
+        patch_addrs(runtime, &lowering_loop.continues, lowering_loop.start);
     }
 }
 
