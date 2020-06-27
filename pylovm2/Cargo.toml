@@ -1,0 +1,17 @@
+[package]
+name = "pylovm2"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "pylovm2"
+crate-type = ["cdylib"]
+
+[dependencies]
+shrinkwraprs = "0.3.0"
+lovm2 = { git = "https://github.com/lausek/lovm2" }
+
+[dependencies.pyo3]
+version = "0.10.1"
+features = ["extension-module"]
