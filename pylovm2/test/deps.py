@@ -31,7 +31,7 @@ class Test:
 
 class Internals:
     def __init__(self):
-        pass
+        self.vm = pylovm2.Vm()
 
 @pytest.fixture
 def internals():

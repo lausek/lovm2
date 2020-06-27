@@ -1,4 +1,6 @@
+mod code;
 mod hir;
+mod module;
 mod vm;
 
 use pyo3::prelude::*;
