@@ -37,7 +37,7 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add<'p>(&'p mut self, py: Python, name: String) -> Py<ModuleBuilderSlot>
+    pub fn add(&mut self, py: Python, name: String) -> Py<ModuleBuilderSlot>
     {
         let inst = Py::new(py, ModuleBuilderSlot::new()).unwrap();
         self.slots.insert(name.clone(), inst);
