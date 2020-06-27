@@ -29,6 +29,10 @@ fn input(ctx: &mut Context) -> Result<(), String> {
     Ok(())
 }
 
+// TODO: implement `set` for adding objects to a list/dict
+// TODO: implement `get` for retrieving objects from a list/dict
+// TODO: implement `len` for getting size of list/dict
+
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 
