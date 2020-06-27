@@ -89,6 +89,15 @@ impl ModuleBuilderSlot {
         Ok(())
     }
 
+    pub fn assign_global(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+        use lovm2::prelude::*;
+        self.inner
+            .as_mut()
+            .unwrap()
+            .push(Assign::global(n, any_to_expr(expr)?));
+        Ok(())
+    }
+
     #[args(args = "*")]
     pub fn call(&mut self, name: String, args: &PyTuple) -> PyResult<()> {
         use lovm2::prelude::*;

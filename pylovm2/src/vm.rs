@@ -2,6 +2,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
 use crate::module::Module;
+use crate::value::RuValue;
 
 #[pyclass]
 pub struct Vm {
@@ -34,5 +35,12 @@ impl Vm {
             Ok(_) => Ok(()),
             Err(msg) => TypeError::into(msg),
         }
+    }
+
+    pub fn globals(&mut self, py: Python, name: String) -> Option<RuValue> {
+        if let Some(val) = self.inner.context_mut().globals.get(&name).cloned() {
+            return Some(RuValue::from(val));
+        }
+        None
     }
 }

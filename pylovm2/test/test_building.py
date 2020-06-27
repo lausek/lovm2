@@ -14,6 +14,23 @@ class TestBuilding(Test):
 
         self.assertIsInstance(result, pylovm2.hir.Module)
 
+    def test_assign_global(self, internals):
+        main_hir = internals.main
+        main_hir.assign_global('n', 5)
+
+        result = internals.mod.build()
+
+        self.assertIsInstance(result, pylovm2.hir.Module)
+
+        internals.vm.load(result)
+        internals.vm.run()
+
+        val = internals.vm.globals('n')
+
+        print(val.__str__())
+
+        self.assertEqual(val, 1)
+
     def test_expressions(self, internals):
         Expr = pylovm2.hir.Expr
 

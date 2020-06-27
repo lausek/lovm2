@@ -2,6 +2,7 @@ mod code;
 mod expr;
 mod hir;
 mod module;
+mod value;
 mod vm;
 
 use pyo3::prelude::*;
