@@ -37,7 +37,7 @@ impl Vm {
         }
     }
 
-    pub fn globals(&mut self, py: Python, name: String) -> Option<RuValue> {
+    pub fn globals(&mut self, name: String) -> Option<RuValue> {
         if let Some(val) = self.inner.context_mut().globals.get(&name).cloned() {
             return Some(RuValue::from(val));
         }

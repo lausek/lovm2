@@ -1,4 +1,3 @@
-use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
 type Lovm2RuValue = lovm2::value::RuValueRef;
@@ -10,9 +9,7 @@ pub struct RuValue {
 
 impl RuValue {
     pub fn from(inner: Lovm2RuValue) -> Self {
-        Self {
-            inner,
-        }
+        Self { inner }
     }
 }
 

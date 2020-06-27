@@ -12,7 +12,7 @@ class TestBuilding(Test):
 
         result = internals.mod.build()
 
-        self.assertIsInstance(result, pylovm2.hir.Module)
+        self.assertIsInstance(result, pylovm2.Module)
 
     def test_assign_global(self, internals):
         main_hir = internals.main
@@ -20,7 +20,7 @@ class TestBuilding(Test):
 
         result = internals.mod.build()
 
-        self.assertIsInstance(result, pylovm2.hir.Module)
+        self.assertIsInstance(result, pylovm2.Module)
 
         internals.vm.load(result)
         internals.vm.run()
@@ -32,7 +32,7 @@ class TestBuilding(Test):
         self.assertEqual(val, 1)
 
     def test_expressions(self, internals):
-        Expr = pylovm2.hir.Expr
+        Expr = pylovm2.Expr
 
         main_hir = internals.main
         main_hir.assign('a', Expr.add(1, 1))
@@ -46,14 +46,14 @@ class TestBuilding(Test):
 
         result = internals.mod.build()
 
-        self.assertIsInstance(result, pylovm2.hir.Module)
+        self.assertIsInstance(result, pylovm2.Module)
 
     def test_expression_deep(self, internals):
-        Expr = pylovm2.hir.Expr
+        Expr = pylovm2.Expr
 
         main_hir = internals.main
         main_hir.assign('a', Expr.eq(Expr.rem(15, 5), 0))
 
         result = internals.mod.build()
 
-        self.assertIsInstance(result, pylovm2.hir.Module)
+        self.assertIsInstance(result, pylovm2.Module)
