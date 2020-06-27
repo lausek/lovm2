@@ -2,7 +2,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::module::{create_standard_module, Module};
-use crate::value::RuValue;
+use crate::value::{box_ruvalue, RuValue};
 
 pub const ENTRY_POINT: &str = "main";
 
@@ -54,8 +54,9 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
             }
             Instruction::Pushg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
-                let global = ctx.globals.get(variable).cloned();
-                ctx.push_value(global.unwrap());
+                let global = ctx.globals.get(variable).unwrap();
+                let global = global.borrow().clone();
+                ctx.push_value(global);
             }
             Instruction::Pushc(cidx) => {
                 use crate::value;
@@ -73,7 +74,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
             Instruction::Moveg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
                 let value = ctx.pop_value().unwrap();
-                ctx.globals.insert(variable.clone(), value);
+                ctx.globals.insert(variable.clone(), box_ruvalue(value));
             }
             Instruction::Dup => {
                 let last = ctx.stack_mut().last().cloned().unwrap();

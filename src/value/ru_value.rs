@@ -8,6 +8,11 @@ pub type RuDict = HashMap<Variable, RuValue>;
 pub type RuDictRef = Rc<RefCell<RuDict>>;
 pub type RuList = Vec<RuValue>;
 pub type RuListRef = Rc<RefCell<RuList>>;
+pub type RuValueRef = Rc<RefCell<RuValue>>;
+
+pub fn box_ruvalue(value: RuValue) -> RuValueRef {
+    Rc::new(RefCell::new(value))
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RuValue {

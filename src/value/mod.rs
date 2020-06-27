@@ -9,7 +9,7 @@ use std::rc::Rc;
 use crate::context::Context;
 
 pub use self::co_value::CoValue;
-pub use self::ru_value::RuValue;
+pub use self::ru_value::{box_ruvalue, RuValue, RuValueRef};
 
 pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
     match covalue {

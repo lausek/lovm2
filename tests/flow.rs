@@ -34,7 +34,7 @@ fn store_global() {
 
     assert_eq!(
         RuValue::Int(42),
-        vm.context_mut().globals.get("globaln").cloned().unwrap()
+        *vm.context_mut().globals.get("globaln").unwrap().borrow()
     );
 }
 
@@ -72,19 +72,19 @@ fn calculation() {
 
     assert_eq!(
         RuValue::Int(5),
-        vm.context_mut().globals.get("result_add").cloned().unwrap()
+        *vm.context_mut().globals.get("result_add").unwrap().borrow()
     );
     assert_eq!(
         RuValue::Int(-1),
-        vm.context_mut().globals.get("result_sub").cloned().unwrap()
+        *vm.context_mut().globals.get("result_sub").unwrap().borrow()
     );
     assert_eq!(
         RuValue::Int(6),
-        vm.context_mut().globals.get("result_mul").cloned().unwrap()
+        *vm.context_mut().globals.get("result_mul").unwrap().borrow()
     );
     assert_eq!(
         RuValue::Int(0),
-        vm.context_mut().globals.get("result_div").cloned().unwrap()
+        *vm.context_mut().globals.get("result_div").unwrap().borrow()
     );
 }
 
@@ -127,6 +127,6 @@ fn jumping() {
 
     assert_eq!(
         RuValue::Str("aaaaaaaaaa".to_string()),
-        vm.context_mut().globals.get("output").cloned().unwrap()
+        *vm.context_mut().globals.get("output").unwrap().borrow()
     );
 }

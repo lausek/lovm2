@@ -4,14 +4,14 @@ use std::rc::Rc;
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
 use crate::module::Module;
-use crate::value::RuValue;
+use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
 pub type InterruptFn = dyn Fn(&mut Context) -> ();
 
 pub struct Context {
     pub modules: Vec<Module>,
-    pub globals: HashMap<Variable, RuValue>,
+    pub globals: HashMap<Variable, RuValueRef>,
     pub scope: HashMap<Variable, CodeObjectRef>,
     pub interrupts: [Option<Rc<Box<InterruptFn>>>; 256],
 
