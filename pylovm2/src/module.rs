@@ -7,38 +7,9 @@ use pyo3::types::PyTuple;
 
 use lovm2::hir;
 use lovm2::module;
-use lovm2::value;
 
 use crate::code::CodeObject;
-
-fn any_to_expr(any: &PyAny) -> PyResult<hir::expr::Expr> {
-    use hir::expr::Expr;
-    use value::CoValue;
-
-    match any.get_type().name().as_ref() {
-        "str" => {
-            let data = any.str().unwrap().to_string()?;
-            Ok(Expr::Value(CoValue::Str(data.to_string())))
-        }
-        "bool" => {
-            let data = any.extract::<bool>()?;
-            Ok(Expr::Value(CoValue::Bool(data)))
-        }
-        "int" => {
-            let data = any.extract::<i64>()?;
-            Ok(Expr::Value(CoValue::Int(data)))
-        }
-        "float" => {
-            let data = any.extract::<f64>()?;
-            Ok(Expr::Value(CoValue::Float(data)))
-        }
-        /*
-        "list" => {}
-        "dict" => {}
-        */
-        _ => TypeError::into("value cannot be converted to expression"),
-    }
-}
+use crate::expr::any_to_expr;
 
 #[pyclass]
 pub struct Module {
@@ -47,9 +18,14 @@ pub struct Module {
 
 impl Module {
     pub fn from(inner: module::Module) -> Self {
-        Self {
-            inner: Some(inner),
-        }
+        Self { inner: Some(inner) }
+    }
+}
+
+#[pymethods]
+impl Module {
+    pub fn __str__(&self) -> String {
+        format!("{:#?}", self.inner.as_ref().unwrap())
     }
 }
 
@@ -67,8 +43,7 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add(&mut self, py: Python, name: String) -> Py<ModuleBuilderSlot>
-    {
+    pub fn add(&mut self, py: Python, name: String) -> Py<ModuleBuilderSlot> {
         let inst = Py::new(py, ModuleBuilderSlot::new()).unwrap();
         self.slots.insert(name.clone(), inst);
         self.slots.get(&name).unwrap().clone_ref(py)
@@ -100,12 +75,17 @@ pub struct ModuleBuilderSlot {
 impl ModuleBuilderSlot {
     #[new]
     pub fn new() -> Self {
-        Self { inner: Some(hir::HIR::new()) }
+        Self {
+            inner: Some(hir::HIR::new()),
+        }
     }
 
     pub fn assign(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
         use lovm2::prelude::*;
-        self.inner.as_mut().unwrap().push(Assign::local(n, any_to_expr(expr)?));
+        self.inner
+            .as_mut()
+            .unwrap()
+            .push(Assign::local(n, any_to_expr(expr)?));
         Ok(())
     }
 

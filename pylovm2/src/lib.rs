@@ -1,4 +1,5 @@
 mod code;
+mod expr;
 mod hir;
 mod module;
 mod vm;

@@ -17,8 +17,6 @@ impl code::CallProtocol for CodeObject {
 
 impl CodeObject {
     pub fn from(inner: code::CodeObject) -> Self {
-        Self {
-            inner,
-        }
+        Self { inner }
     }
 }

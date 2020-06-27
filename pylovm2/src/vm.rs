@@ -18,7 +18,10 @@ impl Vm {
     }
 
     pub fn load(&mut self, module: &mut Module) -> PyResult<()> {
-        let module = module.inner.take().expect("module given was already loaded");
+        let module = module
+            .inner
+            .take()
+            .expect("module given was already loaded");
         // println!("{:#?}", module);
         if let Err(msg) = self.inner.load_and_import_all(module) {
             return TypeError::into(msg);
