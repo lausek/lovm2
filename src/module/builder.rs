@@ -7,7 +7,7 @@ use crate::module::Module;
 use crate::var::Variable;
 
 pub struct ModuleBuilder {
-    slots: HashMap<Variable, ModuleBuilderSlot>,
+    pub slots: HashMap<Variable, ModuleBuilderSlot>,
 }
 
 impl ModuleBuilder {
