@@ -3,6 +3,7 @@ use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::var::Variable;
 
+#[derive(Clone)]
 pub struct Call {
     name: Variable,
     args: Vec<Expr>,

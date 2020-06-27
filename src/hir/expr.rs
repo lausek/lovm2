@@ -17,6 +17,7 @@ macro_rules! auto_implement {
     };
 }
 
+#[derive(Clone)]
 pub enum Operator2 {
     Add,
     Sub,
@@ -34,10 +35,12 @@ pub enum Operator2 {
     LessThan,
 }
 
+#[derive(Clone)]
 pub enum Operator1 {
     Not,
 }
 
+#[derive(Clone)]
 pub enum Expr {
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Operation1(Operator1, Box<Expr>),
