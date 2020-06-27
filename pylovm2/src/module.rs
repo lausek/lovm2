@@ -3,12 +3,42 @@ use std::rc::Rc;
 
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
+use pyo3::types::PyTuple;
 
 use lovm2::hir;
 use lovm2::module;
 use lovm2::value;
 
 use crate::code::CodeObject;
+
+fn any_to_expr(any: &PyAny) -> PyResult<hir::expr::Expr> {
+    use hir::expr::Expr;
+    use value::CoValue;
+
+    match any.get_type().name().as_ref() {
+        "str" => {
+            let data = any.str().unwrap().to_string()?;
+            Ok(Expr::Value(CoValue::Str(data.to_string())))
+        }
+        "bool" => {
+            let data = any.extract::<bool>()?;
+            Ok(Expr::Value(CoValue::Bool(data)))
+        }
+        "int" => {
+            let data = any.extract::<i64>()?;
+            Ok(Expr::Value(CoValue::Int(data)))
+        }
+        "float" => {
+            let data = any.extract::<f64>()?;
+            Ok(Expr::Value(CoValue::Float(data)))
+        }
+        /*
+        "list" => {}
+        "dict" => {}
+        */
+        _ => TypeError::into("value cannot be converted to expression"),
+    }
+}
 
 #[pyclass]
 pub struct Module {
@@ -73,14 +103,21 @@ impl ModuleBuilderSlot {
         Self { inner: Some(hir::HIR::new()) }
     }
 
-    pub fn assign(&mut self, n: String, expr: i64) {
+    pub fn assign(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
         use lovm2::prelude::*;
-        self.inner.as_mut().unwrap().push(Assign::local(n, value::CoValue::Int(expr).into()));
+        self.inner.as_mut().unwrap().push(Assign::local(n, any_to_expr(expr)?));
+        Ok(())
     }
 
-    pub fn call(&mut self, name: String, arg1: String) {
+    #[args(args = "*")]
+    pub fn call(&mut self, name: String, args: &PyTuple) -> PyResult<()> {
         use lovm2::prelude::*;
-        self.inner.as_mut().unwrap().push(Call::new(name).arg(value::CoValue::Str(arg1)));
+        let mut call = Call::new(name);
+        for arg in args.into_iter() {
+            call = call.arg(any_to_expr(arg)?);
+        }
+        self.inner.as_mut().unwrap().push(call);
+        Ok(())
     }
 
     pub fn complete(&mut self) -> PyResult<CodeObject> {

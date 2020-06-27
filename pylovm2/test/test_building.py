@@ -8,6 +8,9 @@ class TestBuilding(Test):
 
         main_hir = mod.add("main")
         main_hir.assign("n", 5)
+        main_hir.assign("f", 5.0)
+        main_hir.assign("b", True)
+        main_hir.assign("s", "string")
 
         result = mod.build()
 
