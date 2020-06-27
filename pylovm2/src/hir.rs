@@ -32,7 +32,6 @@ impl CodeObject {
 #[pyclass]
 pub struct ModuleBuilderSlot {
     inner: Option<hir::HIR>,
-    // hir: Option<HIR>,
 }
 
 #[pymethods]
@@ -46,12 +45,6 @@ impl ModuleBuilderSlot {
         use lovm2::prelude::*;
         self.inner.as_mut().unwrap().push(Assign::local(n, value::CoValue::Int(expr).into()));
     }
-
-    /*
-       pub fn hir(&mut self, hir: HIR) {
-       self.hir = Some(hir);
-       }
-       */
 
     pub fn complete(&mut self) -> PyResult<CodeObject> {
         if let Some(hir) = self.inner.take() {
@@ -98,12 +91,15 @@ impl ModuleBuilder {
         self.slots.get(&name).unwrap().clone_ref(py)
     }
 
-    pub fn build(&mut self) -> PyResult<Module> {
+    pub fn build(&mut self, py: Python) -> PyResult<Module> {
         let mut module = module::Module::new();
 
         for (key, co_builder) in self.slots.drain() {
+            let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
             match co_builder.complete() {
-                Ok(co) => module.slots.insert(key, Rc::new(co)),
+                Ok(co) => {
+                    module.slots.insert(key, Rc::new(co));
+                }
                 Err(msg) => return Err(msg),
             }
         }
