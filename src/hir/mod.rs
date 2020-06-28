@@ -58,7 +58,7 @@ impl HIR {
         }
     }
 
-    pub fn repeat(&mut self, condition: Option<Expr>) -> &Repeat {
+    pub fn repeat(&mut self, condition: Option<Expr>) -> &mut Repeat {
         if let Some(condition) = condition {
             self.code.push(Repeat::until(condition).into());
         } else {
