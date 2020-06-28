@@ -109,6 +109,12 @@ impl ModuleBuilderSlot {
         Ok(())
     }
 
+    pub fn interrupt(&mut self, id: u16) -> PyResult<()> {
+        use lovm2::prelude::*;
+        self.inner.as_mut().unwrap().push(Interrupt::new(id));
+        Ok(())
+    }
+
     pub fn complete(&mut self) -> PyResult<CodeObject> {
         if let Some(hir) = self.inner.take() {
             return match hir.build() {

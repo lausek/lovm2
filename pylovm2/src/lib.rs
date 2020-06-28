@@ -1,4 +1,5 @@
 mod code;
+mod context;
 mod expr;
 mod module;
 mod value;

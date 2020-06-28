@@ -1,6 +1,7 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
+use crate::context::Context;
 use crate::module::Module;
 use crate::value::RuValue;
 
@@ -42,5 +43,27 @@ impl Vm {
             return Some(RuValue::from(val));
         }
         None
+    }
+
+    pub fn add_interrupt(&mut self, py: Python, id: u16, func: &PyAny) -> PyResult<()> {
+        use pyo3::types::PyTuple;
+
+        if !func.is_callable() {
+            return TypeError::into("given function is not callable");
+        }
+
+        let func = func.to_object(py);
+
+        self.inner.context_mut().set_interrupt(id, move |ctx| {
+            let guard = Python::acquire_gil();
+            let py = guard.python();
+
+            let ctx = Py::new(py, Context::new()).unwrap();
+            let args = PyTuple::new(py, vec![ctx]);
+
+            func.call1(py, args).unwrap();
+        });
+
+        Ok(())
     }
 }
