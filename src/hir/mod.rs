@@ -15,6 +15,7 @@ use crate::code::CodeObject;
 use crate::element::HIRElement;
 use crate::expr::Expr;
 use crate::lowering::LoweringRuntime;
+use crate::repeat::Repeat;
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -57,5 +58,15 @@ impl HIR {
         }
     }
 
-    pub fn repeat(&mut self, _condition: Option<Expr>) {}
+    pub fn repeat(&mut self, condition: Option<Expr>) -> &Repeat {
+        if let Some(condition) = condition {
+            self.code.push(Repeat::until(condition).into());
+        } else {
+            self.code.push(Repeat::endless().into());
+        }
+        match self.code.last_mut().unwrap() {
+            HIRElement::Repeat(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
 }
