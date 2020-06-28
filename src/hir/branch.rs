@@ -3,6 +3,7 @@ use crate::bytecode::Instruction;
 use crate::expr::Expr;
 use crate::hir::lowering::{patch_addr, Lowering, LoweringRuntime};
 
+#[derive(Clone)]
 pub struct Branch {
     branches: Vec<(Expr, Block)>,
     default: Option<Block>,

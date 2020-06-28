@@ -5,6 +5,7 @@ use crate::hir::interrupt::Interrupt;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::hir::repeat::{Break, Continue, Repeat};
 
+#[derive(Clone)]
 pub enum HIRElement {
     Assign(Assign),
     Branch(Branch),
@@ -68,5 +69,11 @@ impl From<Interrupt> for HIRElement {
 impl From<Repeat> for HIRElement {
     fn from(repeat: Repeat) -> Self {
         HIRElement::Repeat(repeat)
+    }
+}
+
+impl From<&mut Repeat> for HIRElement {
+    fn from(repeat: &mut Repeat) -> Self {
+        HIRElement::Repeat(repeat.clone())
     }
 }

@@ -45,17 +45,16 @@ fn looping() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
 
     let mut hir = HIR::new();
-    let repeat = Repeat::until(Expr::eq(
+    hir.push(Assign::local("n".into(), CoValue::Int(0).into()));
+    hir.repeat(Some(Expr::eq(
         Variable::from("n").into(),
         CoValue::Int(10).into(),
-    ))
+    )))
     .push(Call::new("print").arg(Variable::from("n")))
     .push(Assign::local(
         "n".into(),
         Expr::add(Variable::from("n").into(), CoValue::Int(1).into()),
     ));
-    hir.push(Assign::local("n".into(), CoValue::Int(0).into()));
-    hir.push(repeat);
 
     builder.add("main").hir(hir);
 

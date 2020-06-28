@@ -1,6 +1,7 @@
 use crate::bytecode::Instruction;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 
+#[derive(Clone)]
 pub struct Interrupt {
     n: u16,
 }

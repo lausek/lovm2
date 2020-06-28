@@ -1,6 +1,7 @@
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::hir::HIRElement;
 
+#[derive(Clone)]
 pub struct Block(Vec<HIRElement>);
 
 impl Block {

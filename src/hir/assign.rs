@@ -3,11 +3,13 @@ use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::var::Variable;
 
+#[derive(Clone)]
 pub enum AssignScope {
     Local,
     Global,
 }
 
+#[derive(Clone)]
 pub struct Assign {
     expr: Expr,
     variable: Variable,

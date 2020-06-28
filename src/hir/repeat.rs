@@ -4,11 +4,13 @@ use crate::hir::element::HIRElement;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{patch_addrs, Lowering, LoweringRuntime};
 
+#[derive(Clone)]
 pub enum RepeatKind {
     Until(Expr),
     Endless,
 }
 
+#[derive(Clone)]
 pub struct Repeat {
     block: Block,
     condition: RepeatKind,
@@ -29,7 +31,7 @@ impl Repeat {
         }
     }
 
-    pub fn push<T>(mut self, hir: T) -> Self
+    pub fn push<T>(&mut self, hir: T) -> &mut Self
     where
         T: Into<HIRElement>,
     {
@@ -69,6 +71,7 @@ impl Lowering for Repeat {
     }
 }
 
+#[derive(Clone)]
 pub struct Break {}
 
 impl Lowering for Break {
@@ -85,6 +88,7 @@ impl Break {
     }
 }
 
+#[derive(Clone)]
 pub struct Continue {}
 
 impl Continue {
