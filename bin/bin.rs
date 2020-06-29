@@ -14,8 +14,8 @@ fn true_branching() -> ModuleBuilder {
         .add_condition(Expr::eq(
             Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()),
             CoValue::Int(0).into(),
-        ))
-        .from(Block::new().push(Assign::local(
+        ));
+        .from(Block::new().with(Assign::local(
             "result".into(),
             CoValue::Str("fizz".to_string()).into(),
         )));
@@ -25,14 +25,14 @@ fn true_branching() -> ModuleBuilder {
             Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()),
             CoValue::Int(0).into(),
         ))
-        .from(Block::new().push(Assign::local(
+        .from(Block::new().with(Assign::local(
             "result".into(),
             CoValue::Str("buzz".to_string()).into(),
         )));
 
     branch
         .default_condition()
-        .from(Block::new().push(Assign::local(
+        .from(Block::new().with(Assign::local(
             "result".into(),
             CoValue::Str("none".to_string()).into(),
         )));
@@ -50,13 +50,14 @@ fn looping() -> ModuleBuilder {
 
     let mut hir = HIR::new();
     let code = &mut hir.code;
-    code.push_inplace(Assign::local("n".into(), CoValue::Int(0).into()));
+    code.push(Assign::local("n".into(), CoValue::Int(0).into()));
+
     let repeat = code.repeat(Some(Expr::eq(
         Variable::from("n").into(),
         CoValue::Int(10).into(),
     )));
-    code.push_inplace(Call::new("print").arg(Variable::from("n")));
-    code.push_inplace(Assign::local(
+    repeat.push(Call::new("print").arg(Variable::from("n")));
+    repeat.push(Assign::local(
         "n".into(),
         Expr::add(Variable::from("n").into(), CoValue::Int(1).into()),
     ));

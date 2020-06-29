@@ -13,7 +13,6 @@ pub mod prelude;
 use crate::block::Block;
 use crate::code::CodeObject;
 use crate::element::HIRElement;
-use crate::expr::Expr;
 use crate::lowering::LoweringRuntime;
 use crate::value::CoValue;
 use crate::var::Variable;
@@ -46,6 +45,6 @@ impl HIR {
     where
         T: Into<HIRElement>,
     {
-        self.code.push_inplace(element.into());
+        self.code.push(element.into());
     }
 }

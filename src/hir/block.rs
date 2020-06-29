@@ -24,7 +24,7 @@ impl Block {
         self.0.into_iter()
     }
 
-    pub fn push<T>(mut self, hir: T) -> Self
+    pub fn with<T>(mut self, hir: T) -> Self
     where
         T: Into<HIRElement>,
     {
@@ -32,7 +32,7 @@ impl Block {
         self
     }
 
-    pub fn push_inplace<T>(&mut self, hir: T)
+    pub fn push<T>(&mut self, hir: T)
     where
         T: Into<HIRElement>,
     {
@@ -40,7 +40,7 @@ impl Block {
     }
 
     pub fn branch(&mut self) -> &mut Branch {
-        self.push_inplace(Branch::new());
+        self.push(Branch::new());
         match self.last_mut().unwrap() {
             HIRElement::Branch(ref mut r) => r,
             _ => unreachable!(),
@@ -49,9 +49,9 @@ impl Block {
 
     pub fn repeat(&mut self, condition: Option<Expr>) -> &mut Repeat {
         if let Some(condition) = condition {
-            self.push_inplace(Repeat::until(condition));
+            self.push(Repeat::until(condition));
         } else {
-            self.push_inplace(Repeat::endless());
+            self.push(Repeat::endless());
         }
         match self.last_mut().unwrap() {
             HIRElement::Repeat(ref mut r) => r,

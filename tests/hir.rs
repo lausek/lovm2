@@ -19,9 +19,9 @@ macro_rules! define_test {
             let hir = {
                 let mut hir = HIR::new();
                 $(
-                    hir.code.push_inplace($inx);
+                    hir.code.push($inx);
                 )*
-                    hir.code.push_inplace(Interrupt::new(10));
+                    hir.code.push(Interrupt::new(10));
                 hir
             };
             builder.add(stringify!($fname)).hir(hir);
