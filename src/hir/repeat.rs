@@ -12,7 +12,7 @@ pub enum RepeatKind {
 
 #[derive(Clone)]
 pub struct Repeat {
-    block: Block,
+    pub block: Block,
     condition: RepeatKind,
 }
 
