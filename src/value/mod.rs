@@ -18,7 +18,7 @@ pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
         CoValue::Dict(map) => {
             let mut rumap = HashMap::new();
             for (key, value) in map.iter() {
-                rumap.insert(key.clone(), instantiate(ctx, value));
+                rumap.insert(instantiate(ctx, key), instantiate(ctx, value));
             }
             RuValue::Dict(Box::new(rumap))
         }

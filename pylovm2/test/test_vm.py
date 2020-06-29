@@ -11,7 +11,6 @@ class TestVm(Test):
     def test_interrupt(self, internals):
         vm = internals.vm
         main_hir = internals.main
-        
         main_hir.interrupt(10)
 
         out = {

@@ -1,4 +1,5 @@
 pub mod builder;
+pub mod collection;
 pub mod standard;
 
 use std::collections::HashMap;
