@@ -57,3 +57,26 @@ class TestBuilding(Test):
         result = internals.mod.build()
 
         self.assertIsInstance(result, pylovm2.Module)
+
+    def test_repeat(self, internals):
+        Expr = pylovm2.Expr
+
+        main_hir = internals.main
+        main_hir.assign('i', 0)
+        main_hir.repeat_until(Expr.eq(Expr.var('i'), 10)).assign('i', Expr.add(Expr.var('i'), 1))
+        main_hir.interrupt(10)
+
+        result = internals.mod.build()
+        self.assertIsInstance(result, pylovm2.Module)
+        
+        out = {
+            'called': False
+        }
+        def callback(_ctx):
+            out['called'] = True
+
+        internals.vm.add_interrupt(10, callback)
+        internals.vm.load(result)
+        internals.vm.run()
+
+        self.assertTrue(out['called'])

@@ -127,4 +127,12 @@ impl Expr {
     pub fn lt(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(lt, arg1, arg2)
     }
+
+    #[classmethod]
+    pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
+        let name = arg.to_string();
+        Ok(Self {
+            inner: Lovm2Expr::Variable(name),
+        })
+    }
 }

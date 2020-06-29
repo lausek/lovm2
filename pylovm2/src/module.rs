@@ -11,6 +11,8 @@ use lovm2::module;
 use crate::code::CodeObject;
 use crate::expr::any_to_expr;
 
+type Lovm2Repeat = lovm2::repeat::Repeat;
+
 #[pyclass]
 pub struct Module {
     pub inner: Option<module::Module>,
@@ -115,6 +117,15 @@ impl ModuleBuilderSlot {
         Ok(())
     }
 
+    pub fn repeat_until(&mut self, condition: &PyAny) -> PyResult<RepeatBuilder> {
+        use lovm2::prelude::*;
+        let condition = any_to_expr(condition)?;
+        let r = self.inner.as_mut().unwrap().repeat(Some(condition));
+
+        let inner = r as *mut Repeat;
+        Ok(RepeatBuilder { inner })
+    }
+
     pub fn complete(&mut self) -> PyResult<CodeObject> {
         if let Some(hir) = self.inner.take() {
             return match hir.build() {
@@ -123,5 +134,54 @@ impl ModuleBuilderSlot {
             };
         }
         TypeError::into("hir was already built")
+    }
+}
+
+#[pyclass]
+pub struct RepeatBuilder {
+    inner: *mut Lovm2Repeat,
+}
+
+#[pymethods]
+impl RepeatBuilder {
+    pub fn assign(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            self.inner
+                .as_mut()
+                .unwrap()
+                .push(Assign::local(n, any_to_expr(expr)?));
+        }
+        Ok(())
+    }
+
+    pub fn assign_global(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            let inner = &mut *self.inner;
+            inner.push(Assign::global(n, any_to_expr(expr)?));
+        }
+        Ok(())
+    }
+
+    #[args(args = "*")]
+    pub fn call(&mut self, name: String, args: &PyTuple) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            let mut call = Call::new(name);
+            for arg in args.into_iter() {
+                call = call.arg(any_to_expr(arg)?);
+            }
+            self.inner.as_mut().unwrap().push(call);
+        }
+        Ok(())
+    }
+
+    pub fn interrupt(&mut self, id: u16) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            self.inner.as_mut().unwrap().push(Interrupt::new(id));
+        }
+        Ok(())
     }
 }
