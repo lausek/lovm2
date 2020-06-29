@@ -13,9 +13,9 @@ impl RuValue {
     }
 }
 
-#[pymethods]
-impl RuValue {
-    pub fn __str__(&self) -> String {
-        format!("{:?}", self.inner.borrow())
+#[pyproto]
+impl pyo3::class::basic::PyObjectProtocol for RuValue {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(self.inner.borrow().to_string())
     }
 }
