@@ -27,6 +27,14 @@ impl Block {
     {
         self.0.push(hir.into());
     }
+
+    pub fn last_mut(&mut self) -> Option<&mut HIRElement> {
+        self.0.last_mut()
+    }
+
+    pub fn into_iter(self) -> std::vec::IntoIter<HIRElement> {
+        self.0.into_iter()
+    }
 }
 
 impl Lowering for Block {

@@ -11,6 +11,7 @@ pub mod repeat;
 pub mod prelude;
 
 use crate::branch::Branch;
+use crate::block::Block;
 use crate::code::CodeObject;
 use crate::element::HIRElement;
 use crate::expr::Expr;
@@ -24,7 +25,7 @@ pub struct HIR {
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
 
-    code: Vec<HIRElement>,
+    pub code: Block,
 }
 
 impl HIR {
@@ -34,7 +35,7 @@ impl HIR {
             locals: vec![],
             globals: vec![],
 
-            code: vec![],
+            code: Block::new(),
         }
     }
 
@@ -47,11 +48,11 @@ impl HIR {
     where
         T: Into<HIRElement>,
     {
-        self.code.push(element.into());
+        self.code.push_inplace(element.into());
     }
 
     pub fn branch(&mut self) -> &mut Branch {
-        self.code.push(Branch::new().into());
+        self.code.push_inplace(Branch::new());
         match self.code.last_mut().unwrap() {
             HIRElement::Branch(ref mut r) => r,
             _ => unreachable!(),
@@ -60,9 +61,9 @@ impl HIR {
 
     pub fn repeat(&mut self, condition: Option<Expr>) -> &mut Repeat {
         if let Some(condition) = condition {
-            self.code.push(Repeat::until(condition).into());
+            self.code.push_inplace(Repeat::until(condition));
         } else {
-            self.code.push(Repeat::endless().into());
+            self.code.push_inplace(Repeat::endless());
         }
         match self.code.last_mut().unwrap() {
             HIRElement::Repeat(ref mut r) => r,
