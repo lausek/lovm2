@@ -1,4 +1,7 @@
-use lovm2::{define_code, vm::Vm, CoValue, CodeObjectBuilder, Instruction, RuValue, Variable};
+use lovm2::{
+    define_code, hir::prelude::*, vm::Vm, CoValue, CodeObjectBuilder, Instruction, RuValue,
+    Variable,
+};
 
 #[test]
 fn pushing_constant() {
@@ -34,7 +37,11 @@ fn store_global() {
 
     assert_eq!(
         RuValue::Int(42),
-        *vm.context_mut().globals.get("globaln").unwrap().borrow()
+        *vm.context_mut()
+            .globals
+            .get(&var!(globaln))
+            .unwrap()
+            .borrow()
     );
 }
 
@@ -72,19 +79,35 @@ fn calculation() {
 
     assert_eq!(
         RuValue::Int(5),
-        *vm.context_mut().globals.get("result_add").unwrap().borrow()
+        *vm.context_mut()
+            .globals
+            .get(&var!(result_add))
+            .unwrap()
+            .borrow()
     );
     assert_eq!(
         RuValue::Int(-1),
-        *vm.context_mut().globals.get("result_sub").unwrap().borrow()
+        *vm.context_mut()
+            .globals
+            .get(&var!(result_sub))
+            .unwrap()
+            .borrow()
     );
     assert_eq!(
         RuValue::Int(6),
-        *vm.context_mut().globals.get("result_mul").unwrap().borrow()
+        *vm.context_mut()
+            .globals
+            .get(&var!(result_mul))
+            .unwrap()
+            .borrow()
     );
     assert_eq!(
         RuValue::Int(0),
-        *vm.context_mut().globals.get("result_div").unwrap().borrow()
+        *vm.context_mut()
+            .globals
+            .get(&var!(result_div))
+            .unwrap()
+            .borrow()
     );
 }
 
@@ -127,6 +150,10 @@ fn jumping() {
 
     assert_eq!(
         RuValue::Str("aaaaaaaaaa".to_string()),
-        *vm.context_mut().globals.get("output").unwrap().borrow()
+        *vm.context_mut()
+            .globals
+            .get(&var!(output))
+            .unwrap()
+            .borrow()
     );
 }

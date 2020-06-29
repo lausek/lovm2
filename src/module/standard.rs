@@ -8,8 +8,8 @@ use crate::value::RuValue;
 
 #[lovm2_builtin]
 fn get(ctx: &mut Context) -> Result<(), String> {
-    let target = ctx.pop_value().unwrap();
     let key = ctx.pop_value().unwrap();
+    let target = ctx.pop_value().unwrap();
 
     match target.get(key) {
         Ok(val) => ctx.push_value(val),
@@ -56,9 +56,9 @@ fn print(ctx: &mut Context) -> Result<(), String> {
 
 #[lovm2_builtin]
 fn set(ctx: &mut Context) -> Result<(), String> {
-    let mut target = ctx.pop_value().unwrap();
-    let key = ctx.pop_value().unwrap();
     let value = ctx.pop_value().unwrap();
+    let key = ctx.pop_value().unwrap();
+    let mut target = ctx.pop_value().unwrap();
 
     target.set(key, value)
 }

@@ -46,12 +46,12 @@ macro_rules! define_test {
 fn assign_local() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(4));
+            Assign::local(var!(n), CoValue::Int(4));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(4), *frame.locals.get("n").unwrap());
+            assert_eq!(RuValue::Int(4), *frame.locals.get(&var!(n)).unwrap());
         })
     }
 }
@@ -60,13 +60,13 @@ fn assign_local() {
 fn assign_local_add() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(2));
-            Assign::local("n".into(), Expr::add(Variable::from("n"), CoValue::Int(2)));
+            Assign::local(var!(n), CoValue::Int(2));
+            Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(2)));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(4), *frame.locals.get("n").unwrap());
+            assert_eq!(RuValue::Int(4), *frame.locals.get(&var!(n)).unwrap());
         })
     }
 }
@@ -75,12 +75,12 @@ fn assign_local_add() {
 fn rem_lowering() {
     define_test! {
         main {
-            Assign::local("rest".into(), Expr::rem(CoValue::Int(1), CoValue::Int(2)));
+            Assign::local(var!(rest), Expr::rem(CoValue::Int(1), CoValue::Int(2)));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(1), *frame.locals.get("rest").unwrap());
+            assert_eq!(RuValue::Int(1), *frame.locals.get(&var!(rest)).unwrap());
         })
     }
 }
@@ -89,15 +89,15 @@ fn rem_lowering() {
 fn easy_loop() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(0));
-            Repeat::until(Expr::eq(Variable::from("n"), CoValue::Int(10)))
-                    .push(Call::new("print").arg(Variable::from("n")))
-                    .push(Assign::local("n".into(), Expr::add(Variable::from("n"), CoValue::Int(1))));
+            Assign::local(var!(n), CoValue::Int(0));
+            Repeat::until(Expr::eq(var!(n), CoValue::Int(10)))
+                    .push(Call::new("print").arg(var!(n)))
+                    .push(Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(1))));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(10), *frame.locals.get("n").unwrap());
+            assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(n)).unwrap());
         })
     }
 }
@@ -106,30 +106,30 @@ fn easy_loop() {
 fn explicit_break() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(0));
+            Assign::local(var!(n), CoValue::Int(0));
             Repeat::endless()
-                    .push(Assign::local("n".into(), Expr::add(Variable::from("n"), CoValue::Int(1))))
+                    .push(Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(1))))
                     .push(Break::new());
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(1), *frame.locals.get("n").unwrap());
+            assert_eq!(RuValue::Int(1), *frame.locals.get(&var!(n)).unwrap());
         })
     }
 }
 
 #[test]
-fn try_setting() {
+fn try_getting() {
     define_test! {
         main {
-            Assign::local("ls".into(), CoValue::List(vec![Box::new(CoValue::Int(7))]));
-            Assign::local("at0".into(), Call::new("get").arg(Variable::from("ls")).arg(0));
+            Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
+            Assign::local(var!(at0), Call::new("get").arg(var!(dict)).arg(1));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(7), *frame.locals.get("at0").unwrap());
+            assert_eq!(RuValue::Int(7), *frame.locals.get(&var!(at0)).unwrap());
         })
     }
 }
