@@ -27,9 +27,7 @@ class TestBuilding(Test):
 
         val = internals.vm.globals('n')
 
-        print(val.__str__())
-
-        self.assertEqual(val, 1)
+        self.assertEqual(5, int(val))
 
     def test_expressions(self, internals):
         Expr = pylovm2.Expr
