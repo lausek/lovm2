@@ -14,7 +14,7 @@ fn true_branching() -> ModuleBuilder {
         .add_condition(Expr::eq(
             Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()),
             CoValue::Int(0).into(),
-        ));
+        ))
         .from(Block::new().with(Assign::local(
             "result".into(),
             CoValue::Str("fizz".to_string()).into(),

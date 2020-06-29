@@ -5,9 +5,9 @@ use std::rc::Rc;
 use crate::var::Variable;
 
 pub type RuDict = HashMap<Variable, RuValue>;
-pub type RuDictRef = Rc<RefCell<RuDict>>;
+pub type RuDictRef = Box<RuDict>;
 pub type RuList = Vec<RuValue>;
-pub type RuListRef = Rc<RefCell<RuList>>;
+pub type RuListRef = Box<RuList>;
 pub type RuValueRef = Rc<RefCell<RuValue>>;
 
 pub fn box_ruvalue(value: RuValue) -> RuValueRef {
