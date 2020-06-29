@@ -36,14 +36,15 @@ impl pyo3::class::number::PyNumberProtocol for RuValue {
         Ok(obj)
     }
 
-        /*
     fn __float__(&self) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let gil = Python::acquire_gil();
-        let py = gil.python();
-        let val = PyCell::new(py, 10.).unwrap();
-        Ok(10.into_py(py))
+        let obj: PyObject = match &*self.inner.borrow() {
+            Lovm2RuValueRaw::Bool(b) => (if *b {1.} else {0.}).into_py(py),
+            Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
+            Lovm2RuValueRaw::Float(n) => (*n).into_py(py),
+            _ => unimplemented!(),
+        };
+        Ok(obj)
     }
-        */
 }

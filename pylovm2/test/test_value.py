@@ -24,3 +24,14 @@ class TestValue(Test):
 
         a = internals.vm.globals('a')
         self.assertEqual(10, int(a))
+
+    def test_to_float(self, internals):
+        main_hir = internals.main
+        main_hir.assign_global('a', 22.)
+        mod = internals.mod.build()
+
+        internals.vm.load(mod)
+        internals.vm.run()
+
+        a = internals.vm.globals('a')
+        self.assertEqual(22., int(a))
