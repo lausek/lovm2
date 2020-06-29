@@ -1,4 +1,7 @@
+use crate::hir::branch::Branch;
+use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::repeat::Repeat;
 use crate::hir::HIRElement;
 
 #[derive(Clone)]
@@ -11,6 +14,14 @@ impl Block {
 
     pub fn from(&mut self, block: Block) {
         self.0 = block.0;
+    }
+
+    pub fn last_mut(&mut self) -> Option<&mut HIRElement> {
+        self.0.last_mut()
+    }
+
+    pub fn into_iter(self) -> std::vec::IntoIter<HIRElement> {
+        self.0.into_iter()
     }
 
     pub fn push<T>(mut self, hir: T) -> Self
@@ -28,12 +39,24 @@ impl Block {
         self.0.push(hir.into());
     }
 
-    pub fn last_mut(&mut self) -> Option<&mut HIRElement> {
-        self.0.last_mut()
+    pub fn branch(&mut self) -> &mut Branch {
+        self.push_inplace(Branch::new());
+        match self.last_mut().unwrap() {
+            HIRElement::Branch(ref mut r) => r,
+            _ => unreachable!(),
+        }
     }
 
-    pub fn into_iter(self) -> std::vec::IntoIter<HIRElement> {
-        self.0.into_iter()
+    pub fn repeat(&mut self, condition: Option<Expr>) -> &mut Repeat {
+        if let Some(condition) = condition {
+            self.push_inplace(Repeat::until(condition));
+        } else {
+            self.push_inplace(Repeat::endless());
+        }
+        match self.last_mut().unwrap() {
+            HIRElement::Repeat(ref mut r) => r,
+            _ => unreachable!(),
+        }
     }
 }
 
