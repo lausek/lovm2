@@ -12,90 +12,35 @@ fn true_branching() -> ModuleBuilder {
     let mut branch = Branch::new();
     branch
         .add_condition(Expr::eq(
-            Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()),
-            CoValue::Int(0).into(),
+            Expr::rem(Variable::from("n"), CoValue::Int(3)),
+            CoValue::Int(0),
         ))
         .from(Block::new().with(Assign::local(
             "result".into(),
-            CoValue::Str("fizz".to_string()).into(),
+            CoValue::Str("fizz".to_string()),
         )));
 
     branch
         .add_condition(Expr::eq(
-            Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()),
-            CoValue::Int(0).into(),
+            Expr::rem(Variable::from("n"), CoValue::Int(5)),
+            CoValue::Int(0),
         ))
         .from(Block::new().with(Assign::local(
             "result".into(),
-            CoValue::Str("buzz".to_string()).into(),
+            CoValue::Str("buzz".to_string()),
         )));
 
     branch
         .default_condition()
         .from(Block::new().with(Assign::local(
             "result".into(),
-            CoValue::Str("none".to_string()).into(),
+            CoValue::Str("none".to_string()),
         )));
 
-    hir.push(Assign::local("n".into(), CoValue::Int(5).into()));
+    hir.push(Assign::local("n".into(), CoValue::Int(5)));
     hir.push(branch);
 
     builder.add("main").hir(hir);
-
-    builder
-}
-
-fn looping() -> ModuleBuilder {
-    let mut builder = ModuleBuilder::new();
-
-    let mut hir = HIR::new();
-    let code = &mut hir.code;
-    code.push(Assign::local("n".into(), CoValue::Int(0).into()));
-
-    let repeat = code.repeat(Some(Expr::eq(
-        Variable::from("n").into(),
-        CoValue::Int(10).into(),
-    )));
-    repeat.push(Call::new("print").arg(Variable::from("n")));
-    repeat.push(Assign::local(
-        "n".into(),
-        Expr::add(Variable::from("n").into(), CoValue::Int(1).into()),
-    ));
-
-    builder.add("main").hir(hir);
-
-    builder
-}
-
-fn simple(hir: &mut HIR) {
-    hir.push(Assign::local("n".into(), CoValue::Int(2).into()));
-
-    hir.push(Call::new("len").arg(CoValue::List(vec![])));
-}
-
-fn create_call_example() -> ModuleBuilder {
-    let mut builder = ModuleBuilder::new();
-
-    let mut nop_hir = HIR::new();
-    nop_hir.push(Assign::local("a".into(), CoValue::Bool(true).into()));
-
-    let mut main_hir = HIR::new();
-    main_hir.push(Assign::local("n".into(), CoValue::Int(2).into()));
-    main_hir.push(Call::new("print").arg(CoValue::Str("hej".to_string())));
-
-    builder.add("main").hir(main_hir);
-    builder.add("nop").hir(nop_hir);
-
-    builder
-}
-
-fn create_greet() -> ModuleBuilder {
-    let mut builder = ModuleBuilder::new();
-
-    let mut main_hir = HIR::new();
-    main_hir.push(Call::new("print").arg(Call::new("input")));
-
-    builder.add("main").hir(main_hir);
 
     builder
 }

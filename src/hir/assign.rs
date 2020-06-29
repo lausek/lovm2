@@ -17,17 +17,23 @@ pub struct Assign {
 }
 
 impl Assign {
-    pub fn local(variable: Variable, expr: Expr) -> Self {
+    pub fn local<T>(variable: Variable, expr: T) -> Self
+    where
+        T: Into<Expr>,
+    {
         Self {
-            expr,
+            expr: expr.into(),
             variable,
             scope: AssignScope::Local,
         }
     }
 
-    pub fn global(variable: Variable, expr: Expr) -> Self {
+    pub fn global<T>(variable: Variable, expr: T) -> Self
+    where
+        T: Into<Expr>,
+    {
         Self {
-            expr,
+            expr: expr.into(),
             variable,
             scope: AssignScope::Global,
         }

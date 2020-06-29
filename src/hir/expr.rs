@@ -6,13 +6,24 @@ use crate::var::Variable;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {
-        pub fn $method(expr: Expr) -> Expr {
-            Expr::Operation1(Operator1::$operator, Box::new(expr))
+        pub fn $method<T>(expr: T) -> Expr
+        where
+            T: Into<Expr>,
+        {
+            Expr::Operation1(Operator1::$operator, Box::new(expr.into()))
         }
     };
     (2, $operator:ident, $method:ident) => {
-        pub fn $method(left: Expr, right: Expr) -> Expr {
-            Expr::Operation2(Operator2::$operator, Box::new(left), Box::new(right))
+        pub fn $method<T, U>(left: T, right: U) -> Expr
+        where
+            T: Into<Expr>,
+            U: Into<Expr>,
+        {
+            Expr::Operation2(
+                Operator2::$operator,
+                Box::new(left.into()),
+                Box::new(right.into()),
+            )
         }
     };
 }
@@ -74,9 +85,12 @@ impl From<Call> for Expr {
     }
 }
 
-impl From<CoValue> for Expr {
-    fn from(val: CoValue) -> Expr {
-        Expr::Value(val)
+impl<T> From<T> for Expr
+where
+    T: Into<CoValue>,
+{
+    fn from(val: T) -> Expr {
+        Expr::Value(val.into())
     }
 }
 

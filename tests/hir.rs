@@ -46,7 +46,7 @@ macro_rules! define_test {
 fn assign_local() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(4).into());
+            Assign::local("n".into(), CoValue::Int(4));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -60,8 +60,8 @@ fn assign_local() {
 fn assign_local_add() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(2).into());
-            Assign::local("n".into(), Expr::add(Variable::from("n").into(), CoValue::Int(2).into()));
+            Assign::local("n".into(), CoValue::Int(2));
+            Assign::local("n".into(), Expr::add(Variable::from("n"), CoValue::Int(2)));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -75,7 +75,7 @@ fn assign_local_add() {
 fn rem_lowering() {
     define_test! {
         main {
-            Assign::local("rest".into(), Expr::rem(CoValue::Int(1).into(), CoValue::Int(2).into()));
+            Assign::local("rest".into(), Expr::rem(CoValue::Int(1), CoValue::Int(2)));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -89,10 +89,10 @@ fn rem_lowering() {
 fn easy_loop() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(0).into());
-            Repeat::until(Expr::eq(Variable::from("n").into(), CoValue::Int(10).into()))
+            Assign::local("n".into(), CoValue::Int(0));
+            Repeat::until(Expr::eq(Variable::from("n"), CoValue::Int(10)))
                     .push(Call::new("print").arg(Variable::from("n")))
-                    .push(Assign::local("n".into(), Expr::add(Variable::from("n").into(), CoValue::Int(1).into())));
+                    .push(Assign::local("n".into(), Expr::add(Variable::from("n"), CoValue::Int(1))));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -106,15 +106,30 @@ fn easy_loop() {
 fn explicit_break() {
     define_test! {
         main {
-            Assign::local("n".into(), CoValue::Int(0).into());
+            Assign::local("n".into(), CoValue::Int(0));
             Repeat::endless()
-                    .push(Assign::local("n".into(), Expr::add(Variable::from("n").into(), CoValue::Int(1).into())))
+                    .push(Assign::local("n".into(), Expr::add(Variable::from("n"), CoValue::Int(1))))
                     .push(Break::new());
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(RuValue::Int(1), *frame.locals.get("n").unwrap());
+        })
+    }
+}
+
+#[test]
+fn try_setting() {
+    define_test! {
+        main {
+            Assign::local("ls".into(), CoValue::List(vec![Box::new(CoValue::Int(7))]));
+            Assign::local("at0".into(), Call::new("get").arg(Variable::from("ls")).arg(0));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(7), *frame.locals.get("at0").unwrap());
         })
     }
 }
