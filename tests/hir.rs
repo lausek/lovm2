@@ -91,7 +91,7 @@ fn easy_loop() {
         main {
             Assign::local(var!(n), CoValue::Int(0));
             Repeat::until(Expr::eq(var!(n), CoValue::Int(10)))
-                    .push(call!(print, var!(n)))
+                    .push(call!(print, n))
                     .push(Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(1))));
         }
 
@@ -124,7 +124,7 @@ fn try_getting() {
     define_test! {
         main {
             Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
-            Assign::local(var!(at0), call!(get, var!(dict), 1));
+            Assign::local(var!(at0), call!(get, dict, 1));
         }
 
         #ensure (|ctx: &mut Context| {

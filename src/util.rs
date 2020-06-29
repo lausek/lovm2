@@ -29,12 +29,14 @@ macro_rules! define_code {
 
 #[macro_export]
 macro_rules! call {
-    ($name:ident $(, $arg:expr)* $(,)?) => {{
+    ($name:ident $(, $arg:tt)* $(,)?) => {{
         Call::new(stringify!($name))
             $(
-                .arg($arg)
+                .arg(call!(1, $arg))
             )*
     }};
+    (1, $arg:ident) => {{ var!($arg) }};
+    (1, $arg:expr) => {{ $arg }};
 }
 
 #[macro_export]
