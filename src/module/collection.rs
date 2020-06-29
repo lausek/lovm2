@@ -43,15 +43,9 @@ fn set(ctx: &mut Context) -> Result<(), String> {
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 
-    module
-        .slots
-        .insert("get".into(), GetBuiltin::instantiate());
-    module
-        .slots
-        .insert("len".into(), LenBuiltin::instantiate());
-    module
-        .slots
-        .insert("set".into(), SetBuiltin::instantiate());
+    module.slots.insert("get".into(), GetBuiltin::instantiate());
+    module.slots.insert("len".into(), LenBuiltin::instantiate());
+    module.slots.insert("set".into(), SetBuiltin::instantiate());
 
     module
 }

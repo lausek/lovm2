@@ -37,7 +37,10 @@ impl From<&str> for CoValue {
 impl std::cmp::Eq for CoValue {}
 
 impl std::hash::Hash for CoValue {
-    fn hash<H>(&self, hasher: &mut H) where H: std::hash::Hasher {
+    fn hash<H>(&self, hasher: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
         match self {
             CoValue::Bool(b) => hasher.write_u8(*b as u8),
             CoValue::Int(n) => hasher.write_i64(*n),

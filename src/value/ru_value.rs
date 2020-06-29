@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 pub type RuDict = HashMap<RuValue, RuValue>;
-pub type RuDictRef = Box<RuDict>;
+pub type RuDictRef = Rc<RefCell<RuDict>>;
 pub type RuList = Vec<RuValue>;
-pub type RuListRef = Box<RuList>;
+pub type RuListRef = Rc<RefCell<RuList>>;
 pub type RuValueRef = Rc<RefCell<RuValue>>;
 
 pub fn box_ruvalue(value: RuValue) -> RuValueRef {
@@ -25,7 +25,7 @@ pub enum RuValue {
 impl RuValue {
     pub fn get(&self, key: RuValue) -> Result<RuValue, String> {
         match self {
-            RuValue::Dict(dict) => match dict.get(&key) {
+            RuValue::Dict(dict) => match dict.borrow().get(&key) {
                 Some(val) => Ok(val.clone()),
                 None => Err("key not found on value".to_string()),
             },
@@ -38,8 +38,8 @@ impl RuValue {
 
     pub fn len(&self) -> Result<usize, String> {
         match self {
-            RuValue::Dict(dict) => Ok(dict.len()),
-            RuValue::List(list) => Ok(list.len()),
+            RuValue::Dict(dict) => Ok(dict.borrow().len()),
+            RuValue::List(list) => Ok(list.borrow().len()),
             _ => Err("value does not support `len`".to_string()),
         }
     }
@@ -47,7 +47,7 @@ impl RuValue {
     pub fn set(&mut self, key: RuValue, val: RuValue) -> Result<(), String> {
         match self {
             RuValue::Dict(dict) => {
-                dict.insert(key, val);
+                dict.borrow_mut().insert(key, val);
                 Ok(())
             }
             /*
@@ -66,7 +66,10 @@ impl RuValue {
 impl std::cmp::Eq for RuValue {}
 
 impl std::hash::Hash for RuValue {
-    fn hash<H>(&self, hasher: &mut H) where H: std::hash::Hasher {
+    fn hash<H>(&self, hasher: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
         match self {
             RuValue::Bool(b) => hasher.write_u8(*b as u8),
             RuValue::Int(n) => hasher.write_i64(*n),
