@@ -4,6 +4,13 @@ version = "0.2.4"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
+homepage = "https://github.com/lausek/lovm2"
+repository = "https://github.com/lausek/lovm2"
+readme = "README.md"
+keywords = ["interpreter"]
+license-file = "LICENSE"
+description = "a lightweight virtual machine with a focus on simplicity and extendability."
+
 [[bin]]
 name = "lovm2-repl"
 path = "bin/bin.rs"
@@ -13,4 +20,4 @@ name = "lovm2"
 path = "src/lib.rs"
 
 [dependencies]
-lovm2_internals = { path = "src/lovm2_internals" }
+lovm2_internals = { path = "src/lovm2_internals", version = "*" }
