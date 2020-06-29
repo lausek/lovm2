@@ -46,7 +46,7 @@ macro_rules! define_test {
 fn assign_local() {
     define_test! {
         main {
-            Assign::local(var!(n), CoValue::Int(4));
+            Assign::local(var!(n), 4);
         }
 
         #ensure (|ctx: &mut Context| {
@@ -60,8 +60,8 @@ fn assign_local() {
 fn assign_local_add() {
     define_test! {
         main {
-            Assign::local(var!(n), CoValue::Int(2));
-            Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(2)));
+            Assign::local(var!(n), 2);
+            Assign::local(var!(n), Expr::add(var!(n), 2));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -75,7 +75,7 @@ fn assign_local_add() {
 fn rem_lowering() {
     define_test! {
         main {
-            Assign::local(var!(rest), Expr::rem(CoValue::Int(1), CoValue::Int(2)));
+            Assign::local(var!(rest), Expr::rem(1, 2));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -89,10 +89,10 @@ fn rem_lowering() {
 fn easy_loop() {
     define_test! {
         main {
-            Assign::local(var!(n), CoValue::Int(0));
-            Repeat::until(Expr::eq(var!(n), CoValue::Int(10)))
+            Assign::local(var!(n), 0);
+            Repeat::until(Expr::eq(var!(n), 10))
                     .push(call!(print, n))
-                    .push(Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(1))));
+                    .push(Assign::local(var!(n), Expr::add(var!(n), 1)));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -106,9 +106,9 @@ fn easy_loop() {
 fn explicit_break() {
     define_test! {
         main {
-            Assign::local(var!(n), CoValue::Int(0));
+            Assign::local(var!(n), 0);
             Repeat::endless()
-                    .push(Assign::local(var!(n), Expr::add(var!(n), CoValue::Int(1))))
+                    .push(Assign::local(var!(n), Expr::add(var!(n), 1)))
                     .push(Break::new());
         }
 
