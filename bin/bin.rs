@@ -8,31 +8,33 @@ fn true_branching() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
 
     let mut hir = HIR::new();
-    let branch = Branch::new()
-        .add_condition(
-            Expr::eq(
-                Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()),
-                CoValue::Int(0).into(),
-            ),
-            Block::new().push(Assign::local(
-                "result".into(),
-                CoValue::Str("fizz".to_string()).into(),
-            )),
-        )
-        .add_condition(
-            Expr::eq(
-                Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()),
-                CoValue::Int(0).into(),
-            ),
-            Block::new().push(Assign::local(
-                "result".into(),
-                CoValue::Str("buzz".to_string()).into(),
-            )),
-        )
-        .default_condition(Block::new().push(Assign::local(
+
+    let mut branch = Branch::new();
+    branch.add_condition(
+        Expr::eq(
+            Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()),
+            CoValue::Int(0).into(),
+        ),
+    ).from(Block::new().push(Assign::local(
             "result".into(),
-            CoValue::Str("none".to_string()).into(),
-        )));
+            CoValue::Str("fizz".to_string()).into(),
+    )));
+
+    branch.add_condition(
+        Expr::eq(
+            Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()),
+            CoValue::Int(0).into(),
+        ),
+    ).from(Block::new().push(Assign::local(
+            "result".into(),
+            CoValue::Str("buzz".to_string()).into(),
+    )));
+
+    branch.default_condition().from(Block::new().push(Assign::local(
+                "result".into(),
+                CoValue::Str("none".to_string()).into(),
+    )));
+
     hir.push(Assign::local("n".into(), CoValue::Int(5).into()));
     hir.push(branch);
 
@@ -47,14 +49,14 @@ fn looping() -> ModuleBuilder {
     let mut hir = HIR::new();
     hir.push(Assign::local("n".into(), CoValue::Int(0).into()));
     hir.repeat(Some(Expr::eq(
-        Variable::from("n").into(),
-        CoValue::Int(10).into(),
+                Variable::from("n").into(),
+                CoValue::Int(10).into(),
     )))
-    .push(Call::new("print").arg(Variable::from("n")))
-    .push(Assign::local(
-        "n".into(),
-        Expr::add(Variable::from("n").into(), CoValue::Int(1).into()),
-    ));
+        .push(Call::new("print").arg(Variable::from("n")))
+        .push(Assign::local(
+                "n".into(),
+                Expr::add(Variable::from("n").into(), CoValue::Int(1).into()),
+        ));
 
     builder.add("main").hir(hir);
 

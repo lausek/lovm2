@@ -9,6 +9,10 @@ impl Block {
         Self(vec![])
     }
 
+    pub fn from(&mut self, block: Block) {
+        self.0 = block.0;
+    }
+
     pub fn push<T>(mut self, hir: T) -> Self
     where
         T: Into<HIRElement>,

@@ -17,14 +17,15 @@ impl Branch {
         }
     }
 
-    pub fn add_condition(mut self, condition: Expr, block: Block) -> Self {
-        self.branches.push((condition, block));
-        self
+    pub fn add_condition(&mut self, condition: Expr) -> &mut Block {
+        self.branches.push((condition, Block::new()));
+        let (_, block) = self.branches.last_mut().unwrap();
+        block
     }
 
-    pub fn default_condition(mut self, block: Block) -> Self {
-        self.default = Some(block);
-        self
+    pub fn default_condition(&mut self) -> &mut Block {
+        self.default = Some(Block::new());
+        self.default.as_mut().unwrap()
     }
 }
 
