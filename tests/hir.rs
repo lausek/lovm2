@@ -134,6 +134,24 @@ fn try_getting() {
     }
 }
 
+#[test]
+fn try_retrieving_len() {
+    define_test! {
+        main {
+            Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
+            Assign::local(var!(ls), co_list!(1, 2, 3));
+            Assign::local(var!(lendict), call!(len, dict));
+            Assign::local(var!(lenls), call!(len, ls));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(2), *frame.locals.get(&var!(lendict)).unwrap());
+            assert_eq!(RuValue::Int(3), *frame.locals.get(&var!(lenls)).unwrap());
+        })
+    }
+}
+
 /*
  * TODO: fix these tests
 #[test]
