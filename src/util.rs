@@ -28,6 +28,16 @@ macro_rules! define_code {
 }
 
 #[macro_export]
+macro_rules! call {
+    ($name:ident $(, $arg:expr)* $(,)?) => {{
+        Call::new(stringify!($name))
+            $(
+                .arg($arg)
+            )*
+    }};
+}
+
+#[macro_export]
 macro_rules! co_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
         use std::collections::HashMap;
