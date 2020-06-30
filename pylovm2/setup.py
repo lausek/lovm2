@@ -1,13 +1,17 @@
 #!/usr/bin/python3
 
 from setuptools import find_packages, setup
+from setuptools_rust import Binding, RustExtension
 
 setup(
     name='pylovm2',
-    version='0.0.1',
+    version='0.0.2',
     author='lausek',
+    author_email='spam@lausek.eu',
     description='bindings for lovm2',
+    long_description='bindings for lovm2',
     url='https://github.com/lausek/lovm2',
+    rust_extensions=[RustExtension('hello_rust.hello_rust', binding=Binding.PyO3)],
     packages=find_packages(),
     classifiers=[
         'Programming Language :: Python :: 3',
