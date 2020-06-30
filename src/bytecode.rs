@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+// TODO: this serializes the variant as string. not good
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum Instruction {
     // push local variable
