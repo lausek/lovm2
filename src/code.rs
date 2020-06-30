@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::rc::Rc;
 
 use crate::bytecode::Instruction;
@@ -9,10 +10,14 @@ use crate::vm::run_bytecode;
 pub type CodeObjectRef = Rc<dyn CallProtocol>;
 
 pub trait CallProtocol: std::fmt::Debug {
+    fn code_object(&self) -> Option<&CodeObject> {
+        None
+    }
+
     fn run(&self, ctx: &mut Context) -> Result<(), String>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct CodeObject {
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,
@@ -22,6 +27,10 @@ pub struct CodeObject {
 }
 
 impl CallProtocol for CodeObject {
+    fn code_object(&self) -> Option<&CodeObject> {
+        Some(self)
+    }
+
     fn run(&self, ctx: &mut Context) -> Result<(), String> {
         run_bytecode(self, ctx)
     }

@@ -1,6 +1,7 @@
+use serde::Serialize;
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum CoValue {
     Bool(bool),
     Int(i64),

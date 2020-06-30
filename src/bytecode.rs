@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Debug)]
+use serde::Serialize;
+
+#[derive(Clone, Copy, Debug, Serialize)]
 pub enum Instruction {
     // push local variable
     Pushl(u16),
