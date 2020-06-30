@@ -2,6 +2,7 @@ pub mod assign;
 pub mod block;
 pub mod branch;
 pub mod call;
+pub mod cast;
 pub mod element;
 pub mod expr;
 pub mod interrupt;

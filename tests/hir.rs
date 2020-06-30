@@ -152,6 +152,20 @@ fn try_retrieving_len() {
     }
 }
 
+#[test]
+fn try_casting() {
+    define_test! {
+        main {
+            Assign::local(var!(n), Cast::to_integer(5.));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(5), *frame.locals.get(&var!(n)).unwrap());
+        })
+    }
+}
+
 /*
  * TODO: fix these tests
 #[test]

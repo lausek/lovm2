@@ -1,5 +1,6 @@
 use crate::bytecode::Instruction;
 use crate::hir::call::Call;
+use crate::hir::cast::Cast;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::value::CoValue;
 use crate::var::Variable;
@@ -56,6 +57,7 @@ pub enum Expr {
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Operation1(Operator1, Box<Expr>),
     Call(Call),
+    Cast(Cast),
     Value(CoValue),
     Variable(Variable),
 }
@@ -82,6 +84,12 @@ impl Expr {
 impl From<Call> for Expr {
     fn from(call: Call) -> Expr {
         Expr::Call(call)
+    }
+}
+
+impl From<Cast> for Expr {
+    fn from(cast: Cast) -> Expr {
+        Expr::Cast(cast)
     }
 }
 
@@ -131,6 +139,7 @@ impl Lowering for Expr {
                 runtime.emit(inx);
             }
             Expr::Call(call) => call.lower(runtime),
+            Expr::Cast(cast) => cast.lower(runtime),
             Expr::Value(val) => {
                 let cidx = runtime.index_const(&val);
                 runtime.emit(Instruction::Pushc(cidx as u16));
