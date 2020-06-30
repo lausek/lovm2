@@ -39,4 +39,6 @@ pub enum Instruction {
     Ret,
 
     Interrupt(u16),
+
+    Cast(u16),
 }

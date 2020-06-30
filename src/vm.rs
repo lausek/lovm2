@@ -168,6 +168,11 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                     func.clone()(ctx);
                 }
             }
+            Instruction::Cast(tid) => {
+                let val = ctx.pop_value().unwrap();
+                let val = val.cast(*tid)?;
+                ctx.push_value(val);
+            }
         }
 
         ip += 1;
