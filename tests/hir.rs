@@ -1,4 +1,3 @@
-use lovm2::block::Block;
 use lovm2::expr::Expr;
 use lovm2::hir::prelude::*;
 use lovm2::value::RuValue;

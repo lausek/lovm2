@@ -57,14 +57,14 @@ impl RuValue {
                 dict.borrow_mut().insert(key, val);
                 Ok(())
             }
-            /*
-            * TODO: implement
             RuValue::List(list) => {
-            let idx = key.to_int();
-            list.insert(key, val);
-            Ok(())
+                if let RuValue::Int(idx) = key.to_integer()? {
+                    list.borrow_mut().insert(idx as usize, val);
+                    Ok(())
+                } else {
+                    unreachable!()
+                }
             }
-            */
             _ => Err("value does not support `set`".to_string()),
         }
     }
