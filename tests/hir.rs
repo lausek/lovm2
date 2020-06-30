@@ -124,12 +124,15 @@ fn try_getting() {
     define_test! {
         main {
             Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
-            Assign::local(var!(at0), call!(get, dict, 1));
+            Assign::local(var!(dat0), call!(get, dict, 1));
+            Assign::local(var!(list), co_list!("a", 10, 20., true));
+            Assign::local(var!(lat0), call!(get, list, 1));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(7), *frame.locals.get(&var!(at0)).unwrap());
+            assert_eq!(RuValue::Int(7), *frame.locals.get(&var!(dat0)).unwrap());
+            assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(lat0)).unwrap());
         })
     }
 }

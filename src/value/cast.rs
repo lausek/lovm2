@@ -28,7 +28,7 @@ impl RuValue {
 
     pub fn to_float(self) -> CastResult {
         match self {
-            RuValue::Bool(b) => Ok(RuValue::Float(if b {1.} else {0.})),
+            RuValue::Bool(b) => Ok(RuValue::Float(if b { 1. } else { 0. })),
             RuValue::Int(n) => Ok(RuValue::Float(n as f64)),
             RuValue::Float(_) => Ok(self),
             RuValue::Str(_) => unimplemented!(),
@@ -39,7 +39,7 @@ impl RuValue {
 
     pub fn to_integer(self) -> CastResult {
         match self {
-            RuValue::Bool(b) => Ok(RuValue::Int(if b {1} else {0})),
+            RuValue::Bool(b) => Ok(RuValue::Int(if b { 1 } else { 0 })),
             RuValue::Int(_) => Ok(self),
             RuValue::Float(n) => Ok(RuValue::Int(n as i64)),
             RuValue::Str(_) => unimplemented!(),

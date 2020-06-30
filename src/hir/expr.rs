@@ -109,6 +109,7 @@ impl From<Variable> for Expr {
 }
 
 impl Lowering for Expr {
+    // TODO: add short-circuit for and (can be implemented via branching), or
     fn lower(self, runtime: &mut LoweringRuntime) {
         match self {
             Expr::Operation2(op, expr1, expr2) => {

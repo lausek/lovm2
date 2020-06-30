@@ -29,9 +29,16 @@ impl RuValue {
                 Some(val) => Ok(val.clone()),
                 None => Err("key not found on value".to_string()),
             },
-            /* TODO: implement this for list
-            RuValue::List(list) => Ok(list.len()),
-            */
+            RuValue::List(list) => {
+                if let RuValue::Int(key) = key.to_integer()? {
+                    match list.borrow().get(key as usize) {
+                        Some(val) => Ok(val.clone()),
+                        None => Err("key not found on value".to_string()),
+                    }
+                } else {
+                    unreachable!()
+                }
+            }
             _ => Err("value does not support `get`".to_string()),
         }
     }
@@ -51,11 +58,11 @@ impl RuValue {
                 Ok(())
             }
             /*
-             * TODO: implement
+            * TODO: implement
             RuValue::List(list) => {
-                let idx = key.to_int();
-                list.insert(key, val);
-                Ok(())
+            let idx = key.to_int();
+            list.insert(key, val);
+            Ok(())
             }
             */
             _ => Err("value does not support `set`".to_string()),

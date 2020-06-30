@@ -6,6 +6,7 @@ use crate::var::Variable;
 
 use super::*;
 
+// TODO: add ExprOptimizer field for improving Exprs
 pub struct LoweringRuntime {
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,
