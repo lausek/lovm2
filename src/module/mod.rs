@@ -1,20 +1,22 @@
 pub mod builder;
 pub mod standard;
 
-use serde::{ser::SerializeMap, Serialize, Serializer};
+use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
+use std::rc::Rc;
 
-use crate::code::CodeObjectRef;
+use crate::code::{CallProtocol, CodeObject, CodeObjectRef};
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
 pub use self::standard::create_standard_module;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
     #[serde(serialize_with = "serialize_slots")]
+    #[serde(deserialize_with = "deserialize_slots")]
     pub slots: HashMap<Variable, CodeObjectRef>,
 }
 
@@ -25,16 +27,16 @@ impl Module {
         }
     }
 
-    /*
     pub fn load_from_file<T>(path: T) -> Result<Module, String>
-        where T: AsRef<Path>
+    where
+        T: AsRef<Path>,
     {
-        let file = File::open(path)?;
-        let module: Module = serde_cbor::from_reader(file)?;
+        let file = File::open(path).map_err(|e| e.to_string())?;
+        let module: Module = serde_cbor::from_reader(file).map_err(|e| e.to_string())?;
         Ok(module)
     }
-    */
 
+    // TODO: could lead to errors when two threads serialize to the same file
     pub fn store_to_file<T>(&self, path: T) -> Result<(), String>
     where
         T: AsRef<Path>,
@@ -56,4 +58,32 @@ where
         }
     }
     m.end()
+}
+
+fn deserialize_slots<'d, D>(d: D) -> Result<HashMap<Variable, CodeObjectRef>, D::Error>
+where
+    D: Deserializer<'d>,
+{
+    struct Unslotter;
+
+    impl<'de> Visitor<'de> for Unslotter {
+        type Value = HashMap<Variable, CodeObjectRef>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            write!(formatter, "do things")
+        }
+
+        fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::MapAccess<'de>,
+        {
+            let mut map = HashMap::new();
+            while let Some((key, value)) = access.next_entry::<Variable, CodeObject>()? {
+                map.insert(key, Rc::new(value) as Rc<dyn CallProtocol>);
+            }
+            Ok(map)
+        }
+    }
+
+    d.deserialize_any(Unslotter)
 }

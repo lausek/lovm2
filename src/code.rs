@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
 use crate::bytecode::Instruction;
@@ -17,7 +17,7 @@ pub trait CallProtocol: std::fmt::Debug {
     fn run(&self, ctx: &mut Context) -> Result<(), String>;
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CodeObject {
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,
