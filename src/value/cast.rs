@@ -23,19 +23,33 @@ impl RuValue {
     }
 
     pub fn to_bool(self) -> CastResult {
-        Ok(self)
+        unimplemented!()
     }
 
     pub fn to_float(self) -> CastResult {
-        Ok(self)
+        match self {
+            RuValue::Bool(b) => Ok(RuValue::Float(if b {1.} else {0.})),
+            RuValue::Int(n) => Ok(RuValue::Float(n as f64)),
+            RuValue::Float(_) => Ok(self),
+            RuValue::Str(_) => unimplemented!(),
+            RuValue::Dict(_) => unimplemented!(),
+            RuValue::List(_) => unimplemented!(),
+        }
     }
 
     pub fn to_integer(self) -> CastResult {
-        Ok(self)
+        match self {
+            RuValue::Bool(b) => Ok(RuValue::Int(if b {1} else {0})),
+            RuValue::Int(_) => Ok(self),
+            RuValue::Float(n) => Ok(RuValue::Int(n as i64)),
+            RuValue::Str(_) => unimplemented!(),
+            RuValue::Dict(_) => unimplemented!(),
+            RuValue::List(_) => unimplemented!(),
+        }
     }
 
     pub fn to_str(self) -> CastResult {
-        Ok(self)
+        unimplemented!()
     }
 
     pub fn type_id(&self) -> u16 {
