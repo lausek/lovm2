@@ -1,9 +1,11 @@
 pub mod builder;
+pub mod shared;
 pub mod standard;
 
 use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::fs::File;
+use std::ops::Deref;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -13,11 +15,21 @@ use crate::var::Variable;
 pub use self::builder::ModuleBuilder;
 pub use self::standard::create_standard_module;
 
+pub trait ModuleProtocol {
+    fn slot(&self, name: &Variable) -> Option<Box<dyn Deref<Target = dyn CallProtocol>>>;
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
     #[serde(serialize_with = "serialize_slots")]
     #[serde(deserialize_with = "deserialize_slots")]
     pub slots: HashMap<Variable, CodeObjectRef>,
+}
+
+impl ModuleProtocol for Module {
+    fn slot(&self, name: &Variable) -> Option<Box<dyn Deref<Target = dyn CallProtocol>>> {
+        self.slots.get(name).map(|co_ref| Box::new(co_ref.clone()) as Box<dyn Deref<Target = dyn CallProtocol>>)
+    }
 }
 
 impl Module {

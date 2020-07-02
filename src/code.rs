@@ -8,6 +8,7 @@ use crate::var::Variable;
 use crate::vm::run_bytecode;
 
 pub type CodeObjectRef = Rc<dyn CallProtocol>;
+pub type ExternFunction = unsafe extern fn(&mut Context) -> Result<(), String>;
 
 pub trait CallProtocol: std::fmt::Debug {
     fn code_object(&self) -> Option<&CodeObject> {
