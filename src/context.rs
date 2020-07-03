@@ -7,6 +7,7 @@ use crate::module::Module;
 use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
+// TODO: this should also return some Result
 pub type InterruptFn = dyn Fn(&mut Context) -> ();
 
 pub struct Context {

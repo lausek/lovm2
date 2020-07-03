@@ -5,7 +5,6 @@ pub mod standard;
 use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::fs::File;
-use std::ops::Deref;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -16,7 +15,7 @@ pub use self::builder::ModuleBuilder;
 pub use self::standard::create_standard_module;
 
 pub trait ModuleProtocol {
-    fn slot(&self, name: &Variable) -> Option<Box<dyn Deref<Target = dyn CallProtocol>>>;
+    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>>;
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -27,8 +26,10 @@ pub struct Module {
 }
 
 impl ModuleProtocol for Module {
-    fn slot(&self, name: &Variable) -> Option<Box<dyn Deref<Target = dyn CallProtocol>>> {
-        self.slots.get(name).map(|co_ref| Box::new(co_ref.clone()) as Box<dyn Deref<Target = dyn CallProtocol>>)
+    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
+        self.slots
+            .get(name)
+            .map(|co_ref| co_ref.clone() as Rc<dyn CallProtocol>)
     }
 }
 
