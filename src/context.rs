@@ -45,7 +45,10 @@ impl Context {
             globals: HashMap::new(),
             scope: HashMap::new(),
             interrupts: [None; 256],
-            load_paths: Vec::new(),
+            load_paths: vec![format!(
+                "{}/.local/lib/lovm2/",
+                std::env::home_dir().unwrap().to_str().unwrap()
+            )],
 
             lstack: vec![],
             vstack: vec![],
