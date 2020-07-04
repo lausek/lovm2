@@ -10,11 +10,29 @@ use crate::var::Variable;
 // TODO: this should also return some Result
 pub type InterruptFn = dyn Fn(&mut Context) -> ();
 
+fn find_module(name: &str, load_paths: &Vec<String>) -> Result<String, String> {
+    use std::fs::read_dir;
+    for path in load_paths.iter() {
+        let dir = read_dir(path).map_err(|e| e.to_string())?;
+        for entry in dir {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let fname = entry.path();
+            if fname.file_stem().unwrap() == name {
+                let abspath = std::fs::canonicalize(fname).unwrap();
+                let abspath = abspath.to_string_lossy();
+                return Ok(abspath.into_owned());
+            }
+        }
+    }
+    Err(format!("{} not found", name))
+}
+
 pub struct Context {
     pub modules: Vec<Module>,
     pub globals: HashMap<Variable, RuValueRef>,
     pub scope: HashMap<Variable, CodeObjectRef>,
     pub interrupts: [Option<Rc<Box<InterruptFn>>>; 256],
+    pub load_paths: Vec<String>,
 
     pub lstack: Vec<Frame>,
     pub vstack: Vec<RuValue>,
@@ -27,10 +45,17 @@ impl Context {
             globals: HashMap::new(),
             scope: HashMap::new(),
             interrupts: [None; 256],
+            load_paths: Vec::new(),
 
             lstack: vec![],
             vstack: vec![],
         }
+    }
+
+    pub fn load_and_import_by_name(&mut self, name: &str) -> Result<(), String> {
+        let path = find_module(name, &self.load_paths)?;
+        let module = Module::load_from_file(path)?;
+        self.load_and_import_all(module)
     }
 
     pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
