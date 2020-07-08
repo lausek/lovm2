@@ -8,7 +8,7 @@ pub enum CoValue {
     Float(f64),
     Str(String),
     Dict(HashMap<CoValue, Box<CoValue>>),
-    List(Vec<Box<CoValue>>),
+    List(Vec<CoValue>),
 }
 
 impl From<bool> for CoValue {

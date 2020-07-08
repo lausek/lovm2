@@ -12,7 +12,7 @@ pub trait Lowering {
     fn lower(self, runtime: &mut LoweringRuntime);
 }
 
-pub fn patch_addrs(runtime: &mut LoweringRuntime, positions: &Vec<usize>, addr: usize) {
+pub fn patch_addrs(runtime: &mut LoweringRuntime, positions: &[usize], addr: usize) {
     for pos in positions.iter() {
         patch_addr(runtime, *pos, addr);
     }

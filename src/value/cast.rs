@@ -12,21 +12,21 @@ pub const RUVALUE_LIST_TY: u16 = 6;
 impl RuValue {
     pub fn cast(self, tid: u16) -> CastResult {
         match tid {
-            RUVALUE_BOOL_TY => self.to_bool(),
-            RUVALUE_INT_TY => self.to_integer(),
-            RUVALUE_FLOAT_TY => self.to_float(),
-            RUVALUE_STR_TY => self.to_str(),
+            RUVALUE_BOOL_TY => self.into_bool(),
+            RUVALUE_INT_TY => self.into_integer(),
+            RUVALUE_FLOAT_TY => self.into_float(),
+            RUVALUE_STR_TY => self.into_str(),
             RUVALUE_DICT_TY => unimplemented!(),
             RUVALUE_LIST_TY => unimplemented!(),
             _ => unimplemented!(),
         }
     }
 
-    pub fn to_bool(self) -> CastResult {
+    pub fn into_bool(self) -> CastResult {
         unimplemented!()
     }
 
-    pub fn to_float(self) -> CastResult {
+    pub fn into_float(self) -> CastResult {
         match self {
             RuValue::Bool(b) => Ok(RuValue::Float(if b { 1. } else { 0. })),
             RuValue::Int(n) => Ok(RuValue::Float(n as f64)),
@@ -37,7 +37,7 @@ impl RuValue {
         }
     }
 
-    pub fn to_integer(self) -> CastResult {
+    pub fn into_integer(self) -> CastResult {
         match self {
             RuValue::Bool(b) => Ok(RuValue::Int(if b { 1 } else { 0 })),
             RuValue::Int(_) => Ok(self),
@@ -48,7 +48,7 @@ impl RuValue {
         }
     }
 
-    pub fn to_str(self) -> CastResult {
+    pub fn into_str(self) -> CastResult {
         unimplemented!()
     }
 

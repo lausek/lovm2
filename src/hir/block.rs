@@ -20,10 +20,6 @@ impl Block {
         self.0.last_mut()
     }
 
-    pub fn into_iter(self) -> std::vec::IntoIter<HIRElement> {
-        self.0.into_iter()
-    }
-
     pub fn with<T>(mut self, hir: T) -> Self
     where
         T: Into<HIRElement>,
@@ -57,6 +53,15 @@ impl Block {
             HIRElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
         }
+    }
+}
+
+impl std::iter::IntoIterator for Block {
+    type Item = HIRElement;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 

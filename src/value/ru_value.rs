@@ -30,7 +30,7 @@ impl RuValue {
                 None => Err("key not found on value".to_string()),
             },
             RuValue::List(list) => {
-                if let RuValue::Int(key) = key.to_integer()? {
+                if let RuValue::Int(key) = key.into_integer()? {
                     match list.borrow().get(key as usize) {
                         Some(val) => Ok(val.clone()),
                         None => Err("key not found on value".to_string()),
@@ -58,7 +58,7 @@ impl RuValue {
                 Ok(())
             }
             RuValue::List(list) => {
-                if let RuValue::Int(idx) = key.to_integer()? {
+                if let RuValue::Int(idx) = key.into_integer()? {
                     list.borrow_mut().insert(idx as usize, val);
                     Ok(())
                 } else {

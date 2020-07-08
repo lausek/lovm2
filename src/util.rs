@@ -56,7 +56,7 @@ macro_rules! co_list {
     ($($entry:expr),* $(,)?) => {{
         CoValue::List(vec![
             $(
-                Box::new(CoValue::from($entry))
+                CoValue::from($entry)
             ),*
         ])
     }};

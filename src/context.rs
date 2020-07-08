@@ -8,9 +8,9 @@ use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
 // TODO: this should also return some Result
-pub type InterruptFn = dyn Fn(&mut Context) -> ();
+pub type InterruptFn = dyn Fn(&mut Context);
 
-fn find_module(name: &str, load_paths: &Vec<String>) -> Result<String, String> {
+fn find_module(name: &str, load_paths: &[String]) -> Result<String, String> {
     use std::fs::read_dir;
     for path in load_paths.iter() {
         let dir = read_dir(path).map_err(|e| e.to_string())?;
@@ -31,7 +31,7 @@ pub struct Context {
     pub modules: Vec<Box<dyn ModuleProtocol>>,
     pub globals: HashMap<Variable, RuValueRef>,
     pub scope: HashMap<Variable, CodeObjectRef>,
-    pub interrupts: [Option<Rc<Box<InterruptFn>>>; 256],
+    pub interrupts: [Option<Rc<InterruptFn>>; 256],
     pub load_paths: Vec<String>,
 
     pub lstack: Vec<Frame>,
@@ -63,7 +63,7 @@ impl Context {
 
     pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Result<(), String> {
         for (key, co_object) in module.slots().iter() {
-            if let Some(_) = self.scope.insert(key.clone(), co_object.clone()) {
+            if self.scope.insert(key.clone(), co_object.clone()).is_some() {
                 return Err(format!("import conflict: `{}` is already defined", key));
             }
         }
@@ -79,9 +79,9 @@ impl Context {
 
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)
     where
-        T: Fn(&mut Context) -> () + Sized + 'static,
+        T: Fn(&mut Context) + Sized + 'static,
     {
-        self.interrupts[n as usize] = Some(Rc::new(Box::new(func)));
+        self.interrupts[n as usize] = Some(Rc::new(func));
     }
 
     pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {
