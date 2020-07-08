@@ -44,4 +44,5 @@ pub enum Instruction {
     Interrupt(u16),
 
     Cast(u16),
+    Load,
 }

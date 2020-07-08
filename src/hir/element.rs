@@ -1,6 +1,7 @@
 use crate::hir::assign::Assign;
 use crate::hir::branch::Branch;
 use crate::hir::call::Call;
+use crate::hir::include::Include;
 use crate::hir::interrupt::Interrupt;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::hir::repeat::{Break, Continue, Repeat};
@@ -12,6 +13,7 @@ pub enum HIRElement {
     Break(Break),
     Call(Call),
     Continue(Continue),
+    Include(Include),
     Interrupt(Interrupt),
     Repeat(Repeat),
 }
@@ -24,6 +26,7 @@ impl Lowering for HIRElement {
             HIRElement::Break(cmd) => cmd.lower(runtime),
             HIRElement::Call(call) => call.lower(runtime),
             HIRElement::Continue(cmd) => cmd.lower(runtime),
+            HIRElement::Include(include) => include.lower(runtime),
             HIRElement::Interrupt(interrupt) => interrupt.lower(runtime),
             HIRElement::Repeat(repeat) => repeat.lower(runtime),
         }
@@ -57,6 +60,12 @@ impl From<Call> for HIRElement {
 impl From<Continue> for HIRElement {
     fn from(cmd: Continue) -> Self {
         HIRElement::Continue(cmd)
+    }
+}
+
+impl From<Include> for HIRElement {
+    fn from(include: Include) -> Self {
+        HIRElement::Include(include)
     }
 }
 

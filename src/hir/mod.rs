@@ -5,6 +5,7 @@ pub mod call;
 pub mod cast;
 pub mod element;
 pub mod expr;
+pub mod include;
 pub mod interrupt;
 pub mod lowering;
 pub mod repeat;

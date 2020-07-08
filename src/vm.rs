@@ -173,6 +173,12 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 let val = val.cast(*tid)?;
                 ctx.push_value(val);
             }
+            Instruction::Load => {
+                let name = ctx.pop_value().unwrap();
+                // TODO: use to_string() here
+                let name = format!("{}", name);
+                ctx.load_and_import_by_name(name.as_ref())?;
+            }
         }
 
         ip += 1;

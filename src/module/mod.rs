@@ -12,6 +12,7 @@ use crate::code::{CallProtocol, CodeObject, CodeObjectRef};
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
+pub use self::shared::SharedObjectModule;
 pub use self::standard::create_standard_module;
 
 pub trait ModuleProtocol {
@@ -44,6 +45,11 @@ impl Module {
     where
         T: AsRef<Path>,
     {
+        // try loading module as shared object
+        if let Ok(so_module) = SharedObjectModule::load_from_file(path) {
+            return Ok(so_module);
+        }
+
         let file = File::open(path).map_err(|e| e.to_string())?;
         let module: Module = serde_cbor::from_reader(file).map_err(|e| e.to_string())?;
         Ok(module)

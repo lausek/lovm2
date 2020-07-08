@@ -4,6 +4,19 @@ use lovm2::hir::prelude::*;
 use lovm2::module::ModuleBuilder;
 use lovm2::vm::Vm;
 
+fn loading() -> ModuleBuilder {
+    let mut builder = ModuleBuilder::new();
+
+    let mut hir = HIR::new();
+    hir.push(Include::load("mfunky"));
+    hir.push(Call::new("gofunky"));
+
+    builder.add("main").hir(hir);
+
+    builder
+}
+
+/*
 fn true_branching() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
 
@@ -44,9 +57,10 @@ fn true_branching() -> ModuleBuilder {
 
     builder
 }
+*/
 
 fn main() {
-    let builder = true_branching();
+    let builder = loading();
 
     match builder.build() {
         Ok(result) => {
@@ -54,7 +68,10 @@ fn main() {
 
             let mut vm = Vm::new();
             vm.load_and_import_all(result).unwrap();
-            vm.run().unwrap();
+
+            if let Err(err) = vm.run() {
+                println!("{}", err);
+            }
         }
         Err(msg) => println!("{}", msg),
     }
