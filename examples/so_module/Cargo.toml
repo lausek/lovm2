@@ -1,5 +1,5 @@
 [package]
-name = "lovm2_extend"
+name = "so_module"
 version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "lovm2_extend"
+crate-type = ["cdylib"]
 
 [dependencies]
-lovm2 = { git = "https://github.com/lausek/lovm2" }
+lovm2_internals = { path = "../../lovm2_internals" }
