@@ -22,7 +22,7 @@ pub trait ModuleProtocol {
         unimplemented!()
     }
 
-    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
+    fn slot(&self, _name: &Variable) -> Option<Rc<dyn CallProtocol>> {
         unimplemented!()
     }
 }

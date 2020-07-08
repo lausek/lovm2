@@ -1,7 +1,7 @@
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::module::{create_standard_module, Module, ModuleProtocol};
+use crate::module::{create_standard_module, ModuleProtocol};
 use crate::value::{box_ruvalue, RuValue};
 
 pub const ENTRY_POINT: &str = "main";

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::code::{CallProtocol, CodeObject, CodeObjectRef};
+use crate::code::CodeObjectRef;
 use crate::var::Variable;
 
 pub struct Slots(HashMap<Variable, CodeObjectRef>);
