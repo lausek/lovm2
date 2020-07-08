@@ -1,11 +1,14 @@
 use libloading::{Error, Library, Symbol};
+use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use crate::code::{CallProtocol, ExternFunction};
+use crate::code::{CallProtocol, CodeObjectRef, ExternFunction};
 use crate::context::Context;
 use crate::module::{ModuleProtocol, Slots};
 use crate::var::Variable;
+
+pub type ExternInitializer = extern "C" fn(&mut HashMap<Variable, CodeObjectRef>);
 
 pub struct SharedObjectModule {
     lib: Rc<Library>,
@@ -13,7 +16,18 @@ pub struct SharedObjectModule {
 
 impl ModuleProtocol for SharedObjectModule {
     fn slots(&self) -> Slots {
-        unimplemented!()
+        unsafe {
+            let lookup: Result<Symbol<ExternInitializer>, Error> =
+                self.lib.get("lovm2_module_slots".as_bytes());
+            match lookup {
+                Ok(initializer) => {
+                    let mut slots = HashMap::new();
+                    initializer(&mut slots);
+                    Slots::from(slots)
+                }
+                Err(_) => unimplemented!(),
+            }
+        }
     }
 
     fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
