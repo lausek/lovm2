@@ -23,13 +23,14 @@ impl Vm {
     }
 
     // TODO: add `ImportOptions` parameter to specify what names to import
-    // TODO: allow import `Module` here directly
-    pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Result<(), String> {
-        self.ctx.load_and_import_all(module)
+    pub fn load_and_import_all<T>(&mut self, module: T) -> Result<(), String>
+    where
+        T: Into<Box<dyn ModuleProtocol>>,
+    {
+        self.ctx.load_and_import_all(module.into())
     }
 
     pub fn run_object(&mut self, co: &dyn CallProtocol) -> Result<(), String> {
-        // TODO: refactor this into an own function and use in `run_bytecode` as well
         self.ctx.push_frame(0);
         co.run(&mut self.ctx)?;
         self.ctx.pop_frame();

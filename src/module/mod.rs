@@ -35,6 +35,12 @@ pub struct Module {
     pub slots: HashMap<Variable, CodeObjectRef>,
 }
 
+impl Into<Box<dyn ModuleProtocol>> for Module {
+    fn into(self) -> Box<dyn ModuleProtocol> {
+        Box::new(self) as Box<dyn ModuleProtocol>
+    }
+}
+
 impl ModuleProtocol for Module {
     fn slots(&self) -> Slots {
         Slots::from(self.slots.clone())
@@ -52,10 +58,6 @@ impl Module {
         Self {
             slots: HashMap::new(),
         }
-    }
-
-    pub fn boxed(self) -> Box<dyn ModuleProtocol> {
-        Box::new(self) as Box<dyn ModuleProtocol>
     }
 
     pub fn load_from_file<T>(path: T) -> Result<Box<dyn ModuleProtocol>, String>

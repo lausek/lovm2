@@ -61,6 +61,12 @@ impl SharedObjectModule {
     }
 }
 
+impl Into<Box<dyn ModuleProtocol>> for SharedObjectModule {
+    fn into(self) -> Box<dyn ModuleProtocol> {
+        Box::new(self) as Box<dyn ModuleProtocol>
+    }
+}
+
 pub struct SharedObjectSlot(Rc<Library>, String);
 
 impl SharedObjectSlot {
