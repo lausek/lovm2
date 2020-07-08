@@ -13,22 +13,12 @@ pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variab
 
 pub struct SharedObjectModule {
     lib: Rc<Library>,
+    slots: Slots,
 }
 
 impl ModuleProtocol for SharedObjectModule {
-    fn slots(&self) -> Slots {
-        unsafe {
-            let lookup: Result<Symbol<ExternInitializer>, Error> =
-                self.lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
-            match lookup {
-                Ok(initializer) => {
-                    let mut slots = HashMap::new();
-                    initializer(self.lib.clone(), &mut slots);
-                    Slots::from(slots)
-                }
-                Err(_) => unimplemented!(),
-            }
-        }
+    fn slots(&self) -> &Slots {
+        &self.slots
     }
 
     fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
@@ -36,7 +26,7 @@ impl ModuleProtocol for SharedObjectModule {
             let lookup: Result<Symbol<ExternFunction>, Error> = self.lib.get(name.as_bytes());
             match lookup {
                 Ok(_) => Some(
-                    Rc::new(SharedObjectSlot(self.lib.clone(), name.to_string()))
+                    Rc::new(SharedObjectSlot::new(self.lib.clone(), name.to_string()))
                         as Rc<dyn CallProtocol>,
                 ),
                 Err(_) => None,
@@ -47,7 +37,22 @@ impl ModuleProtocol for SharedObjectModule {
 
 impl SharedObjectModule {
     pub fn from_library(lib: Library) -> Self {
-        Self { lib: Rc::new(lib) }
+        unsafe {
+            let lib = Rc::new(lib);
+            let lookup: Result<Symbol<ExternInitializer>, Error> =
+                lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
+            match lookup {
+                Ok(initializer) => {
+                    let mut slots = HashMap::new();
+                    initializer(lib.clone(), &mut slots);
+                    Self {
+                        lib,
+                        slots: Slots::from(slots),
+                    }
+                }
+                Err(_) => unimplemented!(),
+            }
+        }
     }
 
     pub fn load_from_file<T>(path: T) -> Result<SharedObjectModule, String>

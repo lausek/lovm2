@@ -17,7 +17,7 @@ pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
 pub trait ModuleProtocol {
-    fn slots(&self) -> Slots {
+    fn slots(&self) -> &Slots {
         unimplemented!()
     }
 
@@ -38,8 +38,8 @@ impl Into<Box<dyn ModuleProtocol>> for Module {
 }
 
 impl ModuleProtocol for Module {
-    fn slots(&self) -> Slots {
-        self.slots.clone()
+    fn slots(&self) -> &Slots {
+        &self.slots
     }
 
     fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
