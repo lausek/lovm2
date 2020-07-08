@@ -47,7 +47,7 @@ impl Context {
             interrupts: [None; 256],
             load_paths: vec![format!(
                 "{}/.local/lib/lovm2/",
-                std::env::home_dir().unwrap().to_str().unwrap()
+                dirs::home_dir().unwrap().to_str().unwrap()
             )],
 
             lstack: vec![],
