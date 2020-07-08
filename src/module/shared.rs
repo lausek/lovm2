@@ -63,6 +63,12 @@ impl SharedObjectModule {
 
 pub struct SharedObjectSlot(Rc<Library>, String);
 
+impl SharedObjectSlot {
+    pub fn new(lib: Rc<Library>, name: String) -> Self {
+        Self(lib, name)
+    }
+}
+
 impl CallProtocol for SharedObjectSlot {
     fn run(&self, ctx: &mut Context) -> Result<(), String> {
         unsafe {

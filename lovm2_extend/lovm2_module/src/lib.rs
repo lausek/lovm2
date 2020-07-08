@@ -3,7 +3,7 @@ extern crate syn;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use syn::{Ident, ItemMod, export::Span};
+use syn::{Ident, ItemFn, ItemMod, export::Span};
 
 use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
 
@@ -16,12 +16,19 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
         .map(|item| match item {
             syn::Item::Fn(item_fn) => item_fn,
             _ => panic!("anything except function not expected inside lovm2_module."),
-        });
+        })
+        .collect::<Vec<ItemFn>>();
+    let names = items.iter().map(|item_fn| item_fn.sig.ident.to_string());
     let lovm2_initializer = Ident::new(EXTERN_LOVM2_INITIALIZER, Span::call_site());
 
     let result = quote! {
         pub extern fn #lovm2_initializer(lib: Rc<Library>, slots: &mut HashMap<Variable, CodeObjectRef>) {
-            // #(  slots.insert(#items.sig.ident); )*
+            #(
+                slots.insert(
+                    Variable::from(#names),
+                    Rc::new(SharedObjectSlot::new(lib.clone(), #names.to_string()))
+                );
+            )*
         }
 
         #( pub extern "C" #items )*
