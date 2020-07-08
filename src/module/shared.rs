@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use crate::code::{CallProtocol, ExternFunction};
 use crate::context::Context;
-use crate::module::ModuleProtocol;
+use crate::module::{ModuleProtocol, Slots};
 use crate::var::Variable;
 
 pub struct SharedObjectModule {
@@ -12,6 +12,10 @@ pub struct SharedObjectModule {
 }
 
 impl ModuleProtocol for SharedObjectModule {
+    fn slots(&self) -> Slots {
+        unimplemented!()
+    }
+
     fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
         unsafe {
             let lookup: Result<Symbol<ExternFunction>, Error> = self.lib.get(name.as_bytes());

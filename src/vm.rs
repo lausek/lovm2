@@ -1,7 +1,7 @@
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::module::{create_standard_module, Module};
+use crate::module::{create_standard_module, Module, ModuleProtocol};
 use crate::value::{box_ruvalue, RuValue};
 
 pub const ENTRY_POINT: &str = "main";
@@ -13,7 +13,8 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
-        ctx.load_and_import_all(create_standard_module()).unwrap();
+        ctx.load_and_import_all(Box::new(create_standard_module()) as Box<dyn ModuleProtocol>)
+            .unwrap();
         Self { ctx }
     }
 
@@ -22,7 +23,8 @@ impl Vm {
     }
 
     // TODO: add `ImportOptions` parameter to specify what names to import
-    pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
+    // TODO: allow import `Module` here directly
+    pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Result<(), String> {
         self.ctx.load_and_import_all(module)
     }
 

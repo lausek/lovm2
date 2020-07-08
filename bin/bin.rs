@@ -67,7 +67,7 @@ fn main() {
             println!("{:#?}", result);
 
             let mut vm = Vm::new();
-            vm.load_and_import_all(result).unwrap();
+            vm.load_and_import_all(result.boxed()).unwrap();
 
             if let Err(err) = vm.run() {
                 println!("{}", err);

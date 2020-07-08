@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
-use crate::module::Module;
+use crate::module::{Module, ModuleProtocol};
 use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
@@ -28,7 +28,7 @@ fn find_module(name: &str, load_paths: &Vec<String>) -> Result<String, String> {
 }
 
 pub struct Context {
-    pub modules: Vec<Module>,
+    pub modules: Vec<Box<dyn ModuleProtocol>>,
     pub globals: HashMap<Variable, RuValueRef>,
     pub scope: HashMap<Variable, CodeObjectRef>,
     pub interrupts: [Option<Rc<Box<InterruptFn>>>; 256],
@@ -61,8 +61,8 @@ impl Context {
         self.load_and_import_all(module)
     }
 
-    pub fn load_and_import_all(&mut self, module: Module) -> Result<(), String> {
-        for (key, co_object) in module.slots.iter() {
+    pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Result<(), String> {
+        for (key, co_object) in module.slots().iter() {
             if let Some(_) = self.scope.insert(key.clone(), co_object.clone()) {
                 return Err(format!("import conflict: `{}` is already defined", key));
             }

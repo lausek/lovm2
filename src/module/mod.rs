@@ -1,5 +1,6 @@
 pub mod builder;
 pub mod shared;
+pub mod slots;
 pub mod standard;
 
 use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
@@ -13,20 +14,32 @@ use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
 pub use self::shared::SharedObjectModule;
+pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
 pub trait ModuleProtocol {
-    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>>;
+    fn slots(&self) -> Slots {
+        unimplemented!()
+    }
+
+    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
+        unimplemented!()
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
     #[serde(serialize_with = "serialize_slots")]
     #[serde(deserialize_with = "deserialize_slots")]
+    // TODO: use `Slots` here
     pub slots: HashMap<Variable, CodeObjectRef>,
 }
 
 impl ModuleProtocol for Module {
+    fn slots(&self) -> Slots {
+        Slots::from(self.slots.clone())
+    }
+
     fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
         self.slots
             .get(name)
@@ -41,18 +54,22 @@ impl Module {
         }
     }
 
-    pub fn load_from_file<T>(path: T) -> Result<Module, String>
+    pub fn boxed(self) -> Box<dyn ModuleProtocol> {
+        Box::new(self) as Box<dyn ModuleProtocol>
+    }
+
+    pub fn load_from_file<T>(path: T) -> Result<Box<dyn ModuleProtocol>, String>
     where
         T: AsRef<Path>,
     {
         // try loading module as shared object
-        if let Ok(so_module) = SharedObjectModule::load_from_file(path) {
-            return Ok(so_module);
+        if let Ok(so_module) = SharedObjectModule::load_from_file(&path) {
+            return Ok(Box::new(so_module) as Box<dyn ModuleProtocol>);
         }
 
         let file = File::open(path).map_err(|e| e.to_string())?;
         let module: Module = serde_cbor::from_reader(file).map_err(|e| e.to_string())?;
-        Ok(module)
+        Ok(Box::new(module) as Box<dyn ModuleProtocol>)
     }
 
     // TODO: could lead to errors when two threads serialize to the same file
