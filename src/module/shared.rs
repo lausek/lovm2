@@ -8,7 +8,8 @@ use crate::context::Context;
 use crate::module::{ModuleProtocol, Slots};
 use crate::var::Variable;
 
-pub type ExternInitializer = extern "C" fn(&mut HashMap<Variable, CodeObjectRef>);
+pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
+pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CodeObjectRef>);
 
 pub struct SharedObjectModule {
     lib: Rc<Library>,
@@ -18,11 +19,11 @@ impl ModuleProtocol for SharedObjectModule {
     fn slots(&self) -> Slots {
         unsafe {
             let lookup: Result<Symbol<ExternInitializer>, Error> =
-                self.lib.get("lovm2_module_slots".as_bytes());
+                self.lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
             match lookup {
                 Ok(initializer) => {
                     let mut slots = HashMap::new();
-                    initializer(&mut slots);
+                    initializer(self.lib.clone(), &mut slots);
                     Slots::from(slots)
                 }
                 Err(_) => unimplemented!(),

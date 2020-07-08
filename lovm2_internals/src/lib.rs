@@ -3,9 +3,7 @@ extern crate syn;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use syn::{ItemFn, ItemMod};
-
-use std::collections::HashMap;
+use syn::ItemFn;
 
 #[proc_macro_attribute]
 pub fn lovm2_builtin(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -35,27 +33,4 @@ pub fn lovm2_builtin(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     result.into()
-}
-
-#[proc_macro_attribute]
-pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    /*
-    let tree = syn::parse::<ItemMod>(item).unwrap();
-    let items = tree.content
-        .unwrap().1
-        .into_iter()
-        .map(|item| match item {
-            syn::Item::Fn(item_fn) => item_fn,
-            _ => panic!("anything except function not expected inside lovm2_module."),
-        });
-
-    let result = quote! {
-        pub extern fn lovm2_module_slots(slots: &mut HashMap<Variable, CodeObjectRef>) {
-            #(  slots.insert(#items.sig.ident); )*
-        }
-    };
-    
-    result.into()
-    */
-    item.into()
 }

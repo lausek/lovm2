@@ -1,4 +1,4 @@
-use lovm2_internals::lovm2_module;
+use lovm2_extend::prelude::*;
 
 #[lovm2_module]
 mod shared {

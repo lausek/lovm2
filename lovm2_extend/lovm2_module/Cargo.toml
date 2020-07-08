@@ -1,0 +1,17 @@
+[package]
+name = "lovm2_module"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "lovm2_module"
+proc-macro = true
+
+[dependencies]
+lovm2 = { path = "../../" }
+quote = "1.0"
+
+[dependencies.syn]
+version = "1.0.33"
+features = ["full"]

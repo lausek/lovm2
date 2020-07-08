@@ -12,9 +12,8 @@ license-file = "LICENSE"
 description = "a lightweight virtual machine with a focus on simplicity and extendability."
 
 [lib]
-proc-macro = true
 name = "lovm2_internals"
-path = "src/lib.rs"
+proc-macro = true
 
 [dependencies]
 quote = "1.0"
