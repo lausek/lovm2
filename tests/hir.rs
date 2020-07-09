@@ -303,3 +303,37 @@ fn drop_call_values() {
         assert!(ctx.vstack.is_empty());
     });
 }
+
+#[test]
+fn cast_to_string() {
+    let mut builder = ModuleBuilder::new();
+
+    let mut main = HIR::new();
+    main.push(Assign::local(var!(a), Cast::to_str(10)));
+    main.push(Assign::local(var!(b), Cast::to_str(10.1)));
+    main.push(Assign::local(var!(c), Cast::to_str("10")));
+    main.push(Assign::local(var!(d), Cast::to_str(true)));
+    main.push(Interrupt::new(10));
+
+    builder.add("main").hir(main);
+
+    run_module_test(builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(
+            RuValue::Str("10".to_string()),
+            *frame.locals.get(&var!(a)).unwrap()
+        );
+        assert_eq!(
+            RuValue::Str("10.1".to_string()),
+            *frame.locals.get(&var!(b)).unwrap()
+        );
+        assert_eq!(
+            RuValue::Str("10".to_string()),
+            *frame.locals.get(&var!(c)).unwrap()
+        );
+        assert_eq!(
+            RuValue::Str("true".to_string()),
+            *frame.locals.get(&var!(d)).unwrap()
+        );
+    });
+}

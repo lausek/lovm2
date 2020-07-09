@@ -53,7 +53,8 @@ impl RuValue {
     }
 
     pub fn into_str(self) -> CastResult {
-        unimplemented!()
+        let s = format!("{}", self);
+        Ok(RuValue::Str(s))
     }
 
     pub fn type_id(&self) -> u16 {
