@@ -26,7 +26,7 @@ macro_rules! define_test {
             builder.add(stringify!($fname)).hir(hir);
         )*
 
-        let mut vm = Vm::new();
+            let mut vm = Vm::new();
         let called_ref = called.clone();
         vm.context_mut().set_interrupt(10, move |ctx| {
             called_ref.set(true);
@@ -90,9 +90,9 @@ fn easy_loop() {
         main {
             Assign::local(var!(n), 0);
             Repeat::until(Expr::eq(var!(n), 10))
-                    .push(call!(print, n))
-                    .push(Assign::local(var!(n), Expr::add(var!(n), 1)));
-        }
+                .push(call!(print, n))
+                .push(Assign::local(var!(n), Expr::add(var!(n), 1)));
+            }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
@@ -107,9 +107,9 @@ fn explicit_break() {
         main {
             Assign::local(var!(n), 0);
             Repeat::endless()
-                    .push(Assign::local(var!(n), Expr::add(var!(n), 1)))
-                    .push(Break::new());
-        }
+                .push(Assign::local(var!(n), Expr::add(var!(n), 1)))
+                .push(Break::new());
+            }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
@@ -168,58 +168,72 @@ fn try_casting() {
     }
 }
 
-/*
- * TODO: fix these tests
 #[test]
 fn true_branching() {
-    define_test! {
-        main {
-            Assign::local("n".into(), CoValue::Int(0).into());
-            Branch::new()
-                    .add_condition(
-                        Expr::not(CoValue::Bool(false).into()),
-                        Block::new()
-                                .push(Assign::local("n".into(), CoValue::Int(2).into()))
-                    )
-                    .default_condition(
-                        Block::new()
-                                .push(Assign::local("n".into(), CoValue::Int(1).into()))
-                    );
-        }
+    let mut builder = ModuleBuilder::new();
+    let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
-        #ensure (|ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(2), *frame.locals.get("n").unwrap());
-        })
-    }
+    let mut hir = HIR::new();
+    hir.push(Assign::local("n".into(), CoValue::Int(0)));
+
+    let mut branch = Branch::new();
+    branch.add_condition(Expr::not(CoValue::Bool(false)))
+        .push(Assign::local("n".into(), CoValue::Int(2)));
+    branch.default_condition()
+        .push(Assign::local("n".into(), CoValue::Int(1)));
+    hir.push(branch);
+
+    hir.push(Interrupt::new(10));
+
+    builder.add("main").hir(hir);
+
+    let mut vm = Vm::new();
+    let called_ref = called.clone();
+    vm.context_mut().set_interrupt(10, move |ctx| {
+        called_ref.set(true);
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(RuValue::Int(2), *frame.locals.get(&var!(n)).unwrap());
+    });
+
+    let module = builder.build().unwrap();
+    vm.load_and_import_all(module).unwrap();
+    vm.run().unwrap();
+
+    assert!(called.get());
 }
 
 #[test]
 fn multiple_branches() {
-    define_test! {
-        main {
-            Assign::local("n".into(), CoValue::Int(5).into());
-            Branch::new()
-                    .add_condition(
-                        Expr::eq(Expr::rem(Variable::from("n").into(), CoValue::Int(3).into()), CoValue::Int(0).into()),
-                        Block::new()
-                                .push(Assign::local("result".into(), CoValue::Str("fizz".to_string()).into()))
-                    )
-                    .add_condition(
-                        Expr::eq(Expr::rem(Variable::from("n").into(), CoValue::Int(5).into()), CoValue::Int(0).into()),
-                        Block::new()
-                                .push(Assign::local("result".into(), CoValue::Str("buzz".to_string()).into()))
-                    )
-                    .default_condition(
-                        Block::new()
-                                .push(Assign::local("result".into(), CoValue::Str("none".to_string()).into()))
-                    );
-        }
+    let mut builder = ModuleBuilder::new();
+    let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
-        #ensure (|ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Str("buzz".to_string()), *frame.locals.get("result").unwrap());
-        })
-    }
+    let mut hir = HIR::new();
+    hir.push(Assign::local("n".into(), CoValue::Int(5)));
+
+    let mut branch = Branch::new();
+    branch.add_condition(Expr::eq(Expr::rem(var!(n), CoValue::Int(3)), CoValue::Int(0)))
+            .push(Assign::local(var!(result), CoValue::Str("fizz".to_string())));
+    branch.add_condition(Expr::eq(Expr::rem(var!(n), CoValue::Int(5)), CoValue::Int(0)))
+            .push(Assign::local(var!(result), CoValue::Str("buzz".to_string())));
+    branch.default_condition()
+        .push(Assign::local(var!(result), CoValue::Str("none".to_string())));
+    hir.push(branch);
+
+    hir.push(Interrupt::new(10));
+
+    builder.add("main").hir(hir);
+
+    let mut vm = Vm::new();
+    let called_ref = called.clone();
+    vm.context_mut().set_interrupt(10, move |ctx| {
+        called_ref.set(true);
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(RuValue::Str("buzz".to_string()), *frame.locals.get(&var!(result)).unwrap());
+    });
+
+    let module = builder.build().unwrap();
+    vm.load_and_import_all(module).unwrap();
+    vm.run().unwrap();
+
+    assert!(called.get());
 }
-*/
