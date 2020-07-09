@@ -20,6 +20,7 @@ use crate::value::CoValue;
 use crate::var::Variable;
 
 pub struct HIR {
+    pub args: Vec<Variable>,
     pub consts: Vec<CoValue>,
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
@@ -30,12 +31,19 @@ pub struct HIR {
 impl HIR {
     pub fn new() -> Self {
         Self {
+            args: vec![],
             consts: vec![],
             locals: vec![],
             globals: vec![],
 
             code: Block::new(),
         }
+    }
+
+    pub fn with_args(args: Vec<Variable>) -> Self {
+        let mut hir = Self::new();
+        hir.args = args;
+        hir
     }
 
     pub fn build(self) -> Result<CodeObject, String> {

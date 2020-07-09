@@ -177,8 +177,8 @@ fn try_casting() {
 #[test]
 fn true_branching() {
     let mut builder = ModuleBuilder::new();
-
     let mut hir = HIR::new();
+
     hir.push(Assign::local("n".into(), CoValue::Int(0)));
 
     let mut branch = Branch::new();
@@ -203,8 +203,8 @@ fn true_branching() {
 #[test]
 fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
-
     let mut hir = HIR::new();
+
     hir.push(Assign::local("n".into(), CoValue::Int(5)));
 
     let mut branch = Branch::new();
@@ -242,5 +242,25 @@ fn multiple_branches() {
             RuValue::Str("buzz".to_string()),
             *frame.locals.get(&var!(result)).unwrap()
         );
+    });
+}
+
+#[test]
+fn taking_parameters() {
+    let mut builder = ModuleBuilder::new();
+
+    let mut called = HIR::with_args(vec![var!(a), var!(b)]);
+    called.push(Interrupt::new(10));
+
+    let mut main = HIR::new();
+    main.push(Call::new("called").arg(2).arg(7));
+
+    builder.add("called").hir(called);
+    builder.add("main").hir(main);
+
+    run_module_test(builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(RuValue::Int(2), *frame.locals.get(&var!(a)).unwrap());
+        assert_eq!(RuValue::Int(7), *frame.locals.get(&var!(b)).unwrap());
     });
 }

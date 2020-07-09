@@ -30,14 +30,11 @@ impl LoweringRuntime {
         }
     }
 
-    pub fn offset(&self) -> usize {
-        // TODO: avoid 0 - 1
-        self.code.len() - 1
-    }
-
     pub fn complete(hir: HIR) -> Result<CodeObject, String> {
         let mut lowru = LoweringRuntime::new();
         let hir_elements = hir.code.into_iter();
+
+        lowru.add_prelude(hir.args)?;
 
         for element in hir_elements {
             element.lower(&mut lowru);
@@ -49,6 +46,21 @@ impl LoweringRuntime {
             .globals(lowru.globals)
             .code(lowru.code)
             .build()
+    }
+
+    pub fn add_prelude(&mut self, args: Vec<Variable>) -> Result<(), String> {
+        // read in code object parameters from value stack
+        // read this in reverse, because last parameter is top of stack
+        for arg in args.into_iter().rev() {
+            let lidx = self.index_local(&arg);
+            self.emit(Instruction::Movel(lidx as u16));
+        }
+        Ok(())
+    }
+
+    pub fn offset(&self) -> usize {
+        // TODO: avoid 0 - 1
+        self.code.len() - 1
     }
 
     pub fn emit(&mut self, inx: Instruction) {
