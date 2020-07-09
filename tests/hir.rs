@@ -264,3 +264,23 @@ fn taking_parameters() {
         assert_eq!(RuValue::Int(7), *frame.locals.get(&var!(b)).unwrap());
     });
 }
+
+#[test]
+fn return_values() {
+    let mut builder = ModuleBuilder::new();
+
+    let mut returner = HIR::new();
+    returner.push(Return::value(10));
+
+    let mut main = HIR::new();
+    main.push(Assign::local(var!(n), Call::new("returner")));
+    main.push(Interrupt::new(10));
+
+    builder.add("returner").hir(returner);
+    builder.add("main").hir(main);
+
+    run_module_test(builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(n)).unwrap());
+    });
+}

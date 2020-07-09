@@ -4,6 +4,7 @@ use crate::hir::call::Call;
 use crate::hir::include::Include;
 use crate::hir::interrupt::Interrupt;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::r#return::Return;
 use crate::hir::repeat::{Break, Continue, Repeat};
 
 #[derive(Clone)]
@@ -16,6 +17,7 @@ pub enum HIRElement {
     Include(Include),
     Interrupt(Interrupt),
     Repeat(Repeat),
+    Return(Return),
 }
 
 impl Lowering for HIRElement {
@@ -29,6 +31,7 @@ impl Lowering for HIRElement {
             HIRElement::Include(include) => include.lower(runtime),
             HIRElement::Interrupt(interrupt) => interrupt.lower(runtime),
             HIRElement::Repeat(repeat) => repeat.lower(runtime),
+            HIRElement::Return(ret) => ret.lower(runtime),
         }
     }
 }
@@ -84,5 +87,11 @@ impl From<Repeat> for HIRElement {
 impl From<&mut Repeat> for HIRElement {
     fn from(repeat: &mut Repeat) -> Self {
         HIRElement::Repeat(repeat.clone())
+    }
+}
+
+impl From<Return> for HIRElement {
+    fn from(ret: Return) -> Self {
+        HIRElement::Return(ret)
     }
 }

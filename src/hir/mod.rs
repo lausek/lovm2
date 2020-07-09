@@ -9,6 +9,7 @@ pub mod include;
 pub mod interrupt;
 pub mod lowering;
 pub mod repeat;
+pub mod r#return;
 
 pub mod prelude;
 
