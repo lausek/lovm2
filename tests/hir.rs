@@ -1,9 +1,27 @@
+#![allow(unused_parens)]
+
 use lovm2::expr::Expr;
 use lovm2::hir::prelude::*;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
 use lovm2::Context;
-use lovm2::ModuleBuilder;
+use lovm2::{Module, ModuleBuilder};
+
+fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
+    let called = std::rc::Rc::new(std::cell::Cell::new(false));
+
+    let mut vm = Vm::new();
+    let called_ref = called.clone();
+    vm.context_mut().set_interrupt(10, move |ctx| {
+        called_ref.set(true);
+        testfn(ctx);
+    });
+
+    vm.load_and_import_all(module).unwrap();
+    vm.run().unwrap();
+
+    assert!(called.get());
+}
 
 #[macro_export]
 macro_rules! define_test {
@@ -12,7 +30,6 @@ macro_rules! define_test {
             #ensure $ensure:tt
     } => {{
         let mut builder = ModuleBuilder::new();
-        let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
         $(
             let hir = {
@@ -26,18 +43,7 @@ macro_rules! define_test {
             builder.add(stringify!($fname)).hir(hir);
         )*
 
-            let mut vm = Vm::new();
-        let called_ref = called.clone();
-        vm.context_mut().set_interrupt(10, move |ctx| {
-            called_ref.set(true);
-            $ensure(ctx);
-        });
-
-        let module = builder.build().unwrap();
-        vm.load_and_import_all(module).unwrap();
-        vm.run().unwrap();
-
-        assert!(called.get());
+        run_module_test(builder.build().unwrap(), $ensure);
     }};
 }
 
@@ -171,15 +177,16 @@ fn try_casting() {
 #[test]
 fn true_branching() {
     let mut builder = ModuleBuilder::new();
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
     let mut hir = HIR::new();
     hir.push(Assign::local("n".into(), CoValue::Int(0)));
 
     let mut branch = Branch::new();
-    branch.add_condition(Expr::not(CoValue::Bool(false)))
+    branch
+        .add_condition(Expr::not(CoValue::Bool(false)))
         .push(Assign::local("n".into(), CoValue::Int(2)));
-    branch.default_condition()
+    branch
+        .default_condition()
         .push(Assign::local("n".into(), CoValue::Int(1)));
     hir.push(branch);
 
@@ -187,53 +194,53 @@ fn true_branching() {
 
     builder.add("main").hir(hir);
 
-    let mut vm = Vm::new();
-    let called_ref = called.clone();
-    vm.context_mut().set_interrupt(10, move |ctx| {
-        called_ref.set(true);
+    run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(RuValue::Int(2), *frame.locals.get(&var!(n)).unwrap());
     });
-
-    let module = builder.build().unwrap();
-    vm.load_and_import_all(module).unwrap();
-    vm.run().unwrap();
-
-    assert!(called.get());
 }
 
 #[test]
 fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
     let mut hir = HIR::new();
     hir.push(Assign::local("n".into(), CoValue::Int(5)));
 
     let mut branch = Branch::new();
-    branch.add_condition(Expr::eq(Expr::rem(var!(n), CoValue::Int(3)), CoValue::Int(0)))
-            .push(Assign::local(var!(result), CoValue::Str("fizz".to_string())));
-    branch.add_condition(Expr::eq(Expr::rem(var!(n), CoValue::Int(5)), CoValue::Int(0)))
-            .push(Assign::local(var!(result), CoValue::Str("buzz".to_string())));
-    branch.default_condition()
-        .push(Assign::local(var!(result), CoValue::Str("none".to_string())));
+    branch
+        .add_condition(Expr::eq(
+            Expr::rem(var!(n), CoValue::Int(3)),
+            CoValue::Int(0),
+        ))
+        .push(Assign::local(
+            var!(result),
+            CoValue::Str("fizz".to_string()),
+        ));
+    branch
+        .add_condition(Expr::eq(
+            Expr::rem(var!(n), CoValue::Int(5)),
+            CoValue::Int(0),
+        ))
+        .push(Assign::local(
+            var!(result),
+            CoValue::Str("buzz".to_string()),
+        ));
+    branch.default_condition().push(Assign::local(
+        var!(result),
+        CoValue::Str("none".to_string()),
+    ));
     hir.push(branch);
 
     hir.push(Interrupt::new(10));
 
     builder.add("main").hir(hir);
 
-    let mut vm = Vm::new();
-    let called_ref = called.clone();
-    vm.context_mut().set_interrupt(10, move |ctx| {
-        called_ref.set(true);
+    run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Str("buzz".to_string()), *frame.locals.get(&var!(result)).unwrap());
+        assert_eq!(
+            RuValue::Str("buzz".to_string()),
+            *frame.locals.get(&var!(result)).unwrap()
+        );
     });
-
-    let module = builder.build().unwrap();
-    vm.load_and_import_all(module).unwrap();
-    vm.run().unwrap();
-
-    assert!(called.get());
 }
