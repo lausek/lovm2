@@ -51,7 +51,7 @@ fn print(ctx: &mut Context) -> Result<(), String> {
         .map(|x| format!("{}", x))
         .collect();
     print!("{}", args.join(" "));
-    ctx.push_value(RuValue::none());
+    ctx.push_value(RuValue::Nil);
     Ok(())
 }
 
@@ -61,7 +61,7 @@ fn set(ctx: &mut Context) -> Result<(), String> {
     let key = ctx.pop_value().unwrap();
     let mut target = ctx.pop_value().unwrap();
 
-    ctx.push_value(RuValue::none());
+    ctx.push_value(RuValue::Nil);
 
     target.set(key, value)
 }

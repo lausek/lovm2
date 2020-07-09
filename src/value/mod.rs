@@ -14,6 +14,7 @@ pub use self::ru_value::{box_ruvalue, RuValue, RuValueRef};
 
 pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
     match covalue {
+        CoValue::Nil => RuValue::Nil,
         CoValue::Bool(n) => RuValue::Bool(*n),
         CoValue::Int(n) => RuValue::Int(*n),
         CoValue::Float(n) => RuValue::Float(*n),

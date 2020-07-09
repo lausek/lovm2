@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum CoValue {
+    Nil,
     Bool(bool),
     Int(i64),
     Float(f64),
@@ -43,6 +44,7 @@ impl std::hash::Hash for CoValue {
         H: std::hash::Hasher,
     {
         match self {
+            CoValue::Nil => unimplemented!(),
             CoValue::Bool(b) => hasher.write_u8(*b as u8),
             CoValue::Int(n) => hasher.write_i64(*n),
             CoValue::Float(_) => unimplemented!(),

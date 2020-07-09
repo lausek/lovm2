@@ -14,6 +14,7 @@ pub fn box_ruvalue(value: RuValue) -> RuValueRef {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RuValue {
+    Nil,
     Bool(bool),
     Int(i64),
     Float(f64),
@@ -23,10 +24,6 @@ pub enum RuValue {
 }
 
 impl RuValue {
-    pub fn none() -> Self {
-        Self::Int(0)
-    }
-
     pub fn get(&self, key: RuValue) -> Result<RuValue, String> {
         match self {
             RuValue::Dict(dict) => match dict.borrow().get(&key) {
@@ -82,6 +79,7 @@ impl std::hash::Hash for RuValue {
         H: std::hash::Hasher,
     {
         match self {
+            RuValue::Nil => unimplemented!(),
             RuValue::Bool(b) => hasher.write_u8(*b as u8),
             RuValue::Int(n) => hasher.write_i64(*n),
             RuValue::Float(_) => unimplemented!(),
