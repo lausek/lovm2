@@ -1,6 +1,6 @@
 [package]
 name = "lovm2"
-version = "0.2.5"
+version = "0.2.7"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
