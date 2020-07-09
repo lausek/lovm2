@@ -1,6 +1,7 @@
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::value::CoValue;
 
 #[derive(Clone)]
 pub struct Return {
@@ -8,8 +9,10 @@ pub struct Return {
 }
 
 impl Return {
-    pub fn none() -> Self {
-        Self { expr: 0.into() }
+    pub fn nil() -> Self {
+        Self {
+            expr: CoValue::Nil.into(),
+        }
     }
 
     pub fn value<T>(expr: T) -> Self

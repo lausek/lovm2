@@ -49,11 +49,9 @@ impl HIR {
     }
 
     pub fn build(mut self) -> Result<CodeObject, String> {
-        if let Some(last) = self.code.last_mut() {
-            match last {
-                HIRElement::Return(_) => {}
-                _ => self.code.push(Return::none()),
-            }
+        match self.code.last_mut() {
+            Some(HIRElement::Return(_)) => {}
+            _ => self.code.push(Return::nil()),
         }
         // TODO: optimise codeobject here; eg. `Not, Jf` is equal to `Jt`
         LoweringRuntime::complete(self)

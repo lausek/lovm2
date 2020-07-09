@@ -289,8 +289,7 @@ fn return_values() {
 fn drop_call_values() {
     let mut builder = ModuleBuilder::new();
 
-    let mut returner = HIR::new();
-    returner.push(Return::none());
+    let returner = HIR::new();
 
     let mut main = HIR::new();
     main.push(Call::new("returner"));
