@@ -8,6 +8,10 @@ pub struct Return {
 }
 
 impl Return {
+    pub fn none() -> Self {
+        Self { expr: 0.into() }
+    }
+
     pub fn value<T>(expr: T) -> Self
     where
         T: Into<Expr>,

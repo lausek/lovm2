@@ -7,6 +7,7 @@ use crate::var::Variable;
 pub struct Call {
     name: Variable,
     args: Vec<Expr>,
+    keep_value: bool,
 }
 
 impl Call {
@@ -15,8 +16,9 @@ impl Call {
         T: Into<Variable>,
     {
         Self {
-            name: name.into(),
             args: vec![],
+            name: name.into(),
+            keep_value: false,
         }
     }
 
@@ -26,6 +28,10 @@ impl Call {
     {
         self.args.push(expr.into());
         self
+    }
+
+    pub fn keep(&mut self, keep_value: bool) {
+        self.keep_value = keep_value;
     }
 }
 
@@ -37,5 +43,9 @@ impl Lowering for Call {
         }
         let gidx = runtime.index_global(&self.name);
         runtime.emit(Instruction::Call(argn as u8, gidx as u16));
+
+        if !self.keep_value {
+            runtime.emit(Instruction::Discard);
+        }
     }
 }

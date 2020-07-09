@@ -79,6 +79,9 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 let value = ctx.pop_value().unwrap();
                 ctx.globals.insert(variable.clone(), box_ruvalue(value));
             }
+            Instruction::Discard => {
+                ctx.pop_value().unwrap();
+            }
             Instruction::Dup => {
                 let last = ctx.stack_mut().last().cloned().unwrap();
                 ctx.push_value(last);

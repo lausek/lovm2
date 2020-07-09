@@ -1,3 +1,4 @@
+use lovm2::expr::Expr;
 use lovm2::hir::prelude::*;
 use lovm2::module::ModuleBuilder;
 use lovm2::vm::Vm;
@@ -6,8 +7,12 @@ fn loading() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
 
     let mut hir = HIR::new();
-    hir.push(Include::load("mfunky"));
-    hir.push(Call::new("gofunky"));
+    hir.push(Assign::local(var!(n), 0));
+
+    let mut repeat = Repeat::until(Expr::eq(var!(n), 10));
+    repeat.push(call!(print, n));
+    repeat.push(Assign::local(var!(n), Expr::add(var!(n), 1)));
+    hir.push(repeat);
 
     builder.add("main").hir(hir);
 

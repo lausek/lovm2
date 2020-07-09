@@ -139,7 +139,10 @@ impl Lowering for Expr {
                 };
                 runtime.emit(inx);
             }
-            Expr::Call(call) => call.lower(runtime),
+            Expr::Call(mut call) => {
+                call.keep(true);
+                call.lower(runtime);
+            }
             Expr::Cast(cast) => cast.lower(runtime),
             Expr::Value(val) => {
                 let cidx = runtime.index_const(&val);

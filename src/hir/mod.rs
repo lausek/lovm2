@@ -17,6 +17,7 @@ use crate::block::Block;
 use crate::code::CodeObject;
 use crate::element::HIRElement;
 use crate::lowering::LoweringRuntime;
+use crate::r#return::Return;
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -47,7 +48,13 @@ impl HIR {
         hir
     }
 
-    pub fn build(self) -> Result<CodeObject, String> {
+    pub fn build(mut self) -> Result<CodeObject, String> {
+        if let Some(last) = self.code.last_mut() {
+            match last {
+                HIRElement::Return(_) => {}
+                _ => self.code.push(Return::none()),
+            }
+        }
         // TODO: optimise codeobject here; eg. `Not, Jf` is equal to `Jt`
         LoweringRuntime::complete(self)
     }

@@ -23,6 +23,10 @@ pub enum RuValue {
 }
 
 impl RuValue {
+    pub fn none() -> Self {
+        Self::Int(0)
+    }
+
     pub fn get(&self, key: RuValue) -> Result<RuValue, String> {
         match self {
             RuValue::Dict(dict) => match dict.borrow().get(&key) {

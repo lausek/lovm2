@@ -13,6 +13,7 @@ pub enum Instruction {
     Movel(u16),
     // store into global variable
     Moveg(u16),
+    Discard,
     Dup,
     Swap,
 

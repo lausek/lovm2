@@ -284,3 +284,22 @@ fn return_values() {
         assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(n)).unwrap());
     });
 }
+
+#[test]
+fn drop_call_values() {
+    let mut builder = ModuleBuilder::new();
+
+    let mut returner = HIR::new();
+    returner.push(Return::none());
+
+    let mut main = HIR::new();
+    main.push(Call::new("returner"));
+    main.push(Interrupt::new(10));
+
+    builder.add("returner").hir(returner);
+    builder.add("main").hir(main);
+
+    run_module_test(builder.build().unwrap(), |ctx| {
+        assert!(ctx.vstack.is_empty());
+    });
+}
