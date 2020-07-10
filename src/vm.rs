@@ -53,7 +53,8 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
                 let local = ctx.frame_mut().unwrap().locals.get(variable).cloned();
-                ctx.push_value(local.unwrap());
+                let copy = local.unwrap().borrow().clone();
+                ctx.push_value(copy);
             }
             Instruction::Pushg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
@@ -72,7 +73,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 ctx.frame_mut()
                     .unwrap()
                     .locals
-                    .insert(variable.clone(), first);
+                    .insert(variable.clone(), box_ruvalue(first));
             }
             Instruction::Moveg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
