@@ -1,0 +1,6 @@
+**/.git/*
+**/target/*
+./build/*
+./dist/*
+**/.pytest_cache/*
+./pylovm2.egg-info/*

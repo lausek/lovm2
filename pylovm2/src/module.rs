@@ -26,10 +26,10 @@ impl Module {
     }
 }
 
-#[pymethods]
-impl Module {
-    pub fn __str__(&self) -> String {
-        format!("{:#?}", self.inner.as_ref().unwrap())
+#[pyproto]
+impl pyo3::class::basic::PyObjectProtocol for Module {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:#?}", self.inner.as_ref().unwrap()))
     }
 }
 

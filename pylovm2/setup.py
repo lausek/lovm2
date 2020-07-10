@@ -5,19 +5,21 @@ from setuptools_rust import Binding, RustExtension
 
 setup(
     name='pylovm2',
-    version='0.0.2',
+    version='0.0.4',
     author='lausek',
     author_email='spam@lausek.eu',
     description='bindings for lovm2',
     long_description='bindings for lovm2',
     url='https://github.com/lausek/lovm2',
-    rust_extensions=[RustExtension('hello_rust.hello_rust', binding=Binding.PyO3)],
-    packages=find_packages(),
+    rust_extensions=[RustExtension('pylovm2.pylovm2', binding=Binding.PyO3)],
+    packages=['pylovm2'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
     ],
-    install_requires=[ ],
+    install_requires=[],
+    setup_requires = ['setuptools-rust>=0.10.1', 'wheel'],
+    zip_safe=False,
     python_requires='>=3.5',
 )
