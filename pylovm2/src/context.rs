@@ -23,7 +23,7 @@ impl Context {
             match (*self.inner).frame_mut() {
                 Some(frame) => {
                     let frame_ref = frame as *mut Lovm2Frame;
-                    let obj = Py::new(py, Frame::new(frame_ref)).unwrap().to_object(py);
+                    let obj = Py::new(py, Frame::new(frame_ref))?.to_object(py);
                     Ok(obj)
                 }
                 None => Ok(py.None()),

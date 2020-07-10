@@ -73,7 +73,9 @@ class TestBuilding(Test):
         main_hir.interrupt(10)
 
         def validate(ctx):
-            pass
+            frame = ctx.frame()
+            self.assertTrue(frame)
+            self.assertEqual('buzz', str(frame.local('result')))
 
         result = internals.mod.build()
         self.run_module_test(result, validate)

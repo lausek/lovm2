@@ -68,7 +68,10 @@ impl Vm {
             let ctx = Py::new(py, Context::new(context_ref)).unwrap();
             let args = PyTuple::new(py, vec![ctx]);
 
-            func.call1(py, args).unwrap();
+            if let Err(err) = func.call1(py, args) {
+                err.print(py);
+                panic!("");
+            }
         });
 
         Ok(())
