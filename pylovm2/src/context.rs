@@ -49,7 +49,7 @@ impl Frame {
         unsafe {
             (*self.inner)
                 .locals
-                .get(&key)
+                .get(&lovm2::var::Variable::from(key))
                 .map(|val| RuValue::from(val.clone()))
         }
     }

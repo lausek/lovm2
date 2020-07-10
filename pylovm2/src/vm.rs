@@ -39,7 +39,13 @@ impl Vm {
     }
 
     pub fn globals(&mut self, name: String) -> Option<RuValue> {
-        if let Some(val) = self.inner.context_mut().globals.get(&name).cloned() {
+        if let Some(val) = self
+            .inner
+            .context_mut()
+            .globals
+            .get(&lovm2::var::Variable::from(name))
+            .cloned()
+        {
             return Some(RuValue::from(val));
         }
         None

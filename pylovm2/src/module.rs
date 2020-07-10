@@ -7,6 +7,7 @@ use pyo3::types::PyTuple;
 
 use lovm2::hir;
 use lovm2::module;
+use lovm2::var;
 
 use crate::code::CodeObject;
 use crate::expr::any_to_expr;
@@ -59,7 +60,7 @@ impl ModuleBuilder {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
             match co_builder.complete() {
                 Ok(co) => {
-                    module.slots.insert(key, Rc::new(co));
+                    module.slots.insert(var::Variable::from(key), Rc::new(co));
                 }
                 Err(msg) => return Err(msg),
             }
@@ -134,7 +135,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::local(n, any_to_expr(expr)?));
+            (*self.inner).push(Assign::local(var::Variable::from(n), any_to_expr(expr)?));
         }
         Ok(())
     }
@@ -143,7 +144,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::global(n, any_to_expr(expr)?));
+            (*self.inner).push(Assign::global(var::Variable::from(n), any_to_expr(expr)?));
         }
         Ok(())
     }

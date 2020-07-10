@@ -2,6 +2,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
 use lovm2::expr;
+use lovm2::var;
 
 type Lovm2Expr = lovm2::hir::expr::Expr;
 
@@ -132,7 +133,7 @@ impl Expr {
     pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
         let name = arg.to_string();
         Ok(Self {
-            inner: Lovm2Expr::Variable(name),
+            inner: Lovm2Expr::Variable(var::Variable::from(name)),
         })
     }
 }
