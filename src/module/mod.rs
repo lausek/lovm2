@@ -66,7 +66,7 @@ impl Module {
         }
 
         let file = File::open(path).map_err(|e| e.to_string())?;
-        let module: Module = serde_cbor::from_reader(file).map_err(|e| e.to_string())?;
+        let module: Module = bincode::deserialize_from(file).map_err(|e| e.to_string())?;
         Ok(Box::new(module) as Box<dyn ModuleProtocol>)
     }
 
@@ -76,7 +76,7 @@ impl Module {
         T: AsRef<Path>,
     {
         let file = File::create(path).map_err(|e| e.to_string())?;
-        serde_cbor::to_writer(file, self).map_err(|e| e.to_string())?;
+        bincode::serialize_into(file, self).map_err(|e| e.to_string())?;
         Ok(())
     }
 }

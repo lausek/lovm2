@@ -72,5 +72,5 @@ where
         }
     }
 
-    d.deserialize_any(Unslotter)
+    d.deserialize_map(Unslotter)
 }
