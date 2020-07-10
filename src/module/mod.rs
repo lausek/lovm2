@@ -28,7 +28,7 @@ pub trait ModuleProtocol {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
-    slots: Slots,
+    pub slots: Slots,
 }
 
 impl Into<Box<dyn ModuleProtocol>> for Module {
