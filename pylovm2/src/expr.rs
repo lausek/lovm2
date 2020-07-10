@@ -43,7 +43,7 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
         "list" => {}
         "dict" => {}
         */
-        name => TypeError::into(format!(
+        name => RuntimeError::into(format!(
             "value of type {} cannot be converted to expression",
             name
         )),

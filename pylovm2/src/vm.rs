@@ -1,7 +1,7 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
-use crate::context::Context;
+use crate::context::{Context, Lovm2Context};
 use crate::module::Module;
 use crate::value::RuValue;
 
@@ -58,7 +58,8 @@ impl Vm {
             let guard = Python::acquire_gil();
             let py = guard.python();
 
-            let ctx = Py::new(py, Context::new()).unwrap();
+            let context_ref = ctx as *mut Lovm2Context;
+            let ctx = Py::new(py, Context::new(context_ref)).unwrap();
             let args = PyTuple::new(py, vec![ctx]);
 
             func.call1(py, args).unwrap();

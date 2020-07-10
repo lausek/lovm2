@@ -29,6 +29,23 @@ class Test:
     def assertTrue(self, expr):
         assert expr
 
+    def run_module_test(self, module, fn):
+        self.assertIsInstance(module, pylovm2.Module)
+            
+        out = {
+            'called': False
+        }
+        def callback(ctx):
+            out['called'] = True
+            fn(ctx)
+    
+        vm = pylovm2.Vm()
+        vm.add_interrupt(10, callback)
+        vm.load(module)
+        vm.run()
+    
+        self.assertTrue(out['called'])
+
 class Internals:
     def __init__(self):
         self.vm = pylovm2.Vm()

@@ -131,6 +131,7 @@ pub struct BlockBuilder {
 #[pymethods]
 impl BlockBuilder {
     pub fn assign(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+        // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
             (*self.inner).push(Assign::local(n, any_to_expr(expr)?));
@@ -139,6 +140,7 @@ impl BlockBuilder {
     }
 
     pub fn assign_global(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+        // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
             (*self.inner).push(Assign::global(n, any_to_expr(expr)?));
