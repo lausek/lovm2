@@ -133,11 +133,31 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 let second = ctx.pop_value().unwrap();
                 ctx.push_value(RuValue::Bool(first == second));
             }
-            Instruction::Ne => unimplemented!(),
-            Instruction::Ge => unimplemented!(),
-            Instruction::Gt => unimplemented!(),
-            Instruction::Le => unimplemented!(),
-            Instruction::Lt => unimplemented!(),
+            Instruction::Ne => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(RuValue::Bool(first != second));
+            }
+            Instruction::Ge => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(RuValue::Bool(first >= second));
+            }
+            Instruction::Gt => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(RuValue::Bool(first > second));
+            }
+            Instruction::Le => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(RuValue::Bool(first <= second));
+            }
+            Instruction::Lt => {
+                let first = ctx.pop_value().unwrap();
+                let second = ctx.pop_value().unwrap();
+                ctx.push_value(RuValue::Bool(first < second));
+            }
             Instruction::Jmp(addr) => {
                 ip = *addr as usize;
                 continue;

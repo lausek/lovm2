@@ -177,6 +177,30 @@ impl BlockBuilder {
         Ok(())
     }
 
+    pub fn repeat(&mut self) -> PyResult<BlockBuilder> {
+        unsafe {
+            let repeat = (*self.inner).repeat(None);
+            let inner = &mut repeat.block as *mut Lovm2Block;
+            Ok(BlockBuilder { inner })
+        }
+    }
+
+    pub fn repeat_break(&mut self) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            (*self.inner).push(Break::new());
+        }
+        Ok(())
+    }
+
+    pub fn repeat_continue(&mut self) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            (*self.inner).push(Continue::new());
+        }
+        Ok(())
+    }
+
     pub fn repeat_until(&mut self, condition: &PyAny) -> PyResult<BlockBuilder> {
         let condition = any_to_expr(condition)?;
         unsafe {
