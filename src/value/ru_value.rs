@@ -14,7 +14,7 @@ pub fn box_ruvalue(value: RuValue) -> RuValueRef {
 
 /// runtime values
 ///
-/// this layout is more suited for runtime represantation than `CoValue`
+/// this layout is more suited for runtime representation than `CoValue`
 #[derive(Clone, Debug, PartialEq)]
 pub enum RuValue {
     Nil,
