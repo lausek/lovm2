@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// constant values
+///
+/// these values are better suited for serialization and deserialization than `RuValue`. they are
+/// not used in the vm directly. transform `CoValue`s into `RuValue`s using `value::instantiate`.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum CoValue {
     Nil,

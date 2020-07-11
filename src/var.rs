@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+/// a thin wrapper around an identifier name.
+///
+/// lovm2 needs a clear distinction between strings and variables. variables cannot be pushed onto
+/// stack.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
 pub struct Variable(String);
 

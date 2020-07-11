@@ -6,6 +6,7 @@ use crate::value::{box_ruvalue, RuValue};
 
 pub const ENTRY_POINT: &str = "main";
 
+/// virtual machine for running bytecode
 pub struct Vm {
     ctx: Context,
 }
@@ -30,6 +31,7 @@ impl Vm {
         self.ctx.load_and_import_all(module.into())
     }
 
+    /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
     pub fn run_object(&mut self, co: &dyn CallProtocol) -> Result<(), String> {
         self.ctx.push_frame(0);
         co.run(&mut self.ctx)?;
@@ -38,6 +40,7 @@ impl Vm {
         Ok(())
     }
 
+    /// start the execution at `ENTRY_POINT`
     pub fn run(&mut self) -> Result<(), String> {
         match self.ctx.lookup_code_object(&ENTRY_POINT.into()) {
             Some(co) => self.run_object(co.as_ref()),
@@ -46,6 +49,10 @@ impl Vm {
     }
 }
 
+/// implementation of lovm2 bytecode behavior
+///
+/// *Note:* this function does not push a stack frame and could therefore mess up local variables
+/// if not handled correctly. see `Vm.run_object`
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {

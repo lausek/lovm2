@@ -1,3 +1,5 @@
+//! implementation of primitive operations on `RuValue` e.g. Add, Sub
+
 use std::cmp::Ordering;
 
 use crate::value::RuValue;

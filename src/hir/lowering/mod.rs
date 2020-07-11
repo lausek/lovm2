@@ -1,3 +1,5 @@
+//! transform hir into actual bytecode
+
 pub mod branch;
 pub mod repeat;
 pub mod runtime;

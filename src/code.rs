@@ -1,3 +1,5 @@
+//! runnable bytecode objects
+
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
@@ -8,9 +10,15 @@ use crate::var::Variable;
 use crate::vm::run_bytecode;
 
 pub type CodeObjectRef = Rc<dyn CallProtocol>;
+/// definition for statically linked function
 pub type StaticFunction = fn(&mut Context) -> Result<(), String>;
+/// definition for dynamically linked function
 pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Result<(), String>;
 
+/// generalization for runnable objects
+/// - lovm2 bytecode ([CodeObject](/lovm2/code/struct.CodeObject.html))
+/// - statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
+/// - dynamically linked functions ([SharedObjectSlot](/lovm2/module/shared/struct.SharedObjectSlot.html))
 pub trait CallProtocol: std::fmt::Debug {
     fn code_object(&self) -> Option<&CodeObject> {
         None
@@ -19,6 +27,13 @@ pub trait CallProtocol: std::fmt::Debug {
     fn run(&self, ctx: &mut Context) -> Result<(), String>;
 }
 
+/// `CodeObject` contains the bytecode as well as all the data used by it.
+///
+/// identifiers for called functions will end up in the `globals` vector.
+///
+/// values will be returned over the value stack. every code object has
+/// to return some value on termination. if no value is produced,
+/// `Nil` is implicitly returned.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CodeObject {
     pub consts: Vec<CoValue>,

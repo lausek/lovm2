@@ -1,3 +1,5 @@
+//! vm state
+
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -27,14 +29,25 @@ fn find_module(name: &str, load_paths: &[String]) -> Result<String, String> {
     Err(format!("{} not found", name))
 }
 
+/// the state of the virtual machine
+///
+/// this contains all necessary runtime data and gets shared with objects that
+/// implement `CallProtocol` as well as interrupts.
 pub struct Context {
+    /// list of loaded modules: `Module` or `SharedObjectModule`
     pub modules: Vec<Box<dyn ModuleProtocol>>,
+    /// global variables that can be altered from every object
     pub globals: HashMap<Variable, RuValueRef>,
+    /// entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CodeObjectRef>,
+    /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: [Option<Rc<InterruptFn>>; 256],
+    /// list of directories for module lookup
     pub load_paths: Vec<String>,
 
+    /// call stack that contains local variables
     pub lstack: Vec<Frame>,
+    /// value stack. this is shared across `CallProtocol` functionality
     pub vstack: Vec<RuValue>,
 }
 
@@ -55,12 +68,14 @@ impl Context {
         }
     }
 
+    /// lookup a module name in `load_paths` and add it to the context
     pub fn load_and_import_by_name(&mut self, name: &str) -> Result<(), String> {
         let path = find_module(name, &self.load_paths)?;
         let module = Module::load_from_file(path)?;
         self.load_and_import_all(module)
     }
 
+    /// add the module and all of its slots to `scope`
     pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Result<(), String> {
         for (key, co_object) in module.slots().iter() {
             if self.scope.insert(key.clone(), co_object.clone()).is_some() {

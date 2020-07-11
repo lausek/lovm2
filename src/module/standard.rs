@@ -1,3 +1,5 @@
+//! implementation of lovm2s builtin functions
+
 use std::rc::Rc;
 
 use crate::code::CallProtocol;
@@ -73,6 +75,7 @@ fn set(ctx: &mut Context) -> Result<(), String> {
     target.set(key, value)
 }
 
+/// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 

@@ -1,3 +1,8 @@
+//! collections of runnable objects
+//!
+//! if a module gets loaded by the virtual machine, its code objects are not available by default.
+//! code objects need to be added to the scope to be callable by lovm2 bytecode.
+
 pub mod builder;
 pub mod shared;
 pub mod slots;
@@ -16,6 +21,10 @@ pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
+/// generalization for loadable modules
+/// - lovm2 bytecode ([Module](/lovm2/module/struct.Module.html))
+/// - shared objects `.so`
+/// ([SharedObjectModule](/lovm2/module/shared/struct.SharedObjectModule.html))
 pub trait ModuleProtocol {
     fn slots(&self) -> &Slots {
         unimplemented!()
@@ -56,6 +65,7 @@ impl Module {
         }
     }
 
+    /// tries to load the file as shared object first and tries regular deserialization if it failed
     pub fn load_from_file<T>(path: T) -> Result<Box<dyn ModuleProtocol>, String>
     where
         T: AsRef<Path>,

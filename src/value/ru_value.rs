@@ -12,6 +12,9 @@ pub fn box_ruvalue(value: RuValue) -> RuValueRef {
     Rc::new(RefCell::new(value))
 }
 
+/// runtime values
+///
+/// this layout is more suited for runtime represantation than `CoValue`
 #[derive(Clone, Debug, PartialEq)]
 pub enum RuValue {
     Nil,

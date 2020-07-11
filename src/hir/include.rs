@@ -1,7 +1,10 @@
+//! loads a module by name into the vm
+
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 
+/// loads a module by name into the vm
 #[derive(Clone)]
 pub struct Include {
     name: Expr,
