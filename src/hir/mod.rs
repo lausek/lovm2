@@ -66,11 +66,11 @@ pub mod r#return;
 
 pub mod prelude;
 
-use crate::block::Block;
 use crate::code::CodeObject;
-use crate::element::HIRElement;
-use crate::lowering::LoweringRuntime;
-use crate::r#return::Return;
+use crate::hir::block::Block;
+use crate::hir::element::HIRElement;
+use crate::hir::lowering::LoweringRuntime;
+use crate::hir::r#return::Return;
 use crate::value::CoValue;
 use crate::var::Variable;
 

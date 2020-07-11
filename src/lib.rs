@@ -65,14 +65,4 @@ pub mod vm;
 /// used for generating wrappers of statically linked functions to be called from lovm2
 pub use lovm2_internals::lovm2_builtin;
 
-// TODO: remove these
-pub use self::bytecode::*;
-pub use self::code::*;
-pub use self::context::*;
-pub use self::frame::*;
-pub use self::hir::*;
-pub use self::module::*;
-pub use self::util::*;
-pub use self::value::*;
-pub use self::var::*;
-pub use self::vm::*;
+pub use self::hir::prelude;

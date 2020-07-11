@@ -1,6 +1,6 @@
-use crate::block::Block;
 use crate::bytecode::Instruction;
-use crate::expr::Expr;
+use crate::hir::block::Block;
+use crate::hir::expr::Expr;
 use crate::hir::lowering::{patch_addr, Lowering, LoweringRuntime};
 
 #[derive(Clone)]

@@ -1,7 +1,7 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
-use lovm2::expr;
+use lovm2::hir::expr;
 use lovm2::var;
 
 type Lovm2Expr = lovm2::hir::expr::Expr;

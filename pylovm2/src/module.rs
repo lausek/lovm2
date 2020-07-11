@@ -12,8 +12,8 @@ use lovm2::var;
 use crate::code::CodeObject;
 use crate::expr::any_to_expr;
 
-type Lovm2Block = lovm2::block::Block;
-type Lovm2Branch = lovm2::branch::Branch;
+type Lovm2Branch = lovm2::hir::branch::Branch;
+type Lovm2Block = lovm2::hir::block::Block;
 
 #[pyclass]
 pub struct Module {

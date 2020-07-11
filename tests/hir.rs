@@ -1,11 +1,10 @@
 #![allow(unused_parens)]
 
-use lovm2::expr::Expr;
+use lovm2::context::Context;
 use lovm2::hir::prelude::*;
+use lovm2::module::Module;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
-use lovm2::Context;
-use lovm2::{Module, ModuleBuilder};
 
 fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
     let called = std::rc::Rc::new(std::cell::Cell::new(false));

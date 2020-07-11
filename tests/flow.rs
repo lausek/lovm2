@@ -1,7 +1,10 @@
-use lovm2::{
-    define_code, hir::prelude::*, vm::Vm, CoValue, CodeObjectBuilder, Instruction, RuValue,
-    Variable,
-};
+use lovm2::bytecode::Instruction;
+use lovm2::code::CodeObjectBuilder;
+use lovm2::define_code;
+use lovm2::hir::prelude::*;
+use lovm2::value::{CoValue, RuValue};
+use lovm2::var::Variable;
+use lovm2::vm::Vm;
 
 #[test]
 fn pushing_constant() {
