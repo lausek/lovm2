@@ -16,9 +16,9 @@ pub type StaticFunction = fn(&mut Context) -> Result<(), String>;
 pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Result<(), String>;
 
 /// generalization for runnable objects
-/// - lovm2 bytecode ([CodeObject](/lovm2/code/struct.CodeObject.html))
+/// - lovm2 bytecode ([CodeObject](/latest/lovm2/code/struct.CodeObject.html))
 /// - statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
-/// - dynamically linked functions ([SharedObjectSlot](/lovm2/module/shared/struct.SharedObjectSlot.html))
+/// - dynamically linked functions ([SharedObjectSlot](/latest/lovm2/module/shared/struct.SharedObjectSlot.html))
 pub trait CallProtocol: std::fmt::Debug {
     fn code_object(&self) -> Option<&CodeObject> {
         None

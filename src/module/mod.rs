@@ -22,9 +22,9 @@ pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
 /// generalization for loadable modules
-/// - lovm2 bytecode ([Module](/lovm2/module/struct.Module.html))
+/// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
 /// - shared objects `.so`
-/// ([SharedObjectModule](/lovm2/module/shared/struct.SharedObjectModule.html))
+/// ([SharedObjectModule](/latest/lovm2/module/shared/struct.SharedObjectModule.html))
 pub trait ModuleProtocol {
     fn slots(&self) -> &Slots {
         unimplemented!()
