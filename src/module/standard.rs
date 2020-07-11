@@ -48,10 +48,12 @@ fn print(ctx: &mut Context) -> Result<(), String> {
     use std::io::Write;
 
     let argn = ctx.frame_mut().unwrap().argn;
-    let args: Vec<String> = (0..argn)
+    let mut args: Vec<String> = (0..argn)
         .map(|_| ctx.pop_value().unwrap())
         .map(|x| format!("{}", x))
         .collect();
+
+    args.reverse();
 
     print!("{}", args.join(" "));
     std::io::stdout().flush().unwrap();

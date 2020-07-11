@@ -9,6 +9,7 @@ pub use crate::hir::interrupt::*;
 pub use crate::hir::r#return::*;
 pub use crate::hir::repeat::*;
 pub use crate::hir::HIR;
+pub use crate::ModuleBuilder;
 
 pub use crate::value::CoValue;
 pub use crate::var::Variable;
