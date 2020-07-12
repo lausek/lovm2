@@ -13,6 +13,10 @@ Is a lightweight virtual machine with a focus on simplicity and extendability.
 - [X] python bindings: [pylovm2](pylovm2/README.md)
 - [X] define own callbacks for interrupts
 
+### Projects
+
+- [lol - a lisp](https://github.com/lausek/lol)
+
 ## Generating Bytecode
 
 ``` rust
