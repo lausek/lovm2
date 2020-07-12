@@ -15,7 +15,7 @@ Is a lightweight virtual machine with a focus on simplicity and extendability.
 
 ### Projects
 
-- [lol - a lisp](https://github.com/lausek/lol)
+- [lol - a lisp language](https://github.com/lausek/lol)
 
 ## Generating Bytecode
 
