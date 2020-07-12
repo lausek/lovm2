@@ -63,6 +63,36 @@ pub enum Expr {
 }
 
 impl Expr {
+    pub fn from_opn(op: Operator2, args: Vec<Expr>) -> Self {
+        if args.len() < 2 {
+            unimplemented!();
+        }
+        let mut it = args.into_iter();
+        let expr = Self::from_op(&op, it.next().unwrap(), it.next().unwrap());
+        it.fold(expr, |left, right| Self::from_op(&op, left, right))
+    }
+
+    pub fn from_op(op: &Operator2, left: Expr, right: Expr) -> Self {
+        match op {
+            Operator2::Add => Self::add(left, right),
+            Operator2::Sub => Self::sub(left, right),
+            Operator2::Mul => Self::mul(left, right),
+            Operator2::Div => Self::div(left, right),
+            Operator2::Rem => Self::rem(left, right),
+            Operator2::And => Self::and(left, right),
+            Operator2::Or => Self::or(left, right),
+
+            Operator2::Equal => Self::eq(left, right),
+            Operator2::NotEqual => Self::ne(left, right),
+            Operator2::GreaterEqual => Self::ge(left, right),
+            Operator2::GreaterThan => Self::gt(left, right),
+            Operator2::LessEqual => Self::le(left, right),
+            Operator2::LessThan => Self::lt(left, right),
+        }
+    }
+}
+
+impl Expr {
     auto_implement!(2, Add, add);
     auto_implement!(2, Sub, sub);
     auto_implement!(2, Mul, mul);

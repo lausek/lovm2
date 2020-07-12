@@ -347,3 +347,29 @@ fn cast_to_string() {
         );
     });
 }
+
+#[test]
+fn folding_expr() {
+    let mut builder = ModuleBuilder::new();
+
+    let mut main = HIR::new();
+
+    main.push(Assign::global(
+        var!(a),
+        Expr::from_opn(Operator2::Div, vec![8.into(), 4.into()]),
+    ));
+    main.push(Assign::global(
+        var!(n),
+        Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
+    ));
+    main.push(Interrupt::new(10));
+
+    builder.add("main").hir(main);
+
+    run_module_test(builder.build().unwrap(), |ctx| {
+        let a = ctx.globals.get(&var!(a)).unwrap();
+        let n = ctx.globals.get(&var!(n)).unwrap();
+        assert_eq!(RuValue::Int(2), *a.borrow());
+        assert_eq!(RuValue::Int(1), *n.borrow());
+    });
+}
