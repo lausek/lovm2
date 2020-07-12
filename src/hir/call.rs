@@ -22,6 +22,17 @@ impl Call {
         }
     }
 
+    pub fn with_args<T>(name: T, args: Vec<Expr>) -> Self
+    where
+        T: Into<Variable>,
+    {
+        Self {
+            args,
+            name: name.into(),
+            keep_value: false,
+        }
+    }
+
     pub fn arg<T>(mut self, expr: T) -> Self
     where
         T: Into<Expr>,
