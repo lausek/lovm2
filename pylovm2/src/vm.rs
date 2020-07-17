@@ -3,7 +3,6 @@ use pyo3::prelude::*;
 
 use crate::context::{Context, Lovm2Context};
 use crate::module::Module;
-use crate::value::RuValue;
 
 #[pyclass]
 pub struct Vm {
@@ -17,6 +16,10 @@ impl Vm {
         Self {
             inner: lovm2::vm::Vm::new(),
         }
+    }
+
+    pub fn ctx(&mut self) -> PyResult<Context> {
+        todo!()
     }
 
     pub fn load(&mut self, module: &mut Module) -> PyResult<()> {
@@ -36,19 +39,6 @@ impl Vm {
             Ok(_) => Ok(()),
             Err(msg) => TypeError::into(msg),
         }
-    }
-
-    pub fn globals(&mut self, name: String) -> Option<RuValue> {
-        if let Some(val) = self
-            .inner
-            .context_mut()
-            .globals
-            .get(&lovm2::var::Variable::from(name))
-            .cloned()
-        {
-            return Some(RuValue::from(val));
-        }
-        None
     }
 
     pub fn add_interrupt(&mut self, py: Python, id: u16, func: &PyAny) -> PyResult<()> {

@@ -30,6 +30,19 @@ impl Context {
             }
         }
     }
+
+    pub fn globals(&mut self, name: String) -> Option<RuValue> {
+        unsafe {
+            if let Some(val) = (*self.inner)
+                .globals
+                .get(&lovm2::var::Variable::from(name))
+                .cloned()
+            {
+                return Some(RuValue::from(val));
+            }
+        }
+        None
+    }
 }
 
 #[pyclass]

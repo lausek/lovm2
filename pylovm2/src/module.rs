@@ -14,15 +14,40 @@ use crate::expr::any_to_expr;
 
 type Lovm2Branch = lovm2::hir::branch::Branch;
 type Lovm2Block = lovm2::hir::block::Block;
+type Lovm2Module = lovm2::module::Module;
 
 #[pyclass]
 pub struct Module {
-    pub inner: Option<module::Module>,
+    pub inner: Option<Box<dyn module::ModuleProtocol>>,
 }
 
 impl Module {
-    pub fn from(inner: module::Module) -> Self {
-        Self { inner: Some(inner) }
+    pub fn from(inner: Lovm2Module) -> Self {
+        Self {
+            inner: Some(inner.into()),
+        }
+    }
+}
+
+#[pymethods]
+impl Module {
+    #[classmethod]
+    pub fn load(_this: &PyAny, path: &PyAny) -> PyResult<Self> {
+        let path = path.str()?.to_string()?;
+        match Lovm2Module::load_from_file(path.as_ref()) {
+            Ok(inner) => Ok(Self { inner: Some(inner) }),
+            Err(err) => TypeError::into(err),
+        }
+    }
+
+    pub fn save(&self, path: String) -> PyResult<()> {
+        if let Some(inner) = self.inner.as_ref() {
+            return match inner.store_to_file(&path) {
+                Ok(_) => Ok(()),
+                Err(err) => TypeError::into(err),
+            };
+        }
+        TypeError::into("inner module not loaded")
     }
 }
 
@@ -54,7 +79,7 @@ impl ModuleBuilder {
     }
 
     pub fn build(&mut self, py: Python) -> PyResult<Module> {
-        let mut module = module::Module::new();
+        let mut module = Lovm2Module::new();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();

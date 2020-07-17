@@ -6,32 +6,32 @@ class TestValue(Test):
     def test_to_string(self, internals):
         main_hir = internals.main
         main_hir.assign_global('a', 10)
-        mod = internals.mod.build()
+        main_hir.interrupt(10)
+        module = internals.mod.build()
 
-        internals.vm.load(mod)
-        internals.vm.run()
+        def testfn(ctx):
+            assert '10' == str(ctx.globals('a'))
 
-        a = internals.vm.globals('a')
-        self.assertEqual('10', str(a))
+        self.run_module_test(module, testfn)
 
     def test_to_int(self, internals):
         main_hir = internals.main
         main_hir.assign_global('a', 10)
-        mod = internals.mod.build()
+        main_hir.interrupt(10)
+        module = internals.mod.build()
 
-        internals.vm.load(mod)
-        internals.vm.run()
+        def testfn(ctx):
+            assert 10 == int(ctx.globals('a'))
 
-        a = internals.vm.globals('a')
-        self.assertEqual(10, int(a))
+        self.run_module_test(module, testfn)
 
     def test_to_float(self, internals):
         main_hir = internals.main
         main_hir.assign_global('a', 22.)
-        mod = internals.mod.build()
+        main_hir.interrupt(10)
+        module = internals.mod.build()
 
-        internals.vm.load(mod)
-        internals.vm.run()
+        def testfn(ctx):
+            assert 22. == int(ctx.globals('a'))
 
-        a = internals.vm.globals('a')
-        self.assertEqual(22., int(a))
+        self.run_module_test(module, testfn)

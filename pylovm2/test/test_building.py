@@ -19,17 +19,16 @@ class TestBuilding(Test):
     def test_assign_global(self, internals):
         main_hir = internals.main
         main_hir.assign_global('n', 5)
+        main_hir.interrupt(10)
 
         result = internals.mod.build()
 
         self.assertIsInstance(result, pylovm2.Module)
 
-        internals.vm.load(result)
-        internals.vm.run()
+        def testfn(ctx):
+            assert 5 == int(ctx.globals('n'))
 
-        val = internals.vm.globals('n')
-
-        self.assertEqual(5, int(val))
+        self.run_module_test(result, testfn)
 
     def test_expressions(self, internals):
         main_hir = internals.main

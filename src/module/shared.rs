@@ -74,6 +74,12 @@ impl SharedObjectModule {
     }
 }
 
+impl std::fmt::Debug for SharedObjectModule {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "<extern module>")
+    }
+}
+
 impl Into<Box<dyn ModuleProtocol>> for SharedObjectModule {
     fn into(self) -> Box<dyn ModuleProtocol> {
         Box::new(self) as Box<dyn ModuleProtocol>

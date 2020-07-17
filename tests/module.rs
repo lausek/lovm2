@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use lovm2::hir::prelude::*;
-use lovm2::module::Module;
+use lovm2::module::{Module, ModuleProtocol};
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
 

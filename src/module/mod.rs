@@ -25,12 +25,16 @@ pub use self::standard::create_standard_module;
 /// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
 /// - shared objects `.so`
 /// ([SharedObjectModule](/latest/lovm2/module/shared/struct.SharedObjectModule.html))
-pub trait ModuleProtocol {
+pub trait ModuleProtocol: std::fmt::Debug {
     fn slots(&self) -> &Slots {
         unimplemented!()
     }
 
     fn slot(&self, _name: &Variable) -> Option<Rc<dyn CallProtocol>> {
+        unimplemented!()
+    }
+
+    fn store_to_file(&self, _path: &str) -> Result<(), String> {
         unimplemented!()
     }
 }
@@ -56,6 +60,12 @@ impl ModuleProtocol for Module {
             .get(name)
             .map(|co_ref| co_ref.clone() as Rc<dyn CallProtocol>)
     }
+
+    // TODO: could lead to errors when two threads serialize to the same file
+    fn store_to_file(&self, path: &str) -> Result<(), String> {
+        let file = File::create(path).map_err(|e| e.to_string())?;
+        bincode::serialize_into(file, self).map_err(|e| e.to_string())
+    }
 }
 
 impl Module {
@@ -78,15 +88,5 @@ impl Module {
         let file = File::open(path).map_err(|e| e.to_string())?;
         let module: Module = bincode::deserialize_from(file).map_err(|e| e.to_string())?;
         Ok(Box::new(module) as Box<dyn ModuleProtocol>)
-    }
-
-    // TODO: could lead to errors when two threads serialize to the same file
-    pub fn store_to_file<T>(&self, path: T) -> Result<(), String>
-    where
-        T: AsRef<Path>,
-    {
-        let file = File::create(path).map_err(|e| e.to_string())?;
-        bincode::serialize_into(file, self).map_err(|e| e.to_string())?;
-        Ok(())
     }
 }
