@@ -1,10 +1,8 @@
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::module::{create_standard_module, ModuleProtocol};
+use crate::module::{create_standard_module, ModuleProtocol, ENTRY_POINT};
 use crate::value::{box_ruvalue, RuValue};
-
-pub const ENTRY_POINT: &str = "main";
 
 /// virtual machine for running bytecode
 pub struct Vm {

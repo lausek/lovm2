@@ -21,6 +21,8 @@ pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
+pub const ENTRY_POINT: &str = "main";
+
 /// generalization for loadable modules
 /// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
 /// - shared objects `.so`
