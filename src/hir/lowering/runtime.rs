@@ -59,8 +59,12 @@ impl LoweringRuntime {
     }
 
     pub fn offset(&self) -> usize {
-        // TODO: avoid 0 - 1
-        self.code.len() - 1
+        let len = self.code.len();
+        if len == 0 {
+            0
+        } else {
+            len - 1
+        }
     }
 
     pub fn emit(&mut self, inx: Instruction) {
