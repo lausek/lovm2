@@ -1,3 +1,5 @@
+use std::ops::*;
+
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
@@ -47,6 +49,22 @@ impl Vm {
     }
 }
 
+macro_rules! ruvalue_operation {
+    ($ctx:expr, $fn:ident) => {{
+        let first = $ctx.pop_value().unwrap();
+        let second = $ctx.pop_value().unwrap();
+        $ctx.push_value(first.$fn(second));
+    }};
+}
+
+macro_rules! ruvalue_compare {
+    ($ctx:expr, $fn:ident) => {{
+        let first = $ctx.pop_value().unwrap();
+        let second = $ctx.pop_value().unwrap();
+        $ctx.push_value(RuValue::Bool(first.$fn(&second)));
+    }};
+}
+
 /// implementation of lovm2 bytecode behavior
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
@@ -93,76 +111,23 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 ctx.push_value(last);
             }
             Instruction::Swap => {}
-            // TODO: create macro for these simple operations; rely on std::ops trait, not operator
-            Instruction::Add => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first + second);
-            }
-            Instruction::Sub => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first - second);
-            }
-            Instruction::Mul => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first * second);
-            }
-            Instruction::Div => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first / second);
-            }
-            Instruction::Rem => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first % second);
-            }
-            Instruction::And => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first & second);
-            }
-            Instruction::Or => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(first | second);
-            }
+            Instruction::Add => ruvalue_operation!(ctx, add),
+            Instruction::Sub => ruvalue_operation!(ctx, sub),
+            Instruction::Mul => ruvalue_operation!(ctx, mul),
+            Instruction::Div => ruvalue_operation!(ctx, div),
+            Instruction::Rem => ruvalue_operation!(ctx, rem),
+            Instruction::And => ruvalue_operation!(ctx, bitand),
+            Instruction::Or => ruvalue_operation!(ctx, bitor),
             Instruction::Not => {
                 let first = ctx.pop_value().unwrap();
                 ctx.push_value(!first);
             }
-            Instruction::Eq => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(RuValue::Bool(first == second));
-            }
-            Instruction::Ne => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(RuValue::Bool(first != second));
-            }
-            Instruction::Ge => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(RuValue::Bool(first >= second));
-            }
-            Instruction::Gt => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(RuValue::Bool(first > second));
-            }
-            Instruction::Le => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(RuValue::Bool(first <= second));
-            }
-            Instruction::Lt => {
-                let first = ctx.pop_value().unwrap();
-                let second = ctx.pop_value().unwrap();
-                ctx.push_value(RuValue::Bool(first < second));
-            }
+            Instruction::Eq => ruvalue_compare!(ctx, eq),
+            Instruction::Ne => ruvalue_compare!(ctx, ne),
+            Instruction::Ge => ruvalue_compare!(ctx, ge),
+            Instruction::Gt => ruvalue_compare!(ctx, gt),
+            Instruction::Le => ruvalue_compare!(ctx, le),
+            Instruction::Lt => ruvalue_compare!(ctx, lt),
             Instruction::Jmp(addr) => {
                 ip = *addr as usize;
                 continue;
