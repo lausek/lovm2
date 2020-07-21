@@ -156,7 +156,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                     other_co.run(ctx)?;
                     ctx.pop_frame();
                 } else {
-                    unimplemented!();
+                    return Err(format!("function `{}` not found", func));
                 }
             }
             Instruction::Ret => break,
