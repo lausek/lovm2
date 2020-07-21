@@ -25,7 +25,6 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let names = items
         .iter()
         .map(|item_fn| item_fn.sig.ident.to_string())
-        // TODO: directly translate this into Variable
         .collect::<Vec<String>>();
 
     let lovm2_initializer = Ident::new(EXTERN_LOVM2_INITIALIZER, Span::call_site());
