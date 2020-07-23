@@ -1,5 +1,6 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
+use pyo3::types::PyTuple;
 
 use lovm2::hir::expr;
 use lovm2::var;
@@ -59,6 +60,20 @@ pub struct Expr {
 
 #[pymethods]
 impl Expr {
+    #[classmethod]
+    #[args(args = "*")]
+    pub fn call(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        use lovm2::prelude::*;
+        let name = Variable::from(name.str().unwrap().to_string().unwrap().to_string());
+        let args = args
+            .into_iter()
+            .map(|arg| any_to_expr(arg).unwrap())
+            .collect();
+        Ok(Self {
+            inner: Lovm2Expr::Call(Call::with_args(name, args)),
+        })
+    }
+
     #[classmethod]
     pub fn val(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
         Ok(Self {

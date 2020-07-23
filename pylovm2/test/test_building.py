@@ -113,3 +113,21 @@ class TestBuilding(Test):
 
         result = internals.mod.build()
         self.run_module_test(result, validate)
+
+    def test_with_arguments(self, internals):
+        main_hir = internals.main
+        main_hir.assign('doubled', Expr.call('double', 5))
+        main_hir.interrupt(10)
+
+        double_hir = internals.mod.add('double')
+        double_hir.args(['n'])
+        double_hir = double_hir.code()
+        double_hir.ret(Expr.mul(Expr.var('n'), 2))
+
+        def validate(ctx):
+            frame = ctx.frame()
+            self.assertTrue(frame)
+            self.assertEqual(10, int(frame.local('doubled')))
+
+        result = internals.mod.build()
+        self.run_module_test(result, validate)

@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyList, PyTuple};
 
 use lovm2::hir;
 use lovm2::module;
@@ -107,6 +107,18 @@ impl ModuleBuilderSlot {
         Self {
             inner: Some(hir::HIR::new()),
         }
+    }
+
+    pub fn args(&mut self, args: &PyList) {
+        use lovm2::var::Variable;
+        let args = args
+            .iter()
+            .map(|name| {
+                let name = name.str().unwrap().to_string().unwrap().to_string();
+                Variable::from(name)
+            })
+            .collect();
+        self.inner.replace(hir::HIR::with_args(args));
     }
 
     pub fn code(&mut self) -> PyResult<BlockBuilder> {
@@ -233,5 +245,14 @@ impl BlockBuilder {
             let inner = &mut repeat.block as *mut Lovm2Block;
             Ok(BlockBuilder { inner })
         }
+    }
+
+    pub fn ret(&mut self, val: &PyAny) -> PyResult<()> {
+        use lovm2::prelude::*;
+        unsafe {
+            let val = any_to_expr(val)?;
+            (*self.inner).push(Return::value(val));
+        }
+        Ok(())
     }
 }
