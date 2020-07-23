@@ -60,6 +60,24 @@ pub struct Expr {
 #[pymethods]
 impl Expr {
     #[classmethod]
+    pub fn val(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
+        Ok(Self {
+            inner: any_to_expr(arg)?,
+        })
+    }
+
+    #[classmethod]
+    pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
+        let name = arg.to_string();
+        Ok(Self {
+            inner: Lovm2Expr::Variable(var::Variable::from(name)),
+        })
+    }
+}
+
+#[pymethods]
+impl Expr {
+    #[classmethod]
     pub fn add(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(add, arg1, arg2)
     }
@@ -127,13 +145,5 @@ impl Expr {
     #[classmethod]
     pub fn lt(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(lt, arg1, arg2)
-    }
-
-    #[classmethod]
-    pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
-        let name = arg.to_string();
-        Ok(Self {
-            inner: Lovm2Expr::Variable(var::Variable::from(name)),
-        })
     }
 }
