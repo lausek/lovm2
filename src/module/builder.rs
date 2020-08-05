@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::code::CodeObject;
 use crate::hir::HIR;
-use crate::module::Module;
+use crate::module::{Module, standard::BUILTIN_FUNCTIONS};
 use crate::var::Variable;
 
 pub struct ModuleBuilder {
@@ -21,8 +21,12 @@ impl ModuleBuilder {
     where
         T: Into<Variable>,
     {
-        // TODO: make sure name is not in `standard::BUILTIN_FUNCTIONS`
         let name: Variable = name.into();
+
+        if BUILTIN_FUNCTIONS.contains(&name.as_ref()) {
+            panic!("shadowing builtin function `{}` is not allowed", name);
+        }
+
         self.slots.insert(name.clone(), ModuleBuilderSlot::new());
         self.slots.get_mut(&name).unwrap()
     }
