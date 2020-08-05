@@ -8,6 +8,9 @@ use crate::lovm2_builtin;
 use crate::module::Module;
 use crate::value::RuValue;
 
+pub const BUILTIN_FUNCTIONS: &[&str] = &["get", "input", "len", "print", "set"];
+
+/*
 #[lovm2_builtin]
 fn get(ctx: &mut Context) -> Result<(), String> {
     let key = ctx.pop_value().unwrap();
@@ -20,6 +23,7 @@ fn get(ctx: &mut Context) -> Result<(), String> {
 
     Ok(())
 }
+*/
 
 #[lovm2_builtin]
 fn input(ctx: &mut Context) -> Result<(), String> {
@@ -64,6 +68,7 @@ fn print(ctx: &mut Context) -> Result<(), String> {
     Ok(())
 }
 
+/*
 #[lovm2_builtin]
 fn set(ctx: &mut Context) -> Result<(), String> {
     let value = ctx.pop_value().unwrap();
@@ -74,12 +79,13 @@ fn set(ctx: &mut Context) -> Result<(), String> {
 
     target.set(key, value)
 }
+*/
 
 /// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 
-    module.slots.insert("get".into(), GetBuiltin::instantiate());
+    //module.slots.insert("get".into(), GetBuiltin::instantiate());
     module
         .slots
         .insert("input".into(), InputBuiltin::instantiate());
@@ -87,7 +93,7 @@ pub fn create_standard_module() -> Module {
     module
         .slots
         .insert("print".into(), PrintBuiltin::instantiate());
-    module.slots.insert("set".into(), SetBuiltin::instantiate());
+    //module.slots.insert("set".into(), SetBuiltin::instantiate());
 
     module
 }

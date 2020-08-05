@@ -21,6 +21,7 @@ impl ModuleBuilder {
     where
         T: Into<Variable>,
     {
+        // TODO: make sure name is not in `standard::BUILTIN_FUNCTIONS`
         let name: Variable = name.into();
         self.slots.insert(name.clone(), ModuleBuilderSlot::new());
         self.slots.get_mut(&name).unwrap()

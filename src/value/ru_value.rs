@@ -63,7 +63,7 @@ impl RuValue {
             }
             RuValue::List(list) => {
                 if let RuValue::Int(idx) = key.into_integer()? {
-                    list.borrow_mut().insert(idx as usize, val);
+                    list.borrow_mut()[idx as usize] = val;
                     Ok(())
                 } else {
                     unreachable!()

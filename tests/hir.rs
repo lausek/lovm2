@@ -142,6 +142,22 @@ fn try_getting() {
 }
 
 #[test]
+fn try_setting() {
+    define_test! {
+        main {
+            Assign::local(var!(list), co_list!("a", 10, 20., true));
+            call!(set, list, 1, 7);
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            let list = &*frame.locals.get(&var!(list)).unwrap().borrow();
+            assert_eq!(RuValue::Int(7), list.get(RuValue::Int(1)).unwrap());
+        })
+    }
+}
+
+#[test]
 fn try_retrieving_len() {
     define_test! {
         main {

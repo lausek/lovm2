@@ -111,6 +111,18 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
                 ctx.push_value(last);
             }
             Instruction::Swap => {}
+            Instruction::Get => {
+                let key = ctx.pop_value().unwrap();
+                let obj = ctx.pop_value().unwrap();
+                let val = obj.get(key)?;
+                ctx.push_value(val);
+            }
+            Instruction::Set => {
+                let val = ctx.pop_value().unwrap();
+                let key = ctx.pop_value().unwrap();
+                let mut obj = ctx.pop_value().unwrap();
+                obj.set(key, val)?;
+            }
             Instruction::Add => ruvalue_operation!(ctx, add),
             Instruction::Sub => ruvalue_operation!(ctx, sub),
             Instruction::Mul => ruvalue_operation!(ctx, mul),

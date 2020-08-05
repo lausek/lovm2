@@ -21,6 +21,11 @@ pub enum Instruction {
     /// TODO: implement
     Swap,
 
+    /// get key from object and push it
+    Get,
+    /// set key on object
+    Set,
+
     /// = first + second
     Add,
     /// = first - second
