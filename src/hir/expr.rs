@@ -1,4 +1,5 @@
 use crate::bytecode::Instruction;
+use crate::hir::assign::Access;
 use crate::hir::call::Call;
 use crate::hir::cast::Cast;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
@@ -54,7 +55,7 @@ pub enum Operator1 {
 
 #[derive(Clone)]
 pub enum Expr {
-    Access(Vec<Expr>),
+    Access(Access),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Operation1(Operator1, Box<Expr>),
     Call(Call),
@@ -112,6 +113,12 @@ impl Expr {
     auto_implement!(1, Not, not);
 }
 
+impl From<Access> for Expr {
+    fn from(access: Access) -> Expr {
+        Expr::Access(access)
+    }
+}
+
 impl From<Call> for Expr {
     fn from(call: Call) -> Expr {
         Expr::Call(call)
@@ -143,7 +150,27 @@ impl Lowering for Expr {
     // TODO: add short-circuit for and (can be implemented via branching), or
     fn lower(self, runtime: &mut LoweringRuntime) {
         match self {
-            Expr::Access(fields) => {}
+            Expr::Access(access) => {
+                let variable = access.target;
+                let mut key_it = access.keys.into_iter().peekable();
+
+                // TODO: check if pushl or pushg; emit obj
+                // push (initial) target onto stack
+                let lidx = runtime.index_local(&variable);
+                runtime.emit(Instruction::Pushl(lidx as u16));
+
+                // push key onto stack
+                let key = key_it.next().unwrap();
+                key.lower(runtime);
+
+                while key_it.peek().is_some() {
+                    runtime.emit(Instruction::Get);
+                    let key = key_it.next().unwrap();
+                    key.lower(runtime);
+                }
+
+                runtime.emit(Instruction::Get);
+            }
             Expr::Operation2(op, expr1, expr2) => {
                 expr2.lower(runtime);
                 expr1.lower(runtime);

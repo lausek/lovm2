@@ -31,12 +31,11 @@ macro_rules! define_code {
 macro_rules! access {
     ($name:ident, $key:ident $(, $rest:ident)* $(,)?) => {{
         let mut v = vec![];
-        v.push(stringify!($name).into());
         v.push(stringify!($key).into());
         $(
             v.push(stringify!($rest).into());
         )*
-        Expr::Access(v)
+        Access::new(stringify!($name).into(), v)
     }};
 }
 

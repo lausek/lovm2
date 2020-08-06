@@ -391,7 +391,7 @@ fn folding_expr() {
 }
 
 #[test]
-fn set_field_on_dict() {
+fn get_field_from_dict() {
     define_test! {
         main {
             Assign::local(var!(d1), co_dict!("x" => 37));
@@ -409,7 +409,7 @@ fn set_field_on_dict() {
 }
 
 #[test]
-fn get_field_from_dict() {
+fn set_field_on_dict() {
     define_test! {
         main {
             Assign::local(var!(d1), co_dict!());
@@ -420,8 +420,17 @@ fn get_field_from_dict() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(37), frame.locals.get(&var!(d1)).unwrap().borrow().get(RuValue::Str("x".to_string())).unwrap());
-            assert_eq!(RuValue::Int(42), *frame.locals.get(&var!(d2)).unwrap().borrow());
+            assert_eq!(
+                RuValue::Int(37),
+                frame.locals.get(&var!(d1)).unwrap().borrow()
+                    .get(RuValue::Str("x".to_string())).unwrap()
+            );
+            assert_eq!(
+                RuValue::Int(42),
+                frame.locals.get(&var!(d2)).unwrap().borrow()
+                    .get(RuValue::Str("x".to_string())).unwrap()
+                    .get(RuValue::Str("y".to_string())).unwrap()
+            );
         })
     }
 }
