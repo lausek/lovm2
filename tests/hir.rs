@@ -396,14 +396,17 @@ fn get_field_from_dict() {
         main {
             Assign::local(var!(d1), co_dict!("x" => 37));
             Assign::local(var!(d2), co_dict!("x" => co_dict!("y" => 42)));
+            Assign::global(var!(g), co_dict!("x" => 67));
             Assign::local(var!(x), access!(d1, x));
             Assign::local(var!(y), access!(d2, x, y));
+            Assign::local(var!(z), access!(g, x));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(RuValue::Int(37), *frame.locals.get(&var!(x)).unwrap().borrow());
             assert_eq!(RuValue::Int(42), *frame.locals.get(&var!(y)).unwrap().borrow());
+            assert_eq!(RuValue::Int(67), *frame.locals.get(&var!(z)).unwrap().borrow());
         })
     }
 }
@@ -414,8 +417,10 @@ fn set_field_on_dict() {
         main {
             Assign::local(var!(d1), co_dict!());
             Assign::local(var!(d2), co_dict!("x" => co_dict!()));
+            Assign::global(var!(g), co_dict!());
             Assign::local(access!(d1, x), 37);
             Assign::local(access!(d2, x, y), 42);
+            Assign::global(access!(g, x), 67);
         }
 
         #ensure (|ctx: &mut Context| {
@@ -430,6 +435,11 @@ fn set_field_on_dict() {
                 frame.locals.get(&var!(d2)).unwrap().borrow()
                     .get(RuValue::Str("x".to_string())).unwrap()
                     .get(RuValue::Str("y".to_string())).unwrap()
+            );
+            assert_eq!(
+                RuValue::Int(67),
+                ctx.globals.get(&var!(g)).unwrap().borrow()
+                    .get(RuValue::Str("x".to_string())).unwrap()
             );
         })
     }

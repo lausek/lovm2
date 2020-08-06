@@ -101,6 +101,10 @@ impl LoweringRuntime {
         }
     }
 
+    pub fn has_local(&self, var: &Variable) -> bool {
+        self.locals.contains(var)
+    }
+
     pub fn loop_mut(&mut self) -> Option<&mut LoweringLoop> {
         self.loop_stack.last_mut()
     }

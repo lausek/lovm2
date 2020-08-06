@@ -93,10 +93,14 @@ impl Lowering for Assign {
             let variable = self.access.target;
             let mut key_it = self.access.keys.into_iter().peekable();
 
-            // TODO: check if pushl or pushg; emit obj
             // push (initial) target onto stack
-            let lidx = runtime.index_local(&variable);
-            runtime.emit(Instruction::Pushl(lidx as u16));
+            if runtime.has_local(&variable) {
+                let lidx = runtime.index_local(&variable);
+                runtime.emit(Instruction::Pushl(lidx as u16));
+            } else {
+                let gidx = runtime.index_global(&variable);
+                runtime.emit(Instruction::Pushg(gidx as u16));
+            }
 
             // push key onto stack
             let key = key_it.next().unwrap();
