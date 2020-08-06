@@ -194,15 +194,15 @@ fn true_branching() {
     let mut builder = ModuleBuilder::new();
     let mut hir = HIR::new();
 
-    hir.push(Assign::local("n".into(), CoValue::Int(0)));
+    hir.push(Assign::local(var!(n), CoValue::Int(0)));
 
     let mut branch = Branch::new();
     branch
         .add_condition(Expr::not(CoValue::Bool(false)))
-        .push(Assign::local("n".into(), CoValue::Int(2)));
+        .push(Assign::local(var!(n), CoValue::Int(2)));
     branch
         .default_condition()
-        .push(Assign::local("n".into(), CoValue::Int(1)));
+        .push(Assign::local(var!(n), CoValue::Int(1)));
     hir.push(branch);
 
     hir.push(Interrupt::new(10));
@@ -223,7 +223,7 @@ fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
     let mut hir = HIR::new();
 
-    hir.push(Assign::local("n".into(), CoValue::Int(5)));
+    hir.push(Assign::local(var!(n), CoValue::Int(5)));
 
     let mut branch = Branch::new();
     branch
@@ -388,4 +388,40 @@ fn folding_expr() {
         assert_eq!(RuValue::Int(2), *a.borrow());
         assert_eq!(RuValue::Int(1), *n.borrow());
     });
+}
+
+#[test]
+fn set_field_on_dict() {
+    define_test! {
+        main {
+            Assign::local(var!(d1), co_dict!("x" => 37));
+            Assign::local(var!(d2), co_dict!("x" => co_dict!("y" => 42)));
+            Assign::local(var!(x), access!(d1, x));
+            Assign::local(var!(y), access!(d2, x, y));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(37), *frame.locals.get(&var!(x)).unwrap().borrow());
+            assert_eq!(RuValue::Int(42), *frame.locals.get(&var!(y)).unwrap().borrow());
+        })
+    }
+}
+
+#[test]
+fn get_field_from_dict() {
+    define_test! {
+        main {
+            Assign::local(var!(d1), co_dict!());
+            Assign::local(var!(d2), co_dict!("x" => co_dict!()));
+            Assign::local(access!(d1, x), 37);
+            Assign::local(access!(d2, x, y), 42);
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(37), frame.locals.get(&var!(d1)).unwrap().borrow().get(RuValue::Str("x".to_string())).unwrap());
+            assert_eq!(RuValue::Int(42), *frame.locals.get(&var!(d2)).unwrap().borrow());
+        })
+    }
 }

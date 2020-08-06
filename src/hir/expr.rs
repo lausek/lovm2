@@ -54,6 +54,7 @@ pub enum Operator1 {
 
 #[derive(Clone)]
 pub enum Expr {
+    Access(Vec<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Operation1(Operator1, Box<Expr>),
     Call(Call),
@@ -142,6 +143,7 @@ impl Lowering for Expr {
     // TODO: add short-circuit for and (can be implemented via branching), or
     fn lower(self, runtime: &mut LoweringRuntime) {
         match self {
+            Expr::Access(fields) => {}
             Expr::Operation2(op, expr1, expr2) => {
                 expr2.lower(runtime);
                 expr1.lower(runtime);

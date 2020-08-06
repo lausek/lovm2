@@ -12,30 +12,54 @@ pub enum AssignScope {
 #[derive(Clone)]
 pub struct Assign {
     expr: Expr,
-    variable: Variable,
+    locator: AssignLocator,
     scope: AssignScope,
 }
 
 impl Assign {
-    pub fn local<T>(variable: Variable, expr: T) -> Self
+    pub fn local<U, T>(locator: U, expr: T) -> Self
     where
+        U: Into<AssignLocator>,
         T: Into<Expr>,
     {
         Self {
             expr: expr.into(),
-            variable,
+            locator: locator.into(),
             scope: AssignScope::Local,
         }
     }
 
-    pub fn global<T>(variable: Variable, expr: T) -> Self
+    pub fn global<U, T>(locator: U, expr: T) -> Self
     where
+        U: Into<AssignLocator>,
         T: Into<Expr>,
     {
         Self {
             expr: expr.into(),
-            variable,
+            locator: locator.into(),
             scope: AssignScope::Global,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub enum AssignLocator {
+    Access(Vec<Expr>),
+    Variable(Variable),
+}
+
+impl From<Variable> for AssignLocator {
+    fn from(var: Variable) -> Self {
+        Self::Variable(var)
+    }
+}
+
+impl From<Expr> for AssignLocator {
+    fn from(expr: Expr) -> Self {
+        if let Expr::Access(fields) = expr {
+            Self::Access(fields)
+        } else {
+            unimplemented!()
         }
     }
 }
@@ -43,15 +67,24 @@ impl Assign {
 impl Lowering for Assign {
     fn lower(self, runtime: &mut LoweringRuntime) {
         self.expr.lower(runtime);
-        match self.scope {
-            AssignScope::Local => {
-                let lidx = runtime.index_local(&self.variable);
-                runtime.emit(Instruction::Movel(lidx as u16));
+
+        match self.locator {
+            AssignLocator::Access(fields) => {
+                let mut field_it = fields.iter();
+                field_it.next().unwrap();
+
+                runtime.emit(Instruction::Set);
             }
-            AssignScope::Global => {
-                let gidx = runtime.index_global(&self.variable);
-                runtime.emit(Instruction::Moveg(gidx as u16));
-            }
-        };
+            AssignLocator::Variable(variable) => match self.scope {
+                AssignScope::Local => {
+                    let lidx = runtime.index_local(&variable);
+                    runtime.emit(Instruction::Movel(lidx as u16));
+                }
+                AssignScope::Global => {
+                    let gidx = runtime.index_global(&variable);
+                    runtime.emit(Instruction::Moveg(gidx as u16));
+                }
+            },
+        }
     }
 }

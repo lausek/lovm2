@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::code::CodeObject;
 use crate::hir::HIR;
-use crate::module::{Module, standard::BUILTIN_FUNCTIONS};
+use crate::module::{standard::BUILTIN_FUNCTIONS, Module};
 use crate::var::Variable;
 
 pub struct ModuleBuilder {

@@ -28,6 +28,19 @@ macro_rules! define_code {
 }
 
 #[macro_export]
+macro_rules! access {
+    ($name:ident, $key:ident $(, $rest:ident)* $(,)?) => {{
+        let mut v = vec![];
+        v.push(stringify!($name).into());
+        v.push(stringify!($key).into());
+        $(
+            v.push(stringify!($rest).into());
+        )*
+        Expr::Access(v)
+    }};
+}
+
+#[macro_export]
 macro_rules! call {
     ($name:ident $(, $arg:tt)* $(,)?) => {{
         Call::new(stringify!($name))
