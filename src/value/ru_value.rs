@@ -100,9 +100,23 @@ impl std::fmt::Display for RuValue {
             RuValue::Int(n) => write!(f, "{}", n),
             RuValue::Float(n) => write!(f, "{}", n),
             RuValue::Str(s) => write!(f, "{}", s),
+            RuValue::Dict(d) => write!(
+                f,
+                "{:?}",
+                d.borrow()
+                    .iter()
+                    .map(|(key, val)| format!("{}: {}", key, val))
+                    .collect::<Vec<String>>()
+            ),
+            RuValue::List(ls) => write!(
+                f,
+                "{:?}",
+                ls.borrow()
+                    .iter()
+                    .map(|val| format!("{}", val))
+                    .collect::<Vec<String>>()
+            ),
             _ => unimplemented!(),
-            // RuValue::Dict(RuDictRef),
-            // RuValue::List(RuListRef),
         }
     }
 }
