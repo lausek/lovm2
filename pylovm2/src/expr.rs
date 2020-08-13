@@ -1,11 +1,12 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyDict, PyTuple};
 
 use lovm2::hir::expr;
 use lovm2::var;
 
 type Lovm2Expr = lovm2::hir::expr::Expr;
+type Lovm2Value = lovm2::value::CoValue;
 
 macro_rules! auto_wrapper {
     ($method_name:ident, $($arg:expr),*) => {
@@ -17,34 +18,59 @@ macro_rules! auto_wrapper {
     };
 }
 
-pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
-    use lovm2::value::CoValue;
-
+pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
     match any.get_type().name().as_ref() {
         "str" => {
             let data = any.str().unwrap().to_string()?;
-            Ok(Lovm2Expr::Value(CoValue::Str(data.to_string())))
+            Ok(Lovm2Value::Str(data.to_string()))
         }
         "bool" => {
             let data = any.extract::<bool>()?;
-            Ok(Lovm2Expr::Value(CoValue::Bool(data)))
+            Ok(Lovm2Value::Bool(data))
         }
         "int" => {
             let data = any.extract::<i64>()?;
-            Ok(Lovm2Expr::Value(CoValue::Int(data)))
+            Ok(Lovm2Value::Int(data))
         }
         "float" => {
             let data = any.extract::<f64>()?;
-            Ok(Lovm2Expr::Value(CoValue::Float(data)))
+            Ok(Lovm2Value::Float(data))
         }
+        "list" => {
+            let mut ls = vec![];
+            for item in any.iter()? {
+                let item = item?;
+                ls.push(any_to_value(item)?);
+            }
+            Ok(Lovm2Value::List(ls).into())
+        }
+        "dict" => {
+            use std::collections::HashMap;
+            let mut map = HashMap::new();
+            let dict = any.downcast::<PyDict>()?;
+            for (key, value) in dict.iter() {
+                let (key, value) = (any_to_value(key)?, any_to_value(value)?);
+                map.insert(key, Box::new(value));
+            }
+            Ok(Lovm2Value::Dict(map).into())
+        }
+        name => RuntimeError::into(format!(
+            "value of type {} cannot be converted to value",
+            name
+        )),
+    }
+}
+
+pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
+    match any.get_type().name().as_ref() {
+        "str" | "bool" | "int" | "float" | "list" | "dict" => match any_to_value(any) {
+            Ok(val) => Ok(val.into()),
+            Err(e) => Err(e),
+        },
         "Expr" => {
             let data = any.extract::<Expr>()?;
             Ok(data.inner)
         }
-        /*
-        "list" => {}
-        "dict" => {}
-        */
         name => RuntimeError::into(format!(
             "value of type {} cannot be converted to expression",
             name

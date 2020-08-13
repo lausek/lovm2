@@ -131,3 +131,24 @@ class TestBuilding(Test):
 
         result = internals.mod.build()
         self.run_module_test(result, validate)
+
+    def test_instantiation(self, internals):
+        main_hir = internals.main
+        main_hir.assign('d', {1: 1, '2': 2, '3': True})
+        main_hir.assign('l', [1, 2, 3])
+        main_hir.interrupt(10)
+
+        def validate(ctx):
+            frame = ctx.frame()
+            self.assertTrue(frame)
+            print(frame.local('d'))
+            self.assertEqual(1, frame.local('d')[1])
+            self.assertEqual(2, frame.local('d')['2'])
+            self.assertEqual(True, frame.local('d')['3'])
+
+            self.assertEqual(1, frame.local('l')[0])
+            self.assertEqual(2, frame.local('l')[1])
+            self.assertEqual(3, frame.local('l')[2])
+
+        result = internals.mod.build()
+        self.run_module_test(result, validate)

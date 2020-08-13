@@ -87,7 +87,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
             }
             Instruction::Pushc(cidx) => {
                 use crate::value;
-                let value = value::instantiate(ctx, &co.consts[*cidx as usize]);
+                let value = value::instantiate(&co.consts[*cidx as usize]);
                 ctx.push_value(value);
             }
             Instruction::Movel(lidx) => {

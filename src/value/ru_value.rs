@@ -102,19 +102,21 @@ impl std::fmt::Display for RuValue {
             RuValue::Str(s) => write!(f, "{}", s),
             RuValue::Dict(d) => write!(
                 f,
-                "{:?}",
+                "{{{}}}",
                 d.borrow()
                     .iter()
                     .map(|(key, val)| format!("{}: {}", key, val))
                     .collect::<Vec<String>>()
+                    .join(", ")
             ),
             RuValue::List(ls) => write!(
                 f,
-                "{:?}",
+                "[{}]",
                 ls.borrow()
                     .iter()
                     .map(|val| format!("{}", val))
                     .collect::<Vec<String>>()
+                    .join(", ")
             ),
             _ => unimplemented!(),
         }

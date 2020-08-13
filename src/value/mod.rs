@@ -7,12 +7,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::context::Context;
-
 pub use self::co_value::CoValue;
 pub use self::ru_value::{box_ruvalue, RuValue, RuValueRef};
 
-pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
+pub fn instantiate(covalue: &CoValue) -> RuValue {
     match covalue {
         CoValue::Nil => RuValue::Nil,
         CoValue::Bool(n) => RuValue::Bool(*n),
@@ -22,12 +20,12 @@ pub fn instantiate(ctx: &mut Context, covalue: &CoValue) -> RuValue {
         CoValue::Dict(map) => {
             let mut rumap = HashMap::new();
             for (key, value) in map.iter() {
-                rumap.insert(instantiate(ctx, key), instantiate(ctx, value));
+                rumap.insert(instantiate(key), instantiate(value));
             }
             RuValue::Dict(Rc::new(RefCell::new(rumap)))
         }
         CoValue::List(ls) => {
-            let ruls = ls.iter().map(|item| instantiate(ctx, &item)).collect();
+            let ruls = ls.iter().map(|item| instantiate(&item)).collect();
             RuValue::List(Rc::new(RefCell::new(ruls)))
         }
     }
