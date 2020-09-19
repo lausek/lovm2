@@ -54,6 +54,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
             }
             Ok(Lovm2Value::Dict(map).into())
         }
+        "NoneType" => Ok(Lovm2Value::Nil),
         name => RuntimeError::into(format!(
             "value of type {} cannot be converted to value",
             name
@@ -63,7 +64,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     match any.get_type().name().as_ref() {
-        "str" | "bool" | "int" | "float" | "list" | "dict" => match any_to_value(any) {
+        "str" | "bool" | "int" | "float" | "list" | "dict" | "NoneType" => match any_to_value(any) {
             Ok(val) => Ok(val.into()),
             Err(e) => Err(e),
         },
