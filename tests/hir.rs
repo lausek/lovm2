@@ -444,3 +444,11 @@ fn set_field_on_dict() {
         })
     }
 }
+
+#[test]
+fn is_constant() {
+    assert!(!Expr::from(var!(n)).is_const());
+    assert!(Expr::add(1, 2).is_const());
+    assert!(Expr::from("abc").is_const());
+    assert!(Expr::from(10).is_const());
+}

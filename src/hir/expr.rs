@@ -95,6 +95,22 @@ impl Expr {
 }
 
 impl Expr {
+    pub fn is_const(&self) -> bool {
+        match self {
+            Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
+            Expr::Operation1(_, item) => item.is_const(),
+            Expr::Value(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn eval_const(&self) -> Expr {
+        // TODO: check if expression is const and evaluate it
+        unimplemented!()
+    }
+}
+
+impl Expr {
     auto_implement!(2, Add, add);
     auto_implement!(2, Sub, sub);
     auto_implement!(2, Mul, mul);
