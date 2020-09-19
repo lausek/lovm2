@@ -49,6 +49,11 @@ impl Module {
         }
         TypeError::into("inner module not loaded")
     }
+
+    pub fn uses(&self) -> PyResult<Vec<String>> {
+        // TODO: implement this
+        Ok(vec![])
+    }
 }
 
 #[pyproto]
