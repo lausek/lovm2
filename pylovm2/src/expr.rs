@@ -18,6 +18,36 @@ macro_rules! auto_wrapper {
     };
 }
 
+pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
+    match any.get_type().name().as_ref() {
+        "str" | "bool" | "int" | "float" | "list" | "dict" | "NoneType" => match any_to_value(any) {
+            Ok(val) => Ok(val.into()),
+            Err(e) => Err(e),
+        },
+        "Expr" => {
+            let data = any.extract::<Expr>()?;
+            Ok(data.inner)
+        }
+        name => RuntimeError::into(format!(
+            "value of type {} cannot be converted to expression",
+            name
+        )),
+    }
+}
+
+pub fn any_to_ident(any: &PyAny) -> PyResult<Lovm2Expr> {
+    match any.get_type().name().as_ref() {
+        "str" => {
+            let name = any.str().unwrap().to_string()?;
+            Ok(var::Variable::from(name.to_string()).into())
+        }
+        name => RuntimeError::into(format!(
+            "value of type {} cannot be converted to identifier",
+            name
+        )),
+    }
+}
+
 pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
     match any.get_type().name().as_ref() {
         "str" => {
@@ -57,23 +87,6 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
         "NoneType" => Ok(Lovm2Value::Nil),
         name => RuntimeError::into(format!(
             "value of type {} cannot be converted to value",
-            name
-        )),
-    }
-}
-
-pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
-    match any.get_type().name().as_ref() {
-        "str" | "bool" | "int" | "float" | "list" | "dict" | "NoneType" => match any_to_value(any) {
-            Ok(val) => Ok(val.into()),
-            Err(e) => Err(e),
-        },
-        "Expr" => {
-            let data = any.extract::<Expr>()?;
-            Ok(data.inner)
-        }
-        name => RuntimeError::into(format!(
-            "value of type {} cannot be converted to expression",
             name
         )),
     }

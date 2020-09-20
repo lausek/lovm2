@@ -10,7 +10,7 @@ use lovm2::module;
 use lovm2::var;
 
 use crate::code::CodeObject;
-use crate::expr::any_to_expr;
+use crate::expr::{any_to_expr, any_to_ident};
 
 type Lovm2Branch = lovm2::hir::branch::Branch;
 type Lovm2Block = lovm2::hir::block::Block;
@@ -173,20 +173,20 @@ pub struct BlockBuilder {
 
 #[pymethods]
 impl BlockBuilder {
-    pub fn assign(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+    pub fn assign(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::local(var::Variable::from(n), any_to_expr(expr)?));
+            (*self.inner).push(Assign::local(any_to_ident(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
 
-    pub fn assign_global(&mut self, n: String, expr: &PyAny) -> PyResult<()> {
+    pub fn assign_global(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::global(var::Variable::from(n), any_to_expr(expr)?));
+            (*self.inner).push(Assign::global(any_to_ident(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
