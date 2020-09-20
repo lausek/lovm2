@@ -65,10 +65,10 @@ impl From<Variable> for Access {
 
 impl From<Expr> for Access {
     fn from(expr: Expr) -> Self {
-        if let Expr::Access(access) = expr {
-            access
-        } else {
-            unimplemented!()
+        match expr {
+            Expr::Access(access) => access,
+            Expr::Variable(var) => var.into(),
+            _ => unimplemented!(),
         }
     }
 }
