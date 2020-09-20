@@ -5,6 +5,10 @@
 
 Is a lightweight virtual machine with a focus on simplicity and extendability.
 
+```
+lovm2 = "0.2.11"
+```
+
 ## Features
 
 - [X] dynamic typing
@@ -13,11 +17,13 @@ Is a lightweight virtual machine with a focus on simplicity and extendability.
 - [X] python bindings: [pylovm2](pylovm2/README.md)
 - [X] define own callbacks for interrupts
 
+## Examples
+
 ### Projects
 
 - [lol - a lisp language](https://github.com/lausek/lol)
 
-## Generating Bytecode
+### Generating Bytecode
 
 ``` rust
 use lovm2::prelude::*;
