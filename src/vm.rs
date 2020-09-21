@@ -5,6 +5,7 @@ use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::module::{create_standard_module, ModuleProtocol, ENTRY_POINT};
 use crate::value::{box_ruvalue, RuValue};
+use crate::var::Variable;
 
 /// virtual machine for running bytecode
 pub struct Vm {
@@ -17,6 +18,27 @@ impl Vm {
         ctx.load_and_import_all(Box::new(create_standard_module()) as Box<dyn ModuleProtocol>)
             .unwrap();
         Self { ctx }
+    }
+
+    pub fn call(&mut self, name: &str, args: &[RuValue]) -> Result<RuValue, String> {
+        let name = Variable::from(name);
+        match self.ctx.lookup_code_object(&name) {
+            Some(co) => {
+                let mut argn = 0;
+                for arg in args.iter() {
+                    argn += 1;
+                    self.ctx.push_value(arg.clone());
+                }
+
+                self.ctx.push_frame(argn as u8);
+                co.run(&mut self.ctx)?;
+                self.ctx.pop_frame();
+
+                let val = self.context_mut().pop_value().unwrap();
+                Ok(val)
+            }
+            _ => Err(format!("no code object named {}", name)),
+        }
     }
 
     pub fn context_mut(&mut self) -> &mut Context {

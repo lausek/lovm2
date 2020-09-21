@@ -452,3 +452,29 @@ fn is_constant() {
     assert!(Expr::from("abc").is_const());
     assert!(Expr::from(10).is_const());
 }
+
+#[test]
+fn call_into_vm() {
+    let mut builder = ModuleBuilder::new();
+
+    let mut main = HIR::with_args(vec![var!(n)]);
+    main.push(Interrupt::new(10));
+    builder.add("call_me").hir(main);
+
+    let module = builder.build().unwrap();
+
+    // ensure that the interrupt has been called
+    let called = std::rc::Rc::new(std::cell::Cell::new(false));
+    let called_ref = called.clone();
+
+    let mut vm = Vm::new();
+    vm.context_mut().set_interrupt(10, move |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(n)).unwrap().borrow());
+        called_ref.set(true);
+    });
+    vm.load_and_import_all(module).unwrap();
+    vm.call("call_me", &[RuValue::Int(10)]).unwrap();
+
+    assert!(called.get());
+}
