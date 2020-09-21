@@ -5,6 +5,7 @@ use lovm2::context;
 
 pub type Lovm2CodeObject = lovm2::code::CodeObject;
 
+// TODO: change this to hold a Rc<CallProtocol>
 #[pyclass]
 #[derive(Debug)]
 pub struct CodeObject {

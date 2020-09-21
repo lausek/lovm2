@@ -12,6 +12,7 @@ pub struct RuValue {
 }
 
 impl RuValue {
+    // TODO: add from_ref function for creating a Lovm2RuValue from struct
     pub fn from(inner: Lovm2RuValue) -> Self {
         Self { inner }
     }

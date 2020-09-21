@@ -35,11 +35,17 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     }
 }
 
+// TODO: this needs to return `Variable`
 pub fn any_to_ident(any: &PyAny) -> PyResult<Lovm2Expr> {
     match any.get_type().name().as_ref() {
         "str" => {
             let name = any.str().unwrap().to_string()?;
             Ok(var::Variable::from(name.to_string()).into())
+        }
+        "Expr" => {
+            // TODO: make sure that we have an identifier
+            let data = any.extract::<Expr>()?;
+            Ok(data.inner)
         }
         name => RuntimeError::into(format!(
             "value of type {} cannot be converted to identifier",
