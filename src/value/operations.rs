@@ -100,19 +100,25 @@ impl std::cmp::PartialOrd for RuValue {
         }
     }
 
-    fn lt(&self, _other: &RuValue) -> bool {
-        unimplemented!()
+    fn lt(&self, other: &RuValue) -> bool {
+        self.partial_cmp(other) == Some(Ordering::Less)
     }
 
-    fn le(&self, _other: &RuValue) -> bool {
-        unimplemented!()
+    fn le(&self, other: &RuValue) -> bool {
+        match self.partial_cmp(other) {
+            Some(Ordering::Less) | Some(Ordering::Equal) => true,
+            _ => false,
+        }
     }
 
-    fn gt(&self, _other: &RuValue) -> bool {
-        unimplemented!()
+    fn gt(&self, other: &RuValue) -> bool {
+        self.partial_cmp(other) == Some(Ordering::Greater)
     }
 
-    fn ge(&self, _other: &RuValue) -> bool {
-        unimplemented!()
+    fn ge(&self, other: &RuValue) -> bool {
+        match self.partial_cmp(other) {
+            Some(Ordering::Greater) | Some(Ordering::Equal) => true,
+            _ => false,
+        }
     }
 }

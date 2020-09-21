@@ -478,3 +478,27 @@ fn call_into_vm() {
 
     assert!(called.get());
 }
+
+#[test]
+fn comparison() {
+    define_test! {
+        main {
+            Assign::local(var!(lt), Expr::lt(2, 3));
+            Assign::local(var!(le1), Expr::le(2, 3));
+            Assign::local(var!(le2), Expr::le(2, 2));
+            Assign::local(var!(gt), Expr::gt(3, 2));
+            Assign::local(var!(ge1), Expr::ge(3, 2));
+            Assign::local(var!(ge2), Expr::ge(3, 3));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(lt)).unwrap().borrow());
+            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(le1)).unwrap().borrow());
+            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(le2)).unwrap().borrow());
+            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(gt)).unwrap().borrow());
+            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(ge1)).unwrap().borrow());
+            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(ge2)).unwrap().borrow());
+        })
+    }
+}
