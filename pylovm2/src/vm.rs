@@ -36,7 +36,7 @@ impl Vm {
                 let val = Rc::new(RefCell::new(val));
                 Ok(RuValue::from(val))
             }
-            Err(msg) => todo!(),
+            Err(msg) => RuntimeError::into(msg),
         }
     }
 

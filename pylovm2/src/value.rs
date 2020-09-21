@@ -22,6 +22,7 @@ impl RuValue {
             Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
             Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
             Lovm2RuValueRaw::Float(n) => (*n).into_py(py),
+            Lovm2RuValueRaw::Str(s) => s.into_py(py),
             _ => unimplemented!(),
         }
     }
@@ -29,6 +30,19 @@ impl RuValue {
 
 #[pyproto]
 impl pyo3::class::basic::PyObjectProtocol for RuValue {
+    fn __bool__(&self) -> PyResult<bool> {
+        let result = match &*self.inner.borrow() {
+            Lovm2RuValueRaw::Bool(b) => *b,
+            Lovm2RuValueRaw::Int(n) => *n == 0,
+            Lovm2RuValueRaw::Float(n) => *n as i64 == 0,
+            Lovm2RuValueRaw::Str(s) => !s.is_empty(),
+            Lovm2RuValueRaw::Dict(d) => !d.borrow().is_empty(),
+            Lovm2RuValueRaw::List(l) => !l.borrow().is_empty(),
+            Lovm2RuValueRaw::Nil => false,
+        };
+        Ok(result)
+    }
+
     fn __str__(&self) -> PyResult<String> {
         Ok(self.inner.borrow().to_string())
     }
