@@ -89,7 +89,7 @@ fn calculation() {
             .borrow()
     );
     assert_eq!(
-        RuValue::Int(-1),
+        RuValue::Int(1),
         *vm.context_mut()
             .globals
             .get(&var!(result_sub))
@@ -105,7 +105,7 @@ fn calculation() {
             .borrow()
     );
     assert_eq!(
-        RuValue::Int(0),
+        RuValue::Int(1),
         *vm.context_mut()
             .globals
             .get(&var!(result_div))

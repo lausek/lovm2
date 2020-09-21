@@ -21,9 +21,9 @@ pub enum Instruction {
     /// TODO: implement
     Swap,
 
-    /// get key from object and push it
+    /// get(obj, key): get key from object and push it
     Get,
-    /// set key on object
+    /// set(obj, key, val): set key on object
     Set,
 
     /// = first + second

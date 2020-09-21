@@ -192,8 +192,8 @@ impl Lowering for Expr {
                 runtime.emit(Instruction::Get);
             }
             Expr::Operation2(op, expr1, expr2) => {
-                expr2.lower(runtime);
                 expr1.lower(runtime);
+                expr2.lower(runtime);
                 let inx = match op {
                     Operator2::Add => Instruction::Add,
                     Operator2::Sub => Instruction::Sub,

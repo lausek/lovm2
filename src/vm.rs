@@ -8,6 +8,25 @@ use crate::value::{box_ruvalue, RuValue};
 use crate::var::Variable;
 
 /// virtual machine for running bytecode
+///
+/// call convention is pascal style. if you have a function like `f(a, b, c)` it will be translated
+/// to
+///
+/// ```ignore
+/// push a
+/// push b
+/// push c
+/// call f, 3
+/// ```
+/// 
+/// and the function has to do the popping in reverse
+///
+/// ```ignore
+/// pop c
+/// pop b
+/// pop a
+/// ```
+///
 pub struct Vm {
     ctx: Context,
 }
@@ -24,13 +43,13 @@ impl Vm {
         let name = Variable::from(name);
         match self.ctx.lookup_code_object(&name) {
             Some(co) => {
-                let mut argn = 0;
+                let mut argn: u8 = 0;
                 for arg in args.iter() {
                     argn += 1;
                     self.ctx.push_value(arg.clone());
                 }
 
-                self.ctx.push_frame(argn as u8);
+                self.ctx.push_frame(argn);
                 co.run(&mut self.ctx)?;
                 self.ctx.pop_frame();
 
@@ -73,16 +92,16 @@ impl Vm {
 
 macro_rules! ruvalue_operation {
     ($ctx:expr, $fn:ident) => {{
-        let first = $ctx.pop_value().unwrap();
         let second = $ctx.pop_value().unwrap();
+        let first = $ctx.pop_value().unwrap();
         $ctx.push_value(first.$fn(second));
     }};
 }
 
 macro_rules! ruvalue_compare {
     ($ctx:expr, $fn:ident) => {{
-        let first = $ctx.pop_value().unwrap();
         let second = $ctx.pop_value().unwrap();
+        let first = $ctx.pop_value().unwrap();
         $ctx.push_value(RuValue::Bool(first.$fn(&second)));
     }};
 }
