@@ -5,7 +5,7 @@ use pyo3::types::{PyString, PyTuple};
 use crate::context::{Context, Lovm2Context};
 use crate::expr::any_to_value;
 use crate::module::Module;
-use crate::value::RuValue;
+use crate::value::{lovm2py, RuValue};
 
 #[pyclass]
 pub struct Vm {
@@ -22,7 +22,7 @@ impl Vm {
     }
 
     #[args(args = "*")]
-    pub fn call(&mut self, name: &PyString, args: &PyTuple) -> PyResult<RuValue> {
+    pub fn call(&mut self, py: Python, name: &PyString, args: &PyTuple) -> PyResult<PyObject> {
         // TODO: refactor this
         use lovm2::value::instantiate;
         let name = name.to_string()?.to_string();
@@ -31,7 +31,7 @@ impl Vm {
             .map(|v| instantiate(&any_to_value(v).unwrap()))
             .collect();
         match self.inner.call(&name, args.as_slice()) {
-            Ok(val) => Ok(RuValue::from_struct(val)),
+            Ok(val) => Ok(lovm2py(&val, py)),
             Err(msg) => RuntimeError::into(msg),
         }
     }

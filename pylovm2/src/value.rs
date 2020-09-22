@@ -10,7 +10,7 @@ use crate::expr::any_to_value;
 type Lovm2RuValueRaw = lovm2::value::RuValue;
 type Lovm2RuValue = lovm2::value::RuValueRef;
 
-fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
+pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
     match val {
         Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
         Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
@@ -76,17 +76,23 @@ impl pyo3::class::basic::PyObjectProtocol for RuValue {
 #[pyproto]
 impl pyo3::class::number::PyNumberProtocol for RuValue {
     fn __int__(&self) -> PyResult<PyObject> {
+        use lovm2::value::cast::RUVALUE_INT_TY;
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let obj: PyObject = self.to_py(py);
-        Ok(obj)
+        match self.inner.borrow().clone().cast(RUVALUE_INT_TY) {
+            Ok(val) => Ok(RuValue::from_struct(val).to_py(py)),
+            _ => RuntimeError::into("cannot convert value to int".to_string()),
+        }
     }
 
     fn __float__(&self) -> PyResult<PyObject> {
+        use lovm2::value::cast::RUVALUE_FLOAT_TY;
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let obj: PyObject = self.to_py(py);
-        Ok(obj)
+        match self.inner.borrow().clone().cast(RUVALUE_FLOAT_TY) {
+            Ok(val) => Ok(RuValue::from_struct(val).to_py(py)),
+            _ => RuntimeError::into("cannot convert value to float".to_string()),
+        }
     }
 }
 
