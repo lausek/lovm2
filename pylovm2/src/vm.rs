@@ -26,15 +26,13 @@ impl Vm {
         // TODO: refactor this
         use lovm2::value::instantiate;
         let name = name.to_string()?.to_string();
-        let args: Vec<lovm2::value::RuValue> = args.iter()
+        let args: Vec<lovm2::value::RuValue> = args
+            .iter()
             .map(|v| instantiate(&any_to_value(v).unwrap()))
             .collect();
         match self.inner.call(&name, args.as_slice()) {
             Ok(val) => {
-                use std::cell::RefCell;
-                use std::rc::Rc;
-                let val = Rc::new(RefCell::new(val));
-                Ok(RuValue::from(val))
+                Ok(RuValue::from_struct(val))
             }
             Err(msg) => RuntimeError::into(msg),
         }

@@ -2,7 +2,6 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyTuple};
 
-use lovm2::hir::expr;
 use lovm2::var;
 
 type Lovm2Expr = lovm2::hir::expr::Expr;
@@ -20,10 +19,12 @@ macro_rules! auto_wrapper {
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     match any.get_type().name().as_ref() {
-        "str" | "bool" | "int" | "float" | "list" | "dict" | "NoneType" => match any_to_value(any) {
-            Ok(val) => Ok(val.into()),
-            Err(e) => Err(e),
-        },
+        "str" | "bool" | "int" | "float" | "list" | "dict" | "NoneType" => {
+            match any_to_value(any) {
+                Ok(val) => Ok(val.into()),
+                Err(e) => Err(e),
+            }
+        }
         "Expr" => {
             let data = any.extract::<Expr>()?;
             Ok(data.inner)
@@ -35,17 +36,18 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     }
 }
 
-// TODO: this needs to return `Variable`
-pub fn any_to_ident(any: &PyAny) -> PyResult<Lovm2Expr> {
+pub fn any_to_ident(any: &PyAny) -> PyResult<var::Variable> {
     match any.get_type().name().as_ref() {
         "str" => {
             let name = any.str().unwrap().to_string()?;
             Ok(var::Variable::from(name.to_string()).into())
         }
         "Expr" => {
-            // TODO: make sure that we have an identifier
             let data = any.extract::<Expr>()?;
-            Ok(data.inner)
+            match &data.inner {
+                Lovm2Expr::Variable(var) => Ok(var.clone()),
+                _ => RuntimeError::into("expression is not an identifier".to_string()),
+            }
         }
         name => RuntimeError::into(format!(
             "value of type {} cannot be converted to identifier",
@@ -98,14 +100,39 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
     }
 }
 
+pub fn any_to_wpos(any: &PyAny) -> PyResult<Lovm2Expr> {
+    match any.get_type().name().as_ref() {
+        "Expr" => {
+            let data = any.extract::<Expr>()?;
+            if let Lovm2Expr::Access(var) = &data.inner {
+                Ok(var.clone().into())
+            } else {
+                any_to_ident(any).map(|i| Lovm2Expr::from(i))
+            }
+        }
+        _ => any_to_ident(any).map(|i| Lovm2Expr::from(i)),
+    }
+}
+
 #[pyclass]
 #[derive(Clone)]
 pub struct Expr {
-    pub inner: expr::Expr,
+    pub inner: lovm2::hir::expr::Expr,
 }
 
 #[pymethods]
 impl Expr {
+    #[classmethod]
+    #[args(args = "*")]
+    pub fn access(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        use lovm2::prelude::*;
+        let name = any_to_ident(name)?;
+        let args = args.iter().map(|arg| any_to_expr(arg).unwrap()).collect();
+        Ok(Self {
+            inner: Lovm2Expr::Access(Access::new(name, args)),
+        })
+    }
+
     #[classmethod]
     #[args(args = "*")]
     pub fn call(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {

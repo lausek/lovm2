@@ -10,7 +10,7 @@ use lovm2::module;
 use lovm2::var;
 
 use crate::code::CodeObject;
-use crate::expr::{any_to_expr, any_to_ident};
+use crate::expr::{any_to_expr, any_to_wpos, Expr};
 
 type Lovm2Branch = lovm2::hir::branch::Branch;
 type Lovm2Block = lovm2::hir::block::Block;
@@ -83,6 +83,7 @@ impl ModuleBuilder {
         self.slots.get(&name).unwrap().clone_ref(py)
     }
 
+    // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python) -> PyResult<Module> {
         let mut module = Lovm2Module::new();
 
@@ -97,6 +98,15 @@ impl ModuleBuilder {
         }
 
         Ok(Module::from(module))
+    }
+
+    pub fn entry(&mut self, py: Python) -> Py<ModuleBuilderSlot> {
+        let name = lovm2::module::ENTRY_POINT.to_string();
+        if !self.slots.contains_key(&name) {
+            let inst = Py::new(py, ModuleBuilderSlot::new()).unwrap();
+            self.slots.insert(name.clone(), inst);
+        }
+        self.slots.get(&name).unwrap().clone_ref(py)
     }
 }
 
@@ -177,7 +187,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::local(any_to_ident(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::local(any_to_wpos(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
@@ -186,7 +196,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::global(any_to_ident(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::global(any_to_wpos(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
@@ -209,6 +219,16 @@ impl BlockBuilder {
             (*self.inner).push(call);
         }
         Ok(())
+    }
+
+    pub fn expr(&mut self, expr: &Expr) -> PyResult<()> {
+        match &expr.inner {
+            hir::expr::Expr::Call(call) => unsafe {
+                (*self.inner).push(call.clone());
+                Ok(())
+            },
+            _ => RuntimeError::into("expression cannot be placed here.".to_string()),
+        }
     }
 
     pub fn interrupt(&mut self, id: u16) -> PyResult<()> {

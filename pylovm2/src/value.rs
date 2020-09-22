@@ -1,10 +1,39 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
+use pyo3::types::*;
 
 use crate::expr::any_to_value;
 
 type Lovm2RuValueRaw = lovm2::value::RuValue;
 type Lovm2RuValue = lovm2::value::RuValueRef;
+
+fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject
+{
+    match val {
+        Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
+        Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
+        Lovm2RuValueRaw::Float(n) => (*n).into_py(py),
+        Lovm2RuValueRaw::Str(s) => s.into_py(py),
+        Lovm2RuValueRaw::Dict(dict) => {
+            let map = PyDict::new(py);
+            for (key, val) in dict.borrow().iter() {
+                let (key, val) = (lovm2py(key, py), lovm2py(val, py));
+                map.set_item(key, val).unwrap();
+            }
+            map.to_object(py)
+        }
+        Lovm2RuValueRaw::List(list) => list
+            .borrow()
+            .iter()
+            .map(|item| lovm2py(item, py))
+            .collect::<Vec<PyObject>>()
+            .to_object(py),
+        _ => unimplemented!(),
+    }
+}
 
 #[pyclass]
 pub struct RuValue {
@@ -12,19 +41,16 @@ pub struct RuValue {
 }
 
 impl RuValue {
-    // TODO: add from_ref function for creating a Lovm2RuValue from struct
     pub fn from(inner: Lovm2RuValue) -> Self {
         Self { inner }
     }
 
+    pub fn from_struct(inner: Lovm2RuValueRaw) -> Self {
+        Self::from(Rc::new(RefCell::new(inner)))
+    }
+
     pub fn to_py(&self, py: Python) -> PyObject {
-        match &*self.inner.borrow() {
-            Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
-            Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
-            Lovm2RuValueRaw::Float(n) => (*n).into_py(py),
-            Lovm2RuValueRaw::Str(s) => s.into_py(py),
-            _ => unimplemented!(),
-        }
+        lovm2py(&*self.inner.borrow(), py)
     }
 }
 
@@ -48,7 +74,6 @@ impl pyo3::class::basic::PyObjectProtocol for RuValue {
     }
 }
 
-// TODO: rely on lovm2 type conversion here
 #[pyproto]
 impl pyo3::class::number::PyNumberProtocol for RuValue {
     fn __int__(&self) -> PyResult<PyObject> {
