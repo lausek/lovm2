@@ -10,8 +10,7 @@ use crate::expr::any_to_value;
 type Lovm2RuValueRaw = lovm2::value::RuValue;
 type Lovm2RuValue = lovm2::value::RuValueRef;
 
-fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject
-{
+fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
     match val {
         Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
         Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
@@ -106,5 +105,17 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
             }
             Err(_) => RuntimeError::into(format!("key {} not found on value", key)),
         }
+    }
+
+    fn __len__(&self) -> PyResult<usize> {
+        match self.inner.borrow().len() {
+            Ok(n) => Ok(n),
+            _ => RuntimeError::into("len not supported on this value".to_string()),
+        }
+    }
+
+    fn __setitem__(&mut self, key: &PyAny, val: &PyAny) -> PyResult<()> {
+        // self.inner.borrow_mut().set(key, val);
+        todo!()
     }
 }

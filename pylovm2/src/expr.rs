@@ -29,10 +29,7 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
             let data = any.extract::<Expr>()?;
             Ok(data.inner)
         }
-        name => RuntimeError::into(format!(
-            "value of type {} cannot be converted to expression",
-            name
-        )),
+        _ => RuntimeError::into(format!("value {} cannot be converted to expression", any)),
     }
 }
 
@@ -49,10 +46,7 @@ pub fn any_to_ident(any: &PyAny) -> PyResult<var::Variable> {
                 _ => RuntimeError::into("expression is not an identifier".to_string()),
             }
         }
-        name => RuntimeError::into(format!(
-            "value of type {} cannot be converted to identifier",
-            name
-        )),
+        _ => RuntimeError::into(format!("value {} cannot be converted to identifier", any)),
     }
 }
 
@@ -93,10 +87,14 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
             Ok(Lovm2Value::Dict(map).into())
         }
         "NoneType" => Ok(Lovm2Value::Nil),
-        name => RuntimeError::into(format!(
-            "value of type {} cannot be converted to value",
-            name
-        )),
+        "Expr" => {
+            let data = any.extract::<Expr>()?;
+            match data.inner {
+                Lovm2Expr::Value(val) => Ok(val),
+                _ => RuntimeError::into(format!("value {} cannot be converted to value", any)),
+            }
+        }
+        _ => RuntimeError::into(format!("value {} cannot be converted to value", any)),
     }
 }
 
@@ -118,6 +116,13 @@ pub fn any_to_wpos(any: &PyAny) -> PyResult<Lovm2Expr> {
 #[derive(Clone)]
 pub struct Expr {
     pub inner: lovm2::hir::expr::Expr,
+}
+
+#[pyproto]
+impl pyo3::class::basic::PyObjectProtocol for Expr {
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self.inner))
+    }
 }
 
 #[pymethods]

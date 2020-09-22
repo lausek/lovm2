@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::code::CodeObject;
 use crate::hir::HIR;
-use crate::module::{standard::BUILTIN_FUNCTIONS, Module};
+use crate::module::{standard::BUILTIN_FUNCTIONS, Module, ENTRY_POINT};
 use crate::var::Variable;
 
 pub struct ModuleBuilder {
@@ -44,6 +44,14 @@ impl ModuleBuilder {
         }
 
         Ok(module)
+    }
+
+    pub fn entry(&mut self) -> &mut ModuleBuilderSlot {
+        let name = Variable::from(ENTRY_POINT);
+        if !self.slots.contains_key(&name) {
+            self.slots.insert(name.clone(), ModuleBuilderSlot::new());
+        }
+        self.slots.get_mut(&name).unwrap()
     }
 }
 

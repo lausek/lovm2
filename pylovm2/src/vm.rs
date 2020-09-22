@@ -31,9 +31,7 @@ impl Vm {
             .map(|v| instantiate(&any_to_value(v).unwrap()))
             .collect();
         match self.inner.call(&name, args.as_slice()) {
-            Ok(val) => {
-                Ok(RuValue::from_struct(val))
-            }
+            Ok(val) => Ok(RuValue::from_struct(val)),
             Err(msg) => RuntimeError::into(msg),
         }
     }

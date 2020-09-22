@@ -42,7 +42,7 @@ impl Assign {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Access {
     pub keys: Vec<Expr>,
     pub target: Variable,

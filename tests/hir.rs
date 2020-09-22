@@ -470,7 +470,10 @@ fn call_into_vm() {
     let mut vm = Vm::new();
     vm.context_mut().set_interrupt(10, move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(n)).unwrap().borrow());
+        assert_eq!(
+            RuValue::Int(10),
+            *frame.locals.get(&var!(n)).unwrap().borrow()
+        );
         called_ref.set(true);
     });
     vm.load_and_import_all(module).unwrap();

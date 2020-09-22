@@ -18,7 +18,7 @@ use crate::var::Variable;
 /// push c
 /// call f, 3
 /// ```
-/// 
+///
 /// and the function has to do the popping in reverse
 ///
 /// ```ignore
