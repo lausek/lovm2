@@ -34,6 +34,7 @@ pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
     }
 }
 
+// TODO: implement ToPyObject, FromPyObject for this type
 #[pyclass]
 pub struct RuValue {
     inner: Lovm2RuValue,
@@ -120,8 +121,10 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
         }
     }
 
+    /*
     fn __setitem__(&mut self, key: &PyAny, val: &PyAny) -> PyResult<()> {
         // self.inner.borrow_mut().set(key, val);
         todo!()
     }
+    */
 }

@@ -110,9 +110,14 @@ impl ModuleBuilder {
     }
 }
 
+enum ModuleBuilderSlotInner {
+    Lovm2Hir(Option<hir::HIR>),
+    PyFn(Option<PyObject>),
+}
+
 #[pyclass]
 pub struct ModuleBuilderSlot {
-    inner: Option<hir::HIR>,
+    inner: ModuleBuilderSlotInner,
 }
 
 #[pymethods]
@@ -120,36 +125,57 @@ impl ModuleBuilderSlot {
     #[new]
     pub fn new() -> Self {
         Self {
-            inner: Some(hir::HIR::new()),
+            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(hir::HIR::new())),
         }
     }
 
     pub fn args(&mut self, args: &PyList) {
-        use lovm2::var::Variable;
-        let args = args
-            .iter()
-            .map(|name| {
-                let name = name.str().unwrap().to_string().unwrap().to_string();
-                Variable::from(name)
-            })
-            .collect();
-        self.inner.replace(hir::HIR::with_args(args));
+        if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
+            use lovm2::var::Variable;
+            let args = args
+                .iter()
+                .map(|name| {
+                    let name = name.str().unwrap().to_string().unwrap().to_string();
+                    Variable::from(name)
+                })
+                .collect();
+            hir.replace(hir::HIR::with_args(args));
+        } else {
+            unimplemented!()
+        }
     }
 
     pub fn code(&mut self) -> PyResult<BlockBuilder> {
-        let hir = self.inner.as_mut().unwrap();
-        let inner = &mut hir.code as *mut Lovm2Block;
-        Ok(BlockBuilder { inner })
+        if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
+            let hir = hir.as_mut().unwrap();
+            let inner = &mut hir.code as *mut Lovm2Block;
+            Ok(BlockBuilder { inner })
+        } else {
+            unimplemented!()
+        }
     }
 
+    // TODO: can we use consuming self here?
     pub fn complete(&mut self) -> PyResult<CodeObject> {
-        if let Some(hir) = self.inner.take() {
-            return match hir.build() {
-                Ok(co) => Ok(CodeObject::from(co)),
-                Err(msg) => TypeError::into(msg),
-            };
+        match &mut self.inner {
+            ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
+                if let Some(hir) = hir.take() {
+                    return match hir.build() {
+                        Ok(co) => Ok(CodeObject::from(co)),
+                        Err(msg) => TypeError::into(msg),
+                    };
+                }
+                TypeError::into("hir was already built")
+            }
+            ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
+                Ok(CodeObject::from(pyfn.take().unwrap()))
+            }
         }
-        TypeError::into("hir was already built")
+    }
+
+    pub fn pyfn(&mut self, pyfn: PyObject) -> PyResult<()> {
+        self.inner = ModuleBuilderSlotInner::PyFn(Some(pyfn));
+        Ok(())
     }
 }
 

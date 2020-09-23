@@ -5,7 +5,7 @@ use pyo3::types::{PyString, PyTuple};
 use crate::context::{Context, Lovm2Context};
 use crate::expr::any_to_value;
 use crate::module::Module;
-use crate::value::{lovm2py, RuValue};
+use crate::value::lovm2py;
 
 #[pyclass]
 pub struct Vm {
