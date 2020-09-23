@@ -10,7 +10,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 shrinkwraprs = "0.3.0"
-lovm2 = { path = "../" }
+#lovm2 = { path = "../" }
+lovm2 = { path = "/home/lausek/Projects/lovm2" }
 
 [dependencies.pyo3]
 version = "0.10.1"

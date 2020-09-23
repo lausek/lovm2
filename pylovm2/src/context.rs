@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 
-use crate::value::RuValue;
+use crate::value::lovm2py;
 
 pub type Lovm2Context = lovm2::context::Context;
 pub type Lovm2Frame = lovm2::frame::Frame;
@@ -31,14 +31,14 @@ impl Context {
         }
     }
 
-    pub fn globals(&mut self, name: String) -> Option<RuValue> {
+    pub fn globals(&mut self, py: Python, name: String) -> Option<PyObject> {
         unsafe {
             if let Some(val) = (*self.inner)
                 .globals
                 .get(&lovm2::var::Variable::from(name))
                 .cloned()
             {
-                return Some(RuValue::from(val));
+                return Some(lovm2py(&val.borrow(), py));
             }
         }
         None
@@ -58,12 +58,12 @@ impl Frame {
 
 #[pymethods]
 impl Frame {
-    pub fn local(&self, key: String) -> Option<RuValue> {
+    pub fn local(&self, py: Python, key: String) -> Option<PyObject> {
         unsafe {
             (*self.inner)
                 .locals
                 .get(&lovm2::var::Variable::from(key))
-                .map(|val| RuValue::from(val.clone()))
+                .map(|val| lovm2py(&val.borrow(), py))
         }
     }
 }
