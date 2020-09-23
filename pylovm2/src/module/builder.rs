@@ -3,65 +3,14 @@ use std::rc::Rc;
 
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
-use pyo3::types::{PyList, PyTuple};
+use pyo3::types::PyTuple;
 
 use lovm2::hir;
-use lovm2::module;
 use lovm2::var;
 
-use crate::code::CodeObject;
 use crate::expr::{any_to_expr, any_to_wpos, Expr};
 
-type Lovm2Branch = lovm2::hir::branch::Branch;
-type Lovm2Block = lovm2::hir::block::Block;
-type Lovm2Module = lovm2::module::Module;
-
-#[pyclass]
-pub struct Module {
-    pub inner: Option<Box<dyn module::ModuleProtocol>>,
-}
-
-impl Module {
-    pub fn from(inner: Lovm2Module) -> Self {
-        Self {
-            inner: Some(inner.into()),
-        }
-    }
-}
-
-#[pymethods]
-impl Module {
-    #[classmethod]
-    pub fn load(_this: &PyAny, path: &PyAny) -> PyResult<Self> {
-        let path = path.str()?.to_string()?;
-        match Lovm2Module::load_from_file(path.as_ref()) {
-            Ok(inner) => Ok(Self { inner: Some(inner) }),
-            Err(err) => TypeError::into(err),
-        }
-    }
-
-    pub fn save(&self, path: String) -> PyResult<()> {
-        if let Some(inner) = self.inner.as_ref() {
-            return match inner.store_to_file(&path) {
-                Ok(_) => Ok(()),
-                Err(err) => TypeError::into(err),
-            };
-        }
-        TypeError::into("inner module not loaded")
-    }
-
-    pub fn uses(&self) -> PyResult<Vec<String>> {
-        // TODO: implement this
-        Ok(vec![])
-    }
-}
-
-#[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for Module {
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self.inner.as_ref().unwrap()))
-    }
-}
+use super::{Lovm2Branch, Lovm2Block, Lovm2Module, Module, ModuleBuilderSlot};
 
 #[pyclass]
 pub struct ModuleBuilder {
@@ -110,75 +59,6 @@ impl ModuleBuilder {
     }
 }
 
-enum ModuleBuilderSlotInner {
-    Lovm2Hir(Option<hir::HIR>),
-    PyFn(Option<PyObject>),
-}
-
-#[pyclass]
-pub struct ModuleBuilderSlot {
-    inner: ModuleBuilderSlotInner,
-}
-
-#[pymethods]
-impl ModuleBuilderSlot {
-    #[new]
-    pub fn new() -> Self {
-        Self {
-            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(hir::HIR::new())),
-        }
-    }
-
-    pub fn args(&mut self, args: &PyList) {
-        if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
-            use lovm2::var::Variable;
-            let args = args
-                .iter()
-                .map(|name| {
-                    let name = name.str().unwrap().to_string().unwrap().to_string();
-                    Variable::from(name)
-                })
-                .collect();
-            hir.replace(hir::HIR::with_args(args));
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn code(&mut self) -> PyResult<BlockBuilder> {
-        if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
-            let hir = hir.as_mut().unwrap();
-            let inner = &mut hir.code as *mut Lovm2Block;
-            Ok(BlockBuilder { inner })
-        } else {
-            unimplemented!()
-        }
-    }
-
-    // TODO: can we use consuming self here?
-    pub fn complete(&mut self) -> PyResult<CodeObject> {
-        match &mut self.inner {
-            ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
-                if let Some(hir) = hir.take() {
-                    return match hir.build() {
-                        Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => TypeError::into(msg),
-                    };
-                }
-                TypeError::into("hir was already built")
-            }
-            ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
-                Ok(CodeObject::from(pyfn.take().unwrap()))
-            }
-        }
-    }
-
-    pub fn pyfn(&mut self, pyfn: PyObject) -> PyResult<()> {
-        self.inner = ModuleBuilderSlotInner::PyFn(Some(pyfn));
-        Ok(())
-    }
-}
-
 #[pyclass]
 pub struct BranchBuilder {
     inner: *mut Lovm2Branch,
@@ -204,7 +84,7 @@ impl BranchBuilder {
 
 #[pyclass]
 pub struct BlockBuilder {
-    inner: *mut Lovm2Block,
+    pub(super) inner: *mut Lovm2Block,
 }
 
 #[pymethods]
