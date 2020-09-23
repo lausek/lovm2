@@ -13,7 +13,7 @@ type Lovm2RuValue = lovm2::value::RuValueRef;
 pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
     match val {
         Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
-        Lovm2RuValueRaw::Int(n) => (*n as f64).into_py(py),
+        Lovm2RuValueRaw::Int(n) => (*n).into_py(py),
         Lovm2RuValueRaw::Float(n) => (*n).into_py(py),
         Lovm2RuValueRaw::Str(s) => s.into_py(py),
         Lovm2RuValueRaw::Dict(dict) => {
