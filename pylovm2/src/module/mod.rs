@@ -59,3 +59,14 @@ impl pyo3::class::basic::PyObjectProtocol for Module {
         Ok(format!("{:?}", self.inner.as_ref().unwrap()))
     }
 }
+
+#[pyproto]
+impl pyo3::class::sequence::PySequenceProtocol for Module {
+    fn __contains__(&self, key: &PyAny) -> PyResult<bool> {
+        let key = key.str()?.to_string()?.to_string();
+        Ok(match &self.inner {
+            Some(m) => m.slot(&key.into()).is_some(),
+            _ => false,
+        })
+    }
+}
