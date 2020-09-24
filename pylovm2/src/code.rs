@@ -42,7 +42,10 @@ impl code::CallProtocol for CodeObject {
 
                 let res = pyfn
                     .call1(py, args)
-                    .map_err(|_| "err in pyfn call".to_string())?;
+                    .map_err(|e| {
+                        e.print(py);
+                        "err in pyfn call".to_string()
+                    })?;
                 let res = any_to_value(res.as_ref(py))
                     .map_err(|_| "error in ruvalue conversion".to_string())?;
                 ctx.push_value(instantiate(&res));

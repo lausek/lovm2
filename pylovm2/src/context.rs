@@ -69,6 +69,7 @@ impl Frame {
     }
 }
 
+// TODO: implement indexing for this type
 #[pymethods]
 impl Frame {
     pub fn local(&self, py: Python, key: String) -> Option<PyObject> {

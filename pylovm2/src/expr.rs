@@ -2,6 +2,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyTuple};
 
+use lovm2::prelude::Operator2;
 use lovm2::var;
 
 type Lovm2Expr = lovm2::hir::expr::Expr;
@@ -15,6 +16,18 @@ macro_rules! auto_wrapper {
             ),
         })
     };
+    ($op:path, $args:expr) => {{
+        let mut args = vec![];
+        for arg in $args.iter() {
+            args.push(any_to_expr(arg)?)
+        }
+        Ok(Self {
+            inner: Lovm2Expr::from_opn(
+                $op,
+                args
+            ),
+        })
+    }};
 }
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
@@ -171,77 +184,92 @@ impl Expr {
 #[pymethods]
 impl Expr {
     #[classmethod]
-    pub fn add(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(add, arg1, arg2)
+    #[args(args = "*")]
+    pub fn add(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Add, args)
     }
 
     #[classmethod]
-    pub fn sub(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(sub, arg1, arg2)
+    #[args(args = "*")]
+    pub fn sub(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Sub, args)
     }
 
     #[classmethod]
-    pub fn mul(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(mul, arg1, arg2)
+    #[args(args = "*")]
+    pub fn mul(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Mul, args)
     }
 
     #[classmethod]
-    pub fn div(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(div, arg1, arg2)
+    #[args(args = "*")]
+    pub fn div(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Div, args)
     }
 
     #[classmethod]
-    pub fn rem(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(rem, arg1, arg2)
+    #[args(args = "*")]
+    pub fn rem(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Rem, args)
     }
 
     #[classmethod]
-    pub fn land(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(and, arg1, arg2)
+    #[args(args = "*")]
+    pub fn land(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::And, args)
     }
 
     #[classmethod]
-    pub fn lor(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(or, arg1, arg2)
+    #[args(args = "*")]
+    pub fn lor(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Or, args)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn lnot(_this: &PyAny, arg1: &PyAny) -> PyResult<Self> {
         auto_wrapper!(not, arg1)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn eq(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(eq, arg1, arg2)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn ne(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(ne, arg1, arg2)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn ge(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(ge, arg1, arg2)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn gt(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(gt, arg1, arg2)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn le(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(le, arg1, arg2)
     }
 
     #[classmethod]
+    #[args(args = "*")]
     pub fn lt(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
         auto_wrapper!(lt, arg1, arg2)
     }
 
     #[classmethod]
-    pub fn pow(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(pow, arg1, arg2)
+    #[args(args = "*")]
+    pub fn pow(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Pow, args)
     }
 }
