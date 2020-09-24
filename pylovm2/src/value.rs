@@ -30,7 +30,7 @@ pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
             .map(|item| lovm2py(item, py))
             .collect::<Vec<PyObject>>()
             .to_object(py),
-        _ => unimplemented!(),
+        Lovm2RuValueRaw::Nil => py.None(),
     }
 }
 

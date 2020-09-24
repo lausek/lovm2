@@ -13,6 +13,7 @@ use self::vm::Vm;
 
 #[pymodule]
 fn pylovm2(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add("ENTRY_POINT", lovm2::module::ENTRY_POINT)?;
     m.add_class::<Expr>()?;
     m.add_class::<Module>()?;
     m.add_class::<ModuleBuilder>()?;
