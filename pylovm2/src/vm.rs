@@ -37,7 +37,7 @@ impl Vm {
     }
 
     pub fn ctx(&mut self) -> PyResult<Context> {
-        todo!()
+        Ok(Context::new(self.inner.context_mut()))
     }
 
     pub fn load(&mut self, module: &mut Module) -> PyResult<()> {
@@ -45,7 +45,6 @@ impl Vm {
             .inner
             .take()
             .expect("module given was already loaded");
-        // println!("{:#?}", module);
         if let Err(msg) = self.inner.load_and_import_all(module) {
             return RuntimeError::into(msg);
         }
