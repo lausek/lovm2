@@ -34,6 +34,8 @@ pub enum Instruction {
     Mul,
     /// = first / second
     Div,
+    /// = first ** second
+    Pow,
     /// = first % second
     Rem,
 

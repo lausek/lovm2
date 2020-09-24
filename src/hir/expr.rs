@@ -36,6 +36,7 @@ pub enum Operator2 {
     Sub,
     Mul,
     Div,
+    Pow,
     Rem,
     And,
     Or,
@@ -80,6 +81,7 @@ impl Expr {
             Operator2::Sub => Self::sub(left, right),
             Operator2::Mul => Self::mul(left, right),
             Operator2::Div => Self::div(left, right),
+            Operator2::Pow => Self::pow(left, right),
             Operator2::Rem => Self::rem(left, right),
             Operator2::And => Self::and(left, right),
             Operator2::Or => Self::or(left, right),
@@ -104,9 +106,21 @@ impl Expr {
         }
     }
 
-    pub fn eval_const(&self) -> Expr {
+    pub fn eval_const(&self) -> Self {
         // TODO: check if expression is const and evaluate it
         unimplemented!()
+    }
+
+    pub fn pow<T, U>(left: T, right: U) -> Self
+    where
+        T: Into<Expr>,
+        U: Into<Expr>,
+    {
+        Expr::Operation2(
+            Operator2::Pow,
+            Box::new(left.into()),
+            Box::new(right.into()),
+        )
     }
 }
 
@@ -199,6 +213,7 @@ impl Lowering for Expr {
                     Operator2::Sub => Instruction::Sub,
                     Operator2::Mul => Instruction::Mul,
                     Operator2::Div => Instruction::Div,
+                    Operator2::Pow => Instruction::Pow,
                     Operator2::Rem => Instruction::Rem,
                     Operator2::And => Instruction::And,
                     Operator2::Or => Instruction::Or,

@@ -505,3 +505,19 @@ fn comparison() {
         })
     }
 }
+
+#[test]
+fn raise_to_power() {
+    define_test! {
+        main {
+            Assign::local(var!(a), Expr::pow(2, 3));
+            Assign::local(var!(b), Expr::pow(3., 3.));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(8), *frame.locals.get(&var!(a)).unwrap().borrow());
+            assert_eq!(RuValue::Float(27.), *frame.locals.get(&var!(b)).unwrap().borrow());
+        })
+    }
+}

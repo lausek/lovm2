@@ -168,6 +168,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
             Instruction::Sub => ruvalue_operation!(ctx, sub),
             Instruction::Mul => ruvalue_operation!(ctx, mul),
             Instruction::Div => ruvalue_operation!(ctx, div),
+            Instruction::Pow => ruvalue_operation!(ctx, pow),
             Instruction::Rem => ruvalue_operation!(ctx, rem),
             Instruction::And => ruvalue_operation!(ctx, bitand),
             Instruction::Or => ruvalue_operation!(ctx, bitor),

@@ -90,6 +90,19 @@ auto_implement! {
     Int => (|a: i64| !a);
 }
 
+impl RuValue {
+    pub fn pow(&self, exp: RuValue) -> RuValue {
+        if let RuValue::Int(exp) = exp.into_integer().unwrap() {
+            return match self {
+                RuValue::Int(base) => RuValue::Int(base.pow(exp as u32).into()),
+                RuValue::Float(base) => RuValue::Float(base.powi(exp as i32).into()),
+                _ => unimplemented!(),
+            };
+        }
+        unimplemented!()
+    }
+}
+
 impl std::cmp::PartialOrd for RuValue {
     fn partial_cmp(&self, other: &RuValue) -> Option<Ordering> {
         match (self, other) {
