@@ -33,7 +33,7 @@ impl Module {
         let path = path.str()?.to_string()?;
         match Lovm2Module::load_from_file(path.as_ref()) {
             Ok(inner) => Ok(Self { inner: Some(inner) }),
-            Err(err) => TypeError::into(err),
+            Err(err) => RuntimeError::into(err),
         }
     }
 
@@ -41,10 +41,10 @@ impl Module {
         if let Some(inner) = self.inner.as_ref() {
             return match inner.store_to_file(&path) {
                 Ok(_) => Ok(()),
-                Err(err) => TypeError::into(err),
+                Err(err) => RuntimeError::into(err),
             };
         }
-        TypeError::into("inner module not loaded")
+        RuntimeError::into("inner module not loaded")
     }
 
     pub fn uses(&self) -> PyResult<Vec<String>> {

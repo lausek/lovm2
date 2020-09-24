@@ -5,7 +5,7 @@ from .deps import *
 class TestVm(Test):
     def test_no_entry_point(self, capfd, internals):
         vm = internals.vm
-        with pytest.raises(TypeError):
+        with pytest.raises(RuntimeError):
             vm.run()
 
     def test_interrupt(self, internals):

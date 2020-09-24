@@ -47,7 +47,7 @@ impl Vm {
             .expect("module given was already loaded");
         // println!("{:#?}", module);
         if let Err(msg) = self.inner.load_and_import_all(module) {
-            return TypeError::into(msg);
+            return RuntimeError::into(msg);
         }
         Ok(())
     }
@@ -55,7 +55,7 @@ impl Vm {
     pub fn run(&mut self) -> PyResult<()> {
         match self.inner.run() {
             Ok(_) => Ok(()),
-            Err(msg) => TypeError::into(msg),
+            Err(msg) => RuntimeError::into(msg),
         }
     }
 
@@ -63,7 +63,7 @@ impl Vm {
         use pyo3::types::PyTuple;
 
         if !func.is_callable() {
-            return TypeError::into("given function is not callable");
+            return RuntimeError::into("given function is not callable");
         }
 
         let func = func.to_object(py);

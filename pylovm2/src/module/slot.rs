@@ -6,8 +6,8 @@ use lovm2::hir;
 
 use crate::code::CodeObject;
 
-use super::{Lovm2Block};
 use super::builder::*;
+use super::Lovm2Block;
 
 enum ModuleBuilderSlotInner {
     Lovm2Hir(Option<hir::HIR>),
@@ -61,10 +61,10 @@ impl ModuleBuilderSlot {
                 if let Some(hir) = hir.take() {
                     return match hir.build() {
                         Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => TypeError::into(msg),
+                        Err(msg) => RuntimeError::into(msg),
                     };
                 }
-                TypeError::into("hir was already built")
+                RuntimeError::into("hir was already built")
             }
             ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
                 Ok(CodeObject::from(pyfn.take().unwrap()))

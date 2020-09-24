@@ -10,7 +10,7 @@ use lovm2::var;
 
 use crate::expr::{any_to_expr, any_to_wpos, Expr};
 
-use super::{Lovm2Branch, Lovm2Block, Lovm2Module, Module, ModuleBuilderSlot};
+use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
 
 #[pyclass]
 pub struct ModuleBuilder {
