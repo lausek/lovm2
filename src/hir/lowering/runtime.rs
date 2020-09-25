@@ -1,5 +1,6 @@
 use crate::bytecode::Instruction;
 use crate::code::{CodeObject, CodeObjectBuilder};
+use crate::error::*;
 use crate::hir::HIR;
 use crate::value::CoValue;
 use crate::var::Variable;
@@ -30,7 +31,7 @@ impl LoweringRuntime {
         }
     }
 
-    pub fn complete(hir: HIR) -> Result<CodeObject, String> {
+    pub fn complete(hir: HIR) -> Lovm2CompileResult<CodeObject> {
         let mut lowru = LoweringRuntime::new();
         let hir_elements = hir.code.into_iter();
 
@@ -48,7 +49,7 @@ impl LoweringRuntime {
             .build()
     }
 
-    pub fn add_prelude(&mut self, args: Vec<Variable>) -> Result<(), String> {
+    pub fn add_prelude(&mut self, args: Vec<Variable>) -> Lovm2CompileResult<()> {
         // read in code object parameters from value stack
         // read this in reverse, because last parameter is top of stack
         for arg in args.into_iter().rev() {

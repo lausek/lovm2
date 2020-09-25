@@ -14,6 +14,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::code::CallProtocol;
+use crate::error::*;
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
@@ -36,7 +37,7 @@ pub trait ModuleProtocol: std::fmt::Debug {
         unimplemented!()
     }
 
-    fn store_to_file(&self, _path: &str) -> Result<(), String> {
+    fn store_to_file(&self, _path: &str) -> Lovm2Result<()> {
         unimplemented!()
     }
 }
@@ -64,7 +65,7 @@ impl ModuleProtocol for Module {
     }
 
     // TODO: could lead to errors when two threads serialize to the same file
-    fn store_to_file(&self, path: &str) -> Result<(), String> {
+    fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
         let file = File::create(path).map_err(|e| e.to_string())?;
         bincode::serialize_into(file, self).map_err(|e| e.to_string())
     }
@@ -78,7 +79,7 @@ impl Module {
     }
 
     /// tries to load the file as shared object first and tries regular deserialization if it failed
-    pub fn load_from_file<T>(path: T) -> Result<Box<dyn ModuleProtocol>, String>
+    pub fn load_from_file<T>(path: T) -> Lovm2Result<Box<dyn ModuleProtocol>>
     where
         T: AsRef<Path>,
     {

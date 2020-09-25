@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate::error::*;
+
 pub type RuDict = HashMap<RuValue, RuValue>;
 pub type RuDictRef = Rc<RefCell<RuDict>>;
 pub type RuList = Vec<RuValue>;
@@ -27,7 +29,7 @@ pub enum RuValue {
 }
 
 impl RuValue {
-    pub fn get(&self, key: RuValue) -> Result<RuValue, String> {
+    pub fn get(&self, key: RuValue) -> Lovm2Result<RuValue> {
         match self {
             RuValue::Dict(dict) => match dict.borrow().get(&key) {
                 Some(val) => Ok(val.clone()),
@@ -47,7 +49,7 @@ impl RuValue {
         }
     }
 
-    pub fn len(&self) -> Result<usize, String> {
+    pub fn len(&self) -> Lovm2Result<usize> {
         match self {
             RuValue::Dict(dict) => Ok(dict.borrow().len()),
             RuValue::List(list) => Ok(list.borrow().len()),
@@ -55,7 +57,7 @@ impl RuValue {
         }
     }
 
-    pub fn set(&mut self, key: RuValue, val: RuValue) -> Result<(), String> {
+    pub fn set(&mut self, key: RuValue, val: RuValue) -> Lovm2Result<()> {
         match self {
             RuValue::Dict(dict) => {
                 dict.borrow_mut().insert(key, val);

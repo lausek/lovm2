@@ -3,6 +3,7 @@ use std::ops::*;
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
+use crate::error::*;
 use crate::module::{create_standard_module, ModuleProtocol, ENTRY_POINT};
 use crate::value::{box_ruvalue, RuValue};
 use crate::var::Variable;
@@ -39,7 +40,7 @@ impl Vm {
         Self { ctx }
     }
 
-    pub fn call(&mut self, name: &str, args: &[RuValue]) -> Result<RuValue, String> {
+    pub fn call(&mut self, name: &str, args: &[RuValue]) -> Lovm2Result<RuValue> {
         let name = Variable::from(name);
         match self.ctx.lookup_code_object(&name) {
             Some(co) => {
@@ -65,7 +66,7 @@ impl Vm {
     }
 
     // TODO: add `ImportOptions` parameter to specify what names to import
-    pub fn load_and_import_all<T>(&mut self, module: T) -> Result<(), String>
+    pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
     where
         T: Into<Box<dyn ModuleProtocol>>,
     {
@@ -73,7 +74,7 @@ impl Vm {
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
-    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Result<(), String> {
+    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<()> {
         self.ctx.push_frame(0);
         co.run(&mut self.ctx)?;
         self.ctx.pop_frame();
@@ -82,7 +83,7 @@ impl Vm {
     }
 
     /// start the execution at `ENTRY_POINT`
-    pub fn run(&mut self) -> Result<(), String> {
+    pub fn run(&mut self) -> Lovm2Result<()> {
         match self.ctx.lookup_code_object(&ENTRY_POINT.into()) {
             Some(co) => self.run_object(co.as_ref()),
             None => Err(format!("no entry function called `{}`", ENTRY_POINT)),
@@ -110,7 +111,7 @@ macro_rules! ruvalue_compare {
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
 /// if not handled correctly. see `Vm.run_object`
-pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Result<(), String> {
+pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
         match inx {

@@ -67,6 +67,7 @@ pub mod r#return;
 pub mod prelude;
 
 use crate::code::CodeObject;
+use crate::error::*;
 use crate::hir::block::Block;
 use crate::hir::element::HIRElement;
 use crate::hir::lowering::LoweringRuntime;
@@ -101,7 +102,7 @@ impl HIR {
         hir
     }
 
-    pub fn build(mut self) -> Result<CodeObject, String> {
+    pub fn build(mut self) -> Lovm2CompileResult<CodeObject> {
         // automatically add a `return nil` if not present already
         match self.code.last_mut() {
             Some(HIRElement::Return(_)) => {}

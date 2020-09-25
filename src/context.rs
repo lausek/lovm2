@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::code::CodeObjectRef;
+use crate::error::*;
 use crate::frame::Frame;
 use crate::module::{Module, ModuleProtocol};
 use crate::value::{RuValue, RuValueRef};
@@ -12,7 +13,7 @@ use crate::var::Variable;
 // TODO: this should also return some Result
 pub type InterruptFn = dyn Fn(&mut Context);
 
-fn find_module(name: &str, load_paths: &[String]) -> Result<String, String> {
+fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
     for path in load_paths.iter() {
         let dir = read_dir(path).map_err(|e| e.to_string())?;
@@ -69,14 +70,14 @@ impl Context {
     }
 
     /// lookup a module name in `load_paths` and add it to the context
-    pub fn load_and_import_by_name(&mut self, name: &str) -> Result<(), String> {
+    pub fn load_and_import_by_name(&mut self, name: &str) -> Lovm2Result<()> {
         let path = find_module(name, &self.load_paths)?;
         let module = Module::load_from_file(path)?;
         self.load_and_import_all(module)
     }
 
     /// add the module and all of its slots to `scope`
-    pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Result<(), String> {
+    pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Lovm2Result<()> {
         for (key, co_object) in module.slots().iter() {
             if self.scope.insert(key.clone(), co_object.clone()).is_some() {
                 return Err(format!("import conflict: `{}` is already defined", key));

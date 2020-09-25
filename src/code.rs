@@ -5,15 +5,16 @@ use std::rc::Rc;
 
 use crate::bytecode::Instruction;
 use crate::context::Context;
+use crate::error::*;
 use crate::value::CoValue;
 use crate::var::Variable;
 use crate::vm::run_bytecode;
 
 pub type CodeObjectRef = Rc<dyn CallProtocol>;
 /// definition for statically linked function
-pub type StaticFunction = fn(&mut Context) -> Result<(), String>;
+pub type StaticFunction = fn(&mut Context) -> Lovm2Result<()>;
 /// definition for dynamically linked function
-pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Result<(), String>;
+pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 
 /// generalization for runnable objects
 /// - lovm2 bytecode ([CodeObject](/latest/lovm2/code/struct.CodeObject.html))
@@ -24,7 +25,7 @@ pub trait CallProtocol: std::fmt::Debug {
         None
     }
 
-    fn run(&self, ctx: &mut Context) -> Result<(), String>;
+    fn run(&self, ctx: &mut Context) -> Lovm2Result<()>;
 }
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
@@ -48,7 +49,7 @@ impl CallProtocol for CodeObject {
         Some(self)
     }
 
-    fn run(&self, ctx: &mut Context) -> Result<(), String> {
+    fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
         run_bytecode(self, ctx)
     }
 }
@@ -93,7 +94,7 @@ impl CodeObjectBuilder {
         self
     }
 
-    pub fn build(self) -> Result<CodeObject, String> {
+    pub fn build(self) -> Lovm2Result<CodeObject> {
         if self.code.is_none() {
             return Err("code missing".to_string());
         }

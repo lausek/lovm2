@@ -13,6 +13,7 @@ use std::rc::Rc;
 
 use crate::code::{CallProtocol, CodeObjectRef, ExternFunction};
 use crate::context::Context;
+use crate::error::*;
 use crate::module::{ModuleProtocol, Slots};
 use crate::var::Variable;
 
@@ -63,7 +64,7 @@ impl SharedObjectModule {
         }
     }
 
-    pub fn load_from_file<T>(path: T) -> Result<SharedObjectModule, String>
+    pub fn load_from_file<T>(path: T) -> Lovm2Result<SharedObjectModule>
     where
         T: AsRef<Path>,
     {
@@ -95,7 +96,7 @@ impl SharedObjectSlot {
 }
 
 impl CallProtocol for SharedObjectSlot {
-    fn run(&self, ctx: &mut Context) -> Result<(), String> {
+    fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
         unsafe {
             let (lib, name) = (&self.0, &self.1);
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());

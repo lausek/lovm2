@@ -26,7 +26,7 @@ fn get(ctx: &mut Context) -> Result<(), String> {
 */
 
 #[lovm2_builtin]
-fn input(ctx: &mut Context) -> Result<(), String> {
+fn input(ctx: &mut Context) -> Lovm2Result<()> {
     use std::io::stdin;
 
     let mut input = String::new();
@@ -38,7 +38,7 @@ fn input(ctx: &mut Context) -> Result<(), String> {
 }
 
 #[lovm2_builtin]
-fn len(ctx: &mut Context) -> Result<(), String> {
+fn len(ctx: &mut Context) -> Lovm2Result<()> {
     let target = ctx.pop_value().unwrap();
 
     match target.len() {
@@ -50,7 +50,7 @@ fn len(ctx: &mut Context) -> Result<(), String> {
 }
 
 #[lovm2_builtin]
-fn print(ctx: &mut Context) -> Result<(), String> {
+fn print(ctx: &mut Context) -> Lovm2Result<()> {
     use std::io::Write;
 
     let argn = ctx.frame_mut().unwrap().argn;

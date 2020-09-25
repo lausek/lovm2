@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::code::CodeObject;
+use crate::error::*;
 use crate::hir::HIR;
 use crate::module::{standard::BUILTIN_FUNCTIONS, Module, ENTRY_POINT};
 use crate::var::Variable;
@@ -31,7 +32,7 @@ impl ModuleBuilder {
         self.slots.get_mut(&name).unwrap()
     }
 
-    pub fn build(self) -> Result<Module, String> {
+    pub fn build(self) -> Lovm2CompileResult<Module> {
         let mut module = Module::new();
 
         for (key, co_builder) in self.slots.into_iter() {
@@ -68,7 +69,7 @@ impl ModuleBuilderSlot {
         self.hir = Some(hir);
     }
 
-    pub fn complete(self) -> Result<CodeObject, String> {
+    pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
         match self.hir {
             Some(hir) => hir.build(),
             None => Err("no hir for slot".to_string()),

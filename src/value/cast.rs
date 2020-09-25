@@ -1,6 +1,7 @@
+use crate::error::*;
 use crate::value::RuValue;
 
-pub type CastResult = Result<RuValue, String>;
+pub type CastResult = Lovm2Result<RuValue>;
 
 pub const RUVALUE_NIL_TY: u16 = 0;
 pub const RUVALUE_BOOL_TY: u16 = 1;

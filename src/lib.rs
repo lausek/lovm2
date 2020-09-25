@@ -54,6 +54,7 @@ extern crate lovm2_internals;
 pub mod bytecode;
 pub mod code;
 pub mod context;
+pub mod error;
 pub mod frame;
 pub mod hir;
 pub mod module;
