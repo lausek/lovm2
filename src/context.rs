@@ -11,6 +11,7 @@ use crate::module::{Module, ModuleProtocol};
 use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
+pub type LoadHookFn = dyn Fn(&mut Context) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>>;
 // TODO: this should also return some Result
 pub type InterruptFn = dyn Fn(&mut Context);
 
@@ -44,6 +45,8 @@ pub struct Context {
     pub scope: HashMap<Variable, CodeObjectRef>,
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: [Option<Rc<InterruptFn>>; 256],
+    /// function to call if a module is about to be loaded
+    pub load_hook: Option<Rc<LoadHookFn>>,
     /// list of directories for module lookup
     pub load_paths: Vec<String>,
 
@@ -60,6 +63,7 @@ impl Context {
             globals: HashMap::new(),
             scope: HashMap::new(),
             interrupts: [None; 256],
+            load_hook: None,
             load_paths: vec![format!(
                 "{}/.local/lib/lovm2/",
                 dirs::home_dir().unwrap().to_str().unwrap()
@@ -72,9 +76,15 @@ impl Context {
 
     /// lookup a module name in `load_paths` and add it to the context
     pub fn load_and_import_by_name(&mut self, name: &str) -> Lovm2Result<()> {
-        let path = find_module(name, &self.load_paths)?;
-        let module = Module::load_from_file(path)?;
-        self.load_and_import_all(module)
+        let mut module = None;
+        if let Some(load_hook) = self.load_hook.clone() {
+            module = load_hook(self)?;
+        }
+        if module.is_none() {
+            let path = find_module(name, &self.load_paths)?;
+            module = Some(Module::load_from_file(path)?);
+        }
+        self.load_and_import_all(module.unwrap())
     }
 
     /// add the module and all of its slots to `scope`
@@ -95,6 +105,13 @@ impl Context {
             Some(co) => Ok(co),
             _ => Err(format!("code object `{}` not found", name).into()),
         }
+    }
+
+    pub fn set_load_hook<T>(&mut self, hook: T)
+    where
+        T: Fn(&mut Context) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>> + Sized + 'static,
+    {
+        self.load_hook = Some(Rc::new(hook));
     }
 
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)

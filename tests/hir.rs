@@ -1,8 +1,8 @@
 #![allow(unused_parens)]
 
 use lovm2::context::Context;
-use lovm2::hir::prelude::*;
 use lovm2::module::Module;
+use lovm2::prelude::*;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
 
@@ -207,7 +207,7 @@ fn true_branching() {
 
     hir.push(Interrupt::new(10));
 
-    builder.add("main").hir(hir);
+    builder.add(ENTRY_POINT).hir(hir);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -252,7 +252,7 @@ fn multiple_branches() {
 
     hir.push(Interrupt::new(10));
 
-    builder.add("main").hir(hir);
+    builder.add(ENTRY_POINT).hir(hir);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -274,7 +274,7 @@ fn taking_parameters() {
     main.push(Call::new("called").arg(2).arg(7));
 
     builder.add("called").hir(called);
-    builder.add("main").hir(main);
+    builder.add(ENTRY_POINT).hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -301,7 +301,7 @@ fn return_values() {
     main.push(Interrupt::new(10));
 
     builder.add("returner").hir(returner);
-    builder.add("main").hir(main);
+    builder.add(ENTRY_POINT).hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -323,7 +323,7 @@ fn drop_call_values() {
     main.push(Interrupt::new(10));
 
     builder.add("returner").hir(returner);
-    builder.add("main").hir(main);
+    builder.add(ENTRY_POINT).hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         assert!(ctx.vstack.is_empty());
@@ -341,7 +341,7 @@ fn cast_to_string() {
     main.push(Assign::local(var!(d), Cast::to_str(true)));
     main.push(Interrupt::new(10));
 
-    builder.add("main").hir(main);
+    builder.add(ENTRY_POINT).hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -380,7 +380,7 @@ fn folding_expr() {
     ));
     main.push(Interrupt::new(10));
 
-    builder.add("main").hir(main);
+    builder.add(ENTRY_POINT).hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let a = ctx.globals.get(&var!(a)).unwrap();
