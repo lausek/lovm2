@@ -1,9 +1,10 @@
 use std::ops::*;
 
+use lovm2_error::*;
+
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::error::*;
 use crate::hir::expr::Expr;
 use crate::module::{create_standard_module, ModuleProtocol, ENTRY_POINT};
 use crate::value::{box_ruvalue, instantiate, RuValue};
@@ -72,8 +73,8 @@ impl Vm {
             Expr::Value(val) => Ok(instantiate(val)),
             Expr::Variable(var) => match self.ctx.globals.get(&var) {
                 Some(val) => Ok(val.borrow().clone()),
-                _ => Err(format!("variable `{}` not found", var)),
-            }
+                _ => Err(format!("variable `{}` not found", var).into()),
+            },
         }
     }
 
@@ -132,7 +133,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                         let copy = local.borrow().clone();
                         ctx.push_value(copy);
                     }
-                    _ => return Err(format!("local `{}` not found", variable)),
+                    _ => return Err(format!("local `{}` not found", variable).into()),
                 }
             }
             Instruction::Pushg(gidx) => {
@@ -142,7 +143,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                         let global = global.borrow().clone();
                         ctx.push_value(global);
                     }
-                    _ => return Err(format!("global `{}` not found", variable)),
+                    _ => return Err(format!("global `{}` not found", variable).into()),
                 }
             }
             Instruction::Pushc(cidx) => {

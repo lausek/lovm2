@@ -66,8 +66,9 @@ pub mod r#return;
 
 pub mod prelude;
 
+use lovm2_error::*;
+
 use crate::code::CodeObject;
-use crate::error::*;
 use crate::hir::block::Block;
 use crate::hir::element::HIRElement;
 use crate::hir::lowering::LoweringRuntime;

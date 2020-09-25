@@ -1,6 +1,6 @@
 [package]
-name = "lovm2_internals"
-version = "0.2.0"
+name = "lovm2_error"
+version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
@@ -12,13 +12,4 @@ license-file = "LICENSE"
 description = "a lightweight virtual machine with a focus on simplicity and extendability."
 
 [lib]
-name = "lovm2_internals"
-proc-macro = true
-
-[dependencies]
-lovm2_error = { path = "../lovm2_error" }
-quote = "1.0"
-
-[dependencies.syn]
-version = "1.0.33"
-features = ["full"]
+name = "lovm2_error"

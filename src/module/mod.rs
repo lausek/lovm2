@@ -13,8 +13,9 @@ use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
 
+use lovm2_error::*;
+
 use crate::code::CallProtocol;
-use crate::error::*;
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
@@ -67,7 +68,7 @@ impl ModuleProtocol for Module {
     // TODO: could lead to errors when two threads serialize to the same file
     fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
         let file = File::create(path).map_err(|e| e.to_string())?;
-        bincode::serialize_into(file, self).map_err(|e| e.to_string())
+        bincode::serialize_into(file, self).map_err(|e| e.to_string().into())
     }
 }
 

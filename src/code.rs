@@ -3,9 +3,10 @@
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
+use lovm2_error::*;
+
 use crate::bytecode::Instruction;
 use crate::context::Context;
-use crate::error::*;
 use crate::value::CoValue;
 use crate::var::Variable;
 use crate::vm::run_bytecode;
@@ -94,9 +95,9 @@ impl CodeObjectBuilder {
         self
     }
 
-    pub fn build(self) -> Lovm2Result<CodeObject> {
+    pub fn build(self) -> Lovm2CompileResult<CodeObject> {
         if self.code.is_none() {
-            return Err("code missing".to_string());
+            return Err("code missing".into());
         }
         Ok(CodeObject {
             consts: self.consts,

@@ -11,9 +11,10 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
+use lovm2_error::*;
+
 use crate::code::{CallProtocol, CodeObjectRef, ExternFunction};
 use crate::context::Context;
-use crate::error::*;
 use crate::module::{ModuleProtocol, Slots};
 use crate::var::Variable;
 
@@ -70,7 +71,7 @@ impl SharedObjectModule {
     {
         match Library::new(path.as_ref().as_os_str()) {
             Ok(lib) => Ok(SharedObjectModule::from_library(lib)),
-            Err(err) => Err(err.to_string()),
+            Err(err) => Err(format!("{}", err).into()),
         }
     }
 }
@@ -102,7 +103,9 @@ impl CallProtocol for SharedObjectSlot {
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
             match lookup {
                 Ok(symbol) => symbol(ctx),
-                Err(err) => Err(err.to_string()),
+                Err(_) => {
+                    Err(format!("symbol `{}` cannot be loaded from shared object", name).into())
+                }
             }
         }
     }

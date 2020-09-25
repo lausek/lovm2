@@ -3,8 +3,9 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use lovm2_error::*;
+
 use crate::code::CodeObjectRef;
-use crate::error::*;
 use crate::frame::Frame;
 use crate::module::{Module, ModuleProtocol};
 use crate::value::{RuValue, RuValueRef};
@@ -27,7 +28,7 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
             }
         }
     }
-    Err(format!("{} not found", name))
+    Err(format!("{} not found", name).into())
 }
 
 /// the state of the virtual machine
@@ -80,7 +81,7 @@ impl Context {
     pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Lovm2Result<()> {
         for (key, co_object) in module.slots().iter() {
             if self.scope.insert(key.clone(), co_object.clone()).is_some() {
-                return Err(format!("import conflict: `{}` is already defined", key));
+                return Err(format!("import conflict: `{}` is already defined", key).into());
             }
         }
 
@@ -92,7 +93,7 @@ impl Context {
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {
         match self.scope.get(name).cloned() {
             Some(co) => Ok(co),
-            _ => Err(format!("code object `{}` not found", name)),
+            _ => Err(format!("code object `{}` not found", name).into()),
         }
     }
 

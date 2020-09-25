@@ -1,9 +1,13 @@
+#![allow(unused_imports)]
+
 extern crate syn;
 #[macro_use]
 extern crate quote;
 
 use proc_macro::TokenStream;
 use syn::ItemFn;
+
+use lovm2_error::*;
 
 #[proc_macro_attribute]
 pub fn lovm2_builtin(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -26,7 +30,7 @@ pub fn lovm2_builtin(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         impl CallProtocol for #struct_name {
-            fn run(&self, ctx: &mut Context) -> Result<(), String> {
+            fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
                 #block
             }
         }

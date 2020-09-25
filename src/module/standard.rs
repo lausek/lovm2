@@ -2,6 +2,8 @@
 
 use std::rc::Rc;
 
+use lovm2_error::*;
+
 use crate::code::CallProtocol;
 use crate::context::Context;
 use crate::lovm2_builtin;
@@ -43,7 +45,7 @@ fn len(ctx: &mut Context) -> Lovm2Result<()> {
 
     match target.len() {
         Ok(val) => ctx.push_value(RuValue::Int(val as i64)),
-        Err(msg) => return Err(msg),
+        Err(e) => return Err(e.into()),
     }
 
     Ok(())

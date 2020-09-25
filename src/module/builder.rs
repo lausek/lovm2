@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use lovm2_error::*;
+
 use crate::code::CodeObject;
-use crate::error::*;
 use crate::hir::HIR;
 use crate::module::{standard::BUILTIN_FUNCTIONS, Module, ENTRY_POINT};
 use crate::var::Variable;
@@ -72,7 +73,7 @@ impl ModuleBuilderSlot {
     pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
         match self.hir {
             Some(hir) => hir.build(),
-            None => Err("no hir for slot".to_string()),
+            None => Err("no hir for slot".into()),
         }
     }
 }

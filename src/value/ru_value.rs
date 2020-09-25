@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::error::*;
+use lovm2_error::*;
 
 pub type RuDict = HashMap<RuValue, RuValue>;
 pub type RuDictRef = Rc<RefCell<RuDict>>;
@@ -33,19 +33,19 @@ impl RuValue {
         match self {
             RuValue::Dict(dict) => match dict.borrow().get(&key) {
                 Some(val) => Ok(val.clone()),
-                None => Err("key not found on value".to_string()),
+                None => Err("key not found on value".into()),
             },
             RuValue::List(list) => {
                 if let RuValue::Int(key) = key.into_integer()? {
                     match list.borrow().get(key as usize) {
                         Some(val) => Ok(val.clone()),
-                        None => Err("key not found on value".to_string()),
+                        None => Err("key not found on value".into()),
                     }
                 } else {
                     unreachable!()
                 }
             }
-            _ => Err("value does not support `get`".to_string()),
+            _ => Err("value does not support `get`".into()),
         }
     }
 
@@ -53,7 +53,7 @@ impl RuValue {
         match self {
             RuValue::Dict(dict) => Ok(dict.borrow().len()),
             RuValue::List(list) => Ok(list.borrow().len()),
-            _ => Err("value does not support `len`".to_string()),
+            _ => Err("value does not support `len`".into()),
         }
     }
 
@@ -71,7 +71,7 @@ impl RuValue {
                     unreachable!()
                 }
             }
-            _ => Err("value does not support `set`".to_string()),
+            _ => Err("value does not support `set`".into()),
         }
     }
 }

@@ -1,6 +1,7 @@
+use lovm2_error::*;
+
 use crate::bytecode::Instruction;
 use crate::code::{CodeObject, CodeObjectBuilder};
-use crate::error::*;
 use crate::hir::HIR;
 use crate::value::CoValue;
 use crate::var::Variable;

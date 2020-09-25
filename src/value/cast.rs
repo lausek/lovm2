@@ -1,4 +1,5 @@
-use crate::error::*;
+use lovm2_error::*;
+
 use crate::value::RuValue;
 
 pub type CastResult = Lovm2Result<RuValue>;
