@@ -2,6 +2,8 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
+use lovm2::value::instantiate;
+
 use crate::context::{Context, Lovm2Context};
 use crate::expr::any_to_value;
 use crate::module::Module;
@@ -23,14 +25,14 @@ impl Vm {
 
     #[args(args = "*")]
     pub fn call(&mut self, py: Python, name: &PyString, args: &PyTuple) -> PyResult<PyObject> {
-        // TODO: refactor this
-        use lovm2::value::instantiate;
         let name = name.to_string()?.to_string();
-        let args: Vec<lovm2::value::RuValue> = args
-            .iter()
-            .map(|v| instantiate(&any_to_value(v).unwrap()))
-            .collect();
-        match self.inner.call(&name, args.as_slice()) {
+
+        let mut ruargs = vec![];
+        for arg in args.iter() {
+            ruargs.push(instantiate(&any_to_value(arg)?));
+        }
+
+        match self.inner.call(&name, ruargs.as_slice()) {
             Ok(val) => Ok(lovm2py(&val, py)),
             Err(msg) => RuntimeError::into(msg),
         }

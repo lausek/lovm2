@@ -34,12 +34,12 @@ impl Context {
     pub fn frame(&mut self, py: Python) -> PyResult<PyObject> {
         unsafe {
             match (*self.inner).frame_mut() {
-                Some(frame) => {
+                Ok(frame) => {
                     let frame_ref = frame as *mut Lovm2Frame;
                     let obj = Py::new(py, Frame::new(frame_ref))?.to_object(py);
                     Ok(obj)
                 }
-                None => Ok(py.None()),
+                Err(_) => Ok(py.None()),
             }
         }
     }

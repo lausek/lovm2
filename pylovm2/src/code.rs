@@ -3,6 +3,7 @@ use pyo3::types::*;
 
 use lovm2::code;
 use lovm2::context;
+use lovm2::error::*;
 use lovm2::value::instantiate;
 
 use crate::expr::any_to_value;
@@ -25,27 +26,25 @@ impl code::CallProtocol for CodeObject {
         }
     }
 
-    fn run(&self, ctx: &mut context::Context) -> Result<(), String> {
+    fn run(&self, ctx: &mut context::Context) -> Lovm2Result<()> {
         match &self.inner {
             CodeObjectWrapper::Lovm2(co) => co.run(ctx),
             CodeObjectWrapper::Py(pyfn) => {
                 let guard = Python::acquire_gil();
                 let py = guard.python();
 
-                let frame = ctx.frame_mut().unwrap();
+                let frame = ctx.frame_mut()?;
                 let mut args = vec![];
                 for _ in 0..frame.argn {
-                    let val = ctx.pop_value().unwrap();
+                    let val = ctx.pop_value()?;
                     args.push(lovm2py(&val, py));
                 }
                 let args = PyTuple::new(py, args.iter());
 
-                let res = pyfn
-                    .call1(py, args)
-                    .map_err(|e| {
-                        e.print(py);
-                        "err in pyfn call".to_string()
-                    })?;
+                let res = pyfn.call1(py, args).map_err(|e| {
+                    e.print(py);
+                    "err in pyfn call".to_string()
+                })?;
                 let res = any_to_value(res.as_ref(py))
                     .map_err(|_| "error in ruvalue conversion".to_string())?;
                 ctx.push_value(instantiate(&res));
