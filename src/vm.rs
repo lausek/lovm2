@@ -42,23 +42,19 @@ impl Vm {
 
     pub fn call(&mut self, name: &str, args: &[RuValue]) -> Lovm2Result<RuValue> {
         let name = Variable::from(name);
-        match self.ctx.lookup_code_object(&name) {
-            Some(co) => {
-                let mut argn: u8 = 0;
-                for arg in args.iter() {
-                    argn += 1;
-                    self.ctx.push_value(arg.clone());
-                }
-
-                self.ctx.push_frame(argn);
-                co.run(&mut self.ctx)?;
-                self.ctx.pop_frame();
-
-                let val = self.context_mut().pop_value().unwrap();
-                Ok(val)
-            }
-            _ => Err(format!("no code object named {}", name)),
+        let co = self.ctx.lookup_code_object(&name)?;
+        let mut argn: u8 = 0;
+        for arg in args.iter() {
+            argn += 1;
+            self.ctx.push_value(arg.clone());
         }
+
+        self.ctx.push_frame(argn);
+        co.run(&mut self.ctx)?;
+        self.ctx.pop_frame();
+
+        let val = self.context_mut().pop_value()?;
+        Ok(val)
     }
 
     pub fn context_mut(&mut self) -> &mut Context {
@@ -84,25 +80,23 @@ impl Vm {
 
     /// start the execution at `ENTRY_POINT`
     pub fn run(&mut self) -> Lovm2Result<()> {
-        match self.ctx.lookup_code_object(&ENTRY_POINT.into()) {
-            Some(co) => self.run_object(co.as_ref()),
-            None => Err(format!("no entry function called `{}`", ENTRY_POINT)),
-        }
+        let co = self.ctx.lookup_code_object(&ENTRY_POINT.into())?;
+        self.run_object(co.as_ref())
     }
 }
 
 macro_rules! ruvalue_operation {
     ($ctx:expr, $fn:ident) => {{
-        let second = $ctx.pop_value().unwrap();
-        let first = $ctx.pop_value().unwrap();
+        let second = $ctx.pop_value()?;
+        let first = $ctx.pop_value()?;
         $ctx.push_value(first.$fn(second));
     }};
 }
 
 macro_rules! ruvalue_compare {
     ($ctx:expr, $fn:ident) => {{
-        let second = $ctx.pop_value().unwrap();
-        let first = $ctx.pop_value().unwrap();
+        let second = $ctx.pop_value()?;
+        let first = $ctx.pop_value()?;
         $ctx.push_value(RuValue::Bool(first.$fn(&second)));
     }};
 }
@@ -117,15 +111,23 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
-                let local = ctx.frame_mut().unwrap().locals.get(variable).cloned();
-                let copy = local.unwrap().borrow().clone();
-                ctx.push_value(copy);
+                match ctx.frame_mut()?.locals.get(variable).cloned() {
+                    Some(local) => {
+                        let copy = local.borrow().clone();
+                        ctx.push_value(copy);
+                    }
+                    _ => return Err(format!("local `{}` not found", variable)),
+                }
             }
             Instruction::Pushg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
-                let global = ctx.globals.get(variable).unwrap();
-                let global = global.borrow().clone();
-                ctx.push_value(global);
+                match ctx.globals.get(variable) {
+                    Some(global) => {
+                        let global = global.borrow().clone();
+                        ctx.push_value(global);
+                    }
+                    _ => return Err(format!("global `{}` not found", variable)),
+                }
             }
             Instruction::Pushc(cidx) => {
                 use crate::value;
@@ -133,36 +135,35 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 ctx.push_value(value);
             }
             Instruction::Movel(lidx) => {
-                let first = ctx.pop_value().unwrap();
+                let first = ctx.pop_value()?;
                 let variable = &co.locals[*lidx as usize];
-                ctx.frame_mut()
-                    .unwrap()
+                ctx.frame_mut()?
                     .locals
                     .insert(variable.clone(), box_ruvalue(first));
             }
             Instruction::Moveg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
-                let value = ctx.pop_value().unwrap();
+                let value = ctx.pop_value()?;
                 ctx.globals.insert(variable.clone(), box_ruvalue(value));
             }
             Instruction::Discard => {
-                ctx.pop_value().unwrap();
+                ctx.pop_value()?;
             }
-            Instruction::Dup => {
-                let last = ctx.stack_mut().last().cloned().unwrap();
-                ctx.push_value(last);
-            }
+            Instruction::Dup => match ctx.stack_mut().last().cloned() {
+                Some(last) => ctx.push_value(last),
+                _ => return Err("no value on stack to duplicate".into()),
+            },
             Instruction::Swap => {}
             Instruction::Get => {
-                let key = ctx.pop_value().unwrap();
-                let obj = ctx.pop_value().unwrap();
+                let key = ctx.pop_value()?;
+                let obj = ctx.pop_value()?;
                 let val = obj.get(key)?;
                 ctx.push_value(val);
             }
             Instruction::Set => {
-                let val = ctx.pop_value().unwrap();
-                let key = ctx.pop_value().unwrap();
-                let mut obj = ctx.pop_value().unwrap();
+                let val = ctx.pop_value()?;
+                let key = ctx.pop_value()?;
+                let mut obj = ctx.pop_value()?;
                 obj.set(key, val)?;
             }
             Instruction::Add => ruvalue_operation!(ctx, add),
@@ -174,7 +175,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             Instruction::And => ruvalue_operation!(ctx, bitand),
             Instruction::Or => ruvalue_operation!(ctx, bitor),
             Instruction::Not => {
-                let first = ctx.pop_value().unwrap();
+                let first = ctx.pop_value()?;
                 ctx.push_value(!first);
             }
             Instruction::Eq => ruvalue_compare!(ctx, eq),
@@ -188,7 +189,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 continue;
             }
             Instruction::Jt(addr) => {
-                let first = ctx.pop_value().unwrap();
+                let first = ctx.pop_value()?;
                 // TODO: allow to_bool conversion
                 if first == RuValue::Bool(true) {
                     ip = *addr as usize;
@@ -196,7 +197,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 }
             }
             Instruction::Jf(addr) => {
-                let first = ctx.pop_value().unwrap();
+                let first = ctx.pop_value()?;
                 // TODO: allow to_bool conversion
                 if first == RuValue::Bool(false) {
                     ip = *addr as usize;
@@ -205,14 +206,10 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             }
             Instruction::Call(argn, gidx) => {
                 let func = &co.globals[*gidx as usize];
-
-                if let Some(other_co) = ctx.lookup_code_object(func) {
-                    ctx.push_frame(*argn);
-                    other_co.run(ctx)?;
-                    ctx.pop_frame();
-                } else {
-                    return Err(format!("function `{}` not found", func));
-                }
+                let other_co = ctx.lookup_code_object(func)?;
+                ctx.push_frame(*argn);
+                other_co.run(ctx)?;
+                ctx.pop_frame();
             }
             Instruction::Ret => break,
             Instruction::Interrupt(n) => {
@@ -221,12 +218,12 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 }
             }
             Instruction::Cast(tid) => {
-                let val = ctx.pop_value().unwrap();
+                let val = ctx.pop_value()?;
                 let val = val.cast(*tid)?;
                 ctx.push_value(val);
             }
             Instruction::Load => {
-                let name = ctx.pop_value().unwrap();
+                let name = ctx.pop_value()?;
                 // TODO: use to_string() here
                 let name = format!("{}", name);
                 ctx.load_and_import_by_name(name.as_ref())?;

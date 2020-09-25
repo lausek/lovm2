@@ -89,8 +89,11 @@ impl Context {
         Ok(())
     }
 
-    pub fn lookup_code_object(&self, name: &Variable) -> Option<CodeObjectRef> {
-        self.scope.get(name).cloned()
+    pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {
+        match self.scope.get(name).cloned() {
+            Some(co) => Ok(co),
+            _ => Err(format!("code object `{}` not found", name)),
+        }
     }
 
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)
@@ -104,8 +107,11 @@ impl Context {
         &mut self.vstack
     }
 
-    pub fn frame_mut(&mut self) -> Option<&mut Frame> {
-        self.lstack.last_mut()
+    pub fn frame_mut(&mut self) -> Lovm2Result<&mut Frame> {
+        match self.lstack.last_mut() {
+            Some(frame) => Ok(frame),
+            _ => Err("no frame on stack".into()),
+        }
     }
 
     pub fn push_frame(&mut self, argn: u8) {
@@ -120,7 +126,10 @@ impl Context {
         self.vstack.push(value);
     }
 
-    pub fn pop_value(&mut self) -> Option<RuValue> {
-        self.vstack.pop()
+    pub fn pop_value(&mut self) -> Lovm2Result<RuValue> {
+        match self.vstack.pop() {
+            Some(val) => Ok(val),
+            _ => Err("no value on stack".into()),
+        }
     }
 }
