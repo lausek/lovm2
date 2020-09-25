@@ -4,8 +4,9 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::error::*;
+use crate::hir::expr::Expr;
 use crate::module::{create_standard_module, ModuleProtocol, ENTRY_POINT};
-use crate::value::{box_ruvalue, RuValue};
+use crate::value::{box_ruvalue, instantiate, RuValue};
 use crate::var::Variable;
 
 /// virtual machine for running bytecode
@@ -59,6 +60,21 @@ impl Vm {
 
     pub fn context_mut(&mut self) -> &mut Context {
         &mut self.ctx
+    }
+
+    pub fn evaluate_expr(&mut self, expr: &Expr) -> Lovm2Result<RuValue> {
+        match expr {
+            Expr::Access(_) => todo!(),
+            Expr::Operation2(_, _, _) => todo!(),
+            Expr::Operation1(_, _) => todo!(),
+            Expr::Call(_) => todo!(),
+            Expr::Cast(_) => todo!(),
+            Expr::Value(val) => Ok(instantiate(val)),
+            Expr::Variable(var) => match self.ctx.globals.get(&var) {
+                Some(val) => Ok(val.borrow().clone()),
+                _ => Err(format!("variable `{}` not found", var)),
+            }
+        }
     }
 
     // TODO: add `ImportOptions` parameter to specify what names to import

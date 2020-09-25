@@ -37,7 +37,7 @@ impl code::CallProtocol for CodeObject {
                 let mut args = vec![];
                 for _ in 0..frame.argn {
                     let val = ctx.pop_value()?;
-                    args.push(lovm2py(&val, py));
+                    args.insert(0, lovm2py(&val, py));
                 }
                 let args = PyTuple::new(py, args.iter());
 

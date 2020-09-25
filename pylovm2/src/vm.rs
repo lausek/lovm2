@@ -2,10 +2,8 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
-use lovm2::value::instantiate;
-
 use crate::context::{Context, Lovm2Context};
-use crate::expr::any_to_value;
+use crate::expr::any_to_expr;
 use crate::module::Module;
 use crate::value::lovm2py;
 
@@ -29,7 +27,11 @@ impl Vm {
 
         let mut ruargs = vec![];
         for arg in args.iter() {
-            ruargs.push(instantiate(&any_to_value(arg)?));
+            let arg = any_to_expr(arg)?;
+            match self.inner.evaluate_expr(&arg) {
+                Ok(val) => ruargs.push(val),
+                Err(msg) => return RuntimeError::into(msg),
+            }
         }
 
         match self.inner.call(&name, ruargs.as_slice()) {
