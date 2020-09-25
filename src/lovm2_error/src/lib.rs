@@ -6,6 +6,12 @@ pub enum Lovm2Error {
     Msg(Option<String>, String),
 }
 
+impl From<(String, String)> for Lovm2Error {
+    fn from(f: (String, String)) -> Self {
+        Self::Msg(Some(f.0), f.1)
+    }
+}
+
 impl From<String> for Lovm2Error {
     fn from(f: String) -> Self {
         Self::Msg(None, f)

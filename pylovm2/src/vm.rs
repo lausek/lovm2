@@ -2,6 +2,8 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
+use lovm2::prelude::*;
+
 use crate::context::{Context, Lovm2Context};
 use crate::expr::any_to_expr;
 use crate::module::Module;
@@ -30,13 +32,13 @@ impl Vm {
             let arg = any_to_expr(arg)?;
             match self.inner.evaluate_expr(&arg) {
                 Ok(val) => ruargs.push(val),
-                Err(msg) => return RuntimeError::into(msg),
+                Err(msg) => return RuntimeError::into(msg.to_string()),
             }
         }
 
         match self.inner.call(&name, ruargs.as_slice()) {
             Ok(val) => Ok(lovm2py(&val, py)),
-            Err(msg) => RuntimeError::into(msg),
+            Err(e) => create_exception(e).into(),
         }
     }
 
@@ -50,7 +52,7 @@ impl Vm {
             .take()
             .expect("module given was already loaded");
         if let Err(msg) = self.inner.load_and_import_all(module) {
-            return RuntimeError::into(msg);
+            return RuntimeError::into(msg.to_string());
         }
         Ok(())
     }
@@ -58,7 +60,7 @@ impl Vm {
     pub fn run(&mut self) -> PyResult<()> {
         match self.inner.run() {
             Ok(_) => Ok(()),
-            Err(msg) => RuntimeError::into(msg),
+            Err(e) => create_exception(e).into(),
         }
     }
 
@@ -79,6 +81,7 @@ impl Vm {
             let ctx = Py::new(py, Context::new(context_ref)).unwrap();
             let args = PyTuple::new(py, vec![ctx]);
 
+            // TODO: interrupts can raise errors too
             if let Err(err) = func.call1(py, args) {
                 err.print(py);
                 panic!("");
@@ -86,5 +89,16 @@ impl Vm {
         });
 
         Ok(())
+    }
+}
+
+fn create_exception(e: Lovm2Error) -> PyErr {
+    match e {
+        Lovm2Error::Msg(Some(ty), msg) => match ty.as_ref() {
+            "AssertionError" => AssertionError::py_err(msg),
+            "ZeroDivisionError" => ZeroDivisionError::py_err(msg),
+            _ => RuntimeError::py_err(msg),
+        },
+        Lovm2Error::Msg(_, msg) => RuntimeError::py_err(msg),
     }
 }

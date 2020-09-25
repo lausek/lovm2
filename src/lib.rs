@@ -57,6 +57,7 @@ pub mod context;
 pub mod frame;
 pub mod hir;
 pub mod module;
+pub mod prelude;
 pub mod util;
 pub mod value;
 pub mod var;
@@ -64,5 +65,3 @@ pub mod vm;
 
 /// used for generating wrappers of statically linked functions to be called from lovm2
 pub use lovm2_internals::lovm2_builtin;
-
-pub use self::hir::prelude;

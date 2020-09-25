@@ -61,7 +61,7 @@ impl ModuleBuilderSlot {
                 if let Some(hir) = hir.take() {
                     return match hir.build() {
                         Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => RuntimeError::into(msg),
+                        Err(msg) => RuntimeError::into(msg.to_string()),
                     };
                 }
                 RuntimeError::into("hir was already built")

@@ -24,3 +24,9 @@ class TestVm(Test):
         vm.run()
 
         self.assertTrue(out['called'])
+
+    def test_raise_exception(self, internals):
+        internals.mod.add('ret').pyfn(lambda: 1/0)
+        internals.vm.load(internals.mod.build())
+        with pytest.raises(ZeroDivisionError):
+            internals.vm.call('ret')
