@@ -5,7 +5,7 @@ from .deps import *
 class TestVm(Test):
     def test_no_entry_point(self, capfd, internals):
         vm = internals.vm
-        with pytest.raises(RuntimeError):
+        with pytest.raises(Exception):
             vm.run()
 
     def test_interrupt(self, internals):
@@ -30,3 +30,17 @@ class TestVm(Test):
         internals.vm.load(internals.mod.build())
         with pytest.raises(ZeroDivisionError):
             internals.vm.call('ret')
+
+    def test_load_hook_exception(self, internals):
+        def load_hook(name):
+            raise Exception()
+
+        main_hir = internals.mod.add(pylovm2.ENTRY_POINT).code()
+        main_hir.load(pylovm2.Expr.val('std'))
+
+        internals.vm.set_load_hook(load_hook)
+        internals.vm.load(internals.mod.build())
+
+        with pytest.raises(Exception):
+            internals.vm.run()
+            assert False

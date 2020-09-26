@@ -38,7 +38,7 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
 /// implement `CallProtocol` as well as interrupts.
 pub struct Context {
     /// list of loaded modules: `Module` or `SharedObjectModule`
-    pub modules: Vec<GenericModule>,
+    pub modules: HashMap<String, GenericModule>,
     /// global variables that can be altered from every object
     pub globals: HashMap<Variable, RuValueRef>,
     /// entries in this map can directly be called from lovm2 bytecode
@@ -59,7 +59,7 @@ pub struct Context {
 impl Context {
     pub fn new() -> Self {
         Self {
-            modules: vec![],
+            modules: HashMap::new(),
             globals: HashMap::new(),
             scope: HashMap::new(),
             interrupts: [None; 256],
@@ -76,26 +76,35 @@ impl Context {
 
     /// lookup a module name in `load_paths` and add it to the context
     pub fn load_and_import_by_name(&mut self, name: &str) -> Lovm2Result<()> {
+        if self.modules.get(name).is_some() {
+            return Ok(());
+        }
+
         let mut module = None;
+
         if let Some(load_hook) = self.load_hook.clone() {
             module = load_hook(name.to_string())?;
         }
+
         if module.is_none() {
             let path = find_module(name, &self.load_paths)?;
             module = Some(Module::load_from_file(path)?);
         }
+
         self.load_and_import_all(module.unwrap())
     }
 
     /// add the module and all of its slots to `scope`
     pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
-        for (key, co_object) in module.slots().iter() {
-            if self.scope.insert(key.clone(), co_object.clone()).is_some() {
-                return Err(format!("import conflict: `{}` is already defined", key).into());
+        if !self.modules.get(module.name()).is_some() {
+            for (key, co_object) in module.slots().iter() {
+                if self.scope.insert(key.clone(), co_object.clone()).is_some() {
+                    return Err(format!("import conflict: `{}` is already defined", key).into());
+                }
             }
-        }
 
-        self.modules.push(module);
+            self.modules.insert(module.name().to_string(), module);
+        }
 
         Ok(())
     }

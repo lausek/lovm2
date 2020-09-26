@@ -61,19 +61,19 @@ fn load_custom_module() {
     hir.push(Assign::local(var!(n), Call::new("calc")));
     hir.push(Interrupt::new(10));
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = ModuleBuilder::named("main");
     builder.add(ENTRY_POINT).hir(hir);
 
     let module = builder.build().unwrap();
 
-    assert!(run_module_test(vm, module, |ctx| {
+    run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
             RuValue::Int(2),
             *frame.locals.get(&var!(n)).unwrap().borrow()
         );
     })
-    .is_ok());
+    .unwrap();
 }
 
 #[test]
@@ -95,4 +95,30 @@ fn load_avoid_sigabrt() {
     vm.context_mut().load_paths.push(this_dir.to_string());
 
     assert!(run_module_test(vm, module, |_ctx| ()).is_err());
+}
+
+#[test]
+fn avoid_double_import() {
+    use std::rc::Rc;
+
+    let mut builder = ModuleBuilder::new();
+
+    let mut main_hir = HIR::new();
+    main_hir.push(Include::load("std"));
+    main_hir.push(Include::load("std"));
+    main_hir.push(Interrupt::new(10));
+
+    builder.add(ENTRY_POINT).hir(main_hir);
+
+    let module = builder.build().unwrap();
+
+    let mut vm = Vm::new();
+    vm.context_mut().set_load_hook(|_name| {
+        let mut builder = ModuleBuilder::new();
+        builder.add("add").hir(HIR::new());
+        let module = builder.build().unwrap();
+        Ok(Some(Rc::new(module) as GenericModule))
+    });
+
+    assert!(run_module_test(vm, module, |_ctx| ()).is_ok());
 }

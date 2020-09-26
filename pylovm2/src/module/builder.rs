@@ -14,6 +14,7 @@ use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
 
 #[pyclass]
 pub struct ModuleBuilder {
+    name: String,
     slots: HashMap<String, Py<ModuleBuilderSlot>>,
 }
 
@@ -22,6 +23,15 @@ impl ModuleBuilder {
     #[new]
     pub fn new() -> Self {
         Self {
+            name: "<unknown>".to_string(),
+            slots: HashMap::new(),
+        }
+    }
+
+    #[classmethod]
+    pub fn named(_this: &PyAny, name: String) -> Self {
+        Self {
+            name,
             slots: HashMap::new(),
         }
     }
@@ -35,6 +45,7 @@ impl ModuleBuilder {
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python) -> PyResult<Module> {
         let mut module = Lovm2Module::new();
+        module.name = self.name.clone();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();

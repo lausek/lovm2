@@ -22,11 +22,16 @@ pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CodeObjectRef>);
 
 pub struct SharedObjectModule {
+    name: String,
     lib: Rc<Library>,
     slots: Slots,
 }
 
 impl ModuleProtocol for SharedObjectModule {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
     fn slots(&self) -> &Slots {
         &self.slots
     }
@@ -46,7 +51,7 @@ impl ModuleProtocol for SharedObjectModule {
 }
 
 impl SharedObjectModule {
-    pub fn from_library(lib: Library) -> Self {
+    fn from_library(lib: Library, name: String) -> Self {
         unsafe {
             let lib = Rc::new(lib);
             let lookup: Result<Symbol<ExternInitializer>, Error> =
@@ -56,6 +61,7 @@ impl SharedObjectModule {
                     let mut slots = HashMap::new();
                     initializer(lib.clone(), &mut slots);
                     Self {
+                        name,
                         lib,
                         slots: Slots::from(slots),
                     }
@@ -69,8 +75,9 @@ impl SharedObjectModule {
     where
         T: AsRef<Path>,
     {
+        let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
         match Library::new(path.as_ref().as_os_str()) {
-            Ok(lib) => Ok(SharedObjectModule::from_library(lib)),
+            Ok(lib) => Ok(SharedObjectModule::from_library(lib, name.to_string())),
             Err(err) => Err(format!("{}", err).into()),
         }
     }

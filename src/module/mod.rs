@@ -31,6 +31,10 @@ pub type GenericModule = Rc<dyn ModuleProtocol>;
 /// - shared objects `.so`
 /// ([SharedObjectModule](/latest/lovm2/module/shared/struct.SharedObjectModule.html))
 pub trait ModuleProtocol: std::fmt::Debug {
+    fn name(&self) -> &str {
+        unimplemented!()
+    }
+
     fn slots(&self) -> &Slots {
         unimplemented!()
     }
@@ -46,6 +50,7 @@ pub trait ModuleProtocol: std::fmt::Debug {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
+    pub name: String,
     pub slots: Slots,
 }
 
@@ -56,6 +61,10 @@ impl Into<GenericModule> for Module {
 }
 
 impl ModuleProtocol for Module {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
     fn slots(&self) -> &Slots {
         &self.slots
     }
@@ -80,6 +89,7 @@ impl ModuleProtocol for Module {
 impl Module {
     pub fn new() -> Self {
         Self {
+            name: String::new(),
             slots: Slots::new(),
         }
     }
@@ -95,13 +105,21 @@ impl Module {
         }
 
         use bincode::Options;
+        let name = path
+            .as_ref()
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
         let file = File::open(path).map_err(|e| e.to_string())?;
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
-        let module: Module = bincode::options()
+        let mut module: Module = bincode::options()
             .with_varint_encoding()
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
+        module.name = name;
         Ok(Rc::new(module) as GenericModule)
     }
 }

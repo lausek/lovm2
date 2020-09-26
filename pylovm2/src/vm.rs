@@ -33,7 +33,7 @@ impl Vm {
             let arg = any_to_expr(arg)?;
             match self.inner.evaluate_expr(&arg) {
                 Ok(val) => ruargs.push(val),
-                Err(msg) => return RuntimeError::into(msg.to_string()),
+                Err(e) => return create_exception(e).into(),
             }
         }
 
@@ -52,10 +52,9 @@ impl Vm {
             .inner
             .take()
             .expect("module given was already loaded");
-        if let Err(msg) = self.inner.load_and_import_all(module) {
-            return RuntimeError::into(msg.to_string());
-        }
-        Ok(())
+        self.inner
+            .load_and_import_all(module)
+            .map_err(create_exception)
     }
 
     pub fn run(&mut self) -> PyResult<()> {
@@ -117,9 +116,11 @@ fn create_exception(e: Lovm2Error) -> PyErr {
     match e {
         Lovm2Error::Msg(Some(ty), msg) => match ty.as_ref() {
             "AssertionError" => AssertionError::py_err(msg),
+            "Exception" => Exception::py_err(msg),
+            "ImportError" => ImportError::py_err(msg),
             "ZeroDivisionError" => ZeroDivisionError::py_err(msg),
-            _ => RuntimeError::py_err(msg),
+            _ => Exception::py_err(msg),
         },
-        Lovm2Error::Msg(_, msg) => RuntimeError::py_err(msg),
+        Lovm2Error::Msg(_, msg) => Exception::py_err(msg),
     }
 }

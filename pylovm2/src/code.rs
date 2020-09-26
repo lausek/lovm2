@@ -14,16 +14,19 @@ pub type Lovm2CodeObject = lovm2::code::CodeObject;
 pub fn pyerr(e: &PyErr, py: Python) -> (String, String) {
     use pyo3::PyErrValue;
     let ty = e.ptype.as_ref(py).name().to_string();
-    let msg = match &e.pvalue {
-        PyErrValue::Value(obj) => obj
-            .as_ref(py)
-            .str()
-            .unwrap()
-            .to_string()
-            .unwrap()
-            .to_string(),
-        _ => "<msg not catched>".to_string(),
+    let obj = match &e.pvalue {
+        PyErrValue::None => py.None(),
+        PyErrValue::Value(obj) => obj.clone_ref(py),
+        PyErrValue::ToArgs(args) => args.arguments(py),
+        PyErrValue::ToObject(obj) => obj.to_object(py),
     };
+    let msg = obj
+        .as_ref(py)
+        .str()
+        .unwrap()
+        .to_string()
+        .unwrap()
+        .to_string();
     (ty, msg)
 }
 

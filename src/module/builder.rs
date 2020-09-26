@@ -9,14 +9,25 @@ use crate::module::{standard::BUILTIN_FUNCTIONS, Module, ENTRY_POINT};
 use crate::var::Variable;
 
 pub struct ModuleBuilder {
+    name: String,
     pub slots: HashMap<Variable, ModuleBuilderSlot>,
 }
 
 impl ModuleBuilder {
     pub fn new() -> Self {
         Self {
+            name: "<unnamed>".to_string(),
             slots: HashMap::new(),
         }
+    }
+
+    pub fn named<T>(name: T) -> Self
+    where
+        T: ToString,
+    {
+        let mut builder = Self::new();
+        builder.name = name.to_string();
+        builder
     }
 
     pub fn add<T>(&mut self, name: T) -> &mut ModuleBuilderSlot
@@ -44,6 +55,8 @@ impl ModuleBuilder {
                 Err(msg) => return Err(msg),
             }
         }
+
+        module.name = self.name;
 
         Ok(module)
     }
