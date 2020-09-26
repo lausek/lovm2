@@ -1,4 +1,5 @@
 use std::ops::*;
+use std::rc::Rc;
 
 use lovm2_error::*;
 
@@ -6,7 +7,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, ModuleProtocol, ENTRY_POINT};
+use crate::module::{create_standard_module, GenericModule, ENTRY_POINT};
 use crate::value::{box_ruvalue, instantiate, RuValue};
 use crate::var::Variable;
 
@@ -37,7 +38,7 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
-        ctx.load_and_import_all(Box::new(create_standard_module()) as Box<dyn ModuleProtocol>)
+        ctx.load_and_import_all(Rc::new(create_standard_module()) as GenericModule)
             .unwrap();
         Self { ctx }
     }
@@ -81,7 +82,7 @@ impl Vm {
     // TODO: add `ImportOptions` parameter to specify what names to import
     pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
     where
-        T: Into<Box<dyn ModuleProtocol>>,
+        T: Into<GenericModule>,
     {
         self.ctx.load_and_import_all(module.into())
     }

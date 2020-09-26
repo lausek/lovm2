@@ -1,5 +1,5 @@
 use lovm2::context::Context;
-use lovm2::module::{Module, ModuleProtocol};
+use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
@@ -52,7 +52,7 @@ fn load_custom_module() {
         let mut builder = ModuleBuilder::new();
         builder.add("calc").hir(hir);
         Ok(Some(
-            Box::new(builder.build().unwrap()) as Box<dyn ModuleProtocol>
+            std::rc::Rc::new(builder.build().unwrap()) as GenericModule
         ))
     });
 

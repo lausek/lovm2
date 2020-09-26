@@ -24,6 +24,7 @@ pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
 pub const ENTRY_POINT: &str = "main";
+pub type GenericModule = Rc<dyn ModuleProtocol>;
 
 /// generalization for loadable modules
 /// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
@@ -48,9 +49,9 @@ pub struct Module {
     pub slots: Slots,
 }
 
-impl Into<Box<dyn ModuleProtocol>> for Module {
-    fn into(self) -> Box<dyn ModuleProtocol> {
-        Box::new(self) as Box<dyn ModuleProtocol>
+impl Into<GenericModule> for Module {
+    fn into(self) -> GenericModule {
+        Rc::new(self) as GenericModule
     }
 }
 
@@ -84,13 +85,13 @@ impl Module {
     }
 
     /// tries to load the file as shared object first and tries regular deserialization if it failed
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<Box<dyn ModuleProtocol>>
+    pub fn load_from_file<T>(path: T) -> Lovm2Result<GenericModule>
     where
         T: AsRef<Path>,
     {
         // try loading module as shared object
         if let Ok(so_module) = SharedObjectModule::load_from_file(&path) {
-            return Ok(Box::new(so_module) as Box<dyn ModuleProtocol>);
+            return Ok(Rc::new(so_module) as GenericModule);
         }
 
         use bincode::Options;
@@ -101,6 +102,6 @@ impl Module {
             .with_varint_encoding()
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
-        Ok(Box::new(module) as Box<dyn ModuleProtocol>)
+        Ok(Rc::new(module) as GenericModule)
     }
 }

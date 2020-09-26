@@ -7,11 +7,11 @@ use lovm2_error::*;
 
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
-use crate::module::{Module, ModuleProtocol};
+use crate::module::{GenericModule, Module};
 use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
-pub type LoadHookFn = dyn Fn(String) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>>;
+pub type LoadHookFn = dyn Fn(String) -> Lovm2Result<Option<GenericModule>>;
 // TODO: this should also return some Result
 pub type InterruptFn = dyn Fn(&mut Context);
 
@@ -38,7 +38,7 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
 /// implement `CallProtocol` as well as interrupts.
 pub struct Context {
     /// list of loaded modules: `Module` or `SharedObjectModule`
-    pub modules: Vec<Box<dyn ModuleProtocol>>,
+    pub modules: Vec<GenericModule>,
     /// global variables that can be altered from every object
     pub globals: HashMap<Variable, RuValueRef>,
     /// entries in this map can directly be called from lovm2 bytecode
@@ -88,7 +88,7 @@ impl Context {
     }
 
     /// add the module and all of its slots to `scope`
-    pub fn load_and_import_all(&mut self, module: Box<dyn ModuleProtocol>) -> Lovm2Result<()> {
+    pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
         for (key, co_object) in module.slots().iter() {
             if self.scope.insert(key.clone(), co_object.clone()).is_some() {
                 return Err(format!("import conflict: `{}` is already defined", key).into());
@@ -109,7 +109,7 @@ impl Context {
 
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(String) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>> + Sized + 'static,
+        T: Fn(String) -> Lovm2Result<Option<GenericModule>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }

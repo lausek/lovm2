@@ -15,7 +15,7 @@ use lovm2_error::*;
 
 use crate::code::{CallProtocol, CodeObjectRef, ExternFunction};
 use crate::context::Context;
-use crate::module::{ModuleProtocol, Slots};
+use crate::module::{GenericModule, ModuleProtocol, Slots};
 use crate::var::Variable;
 
 pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
@@ -82,9 +82,9 @@ impl std::fmt::Debug for SharedObjectModule {
     }
 }
 
-impl Into<Box<dyn ModuleProtocol>> for SharedObjectModule {
-    fn into(self) -> Box<dyn ModuleProtocol> {
-        Box::new(self) as Box<dyn ModuleProtocol>
+impl Into<GenericModule> for SharedObjectModule {
+    fn into(self) -> GenericModule {
+        Rc::new(self) as GenericModule
     }
 }
 

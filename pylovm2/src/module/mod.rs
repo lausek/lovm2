@@ -4,7 +4,7 @@ mod slot;
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
-use lovm2::module;
+use lovm2::prelude::*;
 
 pub use self::builder::ModuleBuilder;
 pub use self::slot::ModuleBuilderSlot;
@@ -14,8 +14,9 @@ type Lovm2Block = lovm2::hir::block::Block;
 type Lovm2Module = lovm2::module::Module;
 
 #[pyclass]
+#[derive(Clone)]
 pub struct Module {
-    pub inner: Option<Box<dyn module::ModuleProtocol>>,
+    pub inner: Option<GenericModule>,
 }
 
 impl Module {
