@@ -97,7 +97,12 @@ impl Vm {
             let guard = Python::acquire_gil();
             let py = guard.python();
             let args = PyTuple::new(py, vec![name.to_object(py)]);
+
             let ret = func.call1(py, args).map_err(|e| pyerr(&e, py))?;
+            if ret.is_none() {
+                return Ok(None);
+            }
+
             match ret.extract::<Module>(py) {
                 Ok(data) => Ok(Some(data.inner.unwrap())),
                 Err(e) => Err(pyerr(&e, py).into()),
