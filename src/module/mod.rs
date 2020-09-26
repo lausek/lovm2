@@ -67,8 +67,12 @@ impl ModuleProtocol for Module {
 
     // TODO: could lead to errors when two threads serialize to the same file
     fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+        use bincode::Options;
         let file = File::create(path).map_err(|e| e.to_string())?;
-        bincode::serialize_into(file, self).map_err(|e| e.to_string().into())
+        bincode::options()
+            .with_varint_encoding()
+            .serialize_into(file, self)
+            .map_err(|e| e.to_string().into())
     }
 }
 
@@ -89,8 +93,14 @@ impl Module {
             return Ok(Box::new(so_module) as Box<dyn ModuleProtocol>);
         }
 
+        use bincode::Options;
         let file = File::open(path).map_err(|e| e.to_string())?;
-        let module: Module = bincode::deserialize_from(file).map_err(|e| e.to_string())?;
+        // avoid misinterpreting random bytes as length of buffer
+        // this could lead to memory allocation faults
+        let module: Module = bincode::options()
+            .with_varint_encoding()
+            .deserialize_from(file)
+            .map_err(|e| e.to_string())?;
         Ok(Box::new(module) as Box<dyn ModuleProtocol>)
     }
 }

@@ -90,6 +90,19 @@ impl Vm {
 
         Ok(())
     }
+
+    pub fn set_load_hook(&mut self, func: PyObject) -> PyResult<()> {
+        let hook = move |name: String| {
+            let guard = Python::acquire_gil();
+            let py = guard.python();
+            let args = PyTuple::new(py, vec![name.to_object(py)]);
+            let ret = func.call1(py, args);
+            println!("{:?}", ret);
+            Ok(None)
+        };
+        self.inner.context_mut().set_load_hook(hook);
+        Ok(())
+    }
 }
 
 fn create_exception(e: Lovm2Error) -> PyErr {

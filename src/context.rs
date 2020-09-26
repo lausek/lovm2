@@ -11,7 +11,7 @@ use crate::module::{Module, ModuleProtocol};
 use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
-pub type LoadHookFn = dyn Fn(&mut Context) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>>;
+pub type LoadHookFn = dyn Fn(String) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>>;
 // TODO: this should also return some Result
 pub type InterruptFn = dyn Fn(&mut Context);
 
@@ -78,7 +78,7 @@ impl Context {
     pub fn load_and_import_by_name(&mut self, name: &str) -> Lovm2Result<()> {
         let mut module = None;
         if let Some(load_hook) = self.load_hook.clone() {
-            module = load_hook(self)?;
+            module = load_hook(name.to_string())?;
         }
         if module.is_none() {
             let path = find_module(name, &self.load_paths)?;
@@ -109,7 +109,7 @@ impl Context {
 
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&mut Context) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>> + Sized + 'static,
+        T: Fn(String) -> Lovm2Result<Option<Box<dyn ModuleProtocol>>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }

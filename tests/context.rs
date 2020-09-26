@@ -28,7 +28,7 @@ fn run_module_test(
 #[test]
 fn load_hook_none() {
     let mut vm = Vm::new();
-    vm.context_mut().set_load_hook(|_ctx| Ok(None));
+    vm.context_mut().set_load_hook(|_name| Ok(None));
 
     let mut hir = HIR::new();
     hir.push(Include::load("std"));
@@ -45,7 +45,7 @@ fn load_hook_none() {
 #[test]
 fn load_custom_module() {
     let mut vm = Vm::new();
-    vm.context_mut().set_load_hook(|_ctx| {
+    vm.context_mut().set_load_hook(|_name| {
         let mut hir = HIR::new();
         hir.push(Return::value(Expr::add(1, 1)));
 
@@ -74,4 +74,25 @@ fn load_custom_module() {
         );
     })
     .is_ok());
+}
+
+#[test]
+fn load_avoid_sigabrt() {
+    use std::path::Path;
+
+    let mut hir = HIR::new();
+    hir.push(Include::load("io"));
+    hir.push(Interrupt::new(10));
+
+    let mut builder = ModuleBuilder::new();
+    builder.add(ENTRY_POINT).hir(hir);
+    let module = builder.build().unwrap();
+
+    let this_dir = Path::new(file!()).parent().unwrap().canonicalize().unwrap();
+    let this_dir = this_dir.to_str().unwrap();
+    let mut vm = Vm::new();
+    vm.context_mut().load_paths.clear();
+    vm.context_mut().load_paths.push(this_dir.to_string());
+
+    assert!(run_module_test(vm, module, |_ctx| ()).is_err());
 }

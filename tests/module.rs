@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use lovm2::hir::prelude::*;
 use lovm2::module::{Module, ModuleProtocol};
+use lovm2::prelude::*;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
 
@@ -16,7 +16,7 @@ fn serialize_module() {
     main_hir.push(Assign::local(var!(msg), "hello world"));
     main_hir.push(call!(print, msg));
 
-    builder.add("main").hir(main_hir);
+    builder.add(ENTRY_POINT).hir(main_hir);
 
     let module = builder.build().unwrap();
 
@@ -32,7 +32,7 @@ fn deserialize_module() {
     let mut main_hir = HIR::new();
     main_hir.push(Assign::global(var!(n), 10));
 
-    builder.add("main").hir(main_hir);
+    builder.add(ENTRY_POINT).hir(main_hir);
     builder
         .build()
         .unwrap()
