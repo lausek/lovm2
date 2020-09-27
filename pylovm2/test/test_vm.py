@@ -44,3 +44,12 @@ class TestVm(Test):
         with pytest.raises(Exception):
             internals.vm.run()
             assert False
+
+    def test_unknown_use(self, internals):
+        main_hir = internals.mod.add(pylovm2.ENTRY_POINT).code()
+        main_hir.load(pylovm2.Expr.val('unkown_module'))
+
+        internals.vm.load(internals.mod.build())
+
+        with pytest.raises(Exception):
+            internals.vm.run()

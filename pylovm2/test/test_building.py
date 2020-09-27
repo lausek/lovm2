@@ -157,4 +157,4 @@ class TestBuilding(Test):
         internals.mod.add('powr').pyfn(lambda x: x ** 2)
         result = internals.mod.build()
         internals.vm.load(result)
-        self.assertEqual(4, internals.vm.call('powr', 2))
+        self.assertEqual(4, int(internals.vm.call('powr', 2)))
