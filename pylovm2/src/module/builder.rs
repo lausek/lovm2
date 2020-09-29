@@ -42,6 +42,12 @@ impl ModuleBuilder {
         self.slots.get(&name).unwrap().clone_ref(py)
     }
 
+    pub fn add_slot(&mut self, py: Python, name: String, slot: ModuleBuilderSlot) -> PyResult<()> {
+        let inst = Py::new(py, slot).unwrap();
+        self.slots.insert(name.clone(), inst);
+        Ok(())
+    }
+
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python) -> PyResult<Module> {
         let mut module = Lovm2Module::new();

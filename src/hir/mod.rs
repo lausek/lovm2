@@ -77,6 +77,7 @@ use crate::hir::r#return::Return;
 use crate::value::CoValue;
 use crate::var::Variable;
 
+#[derive(Clone)]
 pub struct HIR {
     pub args: Vec<Variable>,
     pub consts: Vec<CoValue>,

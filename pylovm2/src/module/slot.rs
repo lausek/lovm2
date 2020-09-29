@@ -9,12 +9,14 @@ use crate::code::CodeObject;
 use super::builder::*;
 use super::Lovm2Block;
 
+#[derive(Clone)]
 enum ModuleBuilderSlotInner {
     Lovm2Hir(Option<hir::HIR>),
     PyFn(Option<PyObject>),
 }
 
 #[pyclass]
+#[derive(Clone)]
 pub struct ModuleBuilderSlot {
     inner: ModuleBuilderSlotInner,
 }
