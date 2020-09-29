@@ -54,23 +54,22 @@ macro_rules! call {
 #[macro_export]
 macro_rules! co_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
-        use std::collections::HashMap;
-        let mut map = HashMap::new();
+        let mut dict = Initialize::dict();
         $(
-            map.insert(CoValue::from($key), Box::new(CoValue::from($val)));
+            dict.add_by_key($key, $val);
         )*
-        CoValue::Dict(map)
+        dict
     }};
 }
 
 #[macro_export]
 macro_rules! co_list {
-    ($($entry:expr),* $(,)?) => {{
-        CoValue::List(vec![
-            $(
-                CoValue::from($entry)
-            ),*
-        ])
+    ($($val:expr),* $(,)?) => {{
+        let mut list = Initialize::list();
+        $(
+            list.add($val);
+        )*
+        list
     }};
 }
 

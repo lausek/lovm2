@@ -48,7 +48,10 @@ impl RuValue {
     pub fn from_struct(inner: Lovm2RuValueRaw) -> Self {
         Self::from(Rc::new(RefCell::new(inner)))
     }
+}
 
+#[pymethods]
+impl RuValue {
     pub fn to_py(&self, py: Python) -> PyObject {
         lovm2py(&*self.inner.borrow(), py)
     }
@@ -99,6 +102,13 @@ impl pyo3::class::number::PyNumberProtocol for RuValue {
 
 #[pyproto]
 impl pyo3::class::mapping::PyMappingProtocol for RuValue {
+    fn __delitem__(&mut self, key: &PyAny) -> PyResult<()> {
+        let key = any_to_value(key)?;
+        let key = lovm2::value::instantiate(&key);
+        self.inner.borrow_mut().delete(key).unwrap();
+        Ok(())
+    }
+
     fn __getitem__(&self, key: &PyAny) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
@@ -128,3 +138,12 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
     }
     */
 }
+
+/*
+#[pyproto]
+impl pyo3::class::iter::PyIterProtocol for RuValue {
+    fn __iter__(mut slf: PyRefMut<Self>) -> PyResult<PyObject> {
+        todo!()
+    }
+}
+*/

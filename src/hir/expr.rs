@@ -2,6 +2,7 @@ use crate::bytecode::Instruction;
 use crate::hir::assign::Access;
 use crate::hir::call::Call;
 use crate::hir::cast::Cast;
+use crate::hir::initialize::Initialize;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::value::CoValue;
 use crate::var::Variable;
@@ -31,6 +32,18 @@ macro_rules! auto_implement {
 }
 
 #[derive(Clone, Debug)]
+pub enum Expr {
+    Access(Access),
+    Call(Call),
+    Cast(Cast),
+    DynamicValue(Initialize),
+    Operation1(Operator1, Box<Expr>),
+    Operation2(Operator2, Box<Expr>, Box<Expr>),
+    Value(CoValue),
+    Variable(Variable),
+}
+
+#[derive(Clone, Debug)]
 pub enum Operator2 {
     Add,
     Sub,
@@ -52,17 +65,6 @@ pub enum Operator2 {
 #[derive(Clone, Debug)]
 pub enum Operator1 {
     Not,
-}
-
-#[derive(Clone, Debug)]
-pub enum Expr {
-    Access(Access),
-    Operation2(Operator2, Box<Expr>, Box<Expr>),
-    Operation1(Operator1, Box<Expr>),
-    Call(Call),
-    Cast(Cast),
-    Value(CoValue),
-    Variable(Variable),
 }
 
 impl Expr {
@@ -99,8 +101,8 @@ impl Expr {
 impl Expr {
     pub fn is_const(&self) -> bool {
         match self {
-            Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
             Expr::Operation1(_, item) => item.is_const(),
+            Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
             Expr::Value(_) => true,
             _ => false,
         }
@@ -109,6 +111,15 @@ impl Expr {
     pub fn eval_const(&self) -> Self {
         // TODO: check if expression is const and evaluate it
         unimplemented!()
+    }
+
+    pub fn dict() -> Self {
+        use std::collections::HashMap;
+        Expr::Value(CoValue::Dict(HashMap::new()))
+    }
+
+    pub fn list() -> Self {
+        Expr::Value(CoValue::List(vec![]))
     }
 
     pub fn pow<T, U>(left: T, right: U) -> Self
@@ -161,6 +172,12 @@ impl From<Cast> for Expr {
     }
 }
 
+impl From<Initialize> for Expr {
+    fn from(init: Initialize) -> Expr {
+        Expr::DynamicValue(init)
+    }
+}
+
 impl<T> From<T> for Expr
 where
     T: Into<CoValue>,
@@ -205,6 +222,19 @@ impl Lowering for Expr {
 
                 runtime.emit(Instruction::Get);
             }
+            Expr::Call(mut call) => {
+                call.keep(true);
+                call.lower(runtime);
+            }
+            Expr::Cast(cast) => cast.lower(runtime),
+            Expr::DynamicValue(init) => init.lower(runtime),
+            Expr::Operation1(op, expr) => {
+                expr.lower(runtime);
+                let inx = match op {
+                    Operator1::Not => Instruction::Not,
+                };
+                runtime.emit(inx);
+            }
             Expr::Operation2(op, expr1, expr2) => {
                 expr1.lower(runtime);
                 expr2.lower(runtime);
@@ -226,18 +256,6 @@ impl Lowering for Expr {
                 };
                 runtime.emit(inx);
             }
-            Expr::Operation1(op, expr) => {
-                expr.lower(runtime);
-                let inx = match op {
-                    Operator1::Not => Instruction::Not,
-                };
-                runtime.emit(inx);
-            }
-            Expr::Call(mut call) => {
-                call.keep(true);
-                call.lower(runtime);
-            }
-            Expr::Cast(cast) => cast.lower(runtime),
             Expr::Value(val) => {
                 let cidx = runtime.index_const(&val);
                 runtime.emit(Instruction::Pushc(cidx as u16));

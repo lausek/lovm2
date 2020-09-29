@@ -6,6 +6,7 @@ pub use crate::hir::branch::*;
 pub use crate::hir::call::*;
 pub use crate::hir::cast::*;
 pub use crate::hir::include::*;
+pub use crate::hir::initialize::*;
 pub use crate::hir::interrupt::*;
 pub use crate::hir::r#return::*;
 pub use crate::hir::repeat::*;

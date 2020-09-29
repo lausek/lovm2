@@ -521,3 +521,26 @@ fn raise_to_power() {
         })
     }
 }
+
+#[test]
+fn initialize_objects() {
+    define_test! {
+        main {
+            Assign::local(var!(n), 2);
+            Assign::local(var!(ae), co_list!(1, 2, 3));
+            Assign::local(var!(ag), co_list!(1, var!(n), 3));
+            Assign::local(var!(be), co_dict!(1 => 2, 2 => 2, 4 => 4));
+            Assign::local(var!(bg), co_dict!(1 => 2, var!(n) => var!(n), 4 => 4));
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            let ae = frame.locals.get(&var!(ae)).unwrap().borrow();
+            let ag = frame.locals.get(&var!(ag)).unwrap().borrow();
+            let be = frame.locals.get(&var!(be)).unwrap().borrow();
+            let bg = frame.locals.get(&var!(bg)).unwrap().borrow();
+            assert_eq!(*ae, *ag);
+            assert_eq!(*be, *bg);
+        })
+    }
+}
