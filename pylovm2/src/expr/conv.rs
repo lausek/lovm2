@@ -1,19 +1,39 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyTuple};
+use pyo3::types::{PyDict, PyList, PyTuple};
 
-use lovm2::var;
+use lovm2::prelude::*;
 
 use super::{Lovm2Expr, Lovm2Value};
 use crate::Expr;
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     match any.get_type().name().as_ref() {
-        "str" | "bool" | "int" | "float" | "list" | "dict" | "NoneType" => {
-            match any_to_value(any) {
-                Ok(val) => Ok(val.into()),
-                Err(e) => Err(e),
+        "str" | "bool" | "int" | "float" | "NoneType" => match any_to_value(any) {
+            Ok(val) => Ok(val.into()),
+            Err(e) => Err(e),
+        },
+        "dict" => {
+            let dict = any.downcast::<PyDict>()?;
+            let mut obj = Initialize::dict();
+
+            for (key, val) in dict.iter() {
+                let (key, val) = (any_to_expr(key)?, any_to_expr(val)?);
+                obj.add_by_key(key, val);
             }
+
+            Ok(obj.into())
+        }
+        "list" => {
+            let list = any.downcast::<PyList>()?;
+            let mut obj = Initialize::list();
+
+            for val in list.iter() {
+                let val = any_to_expr(val)?;
+                obj.add(val);
+            }
+
+            Ok(obj.into())
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;

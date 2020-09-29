@@ -8,7 +8,7 @@ use crate::code::pyerr;
 use crate::context::{Context, Lovm2Context};
 use crate::expr::any_to_expr;
 use crate::module::Module;
-use crate::value::{lovm2py, RuValue};
+use crate::value::RuValue;
 
 #[pyclass]
 pub struct Vm {
@@ -25,7 +25,11 @@ impl Vm {
     }
 
     #[args(args = "*")]
-    pub fn call(&mut self, py: Python, name: &PyString, args: &PyTuple) -> PyResult<RuValue> {
+    pub fn call(
+        &mut self,
+        /* py: Python, */ name: &PyString,
+        args: &PyTuple,
+    ) -> PyResult<RuValue> {
         let name = name.to_string()?.to_string();
 
         let mut ruargs = vec![];
