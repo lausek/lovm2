@@ -5,6 +5,7 @@ use pyo3::types::{PyDict, PyList, PyTuple};
 use lovm2::prelude::*;
 
 use super::{Lovm2Expr, Lovm2Value};
+use crate::value::RuValue;
 use crate::Expr;
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
@@ -61,7 +62,8 @@ pub fn any_to_ident(any: &PyAny) -> PyResult<var::Variable> {
 }
 
 pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
-    match any.get_type().name().as_ref() {
+    let ty = any.get_type().name();
+    match ty.as_ref() {
         "str" => {
             let data = any.str().unwrap().to_string()?;
             Ok(Lovm2Value::Str(data.to_string()))
@@ -101,10 +103,28 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
             let data = any.extract::<Expr>()?;
             match data.inner {
                 Lovm2Expr::Value(val) => Ok(val),
-                _ => RuntimeError::into(format!("value {} cannot be converted to value", any)),
+                _ => RuntimeError::into(format!(
+                    "value {} of type {} cannot be converted to value",
+                    any, ty
+                )),
             }
         }
-        _ => RuntimeError::into(format!("value {} cannot be converted to value", any)),
+        _ => RuntimeError::into(format!(
+            "value {} of type {} cannot be converted to value",
+            any, ty
+        )),
+    }
+}
+
+pub fn any_to_ruvalue(any: &PyAny) -> PyResult<RuValue> {
+    use lovm2::value::instantiate;
+    let ty = any.get_type().name();
+    match ty.as_ref() {
+        "RuValue" => any.extract::<RuValue>(),
+        _ => {
+            let val = any_to_value(any)?;
+            Ok(RuValue::from_struct(instantiate(&val)))
+        }
     }
 }
 

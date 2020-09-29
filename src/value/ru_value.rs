@@ -82,7 +82,12 @@ impl RuValue {
             }
             RuValue::List(list) => {
                 if let RuValue::Int(idx) = key.into_integer()? {
-                    list.borrow_mut()[idx as usize] = val;
+                    let mut list = list.borrow_mut();
+                    if list.len() == idx as usize {
+                        list.push(val);
+                    } else {
+                        list[idx as usize] = val;
+                    }
                     Ok(())
                 } else {
                     unreachable!()

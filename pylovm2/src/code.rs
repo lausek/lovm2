@@ -3,11 +3,11 @@ use pyo3::types::*;
 
 use lovm2::code;
 use lovm2::context;
-use lovm2::prelude::*;
+use lovm2::prelude::{Lovm2Error, Lovm2Result};
 use lovm2::value::instantiate;
 
 use crate::expr::any_to_value;
-use crate::value::lovm2py;
+use crate::value::RuValue;
 
 pub type Lovm2CodeObject = lovm2::code::CodeObject;
 
@@ -56,9 +56,10 @@ impl code::CallProtocol for CodeObject {
                 let mut args = vec![];
                 for _ in 0..frame.argn {
                     let val = ctx.pop_value()?;
-                    args.insert(0, lovm2py(&val, py));
+                    let obj: PyObject = RuValue::from_struct(val).into_py(py);
+                    args.insert(0, obj);
                 }
-                let args = PyTuple::new(py, args.iter());
+                let args = PyTuple::new(py, args.into_iter());
 
                 // call python function, catch exceptions
                 let res = pyfn.call1(py, args).map_err(|e| {

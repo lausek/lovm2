@@ -5,7 +5,8 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use crate::expr::any_to_value;
+use crate::expr::{any_to_ruvalue, any_to_value};
+use crate::vm::create_exception;
 
 type Lovm2RuValueRaw = lovm2::value::RuValue;
 type Lovm2RuValue = lovm2::value::RuValueRef;
@@ -36,6 +37,7 @@ pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
 
 // TODO: implement ToPyObject, FromPyObject for this type
 #[pyclass]
+#[derive(Clone)]
 pub struct RuValue {
     inner: Lovm2RuValue,
 }
@@ -131,12 +133,14 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
         }
     }
 
-    /*
     fn __setitem__(&mut self, key: &PyAny, val: &PyAny) -> PyResult<()> {
-        // self.inner.borrow_mut().set(key, val);
-        todo!()
+        let (key, val) = (any_to_ruvalue(key)?, any_to_ruvalue(val)?);
+        let (key, val) = (key.inner.borrow(), val.inner.borrow());
+        self.inner
+            .borrow_mut()
+            .set(key.clone(), val.clone())
+            .map_err(create_exception)
     }
-    */
 }
 
 /*

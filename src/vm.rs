@@ -46,6 +46,7 @@ impl Vm {
     pub fn call(&mut self, name: &str, args: &[RuValue]) -> Lovm2Result<RuValue> {
         let name = Variable::from(name);
         let co = self.ctx.lookup_code_object(&name)?;
+
         let mut argn: u8 = 0;
         for arg in args.iter() {
             argn += 1;

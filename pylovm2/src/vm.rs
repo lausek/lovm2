@@ -116,7 +116,7 @@ impl Vm {
     }
 }
 
-fn create_exception(e: Lovm2Error) -> PyErr {
+pub(crate) fn create_exception(e: Lovm2Error) -> PyErr {
     match e {
         Lovm2Error::Msg(Some(ty), msg) => match ty.as_ref() {
             "AssertionError" => AssertionError::py_err(msg),
