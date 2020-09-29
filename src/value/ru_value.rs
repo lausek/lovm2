@@ -29,6 +29,23 @@ pub enum RuValue {
 }
 
 impl RuValue {
+    pub fn delete(&self, key: RuValue) -> Lovm2Result<()> {
+        match self {
+            RuValue::Dict(dict) => {
+                dict.borrow_mut().remove(&key);
+            }
+            RuValue::List(list) => {
+                if let RuValue::Int(key) = key.into_integer()? {
+                    list.borrow_mut().remove(key as usize);
+                } else {
+                    unreachable!()
+                }
+            }
+            _ => return Err("value does not support `delete`".into()),
+        }
+        Ok(())
+    }
+
     pub fn get(&self, key: RuValue) -> Lovm2Result<RuValue> {
         match self {
             RuValue::Dict(dict) => match dict.borrow().get(&key) {
