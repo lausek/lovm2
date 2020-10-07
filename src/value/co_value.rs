@@ -40,6 +40,15 @@ impl From<&str> for CoValue {
     }
 }
 
+impl<T> From<Vec<T>> for CoValue
+where
+    T: Into<CoValue>,
+{
+    fn from(val: Vec<T>) -> Self {
+        CoValue::List(val.into_iter().map(T::into).collect())
+    }
+}
+
 impl std::cmp::Eq for CoValue {}
 
 impl std::hash::Hash for CoValue {

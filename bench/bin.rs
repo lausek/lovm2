@@ -1,9 +1,12 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-//use lovm2::module::{Module, ModuleBuilder};
 use lovm2::prelude::*;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
+
+mod bisect;
+
+use bisect::bisect;
 
 fn fibonacci(c: &mut Criterion) {
     let mut trivial_return = Branch::new();
@@ -46,10 +49,13 @@ fn fibonacci(c: &mut Criterion) {
 
     c.bench_function("fib 90", |b| {
         b.iter(|| {
-            assert_eq!(RuValue::from(2880067194370816120), vm.call("fib", &[90.into()]).unwrap());
+            assert_eq!(
+                RuValue::from(2880067194370816120),
+                vm.call("fib", &[90.into()]).unwrap()
+            );
         })
     });
 }
 
-criterion_group!(benches, fibonacci);
+criterion_group!(benches, bisect, fibonacci);
 criterion_main!(benches);

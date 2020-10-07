@@ -1,6 +1,7 @@
 pub type Lovm2Result<T> = Result<T, Lovm2Error>;
 pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
 
+// TODO: make this a struct
 #[derive(Debug)]
 pub enum Lovm2Error {
     Msg(Option<String>, String),

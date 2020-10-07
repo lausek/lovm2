@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::value::{CoValue, instantiate};
+use crate::value::{instantiate, CoValue};
 
 pub type RuDict = HashMap<RuValue, RuValue>;
 pub type RuDictRef = Rc<RefCell<RuDict>>;
@@ -52,13 +52,13 @@ impl RuValue {
         match self {
             RuValue::Dict(dict) => match dict.borrow().get(&key) {
                 Some(val) => Ok(val.clone()),
-                None => Err("key not found on value".into()),
+                None => Err(format!("key `{}` not found on value", key).into()),
             },
             RuValue::List(list) => {
                 if let RuValue::Int(key) = key.into_integer()? {
                     match list.borrow().get(key as usize) {
                         Some(val) => Ok(val.clone()),
-                        None => Err("key not found on value".into()),
+                        None => Err(format!("key `{}` not found on value", key).into()),
                     }
                 } else {
                     unreachable!()
@@ -149,8 +149,9 @@ impl std::fmt::Display for RuValue {
     }
 }
 
-impl <T> From<T> for RuValue
-where T: Into<CoValue>
+impl<T> From<T> for RuValue
+where
+    T: Into<CoValue>,
 {
     fn from(val: T) -> Self {
         instantiate(&val.into())
