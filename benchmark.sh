@@ -1,4 +1,13 @@
 #!/bin/bash
 
-lastgid=`git rev-parse HEAD`
-cargo bench #-- --baseline "$lastgid"
+cd $(dirname `realpath $0`)
+
+lastgid=`git rev-parse --short HEAD`
+
+if [[ $(ls -R target/criterion/ | grep $lastgid) ]]; then
+    echo "baseline $lastgid"
+    cargo bench -- --baseline "$lastgid"
+else
+    echo "creating baseline $lastgid"
+    cargo bench -- --save-baseline "$lastgid"
+fi
