@@ -42,7 +42,7 @@ fn calc_hir() -> HIR {
         Call::new("get").arg(var!(coeffs)).arg(var!(i)),
         Expr::pow(var!(x), var!(factor)),
     );
-    computation_loop.push(Assign::local(var!(sigma), Expr::sub(var!(sigma), delta)));
+    computation_loop.push(Assign::local(var!(sigma), Expr::add(var!(sigma), delta)));
     computation_loop.push(Assign::local(var!(i), Expr::add(var!(i), 1)));
     computation_loop.push(Assign::local(var!(factor), Expr::sub(var!(factor), 1)));
 
@@ -88,7 +88,7 @@ pub fn bisect(c: &mut Criterion) {
 
     let mut patch_divisor = Branch::new();
     patch_divisor
-        .add_condition(Expr::eq(var!(d2), 0))
+        .add_condition(Expr::eq(var!(d2), 0.))
         .push(Assign::local(var!(d2), 0.001));
 
     let mut computation_loop = Repeat::endless();
@@ -127,31 +127,40 @@ pub fn bisect(c: &mut Criterion) {
     let mut vm = Vm::new();
     vm.load_and_import_all(module).unwrap();
 
-    c.bench_function("bisect f(x)=2x^3 + 2x^2 - x", |b| {
+    // f(x)=2x^3 + 2x^2 - x
+    c.bench_function("bisect f", |b| {
         b.iter(|| {
             assert_eq!(
                 RuValue::from(0),
-                vm.call("bisect", &[vec![2, 2, -1, 0].into(), 0.into()])
+                vm.call("bisect", &[vec![2, 2, -1, 0].into(), 1.into()])
+                    .unwrap()
+                    .into_integer_round()
                     .unwrap()
             );
         })
     });
 
-    c.bench_function("bisect g(x)=x^2 - 4x + 4", |b| {
+    // g(x)=x^2 - 4x + 4
+    c.bench_function("bisect g", |b| {
         b.iter(|| {
             assert_eq!(
                 RuValue::from(2),
                 vm.call("bisect", &[vec![1, -4, 4].into(), 1.into()])
                     .unwrap()
+                    .into_integer_round()
+                    .unwrap()
             );
         })
     });
 
-    c.bench_function("bisect h(x)=x^2 - 2x - 3", |b| {
+    // h(x)=x^2 - 2x - 3
+    c.bench_function("bisect h", |b| {
         b.iter(|| {
             assert_eq!(
                 RuValue::from(3),
                 vm.call("bisect", &[vec![1, -2, -3].into(), 1.into()])
+                    .unwrap()
+                    .into_integer_round()
                     .unwrap()
             );
         })

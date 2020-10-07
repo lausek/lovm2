@@ -4,6 +4,25 @@ use std::cmp::Ordering;
 
 use crate::value::RuValue;
 
+macro_rules! auto_implement_branch {
+    ($v1:ident, $v2:ident; $ty1:ident, $ty2:ident => $func:tt) => {
+        if let (RuValue::$ty1(a), RuValue::$ty2(b)) = (&$v1, &$v2) {
+            return RuValue::$ty1($func(a.clone(), b.clone()));
+        }
+    };
+    ($v1:ident, $v2:ident; $ty1:ident, $ty2:ident, $conv:ident => $func:tt) => {
+        match ($v1, $v2) {
+            (RuValue::$ty1(a), inc @ RuValue::$ty2(_))
+            | (inc @ RuValue::$ty2(_), RuValue::$ty1(a)) => {
+                if let Ok(RuValue::$ty1(b)) = inc.$conv() {
+                    return RuValue::$ty1($func(a.clone(), b.clone()));
+                }
+            }
+            _ => {}
+        }
+    };
+}
+
 macro_rules! auto_implement {
     {
         1, $tr:path, $method:ident;
@@ -27,20 +46,16 @@ macro_rules! auto_implement {
 
     {
         2, $tr:path, $method:ident;
-        $( $($ty:ident),* => $func:tt; )*
+        $( $ty1:ident, $ty2:ident $(, $conv:ident)? => $func:tt; )*
     } => {
         impl $tr for RuValue {
             type Output = RuValue;
 
             fn $method(self, other: RuValue) -> RuValue {
-                match (self, other) {
-                    $(
-                        $(
-                            (RuValue::$ty(a), RuValue::$ty(b)) => RuValue::$ty($func(a, b)),
-                        )*
-                    )*
-                    _ => unimplemented!(),
-                }
+                $(
+                    auto_implement_branch!(self, other; $ty1, $ty2 $(, $conv)? => $func);
+                )*
+                unimplemented!()
             }
         }
     };
@@ -48,40 +63,50 @@ macro_rules! auto_implement {
 
 auto_implement! {
     2, std::ops::Add, add;
-    Int, Float => (|a, b| a + b);
-    Str => (|a, b| format!("{}{}", a, b));
+    Int, Int => (|a, b| a + b);
+    Float, Float => (|a, b| a + b);
+    Str, Str => (|a, b| format!("{}{}", a, b));
+    Float, Int, into_float => (|a, b| a + b);
 }
 
 auto_implement! {
     2, std::ops::Sub, sub;
-    Int, Float => (|a, b| a - b);
+    Int, Int => (|a, b| a - b);
+    Float, Float => (|a, b| a - b);
+    Float, Int, into_float => (|a, b| a - b);
 }
 
 auto_implement! {
     2, std::ops::Mul, mul;
-    Int, Float => (|a, b| a * b);
+    Int, Int => (|a, b| a * b);
+    Float, Float => (|a, b| a * b);
+    Float, Int, into_float => (|a, b| a * b);
 }
 
 auto_implement! {
     2, std::ops::Div, div;
-    Int, Float => (|a, b| a / b);
+    Int, Int => (|a, b| a / b);
+    Float, Float => (|a, b| a / b);
+    Float, Int, into_float => (|a, b| a / b);
 }
 
 auto_implement! {
     2, std::ops::Rem, rem;
-    Int, Float => (|a, b| a % b);
+    Int, Int => (|a, b| a % b);
+    Float, Float => (|a, b| a % b);
+    Float, Int, into_float => (|a, b| a % b);
 }
 
 auto_implement! {
     2, std::ops::BitAnd, bitand;
-    Bool => (|a, b| a && b);
-    Int => (|a, b| a & b);
+    Bool, Bool => (|a, b| a && b);
+    Int, Int => (|a, b| a & b);
 }
 
 auto_implement! {
     2, std::ops::BitOr, bitor;
-    Bool => (|a, b| a || b);
-    Int => (|a, b| a | b);
+    Bool, Bool => (|a, b| a || b);
+    Int, Int => (|a, b| a | b);
 }
 
 auto_implement! {
@@ -109,6 +134,21 @@ impl std::cmp::PartialOrd for RuValue {
             (RuValue::Int(a), RuValue::Int(b)) => a.partial_cmp(b),
             (RuValue::Float(a), RuValue::Float(b)) => a.partial_cmp(b),
             (RuValue::Str(a), RuValue::Str(b)) => a.partial_cmp(b),
+            // TODO: test this
+            (inc @ RuValue::Int(_), RuValue::Float(b)) => {
+                if let Ok(RuValue::Float(a)) = inc.clone().into_float() {
+                    a.partial_cmp(b)
+                } else {
+                    None
+                }
+            }
+            (RuValue::Float(a), inc @ RuValue::Int(_)) => {
+                if let Ok(RuValue::Float(b)) = inc.clone().into_float() {
+                    a.partial_cmp(&b)
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }

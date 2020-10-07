@@ -54,6 +54,13 @@ impl RuValue {
         }
     }
 
+    pub fn into_integer_round(self) -> CastResult {
+        match self {
+            RuValue::Float(n) => Ok(RuValue::Int(n.round() as i64)),
+            _ => self.into_integer(),
+        }
+    }
+
     pub fn into_str(self) -> CastResult {
         let s = format!("{}", self);
         Ok(RuValue::Str(s))
