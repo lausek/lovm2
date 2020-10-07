@@ -4,6 +4,8 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
+use crate::value::{CoValue, instantiate};
+
 pub type RuDict = HashMap<RuValue, RuValue>;
 pub type RuDictRef = Rc<RefCell<RuDict>>;
 pub type RuList = Vec<RuValue>;
@@ -144,5 +146,13 @@ impl std::fmt::Display for RuValue {
             ),
             _ => unimplemented!(),
         }
+    }
+}
+
+impl <T> From<T> for RuValue
+where T: Into<CoValue>
+{
+    fn from(val: T) -> Self {
+        instantiate(&val.into())
     }
 }
