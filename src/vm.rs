@@ -31,6 +31,7 @@ use crate::var::Variable;
 /// pop a
 /// ```
 ///
+
 pub struct Vm {
     ctx: Context,
 }
@@ -234,7 +235,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             Instruction::Ret => break,
             Instruction::Interrupt(n) => {
                 if let Some(func) = &ctx.interrupts[*n as usize] {
-                    func.clone()(ctx);
+                    func.clone()(ctx)?;
                 }
             }
             Instruction::Cast(tid) => {

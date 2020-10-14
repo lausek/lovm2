@@ -14,6 +14,7 @@ fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
     vm.context_mut().set_interrupt(10, move |ctx| {
         called_ref.set(true);
         testfn(ctx);
+        Ok(())
     });
 
     vm.load_and_import_all(module).unwrap();
@@ -475,6 +476,7 @@ fn call_into_vm() {
             *frame.locals.get(&var!(n)).unwrap().borrow()
         );
         called_ref.set(true);
+        Ok(())
     });
     vm.load_and_import_all(module).unwrap();
     vm.call("call_me", &[RuValue::Int(10)]).unwrap();

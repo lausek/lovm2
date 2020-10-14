@@ -6,7 +6,7 @@
 Is a lightweight virtual machine with a focus on simplicity and extendability.
 
 ```
-lovm2 = "0.2.11"
+lovm2 = "0.3.0"
 ```
 
 ## Features

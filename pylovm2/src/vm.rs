@@ -85,11 +85,11 @@ impl Vm {
             let ctx = Py::new(py, Context::new(context_ref)).unwrap();
             let args = PyTuple::new(py, vec![ctx]);
 
-            // TODO: interrupts can raise errors too
-            if let Err(err) = func.call1(py, args) {
-                err.print(py);
-                panic!("");
+            if let Err(e) = func.call1(py, args) {
+                return Err(Lovm2Error::from(pyerr(&e, py)));
             }
+
+            Ok(())
         });
 
         Ok(())

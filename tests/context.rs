@@ -15,6 +15,7 @@ fn run_module_test(
     vm.context_mut().set_interrupt(10, move |ctx| {
         called_ref.set(true);
         testfn(ctx);
+        Ok(())
     });
 
     vm.load_and_import_all(module).unwrap();

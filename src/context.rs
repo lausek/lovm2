@@ -12,8 +12,7 @@ use crate::value::{RuValue, RuValueRef};
 use crate::var::Variable;
 
 pub type LoadHookFn = dyn Fn(String) -> Lovm2Result<Option<GenericModule>>;
-// TODO: this should also return some Result
-pub type InterruptFn = dyn Fn(&mut Context);
+pub type InterruptFn = dyn Fn(&mut Context) -> Lovm2Result<()>;
 
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
@@ -125,7 +124,7 @@ impl Context {
 
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)
     where
-        T: Fn(&mut Context) + Sized + 'static,
+        T: Fn(&mut Context) -> Lovm2Result<()> + Sized + 'static,
     {
         self.interrupts[n as usize] = Some(Rc::new(func));
     }
