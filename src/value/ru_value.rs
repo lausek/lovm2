@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -19,6 +20,7 @@ pub fn box_ruvalue(value: RuValue) -> RuValueRef {
 /// runtime values
 ///
 /// this layout is more suited for runtime representation than `CoValue`
+/*
 #[derive(Clone, Debug, PartialEq)]
 pub enum RuValue {
     Nil,
@@ -29,16 +31,28 @@ pub enum RuValue {
     Dict(RuDictRef),
     List(RuListRef),
 }
+*/
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum RuValue {
+    Nil,
+    Bool(bool),
+    Int(i64),
+    Float(f64),
+    Str(String),
+    Dict(HashMap<RuValue, RuValue>),
+    List(Vec<RuValue>),
+}
 
 impl RuValue {
-    pub fn delete(&self, key: RuValue) -> Lovm2Result<()> {
+    pub fn delete(&mut self, key: RuValue) -> Lovm2Result<()> {
         match self {
             RuValue::Dict(dict) => {
-                dict.borrow_mut().remove(&key);
+                dict.remove(&key);
             }
             RuValue::List(list) => {
                 if let RuValue::Int(key) = key.into_integer()? {
-                    list.borrow_mut().remove(key as usize);
+                    list.remove(key as usize);
                 } else {
                     unreachable!()
                 }
@@ -50,13 +64,13 @@ impl RuValue {
 
     pub fn get(&self, key: RuValue) -> Lovm2Result<RuValue> {
         match self {
-            RuValue::Dict(dict) => match dict.borrow().get(&key) {
+            RuValue::Dict(dict) => match dict.get(&key) {
                 Some(val) => Ok(val.clone()),
                 None => Err(format!("key `{}` not found on value", key).into()),
             },
             RuValue::List(list) => {
                 if let RuValue::Int(key) = key.into_integer()? {
-                    match list.borrow().get(key as usize) {
+                    match list.get(key as usize) {
                         Some(val) => Ok(val.clone()),
                         None => Err(format!("key `{}` not found on value", key).into()),
                     }
@@ -70,8 +84,8 @@ impl RuValue {
 
     pub fn len(&self) -> Lovm2Result<usize> {
         match self {
-            RuValue::Dict(dict) => Ok(dict.borrow().len()),
-            RuValue::List(list) => Ok(list.borrow().len()),
+            RuValue::Dict(dict) => Ok(dict.len()),
+            RuValue::List(list) => Ok(list.len()),
             _ => Err("value does not support `len`".into()),
         }
     }
@@ -79,12 +93,12 @@ impl RuValue {
     pub fn set(&mut self, key: RuValue, val: RuValue) -> Lovm2Result<()> {
         match self {
             RuValue::Dict(dict) => {
-                dict.borrow_mut().insert(key, val);
+                dict.insert(key, val);
                 Ok(())
             }
             RuValue::List(list) => {
                 if let RuValue::Int(idx) = key.into_integer()? {
-                    let mut list = list.borrow_mut();
+                    //let mut list = list;
                     if list.len() == idx as usize {
                         list.push(val);
                     } else {
@@ -129,8 +143,7 @@ impl std::fmt::Display for RuValue {
             RuValue::Dict(d) => write!(
                 f,
                 "{{{}}}",
-                d.borrow()
-                    .iter()
+                d.iter()
                     .map(|(key, val)| format!("{}: {}", key, val))
                     .collect::<Vec<String>>()
                     .join(", ")
@@ -138,8 +151,7 @@ impl std::fmt::Display for RuValue {
             RuValue::List(ls) => write!(
                 f,
                 "[{}]",
-                ls.borrow()
-                    .iter()
+                ls.iter()
                     .map(|val| format!("{}", val))
                     .collect::<Vec<String>>()
                     .join(", ")
@@ -149,11 +161,46 @@ impl std::fmt::Display for RuValue {
     }
 }
 
+/*
 impl<T> From<T> for RuValue
 where
     T: Into<CoValue>,
 {
     fn from(val: T) -> Self {
         instantiate(&val.into())
+    }
+}
+*/
+
+impl From<bool> for RuValue {
+    fn from(b: bool) -> Self {
+        RuValue::Bool(b)
+    }
+}
+
+impl From<i64> for RuValue {
+    fn from(n: i64) -> Self {
+        RuValue::Int(n)
+    }
+}
+
+impl From<f64> for RuValue {
+    fn from(n: f64) -> Self {
+        RuValue::Float(n)
+    }
+}
+
+impl From<&str> for RuValue {
+    fn from(s: &str) -> Self {
+        RuValue::Str(s.to_string())
+    }
+}
+
+impl<T> From<Vec<T>> for RuValue
+where
+    T: Into<RuValue>,
+{
+    fn from(val: Vec<T>) -> Self {
+        RuValue::List(val.into_iter().map(T::into).collect())
     }
 }

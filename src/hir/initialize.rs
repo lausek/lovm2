@@ -59,7 +59,7 @@ impl Initialize {
         if let CoValue::Dict(dict) = &mut self.base {
             match (key.into(), val.into()) {
                 (Expr::Value(key), Expr::Value(val)) => {
-                    dict.insert(key, Box::new(val));
+                    dict.insert(key, val);
                 }
                 (key, val) => {
                     let call = Call::new("set").arg(key).arg(val);
