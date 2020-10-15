@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -42,6 +42,9 @@ pub enum RuValue {
     Str(String),
     Dict(HashMap<RuValue, RuValue>),
     List(Vec<RuValue>),
+    #[serde(serialize_with = "serialize_ruvalue_ref")]
+    #[serde(deserialize_with = "deserialize_ruvalue_ref")]
+    Ref(Option<RuValueRef>),
 }
 
 impl RuValue {
@@ -129,6 +132,7 @@ impl std::hash::Hash for RuValue {
             RuValue::Str(s) => hasher.write(s.as_bytes()),
             RuValue::Dict(_) => unimplemented!(),
             RuValue::List(_) => unimplemented!(),
+            _ => panic!("TODO: ref does not have a type"),
         }
     }
 }
@@ -203,4 +207,18 @@ where
     fn from(val: Vec<T>) -> Self {
         RuValue::List(val.into_iter().map(T::into).collect())
     }
+}
+
+fn serialize_ruvalue_ref<S>(_: &Option<RuValueRef>, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_none()
+}
+
+fn deserialize_ruvalue_ref<'de, D>(d: D) -> Result<Option<RuValueRef>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(None)
 }

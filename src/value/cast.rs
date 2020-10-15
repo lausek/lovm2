@@ -39,6 +39,7 @@ impl RuValue {
             RuValue::Str(_) => unimplemented!(),
             RuValue::Dict(_) => unimplemented!(),
             RuValue::List(_) => unimplemented!(),
+            _ => panic!("TODO: ref does not have a type"),
         }
     }
 
@@ -51,6 +52,7 @@ impl RuValue {
             RuValue::Str(_) => unimplemented!(),
             RuValue::Dict(_) => unimplemented!(),
             RuValue::List(_) => unimplemented!(),
+            _ => panic!("TODO: ref does not have a type"),
         }
     }
 
@@ -75,6 +77,7 @@ impl RuValue {
             RuValue::Str(_) => RUVALUE_STR_TY,
             RuValue::Dict(_) => RUVALUE_DICT_TY,
             RuValue::List(_) => RUVALUE_LIST_TY,
+            _ => panic!("TODO: ref does not have a type"),
         }
     }
 }
