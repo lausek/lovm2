@@ -1,7 +1,6 @@
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
-use crate::value::RuValue;
 use crate::var::Variable;
 
 #[derive(Clone)]
@@ -92,18 +91,7 @@ impl From<Expr> for Access {
 impl Lowering for Assign {
     fn lower(self, runtime: &mut LoweringRuntime) {
         if self.access.keys.is_empty() {
-            let needs_box = match &self.expr {
-                Expr::DynamicValue(_) => true,
-                Expr::Value(RuValue::Dict(_)) => true,
-                Expr::Value(RuValue::List(_)) => true,
-                _ => false,
-            };
-
             self.expr.lower(runtime);
-
-            if needs_box {
-                runtime.emit(Instruction::Box);
-            }
 
             let variable = self.access.target;
             match self.scope {
@@ -132,11 +120,12 @@ impl Lowering for Assign {
             // push key onto stack
             let key = key_it.next().unwrap();
             key.lower(runtime);
+            runtime.emit(Instruction::Getr);
 
             while key_it.peek().is_some() {
-                runtime.emit(Instruction::Getr);
                 let key = key_it.next().unwrap();
                 key.lower(runtime);
+                runtime.emit(Instruction::Getr);
             }
 
             // push value onto stack

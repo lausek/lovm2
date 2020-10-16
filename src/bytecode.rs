@@ -80,7 +80,6 @@ pub enum Instruction {
     Cast(u16),
     /// take top of stack as name of module to load
     Load,
-
     /// turn the value on stack into a referenceable value.
     /// lists and dicts are boxed deeply
     Box,

@@ -129,27 +129,18 @@ macro_rules! ruvalue_compare {
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
-        println!("{:?} <= {:?}", ctx.vstack, inx);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
                 match ctx.frame_mut()?.value_of(variable) {
-                    //match ctx.frame_mut()?.locals.get(variable).cloned() {
-                    Some(local) => {
-                        //let copy = local.borrow().clone();
-                        ctx.push_value(local);
-                    }
+                    Some(local) => ctx.push_value(local),
                     _ => return Err(format!("local `{}` not found", variable).into()),
                 }
             }
             Instruction::Pushg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
                 match ctx.value_of(variable) {
-                    //match ctx.globals.get(variable).cloned() {
-                    Some(global) => {
-                        //let global = global.borrow().clone();
-                        ctx.push_value(global);
-                    }
+                    Some(global) => ctx.push_value(global),
                     _ => return Err(format!("global `{}` not found", variable).into()),
                 }
             }
@@ -159,9 +150,9 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 ctx.push_value(value);
             }
             Instruction::Movel(lidx) => {
-                let first = ctx.pop_value()?;
                 let variable = &co.locals[*lidx as usize];
-                ctx.frame_mut()?.locals.insert(variable.clone(), first);
+                let value = ctx.pop_value()?;
+                ctx.frame_mut()?.locals.insert(variable.clone(), value);
             }
             Instruction::Moveg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
@@ -176,15 +167,22 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 _ => return Err("no value on stack to duplicate".into()),
             },
             Instruction::Swap => {}
-            inx @ Instruction::Get | inx @ Instruction::Getr => {
+            Instruction::Get => {
                 let key = ctx.pop_value()?;
                 let obj = ctx.pop_value()?;
-                let mut val = obj.get(key)?;
+                let val = obj.get(key)?;
+                ctx.push_value(val.deref().unwrap());
+            }
+            Instruction::Getr => {
+                let key = ctx.pop_value()?;
+                let mut obj = ctx.pop_value()?;
 
-                if Instruction::Get == *inx {
-                    val = val.deref().unwrap();
+                // TODO: make sure that this is a not found error
+                if obj.get(key.clone()).is_err() {
+                    obj.set(key.clone(), box_ruvalue(RuValue::Nil))?;
                 }
 
+                let val = obj.get(key)?;
                 ctx.push_value(val);
             }
             Instruction::Set => {
@@ -194,11 +192,6 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                     RuValue::Ref(Some(r)) => *r.borrow_mut() = val,
                     _ => return Err(format!("cannot use {:?} as set target", target).into()),
                 }
-                /*
-                let key = ctx.pop_value()?;
-                let mut obj = ctx.pop_value()?;
-                obj.set(key, val)?;
-                */
             }
             Instruction::Add => ruvalue_operation!(ctx, add),
             Instruction::Sub => ruvalue_operation!(ctx, sub),
@@ -264,8 +257,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             }
             Instruction::Box => {
                 let value = ctx.pop_value()?;
-                let boxed = box_ruvalue(value.clone());
-                ctx.push_value(boxed);
+                ctx.push_value(box_ruvalue(value));
             }
         }
 

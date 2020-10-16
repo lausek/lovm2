@@ -20,9 +20,6 @@ impl Frame {
     }
 
     pub fn value_of(&self, var: &Variable) -> Option<RuValue> {
-        self.locals.get(var).cloned().map(|v| match v {
-            RuValue::Ref(Some(r)) => r.borrow().clone(),
-            _ => v,
-        })
+        self.locals.get(var).cloned()
     }
 }

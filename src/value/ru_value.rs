@@ -5,8 +5,6 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::value::{instantiate, CoValue};
-
 pub type RuDict = HashMap<RuValue, RuValue>;
 pub type RuDictRef = Rc<RefCell<RuDict>>;
 pub type RuList = Vec<RuValue>;
@@ -31,7 +29,7 @@ pub fn box_ruvalue(value: RuValue) -> RuValue {
 /// runtime values
 ///
 /// this layout is more suited for runtime representation than `CoValue`
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Deserialize, Serialize)]
 pub enum RuValue {
     Nil,
     Bool(bool),
@@ -86,6 +84,7 @@ impl RuValue {
                     unreachable!()
                 }
             }
+            RuValue::Ref(Some(r)) => r.borrow().get(key),
             _ => Err("value does not support `get`".into()),
         }
     }
@@ -94,6 +93,7 @@ impl RuValue {
         match self {
             RuValue::Dict(dict) => Ok(dict.len()),
             RuValue::List(list) => Ok(list.len()),
+            RuValue::Ref(Some(r)) => r.borrow().len(),
             _ => Err("value does not support `len`".into()),
         }
     }
@@ -117,6 +117,7 @@ impl RuValue {
                     unreachable!()
                 }
             }
+            RuValue::Ref(Some(r)) => r.borrow_mut().set(key, val),
             _ => Err("value does not support `set`".into()),
         }
     }
@@ -221,9 +222,25 @@ where
     s.serialize_none()
 }
 
-fn deserialize_ruvalue_ref<'de, D>(d: D) -> Result<Option<RuValueRef>, D::Error>
+fn deserialize_ruvalue_ref<'de, D>(_: D) -> Result<Option<RuValueRef>, D::Error>
 where
     D: Deserializer<'de>,
 {
     Ok(None)
+}
+
+impl std::fmt::Debug for RuValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        match self {
+            RuValue::Nil => write!(f, "Nil"),
+            RuValue::Bool(b) => write!(f, "Bool({:?})", b),
+            RuValue::Int(n) => write!(f, "Int({:?})", n),
+            RuValue::Float(n) => write!(f, "Float({:?})", n),
+            RuValue::Str(s) => write!(f, "Str({:?})", s),
+            RuValue::Dict(m) => write!(f, "Dict({:?})", m),
+            RuValue::List(ls) => write!(f, "List({:?})", ls),
+            RuValue::Ref(Some(r)) => write!(f, "Ref({:?})", r.borrow()),
+            RuValue::Ref(None) => write!(f, "Ref(None)"),
+        }
+    }
 }

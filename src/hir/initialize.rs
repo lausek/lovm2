@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::bytecode::Instruction;
-use crate::hir::call::Call;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::value::CoValue;
@@ -9,7 +8,7 @@ use crate::value::CoValue;
 #[derive(Clone, Debug)]
 pub struct Initialize {
     base: CoValue,
-    slots: Vec<Call>,
+    slots: Vec<(Expr, Expr)>,
 }
 
 impl Initialize {
@@ -41,9 +40,9 @@ impl Initialize {
             match val.into() {
                 Expr::Value(val) => list.push(val),
                 val => {
-                    let key = list.len();
+                    let key = list.len() as i64;
                     list.push(CoValue::Nil);
-                    self.slots.push(Call::new("set").arg(key as i64).arg(val));
+                    self.slots.push((key.into(), val));
                 }
             }
         } else {
@@ -62,8 +61,7 @@ impl Initialize {
                     dict.insert(key, val);
                 }
                 (key, val) => {
-                    let call = Call::new("set").arg(key).arg(val);
-                    self.slots.push(call);
+                    self.slots.push((key, val));
                 }
             }
         } else {
@@ -74,11 +72,25 @@ impl Initialize {
 
 impl Lowering for Initialize {
     fn lower(self, runtime: &mut LoweringRuntime) {
+        let requires_box = match &self.base {
+            CoValue::Dict(_) => true,
+            CoValue::List(_) => true,
+            _ => false,
+        };
+
         Expr::from(self.base).lower(runtime);
 
-        for call in self.slots.into_iter() {
+        if requires_box {
+            runtime.emit(Instruction::Box);
+        }
+
+        // slots are only allowed on `Dict` and `List`
+        for (key, expr) in self.slots.into_iter() {
             runtime.emit(Instruction::Dup);
-            call.lower(runtime);
+            key.lower(runtime);
+            runtime.emit(Instruction::Getr);
+            expr.lower(runtime);
+            runtime.emit(Instruction::Set);
         }
     }
 }

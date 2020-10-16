@@ -17,6 +17,7 @@ fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
         Ok(())
     });
 
+    println!("{:?}", module);
     vm.load_and_import_all(module).unwrap();
     vm.run().unwrap();
 
@@ -129,15 +130,15 @@ fn try_getting() {
     define_test! {
         main {
             Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
-            Assign::local(var!(dat0), call!(get, dict, 1));
+            Assign::local(var!(dat0), access!(dict, 1));
             Assign::local(var!(list), co_list!("a", 10, 20., true));
-            Assign::local(var!(lat0), call!(get, list, 1));
+            Assign::local(var!(lat0), access!(list, 1));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(7), frame.value_of(&var!(dat0)).unwrap().deref().unwrap());
-            assert_eq!(RuValue::Int(10), frame.value_of(&var!(lat0)).unwrap().deref().unwrap());
+            assert_eq!(RuValue::Int(7), frame.value_of(&var!(dat0)).unwrap());
+            assert_eq!(RuValue::Int(10), frame.value_of(&var!(lat0)).unwrap());
         })
     }
 }
@@ -147,13 +148,13 @@ fn try_setting() {
     define_test! {
         main {
             Assign::local(var!(list), co_list!("a", 10, 20., true));
-            call!(set, list, 1, 7);
+            Assign::local(access!(list, 1), 7);
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             let list = &frame.value_of(&var!(list)).unwrap();
-            assert_eq!(RuValue::Int(7), list.get(RuValue::Int(1)).unwrap());
+            assert_eq!(RuValue::Int(7), list.get(RuValue::Int(1)).unwrap().deref().unwrap());
         })
     }
 }
@@ -386,9 +387,9 @@ fn get_field_from_dict() {
             Assign::local(var!(d1), co_dict!("x" => 37));
             Assign::local(var!(d2), co_dict!("x" => co_dict!("y" => 42)));
             Assign::global(var!(g), co_dict!("x" => 67));
-            Assign::local(var!(x), access!(d1, var!(x)));
-            Assign::local(var!(y), access!(d2, var!(x), var!(y)));
-            Assign::local(var!(z), access!(g, var!(x)));
+            Assign::local(var!(x), access!(d1, "x"));
+            Assign::local(var!(y), access!(d2, "x", "y"));
+            Assign::local(var!(z), access!(g, "x"));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -407,28 +408,32 @@ fn set_field_on_dict() {
             Assign::local(var!(d1), co_dict!());
             Assign::local(var!(d2), co_dict!("x" => co_dict!()));
             Assign::global(var!(g), co_dict!());
-            Assign::local(access!(d1, var!(x)), 37);
-            Assign::local(access!(d2, var!(x), var!(y)), 42);
-            Assign::global(access!(g, var!(x)), 67);
+            Assign::local(access!(d1, "x"), 37);
+            Assign::local(access!(d2, "x", "y"), 42);
+            Assign::global(access!(g, "x"), 67);
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
+            println!("result: {:?}", frame.value_of(&var!(d1)));
             assert_eq!(
                 RuValue::Int(37),
-                frame.locals.get(&var!(d1)).unwrap()
+                frame.value_of(&var!(d1)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
+                    .deref().unwrap()
             );
             assert_eq!(
                 RuValue::Int(42),
-                frame.locals.get(&var!(d2)).unwrap()
+                frame.value_of(&var!(d2)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
                     .get(RuValue::Str("y".to_string())).unwrap()
+                    .deref().unwrap()
             );
             assert_eq!(
                 RuValue::Int(67),
-                ctx.globals.get(&var!(g)).unwrap()
+                ctx.value_of(&var!(g)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
+                    .deref().unwrap()
             );
         })
     }

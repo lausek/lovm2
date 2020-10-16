@@ -8,7 +8,7 @@ use lovm2_error::*;
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
 use crate::module::{GenericModule, Module};
-use crate::value::{RuValue, RuValueRef};
+use crate::value::RuValue;
 use crate::var::Variable;
 
 pub type LoadHookFn = dyn Fn(String) -> Lovm2Result<Option<GenericModule>>;
@@ -160,9 +160,6 @@ impl Context {
     }
 
     pub fn value_of(&self, var: &Variable) -> Option<RuValue> {
-        self.globals.get(var).cloned().map(|v| match v {
-            RuValue::Ref(Some(r)) => r.borrow().clone(),
-            _ => v,
-        })
+        self.globals.get(var).cloned()
     }
 }
