@@ -35,15 +35,6 @@ macro_rules! access {
             $(
                 .at($rest)
             )*
-
-            /*
-        let mut v = vec![];
-        v.push(stringify!($key).into());
-        $(
-            v.push(stringify!($rest).into());
-        )*
-        Access::new(stringify!($name).into(), v)
-            */
     }};
 }
 

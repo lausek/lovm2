@@ -6,19 +6,6 @@ use lovm2::value::{CoValue, RuValue};
 use lovm2::var::Variable;
 use lovm2::vm::Vm;
 
-/*
-use crate::global_value;
-
-macro_rules! global_value {
-    ($ctx:expr, $name:ident) => {{
-        match *vm.context_mut().globals.get(&var!($name)).unwrap() {
-            lovm2::value::RuValue::Ref(r) => r.borrow().clone(),
-            value => value,
-        }
-    }};
-}
-*/
-
 #[test]
 fn pushing_constant() {
     let mut vm = Vm::new();
@@ -53,13 +40,7 @@ fn store_global() {
 
     assert_eq!(
         RuValue::Int(42),
-        vm.context_mut().value_of(&var!(globaln)).unwrap() /*
-                                                           global_value!(, globaln)
-                                                           *vm.context_mut()
-                                                               .globals
-                                                               .get(&var!(globaln))
-                                                               .unwrap()
-                                                           */
+        vm.context_mut().value_of(&var!(globaln)).unwrap()
     );
 }
 

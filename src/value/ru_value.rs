@@ -106,7 +106,6 @@ impl RuValue {
             }
             RuValue::List(list) => {
                 if let RuValue::Int(idx) = key.into_integer()? {
-                    //let mut list = list;
                     if list.len() == idx as usize {
                         list.push(val);
                     } else {

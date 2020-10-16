@@ -4,17 +4,6 @@ use lovm2::prelude::*;
 use lovm2::value::RuValue;
 use lovm2::vm::Vm;
 
-/*
-macro_rules! local_value {
-    ($frame:expr, $name:ident) => {{
-        match $frame.locals.get(&var!($name)).unwrap() {
-            lovm2::value::RuValue::Ref(Some(r)) => r.borrow().clone(),
-            value => value.clone(),
-        }
-    }};
-}
-*/
-
 fn run_module_test(
     mut vm: Vm,
     module: Module,
@@ -82,7 +71,7 @@ fn load_custom_module() {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
             RuValue::Int(2),
-            frame.value_of(&var!(n)).unwrap() //local_value!(frame, n)
+            frame.value_of(&var!(n)).unwrap()
         );
     })
     .unwrap();
