@@ -29,13 +29,21 @@ macro_rules! define_code {
 
 #[macro_export]
 macro_rules! access {
-    ($name:ident, $key:ident $(, $rest:ident)* $(,)?) => {{
+    ($name:ident, $key:expr $(, $rest:expr)* $(,)?) => {{
+        Access::target(stringify!($name).into())
+            .at($key)
+            $(
+                .at($rest)
+            )*
+
+            /*
         let mut v = vec![];
         v.push(stringify!($key).into());
         $(
             v.push(stringify!($rest).into());
         )*
         Access::new(stringify!($name).into(), v)
+            */
     }};
 }
 

@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Instruction {
     /// push local variable
     Pushl(u16),
@@ -23,6 +23,8 @@ pub enum Instruction {
 
     /// get(obj, key): get key from object and push it
     Get,
+    /// getr(obj, key): get key from object by reference and push it
+    Getr,
     /// set(obj, key, val): set key on object
     Set,
 
@@ -79,8 +81,8 @@ pub enum Instruction {
     /// take top of stack as name of module to load
     Load,
 
-    /// turn the constant into a referenceable value.
+    /// turn the value on stack into a referenceable value.
     /// lists and dicts are boxed deeply
-    Box(u16),
+    Box,
     // Unbox,
 }

@@ -129,6 +129,7 @@ macro_rules! ruvalue_compare {
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
+        println!("{:?} <= {:?}", ctx.vstack, inx);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
@@ -160,14 +161,12 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             Instruction::Movel(lidx) => {
                 let first = ctx.pop_value()?;
                 let variable = &co.locals[*lidx as usize];
-                ctx.frame_mut()?
-                    .locals
-                    .insert(variable.clone(), box_ruvalue(first));
+                ctx.frame_mut()?.locals.insert(variable.clone(), first);
             }
             Instruction::Moveg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
                 let value = ctx.pop_value()?;
-                ctx.globals.insert(variable.clone(), box_ruvalue(value));
+                ctx.globals.insert(variable.clone(), value);
             }
             Instruction::Discard => {
                 ctx.pop_value()?;
@@ -177,17 +176,29 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 _ => return Err("no value on stack to duplicate".into()),
             },
             Instruction::Swap => {}
-            Instruction::Get => {
+            inx @ Instruction::Get | inx @ Instruction::Getr => {
                 let key = ctx.pop_value()?;
                 let obj = ctx.pop_value()?;
-                let val = obj.get(key)?;
+                let mut val = obj.get(key)?;
+
+                if Instruction::Get == *inx {
+                    val = val.deref().unwrap();
+                }
+
                 ctx.push_value(val);
             }
             Instruction::Set => {
                 let val = ctx.pop_value()?;
+                let target = ctx.pop_value()?;
+                match target {
+                    RuValue::Ref(Some(r)) => *r.borrow_mut() = val,
+                    _ => return Err(format!("cannot use {:?} as set target", target).into()),
+                }
+                /*
                 let key = ctx.pop_value()?;
                 let mut obj = ctx.pop_value()?;
                 obj.set(key, val)?;
+                */
             }
             Instruction::Add => ruvalue_operation!(ctx, add),
             Instruction::Sub => ruvalue_operation!(ctx, sub),
@@ -251,8 +262,8 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 let name = format!("{}", name);
                 ctx.load_and_import_by_name(name.as_ref())?;
             }
-            Instruction::Box(cidx) => {
-                let value = &co.consts[*cidx as usize];
+            Instruction::Box => {
+                let value = ctx.pop_value()?;
                 let boxed = box_ruvalue(value.clone());
                 ctx.push_value(boxed);
             }

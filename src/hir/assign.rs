@@ -1,6 +1,7 @@
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::value::RuValue;
 use crate::var::Variable;
 
 #[derive(Clone)]
@@ -52,6 +53,21 @@ impl Access {
     pub fn new(target: Variable, keys: Vec<Expr>) -> Self {
         Self { keys, target }
     }
+
+    pub fn target(target: Variable) -> Self {
+        Self {
+            keys: vec![],
+            target,
+        }
+    }
+
+    pub fn at<T>(mut self, key: T) -> Self
+    where
+        T: Into<Expr>,
+    {
+        self.keys.push(key.into());
+        self
+    }
 }
 
 impl From<Variable> for Access {
@@ -76,7 +92,18 @@ impl From<Expr> for Access {
 impl Lowering for Assign {
     fn lower(self, runtime: &mut LoweringRuntime) {
         if self.access.keys.is_empty() {
+            let needs_box = match &self.expr {
+                Expr::DynamicValue(_) => true,
+                Expr::Value(RuValue::Dict(_)) => true,
+                Expr::Value(RuValue::List(_)) => true,
+                _ => false,
+            };
+
             self.expr.lower(runtime);
+
+            if needs_box {
+                runtime.emit(Instruction::Box);
+            }
 
             let variable = self.access.target;
             match self.scope {
@@ -107,7 +134,7 @@ impl Lowering for Assign {
             key.lower(runtime);
 
             while key_it.peek().is_some() {
-                runtime.emit(Instruction::Get);
+                runtime.emit(Instruction::Getr);
                 let key = key_it.next().unwrap();
                 key.lower(runtime);
             }

@@ -386,9 +386,9 @@ fn get_field_from_dict() {
             Assign::local(var!(d1), co_dict!("x" => 37));
             Assign::local(var!(d2), co_dict!("x" => co_dict!("y" => 42)));
             Assign::global(var!(g), co_dict!("x" => 67));
-            Assign::local(var!(x), access!(d1, x));
-            Assign::local(var!(y), access!(d2, x, y));
-            Assign::local(var!(z), access!(g, x));
+            Assign::local(var!(x), access!(d1, var!(x)));
+            Assign::local(var!(y), access!(d2, var!(x), var!(y)));
+            Assign::local(var!(z), access!(g, var!(x)));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -407,9 +407,9 @@ fn set_field_on_dict() {
             Assign::local(var!(d1), co_dict!());
             Assign::local(var!(d2), co_dict!("x" => co_dict!()));
             Assign::global(var!(g), co_dict!());
-            Assign::local(access!(d1, x), 37);
-            Assign::local(access!(d2, x, y), 42);
-            Assign::global(access!(g, x), 67);
+            Assign::local(access!(d1, var!(x)), 37);
+            Assign::local(access!(d2, var!(x), var!(y)), 42);
+            Assign::global(access!(g, var!(x)), 67);
         }
 
         #ensure (|ctx: &mut Context| {
