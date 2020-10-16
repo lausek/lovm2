@@ -6,6 +6,19 @@ use lovm2::value::{CoValue, RuValue};
 use lovm2::var::Variable;
 use lovm2::vm::Vm;
 
+/*
+use crate::global_value;
+
+macro_rules! global_value {
+    ($ctx:expr, $name:ident) => {{
+        match *vm.context_mut().globals.get(&var!($name)).unwrap() {
+            lovm2::value::RuValue::Ref(r) => r.borrow().clone(),
+            value => value,
+        }
+    }};
+}
+*/
+
 #[test]
 fn pushing_constant() {
     let mut vm = Vm::new();
@@ -40,11 +53,13 @@ fn store_global() {
 
     assert_eq!(
         RuValue::Int(42),
-        *vm.context_mut()
-            .globals
-            .get(&var!(globaln))
-            .unwrap()
-            .borrow()
+        vm.context_mut().value_of(&var!(globaln)).unwrap() /*
+                                                           global_value!(, globaln)
+                                                           *vm.context_mut()
+                                                               .globals
+                                                               .get(&var!(globaln))
+                                                               .unwrap()
+                                                           */
     );
 }
 
@@ -82,35 +97,19 @@ fn calculation() {
 
     assert_eq!(
         RuValue::Int(5),
-        *vm.context_mut()
-            .globals
-            .get(&var!(result_add))
-            .unwrap()
-            .borrow()
+        vm.context_mut().value_of(&var!(result_add)).unwrap()
     );
     assert_eq!(
         RuValue::Int(1),
-        *vm.context_mut()
-            .globals
-            .get(&var!(result_sub))
-            .unwrap()
-            .borrow()
+        vm.context_mut().value_of(&var!(result_sub)).unwrap()
     );
     assert_eq!(
         RuValue::Int(6),
-        *vm.context_mut()
-            .globals
-            .get(&var!(result_mul))
-            .unwrap()
-            .borrow()
+        vm.context_mut().value_of(&var!(result_mul)).unwrap()
     );
     assert_eq!(
         RuValue::Int(1),
-        *vm.context_mut()
-            .globals
-            .get(&var!(result_div))
-            .unwrap()
-            .borrow()
+        vm.context_mut().value_of(&var!(result_div)).unwrap()
     );
 }
 
@@ -153,10 +152,6 @@ fn jumping() {
 
     assert_eq!(
         RuValue::Str("aaaaaaaaaa".to_string()),
-        *vm.context_mut()
-            .globals
-            .get(&var!(output))
-            .unwrap()
-            .borrow()
+        vm.context_mut().value_of(&var!(output)).unwrap()
     );
 }

@@ -76,7 +76,7 @@ impl Vm {
             Expr::Operation2(_, _, _) => todo!(),
             Expr::Value(val) => Ok(instantiate(val)),
             Expr::Variable(var) => match self.ctx.globals.get(&var) {
-                Some(val) => Ok(val.borrow().clone()),
+                Some(val) => Ok(val.clone()),
                 _ => Err(format!("variable `{}` not found", var).into()),
             },
         }
@@ -132,19 +132,21 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
-                match ctx.frame_mut()?.locals.get(variable).cloned() {
+                match ctx.frame_mut()?.value_of(variable) {
+                    //match ctx.frame_mut()?.locals.get(variable).cloned() {
                     Some(local) => {
-                        let copy = local.borrow().clone();
-                        ctx.push_value(copy);
+                        //let copy = local.borrow().clone();
+                        ctx.push_value(local);
                     }
                     _ => return Err(format!("local `{}` not found", variable).into()),
                 }
             }
             Instruction::Pushg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
-                match ctx.globals.get(variable) {
+                match ctx.value_of(variable) {
+                    //match ctx.globals.get(variable).cloned() {
                     Some(global) => {
-                        let global = global.borrow().clone();
+                        //let global = global.borrow().clone();
                         ctx.push_value(global);
                     }
                     _ => return Err(format!("global `{}` not found", variable).into()),
@@ -248,6 +250,11 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 // TODO: use to_string() here
                 let name = format!("{}", name);
                 ctx.load_and_import_by_name(name.as_ref())?;
+            }
+            Instruction::Box(cidx) => {
+                let value = &co.consts[*cidx as usize];
+                let boxed = box_ruvalue(value.clone());
+                ctx.push_value(boxed);
             }
         }
 

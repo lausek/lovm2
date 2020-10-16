@@ -47,6 +47,6 @@ fn deserialize_module() {
     vm.load_and_import_all(module).unwrap();
     vm.run().unwrap();
 
-    let n = vm.context_mut().globals.get(&var!(n)).unwrap().borrow();
-    assert_eq!(RuValue::Int(10), *n);
+    let n = vm.context_mut().value_of(&var!(n)).unwrap();
+    assert_eq!(RuValue::Int(10), n);
 }

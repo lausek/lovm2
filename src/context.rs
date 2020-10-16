@@ -39,7 +39,7 @@ pub struct Context {
     /// list of loaded modules: `Module` or `SharedObjectModule`
     pub modules: HashMap<String, GenericModule>,
     /// global variables that can be altered from every object
-    pub globals: HashMap<Variable, RuValueRef>,
+    pub globals: HashMap<Variable, RuValue>,
     /// entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CodeObjectRef>,
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
@@ -157,5 +157,12 @@ impl Context {
             Some(val) => Ok(val),
             _ => Err("no value on stack".into()),
         }
+    }
+
+    pub fn value_of(&self, var: &Variable) -> Option<RuValue> {
+        self.globals.get(var).cloned().map(|v| match v {
+            RuValue::Ref(Some(r)) => r.borrow().clone(),
+            _ => v,
+        })
     }
 }

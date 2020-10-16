@@ -56,7 +56,7 @@ fn assign_local() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(4), *frame.locals.get(&var!(n)).unwrap().borrow());
+            assert_eq!(RuValue::Int(4), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -71,7 +71,7 @@ fn assign_local_add() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(4), *frame.locals.get(&var!(n)).unwrap().borrow());
+            assert_eq!(RuValue::Int(4), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -85,7 +85,7 @@ fn rem_lowering() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(1), *frame.locals.get(&var!(rest)).unwrap().borrow());
+            assert_eq!(RuValue::Int(1), frame.value_of(&var!(rest)).unwrap());
         })
     }
 }
@@ -102,7 +102,7 @@ fn easy_loop() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(n)).unwrap().borrow());
+            assert_eq!(RuValue::Int(10), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -119,7 +119,7 @@ fn explicit_break() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(1), *frame.locals.get(&var!(n)).unwrap().borrow());
+            assert_eq!(RuValue::Int(1), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -136,8 +136,8 @@ fn try_getting() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(7), *frame.locals.get(&var!(dat0)).unwrap().borrow());
-            assert_eq!(RuValue::Int(10), *frame.locals.get(&var!(lat0)).unwrap().borrow());
+            assert_eq!(RuValue::Int(7), frame.value_of(&var!(dat0)).unwrap().deref().unwrap());
+            assert_eq!(RuValue::Int(10), frame.value_of(&var!(lat0)).unwrap().deref().unwrap());
         })
     }
 }
@@ -152,7 +152,7 @@ fn try_setting() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            let list = &*frame.locals.get(&var!(list)).unwrap().borrow();
+            let list = &frame.value_of(&var!(list)).unwrap();
             assert_eq!(RuValue::Int(7), list.get(RuValue::Int(1)).unwrap());
         })
     }
@@ -170,8 +170,8 @@ fn try_retrieving_len() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(2), *frame.locals.get(&var!(lendict)).unwrap().borrow());
-            assert_eq!(RuValue::Int(3), *frame.locals.get(&var!(lenls)).unwrap().borrow());
+            assert_eq!(RuValue::Int(2), frame.value_of(&var!(lendict)).unwrap());
+            assert_eq!(RuValue::Int(3), frame.value_of(&var!(lenls)).unwrap());
         })
     }
 }
@@ -185,7 +185,7 @@ fn try_casting() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(5), *frame.locals.get(&var!(n)).unwrap().borrow());
+            assert_eq!(RuValue::Int(5), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -212,10 +212,7 @@ fn true_branching() {
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            RuValue::Int(2),
-            *frame.locals.get(&var!(n)).unwrap().borrow()
-        );
+        assert_eq!(RuValue::Int(2), frame.value_of(&var!(n)).unwrap());
     });
 }
 
@@ -259,7 +256,7 @@ fn multiple_branches() {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
             RuValue::Str("buzz".to_string()),
-            *frame.locals.get(&var!(result)).unwrap().borrow()
+            frame.value_of(&var!(result)).unwrap()
         );
     });
 }
@@ -279,14 +276,8 @@ fn taking_parameters() {
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            RuValue::Int(2),
-            *frame.locals.get(&var!(a)).unwrap().borrow()
-        );
-        assert_eq!(
-            RuValue::Int(7),
-            *frame.locals.get(&var!(b)).unwrap().borrow()
-        );
+        assert_eq!(RuValue::Int(2), frame.value_of(&var!(a)).unwrap());
+        assert_eq!(RuValue::Int(7), frame.value_of(&var!(b)).unwrap());
     });
 }
 
@@ -306,10 +297,7 @@ fn return_values() {
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            RuValue::Int(10),
-            *frame.locals.get(&var!(n)).unwrap().borrow()
-        );
+        assert_eq!(RuValue::Int(10), frame.value_of(&var!(n)).unwrap());
     });
 }
 
@@ -348,19 +336,19 @@ fn cast_to_string() {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
             RuValue::Str("10".to_string()),
-            *frame.locals.get(&var!(a)).unwrap().borrow()
+            frame.value_of(&var!(a)).unwrap()
         );
         assert_eq!(
             RuValue::Str("10.1".to_string()),
-            *frame.locals.get(&var!(b)).unwrap().borrow()
+            frame.value_of(&var!(b)).unwrap()
         );
         assert_eq!(
             RuValue::Str("10".to_string()),
-            *frame.locals.get(&var!(c)).unwrap().borrow()
+            frame.value_of(&var!(c)).unwrap()
         );
         assert_eq!(
             RuValue::Str("true".to_string()),
-            *frame.locals.get(&var!(d)).unwrap().borrow()
+            frame.value_of(&var!(d)).unwrap()
         );
     });
 }
@@ -384,10 +372,10 @@ fn folding_expr() {
     builder.add(ENTRY_POINT).hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
-        let a = ctx.globals.get(&var!(a)).unwrap();
-        let n = ctx.globals.get(&var!(n)).unwrap();
-        assert_eq!(RuValue::Int(2), *a.borrow());
-        assert_eq!(RuValue::Int(1), *n.borrow());
+        let a = ctx.value_of(&var!(a)).unwrap();
+        let n = ctx.value_of(&var!(n)).unwrap();
+        assert_eq!(RuValue::Int(2), a);
+        assert_eq!(RuValue::Int(1), n);
     });
 }
 
@@ -405,9 +393,9 @@ fn get_field_from_dict() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(37), *frame.locals.get(&var!(x)).unwrap().borrow());
-            assert_eq!(RuValue::Int(42), *frame.locals.get(&var!(y)).unwrap().borrow());
-            assert_eq!(RuValue::Int(67), *frame.locals.get(&var!(z)).unwrap().borrow());
+            assert_eq!(RuValue::Int(37), frame.value_of(&var!(x)).unwrap());
+            assert_eq!(RuValue::Int(42), frame.value_of(&var!(y)).unwrap());
+            assert_eq!(RuValue::Int(67), frame.value_of(&var!(z)).unwrap());
         })
     }
 }
@@ -428,18 +416,18 @@ fn set_field_on_dict() {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(
                 RuValue::Int(37),
-                frame.locals.get(&var!(d1)).unwrap().borrow()
+                frame.locals.get(&var!(d1)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
             );
             assert_eq!(
                 RuValue::Int(42),
-                frame.locals.get(&var!(d2)).unwrap().borrow()
+                frame.locals.get(&var!(d2)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
                     .get(RuValue::Str("y".to_string())).unwrap()
             );
             assert_eq!(
                 RuValue::Int(67),
-                ctx.globals.get(&var!(g)).unwrap().borrow()
+                ctx.globals.get(&var!(g)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
             );
         })
@@ -471,10 +459,7 @@ fn call_into_vm() {
     let mut vm = Vm::new();
     vm.context_mut().set_interrupt(10, move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            RuValue::Int(10),
-            *frame.locals.get(&var!(n)).unwrap().borrow()
-        );
+        assert_eq!(RuValue::Int(10), frame.value_of(&var!(n)).unwrap());
         called_ref.set(true);
         Ok(())
     });
@@ -498,12 +483,12 @@ fn comparison() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(lt)).unwrap().borrow());
-            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(le1)).unwrap().borrow());
-            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(le2)).unwrap().borrow());
-            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(gt)).unwrap().borrow());
-            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(ge1)).unwrap().borrow());
-            assert_eq!(RuValue::Bool(true), *frame.locals.get(&var!(ge2)).unwrap().borrow());
+            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(lt)).unwrap());
+            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(le1)).unwrap());
+            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(le2)).unwrap());
+            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(gt)).unwrap());
+            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(ge1)).unwrap());
+            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(ge2)).unwrap());
         })
     }
 }
@@ -518,8 +503,8 @@ fn raise_to_power() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(8), *frame.locals.get(&var!(a)).unwrap().borrow());
-            assert_eq!(RuValue::Float(27.), *frame.locals.get(&var!(b)).unwrap().borrow());
+            assert_eq!(RuValue::Int(8), frame.value_of(&var!(a)).unwrap());
+            assert_eq!(RuValue::Float(27.), frame.value_of(&var!(b)).unwrap());
         })
     }
 }
@@ -537,10 +522,10 @@ fn initialize_objects() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            let ae = frame.locals.get(&var!(ae)).unwrap().borrow();
-            let ag = frame.locals.get(&var!(ag)).unwrap().borrow();
-            let be = frame.locals.get(&var!(be)).unwrap().borrow();
-            let bg = frame.locals.get(&var!(bg)).unwrap().borrow();
+            let ae = frame.locals.get(&var!(ae)).unwrap();
+            let ag = frame.locals.get(&var!(ag)).unwrap();
+            let be = frame.locals.get(&var!(be)).unwrap();
+            let bg = frame.locals.get(&var!(bg)).unwrap();
             assert_eq!(*ae, *ag);
             assert_eq!(*be, *bg);
         })

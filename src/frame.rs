@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::value::RuValueRef;
+use crate::value::RuValue;
 use crate::var::Variable;
 
 /// a stack frame used in `Context.lstack`
@@ -8,7 +8,7 @@ pub struct Frame {
     /// amount of parameters passed to the frame
     pub argn: u8,
     /// locals defined
-    pub locals: HashMap<Variable, RuValueRef>,
+    pub locals: HashMap<Variable, RuValue>,
 }
 
 impl Frame {
@@ -17,5 +17,12 @@ impl Frame {
             argn,
             locals: HashMap::new(),
         }
+    }
+
+    pub fn value_of(&self, var: &Variable) -> Option<RuValue> {
+        self.locals.get(var).cloned().map(|v| match v {
+            RuValue::Ref(Some(r)) => r.borrow().clone(),
+            _ => v,
+        })
     }
 }

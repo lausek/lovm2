@@ -13,26 +13,24 @@ pub type RuList = Vec<RuValue>;
 pub type RuListRef = Rc<RefCell<RuList>>;
 pub type RuValueRef = Rc<RefCell<RuValue>>;
 
-pub fn box_ruvalue(value: RuValue) -> RuValueRef {
-    Rc::new(RefCell::new(value))
+pub fn box_ruvalue(value: RuValue) -> RuValue {
+    let outer = match value {
+        RuValue::Dict(d) => {
+            let mut hm = HashMap::new();
+            for (key, val) in d.into_iter() {
+                hm.insert(key, box_ruvalue(val));
+            }
+            RuValue::Dict(hm)
+        }
+        RuValue::List(l) => RuValue::List(l.into_iter().map(box_ruvalue).collect::<Vec<_>>()),
+        value => value,
+    };
+    RuValue::Ref(Some(Rc::new(RefCell::new(outer))))
 }
 
 /// runtime values
 ///
 /// this layout is more suited for runtime representation than `CoValue`
-/*
-#[derive(Clone, Debug, PartialEq)]
-pub enum RuValue {
-    Nil,
-    Bool(bool),
-    Int(i64),
-    Float(f64),
-    Str(String),
-    Dict(RuDictRef),
-    List(RuListRef),
-}
-*/
-
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum RuValue {
     Nil,
@@ -48,6 +46,13 @@ pub enum RuValue {
 }
 
 impl RuValue {
+    pub fn deref(&self) -> Option<RuValue> {
+        match self {
+            RuValue::Ref(Some(r)) => Some(r.borrow().clone()),
+            _ => None,
+        }
+    }
+
     pub fn delete(&mut self, key: RuValue) -> Lovm2Result<()> {
         match self {
             RuValue::Dict(dict) => {
