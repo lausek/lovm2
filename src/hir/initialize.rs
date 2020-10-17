@@ -13,7 +13,7 @@ pub struct Initialize {
 
 impl Initialize {
     pub fn new(base: Expr) -> Self {
-        let base = if let Expr::Value(val) = base {
+        let base = if let Expr::Value { val, .. } = base {
             val
         } else {
             unimplemented!()
@@ -38,7 +38,7 @@ impl Initialize {
     {
         if let CoValue::List(list) = &mut self.base {
             match val.into() {
-                Expr::Value(val) => list.push(val),
+                Expr::Value { val, .. } => list.push(val),
                 val => {
                     let key = list.len() as i64;
                     list.push(CoValue::Nil);
@@ -57,7 +57,7 @@ impl Initialize {
     {
         if let CoValue::Dict(dict) = &mut self.base {
             match (key.into(), val.into()) {
-                (Expr::Value(key), Expr::Value(val)) => {
+                (Expr::Value { val: key, .. }, Expr::Value { val, .. }) => {
                     dict.insert(key, val);
                 }
                 (key, val) => {

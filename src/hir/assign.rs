@@ -4,16 +4,17 @@ use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::var::Variable;
 
 #[derive(Clone)]
-pub enum AssignScope {
-    Local,
-    Global,
+pub enum AssignType {
+    StaticLocal,
+    StaticGlobal,
+    Dynamic,
 }
 
 #[derive(Clone)]
 pub struct Assign {
     expr: Expr,
     access: Access,
-    scope: AssignScope,
+    ty: AssignType,
 }
 
 impl Assign {
@@ -22,10 +23,16 @@ impl Assign {
         U: Into<Access>,
         T: Into<Expr>,
     {
+        let access = access.into();
+        let ty = if access.keys.is_empty() {
+            AssignType::StaticLocal
+        } else {
+            AssignType::Dynamic
+        };
         Self {
             expr: expr.into(),
-            access: access.into(),
-            scope: AssignScope::Local,
+            access,
+            ty,
         }
     }
 
@@ -34,10 +41,28 @@ impl Assign {
         U: Into<Access>,
         T: Into<Expr>,
     {
+        let access = access.into();
+        let ty = if access.keys.is_empty() {
+            AssignType::StaticGlobal
+        } else {
+            AssignType::Dynamic
+        };
+        Self {
+            expr: expr.into(),
+            access,
+            ty,
+        }
+    }
+
+    pub fn set<U, T>(access: U, expr: T) -> Self
+    where
+        U: Into<Access>,
+        T: Into<Expr>,
+    {
         Self {
             expr: expr.into(),
             access: access.into(),
-            scope: AssignScope::Global,
+            ty: AssignType::Dynamic,
         }
     }
 }
@@ -88,37 +113,22 @@ impl From<Expr> for Access {
     }
 }
 
-impl Lowering for Assign {
-    fn lower(self, runtime: &mut LoweringRuntime) {
-        if self.access.keys.is_empty() {
-            self.expr.lower(runtime);
+impl Assign {
+    fn lower_dynamic(self, runtime: &mut LoweringRuntime) {
+        let variable = self.access.target;
 
-            let variable = self.access.target;
-            match self.scope {
-                AssignScope::Local => {
-                    let lidx = runtime.index_local(&variable);
-                    runtime.emit(Instruction::Movel(lidx as u16));
-                }
-                AssignScope::Global => {
-                    let gidx = runtime.index_global(&variable);
-                    runtime.emit(Instruction::Moveg(gidx as u16));
-                }
-            }
+        // push (initial) target onto stack
+        if runtime.has_local(&variable) {
+            let lidx = runtime.index_local(&variable);
+            runtime.emit(Instruction::Pushl(lidx as u16));
         } else {
-            let variable = self.access.target;
-            let mut key_it = self.access.keys.into_iter().peekable();
+            let gidx = runtime.index_global(&variable);
+            runtime.emit(Instruction::Pushg(gidx as u16));
+        }
 
-            // push (initial) target onto stack
-            if runtime.has_local(&variable) {
-                let lidx = runtime.index_local(&variable);
-                runtime.emit(Instruction::Pushl(lidx as u16));
-            } else {
-                let gidx = runtime.index_global(&variable);
-                runtime.emit(Instruction::Pushg(gidx as u16));
-            }
-
-            // push key onto stack
-            let key = key_it.next().unwrap();
+        let mut key_it = self.access.keys.into_iter().peekable();
+        // push key onto stack
+        if let Some(key) = key_it.next() {
             key.lower(runtime);
             runtime.emit(Instruction::Getr);
 
@@ -127,11 +137,37 @@ impl Lowering for Assign {
                 key.lower(runtime);
                 runtime.emit(Instruction::Getr);
             }
+        }
 
-            // push value onto stack
-            self.expr.lower(runtime);
+        // push value onto stack
+        self.expr.lower(runtime);
 
-            runtime.emit(Instruction::Set);
+        runtime.emit(Instruction::Set);
+    }
+
+    fn lower_static(self, runtime: &mut LoweringRuntime) {
+        self.expr.lower(runtime);
+
+        let variable = self.access.target;
+        match self.ty {
+            AssignType::StaticLocal => {
+                let lidx = runtime.index_local(&variable);
+                runtime.emit(Instruction::Movel(lidx as u16));
+            }
+            AssignType::StaticGlobal => {
+                let gidx = runtime.index_global(&variable);
+                runtime.emit(Instruction::Moveg(gidx as u16));
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl Lowering for Assign {
+    fn lower(self, runtime: &mut LoweringRuntime) {
+        match &self.ty {
+            AssignType::StaticLocal | AssignType::StaticGlobal => self.lower_static(runtime),
+            AssignType::Dynamic => self.lower_dynamic(runtime),
         }
     }
 }

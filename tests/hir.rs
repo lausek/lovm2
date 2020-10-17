@@ -532,12 +532,30 @@ fn initialize_objects() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            let ae = frame.locals.get(&var!(ae)).unwrap();
-            let ag = frame.locals.get(&var!(ag)).unwrap();
-            let be = frame.locals.get(&var!(be)).unwrap();
-            let bg = frame.locals.get(&var!(bg)).unwrap();
-            assert_eq!(*ae, *ag);
-            assert_eq!(*be, *bg);
+            let ae = frame.value_of(&var!(ae)).unwrap();
+            let ag = frame.value_of(&var!(ag)).unwrap();
+            let be = frame.value_of(&var!(be)).unwrap();
+            let bg = frame.value_of(&var!(bg)).unwrap();
+            assert_eq!(ae, ag);
+            assert_eq!(be, bg);
+        })
+    }
+}
+
+#[test]
+fn store_without_reference() {
+    define_test! {
+        main {
+            Assign::local(var!(n), 2);
+            Assign::local(var!(x), Expr::from(5).boxed());
+            Assign::local(var!(y), var!(x));
+            Assign::set(var!(y), 7);
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(RuValue::Int(2), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(RuValue::Int(7), frame.value_of(&var!(y)).unwrap().deref().unwrap());
         })
     }
 }

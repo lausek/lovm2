@@ -74,7 +74,7 @@ impl Vm {
             Expr::DynamicValue(_) => todo!(),
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
-            Expr::Value(val) => Ok(instantiate(val)),
+            Expr::Value { val, .. } => Ok(instantiate(val)),
             Expr::Variable(var) => match self.ctx.globals.get(&var) {
                 Some(val) => Ok(val.clone()),
                 _ => Err(format!("variable `{}` not found", var).into()),

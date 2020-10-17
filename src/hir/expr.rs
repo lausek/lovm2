@@ -39,7 +39,7 @@ pub enum Expr {
     DynamicValue(Initialize),
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
-    Value(CoValue),
+    Value { val: CoValue, boxed: bool },
     Variable(Variable),
 }
 
@@ -99,11 +99,19 @@ impl Expr {
 }
 
 impl Expr {
+    pub fn boxed(mut self) -> Self {
+        match &mut self {
+            Expr::Value { boxed, .. } => *boxed = true,
+            _ => unimplemented!(),
+        }
+        self
+    }
+
     pub fn is_const(&self) -> bool {
         match self {
             Expr::Operation1(_, item) => item.is_const(),
             Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
-            Expr::Value(_) => true,
+            Expr::Value { .. } => true,
             _ => false,
         }
     }
@@ -115,11 +123,17 @@ impl Expr {
 
     pub fn dict() -> Self {
         use std::collections::HashMap;
-        Expr::Value(CoValue::Dict(HashMap::new()))
+        Expr::Value {
+            val: CoValue::Dict(HashMap::new()),
+            boxed: false,
+        }
     }
 
     pub fn list() -> Self {
-        Expr::Value(CoValue::List(vec![]))
+        Expr::Value {
+            val: CoValue::List(vec![]),
+            boxed: false,
+        }
     }
 
     pub fn pow<T, U>(left: T, right: U) -> Self
@@ -183,7 +197,10 @@ where
     T: Into<CoValue>,
 {
     fn from(val: T) -> Expr {
-        Expr::Value(val.into())
+        Expr::Value {
+            val: val.into(),
+            boxed: false,
+        }
     }
 }
 
@@ -256,9 +273,13 @@ impl Lowering for Expr {
                 };
                 runtime.emit(inx);
             }
-            Expr::Value(val) => {
+            Expr::Value { val, boxed } => {
                 let cidx = runtime.index_const(&val);
                 runtime.emit(Instruction::Pushc(cidx as u16));
+
+                if boxed {
+                    runtime.emit(Instruction::Box);
+                }
             }
             Expr::Variable(ref var) => {
                 if runtime.locals.contains(var) {
