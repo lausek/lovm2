@@ -122,6 +122,13 @@ macro_rules! ruvalue_compare {
     }};
 }
 
+fn deref_total(val: &mut RuValue) {
+    while let RuValue::Ref(Some(r)) = val {
+        let r = r.borrow().clone();
+        *val = r;
+    }
+}
+
 /// implementation of lovm2 bytecode behavior
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
@@ -186,8 +193,11 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 ctx.push_value(val);
             }
             Instruction::Set => {
-                let val = ctx.pop_value()?;
+                let mut val = ctx.pop_value()?;
                 let target = ctx.pop_value()?;
+
+                deref_total(&mut val);
+
                 match target {
                     RuValue::Ref(Some(r)) => *r.borrow_mut() = val,
                     _ => return Err(format!("cannot use {:?} as set target", target).into()),

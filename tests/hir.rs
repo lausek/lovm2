@@ -415,12 +415,17 @@ fn set_field_on_dict() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            println!("result: {:?}", frame.value_of(&var!(d1)));
             assert_eq!(
                 RuValue::Int(37),
                 frame.value_of(&var!(d1)).unwrap()
                     .get(RuValue::Str("x".to_string())).unwrap()
                     .deref().unwrap()
+            );
+            assert!(
+                !frame.value_of(&var!(d2)).unwrap()
+                    .get(RuValue::Str("x".to_string())).unwrap()
+                    .deref().unwrap()
+                    .is_ref()
             );
             assert_eq!(
                 RuValue::Int(42),

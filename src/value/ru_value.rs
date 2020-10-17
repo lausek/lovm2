@@ -51,6 +51,13 @@ impl RuValue {
         }
     }
 
+    pub fn is_ref(&self) -> bool {
+        match self {
+            RuValue::Ref(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn delete(&mut self, key: RuValue) -> Lovm2Result<()> {
         match self {
             RuValue::Dict(dict) => {

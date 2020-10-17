@@ -69,10 +69,7 @@ fn load_custom_module() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            RuValue::Int(2),
-            frame.value_of(&var!(n)).unwrap()
-        );
+        assert_eq!(RuValue::Int(2), frame.value_of(&var!(n)).unwrap());
     })
     .unwrap();
 }
