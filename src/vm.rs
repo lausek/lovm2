@@ -51,7 +51,12 @@ impl Vm {
         let mut argn: u8 = 0;
         for arg in args.iter() {
             argn += 1;
-            self.ctx.push_value(arg.clone());
+            let arg = arg.clone();
+            let arg = match arg {
+                RuValue::Dict(_) | RuValue::List(_) => box_ruvalue(arg),
+                _ => arg,
+            };
+            self.ctx.push_value(arg);
         }
 
         self.ctx.push_frame(argn);
@@ -168,7 +173,6 @@ fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<Ru
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
-        println!("{:?}", ctx.vstack);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];

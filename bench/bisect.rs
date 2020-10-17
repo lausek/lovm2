@@ -38,10 +38,7 @@ def bisect(coeffs, startx):
 
 fn calc_hir() -> HIR {
     let mut computation_loop = Repeat::until(Expr::not(Expr::le(0, var!(factor))));
-    let delta = Expr::mul(
-        Call::new("get").arg(var!(coeffs)).arg(var!(i)),
-        Expr::pow(var!(x), var!(factor)),
-    );
+    let delta = Expr::mul(access!(coeffs, var!(i)), Expr::pow(var!(x), var!(factor)));
     computation_loop.push(Assign::local(var!(sigma), Expr::add(var!(sigma), delta)));
     computation_loop.push(Assign::local(var!(i), Expr::add(var!(i), 1)));
     computation_loop.push(Assign::local(var!(factor), Expr::sub(var!(factor), 1)));
@@ -60,11 +57,8 @@ fn calc_hir() -> HIR {
 
 fn derive_hir() -> HIR {
     let mut computation_loop = Repeat::until(Expr::not(Expr::lt(0, var!(factor))));
-    let val = Expr::mul(
-        Call::new("get").arg(var!(coeffs)).arg(var!(i)),
-        var!(factor),
-    );
-    computation_loop.push(Call::new("set").arg(var!(d)).arg(var!(i)).arg(val));
+    let val = Expr::mul(access!(coeffs, var!(i)), var!(factor));
+    computation_loop.push(Assign::set(access!(d, var!(i)), val));
     computation_loop.push(Assign::local(var!(i), Expr::add(var!(i), 1)));
     computation_loop.push(Assign::local(var!(factor), Expr::sub(var!(factor), 1)));
 
