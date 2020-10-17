@@ -559,3 +559,28 @@ fn store_without_reference() {
         })
     }
 }
+
+#[test]
+fn create_slice() {
+    define_test! {
+        main {
+            Assign::local(var!(ls), co_list!(1, 2, 3, 4, 5));
+            Assign::local(var!(s), Slice::new(var!(ls)).start(1).end(4));
+            Assign::set(access!(s, 1), 9);
+        }
+
+        #ensure (|ctx: &mut Context| {
+            let frame = ctx.frame_mut().unwrap();
+            let ls = frame.value_of(&var!(ls)).unwrap();
+            let s = frame.value_of(&var!(s)).unwrap();
+            assert_eq!(
+                RuValue::Int(9),
+                s.get(RuValue::Int(1)).unwrap().deref().unwrap()
+            );
+            assert_eq!(
+                RuValue::Int(9),
+                ls.get(RuValue::Int(2)).unwrap().deref().unwrap()
+            );
+        })
+    }
+}

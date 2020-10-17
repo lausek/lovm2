@@ -83,5 +83,8 @@ pub enum Instruction {
     /// turn the value on stack into a referenceable value.
     /// lists and dicts are boxed deeply
     Box,
-    // Unbox,
+
+    /// create a new list from the first argument on stack.
+    /// second is starting index or nil, third is end index (exclusive) or nil
+    Slice,
 }

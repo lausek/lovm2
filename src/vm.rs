@@ -74,6 +74,7 @@ impl Vm {
             Expr::DynamicValue(_) => todo!(),
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
+            Expr::Slice(_) => todo!(),
             Expr::Value { val, .. } => Ok(instantiate(val)),
             Expr::Variable(var) => match self.ctx.globals.get(&var) {
                 Some(val) => Ok(val.clone()),
@@ -129,6 +130,37 @@ fn deref_total(val: &mut RuValue) {
     }
 }
 
+fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<RuValue> {
+    let start_idx = match start {
+        RuValue::Nil => None,
+        _ => Some(start.into_integer()?),
+    };
+    let end_idx = match end {
+        RuValue::Nil => None,
+        _ => Some(end.into_integer()?),
+    };
+    let mut slice = vec![];
+
+    match (start_idx, end_idx) {
+        (Some(s), Some(e)) => {
+            let mut idx = s.clone();
+            let n = match e.sub(s) {
+                RuValue::Int(n) => n,
+                _ => todo!(),
+            };
+            for _ in 0..n {
+                slice.push(target.get(idx.clone())?);
+                idx = idx.add(RuValue::Int(1));
+            }
+        }
+        (Some(_s), None) => todo!(),
+        (None, Some(_e)) => todo!(),
+        (None, None) => todo!(),
+    }
+
+    Ok(RuValue::List(slice))
+}
+
 /// implementation of lovm2 bytecode behavior
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
@@ -136,6 +168,7 @@ fn deref_total(val: &mut RuValue) {
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
+        println!("{:?}", ctx.vstack);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
@@ -268,6 +301,13 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             Instruction::Box => {
                 let value = ctx.pop_value()?;
                 ctx.push_value(box_ruvalue(value));
+            }
+            Instruction::Slice => {
+                let end = ctx.pop_value()?;
+                let start = ctx.pop_value()?;
+                let target = ctx.pop_value()?;
+                let slice = create_slice(target, start, end)?;
+                ctx.push_value(slice);
             }
         }
 

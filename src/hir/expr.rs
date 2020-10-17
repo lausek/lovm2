@@ -4,6 +4,7 @@ use crate::hir::call::Call;
 use crate::hir::cast::Cast;
 use crate::hir::initialize::Initialize;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::slice::Slice;
 use crate::value::CoValue;
 use crate::var::Variable;
 
@@ -39,6 +40,7 @@ pub enum Expr {
     DynamicValue(Initialize),
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
+    Slice(Slice),
     Value { val: CoValue, boxed: bool },
     Variable(Variable),
 }
@@ -192,6 +194,12 @@ impl From<Initialize> for Expr {
     }
 }
 
+impl From<Slice> for Expr {
+    fn from(slice: Slice) -> Expr {
+        Expr::Slice(slice)
+    }
+}
+
 impl<T> From<T> for Expr
 where
     T: Into<CoValue>,
@@ -273,6 +281,7 @@ impl Lowering for Expr {
                 };
                 runtime.emit(inx);
             }
+            Expr::Slice(slice) => slice.lower(runtime),
             Expr::Value { val, boxed } => {
                 let cidx = runtime.index_const(&val);
                 runtime.emit(Instruction::Pushc(cidx as u16));
