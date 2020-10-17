@@ -19,19 +19,20 @@ pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
         Lovm2RuValueRaw::Str(s) => s.into_py(py),
         Lovm2RuValueRaw::Dict(dict) => {
             let map = PyDict::new(py);
-            for (key, val) in dict.borrow().iter() {
+            for (key, val) in dict.iter() {
                 let (key, val) = (lovm2py(key, py), lovm2py(val, py));
                 map.set_item(key, val).unwrap();
             }
             map.to_object(py)
         }
         Lovm2RuValueRaw::List(list) => list
-            .borrow()
             .iter()
             .map(|item| lovm2py(item, py))
             .collect::<Vec<PyObject>>()
             .to_object(py),
         Lovm2RuValueRaw::Nil => py.None(),
+        Lovm2RuValueRaw::Ref(Some(r)) => lovm2py(&r.borrow(), py),
+        Lovm2RuValueRaw::Ref(None) => py.None(),
     }
 }
 
@@ -67,9 +68,11 @@ impl pyo3::class::basic::PyObjectProtocol for RuValue {
             Lovm2RuValueRaw::Int(n) => *n == 0,
             Lovm2RuValueRaw::Float(n) => *n as i64 == 0,
             Lovm2RuValueRaw::Str(s) => !s.is_empty(),
-            Lovm2RuValueRaw::Dict(d) => !d.borrow().is_empty(),
-            Lovm2RuValueRaw::List(l) => !l.borrow().is_empty(),
+            Lovm2RuValueRaw::Dict(d) => !d.is_empty(),
+            Lovm2RuValueRaw::List(l) => !l.is_empty(),
             Lovm2RuValueRaw::Nil => false,
+            // TODO: is a reference true?
+            Lovm2RuValueRaw::Ref(_) => false,
         };
         Ok(result)
     }
@@ -120,7 +123,7 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
         match self.inner.borrow().get(key.clone()) {
             Ok(val) => {
                 let val = lovm2::value::box_ruvalue(val);
-                Ok(RuValue::from(val).to_py(py))
+                Ok(RuValue::from_struct(val).to_py(py))
             }
             Err(_) => RuntimeError::into(format!("key {} not found on value", key)),
         }

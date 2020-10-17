@@ -8,7 +8,7 @@ use pyo3::types::PyTuple;
 use lovm2::hir;
 use lovm2::var;
 
-use crate::expr::{any_to_expr, any_to_wpos, Expr};
+use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
 
 use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
 
@@ -110,7 +110,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::local(any_to_wpos(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::local(any_to_ident(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
@@ -119,7 +119,16 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::global(any_to_wpos(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::global(any_to_ident(n)?, any_to_expr(expr)?));
+        }
+        Ok(())
+    }
+
+    pub fn set(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
+        // TODO: allow usage of Expr::Variable here
+        use lovm2::prelude::*;
+        unsafe {
+            (*self.inner).push(Assign::set(any_to_access(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }

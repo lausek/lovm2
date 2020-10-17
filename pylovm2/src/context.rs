@@ -51,7 +51,7 @@ impl Context {
                 .get(&lovm2::var::Variable::from(name))
                 .cloned()
             {
-                return Some(lovm2py(&val.borrow(), py));
+                return Some(lovm2py(&val, py));
             }
         }
         None
@@ -77,7 +77,7 @@ impl Frame {
             (*self.inner)
                 .locals
                 .get(&lovm2::var::Variable::from(key))
-                .map(|val| lovm2py(&val.borrow(), py))
+                .map(|val| lovm2py(&val, py))
         }
     }
 }

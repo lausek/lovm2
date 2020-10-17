@@ -4,7 +4,7 @@ use pyo3::types::{PyDict, PyList, PyTuple};
 
 use lovm2::prelude::*;
 
-use super::{Lovm2Expr, Lovm2Value};
+use super::{Lovm2Access, Lovm2Expr, Lovm2Value};
 use crate::value::RuValue;
 use crate::Expr;
 
@@ -94,7 +94,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
             let dict = any.downcast::<PyDict>()?;
             for (key, value) in dict.iter() {
                 let (key, value) = (any_to_value(key)?, any_to_value(value)?);
-                map.insert(key, Box::new(value));
+                map.insert(key, value);
             }
             Ok(Lovm2Value::Dict(map).into())
         }
@@ -102,7 +102,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
         "Expr" => {
             let data = any.extract::<Expr>()?;
             match data.inner {
-                Lovm2Expr::Value(val) => Ok(val),
+                Lovm2Expr::Value { val, .. } => Ok(val),
                 _ => RuntimeError::into(format!(
                     "value {} of type {} cannot be converted to value",
                     any, ty
@@ -128,17 +128,17 @@ pub fn any_to_ruvalue(any: &PyAny) -> PyResult<RuValue> {
     }
 }
 
-pub fn any_to_wpos(any: &PyAny) -> PyResult<Lovm2Expr> {
+pub fn any_to_access(any: &PyAny) -> PyResult<Lovm2Access> {
     match any.get_type().name().as_ref() {
         "Expr" => {
             let data = any.extract::<Expr>()?;
             if let Lovm2Expr::Access(var) = &data.inner {
                 Ok(var.clone().into())
             } else {
-                any_to_ident(any).map(|i| Lovm2Expr::from(i))
+                any_to_ident(any).map(|i| i.into())
             }
         }
-        _ => any_to_ident(any).map(|i| Lovm2Expr::from(i)),
+        _ => any_to_ident(any).map(|i| i.into()),
     }
 }
 
