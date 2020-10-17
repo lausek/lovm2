@@ -18,39 +18,27 @@ pub struct Assign {
 }
 
 impl Assign {
-    pub fn local<U, T>(access: U, expr: T) -> Self
+    pub fn local<U, T>(var: U, expr: T) -> Self
     where
-        U: Into<Access>,
+        U: Into<Variable>,
         T: Into<Expr>,
     {
-        let access = access.into();
-        let ty = if access.keys.is_empty() {
-            AssignType::StaticLocal
-        } else {
-            AssignType::Dynamic
-        };
         Self {
             expr: expr.into(),
-            access,
-            ty,
+            access: var.into().into(),
+            ty: AssignType::StaticLocal,
         }
     }
 
-    pub fn global<U, T>(access: U, expr: T) -> Self
+    pub fn global<U, T>(var: U, expr: T) -> Self
     where
-        U: Into<Access>,
+        U: Into<Variable>,
         T: Into<Expr>,
     {
-        let access = access.into();
-        let ty = if access.keys.is_empty() {
-            AssignType::StaticGlobal
-        } else {
-            AssignType::Dynamic
-        };
         Self {
             expr: expr.into(),
-            access,
-            ty,
+            access: var.into().into(),
+            ty: AssignType::StaticGlobal,
         }
     }
 

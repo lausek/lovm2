@@ -148,7 +148,7 @@ fn try_setting() {
     define_test! {
         main {
             Assign::local(var!(list), co_list!("a", 10, 20., true));
-            Assign::local(access!(list, 1), 7);
+            Assign::set(access!(list, 1), 7);
         }
 
         #ensure (|ctx: &mut Context| {
@@ -408,9 +408,9 @@ fn set_field_on_dict() {
             Assign::local(var!(d1), co_dict!());
             Assign::local(var!(d2), co_dict!("x" => co_dict!()));
             Assign::global(var!(g), co_dict!());
-            Assign::local(access!(d1, "x"), 37);
-            Assign::local(access!(d2, "x", "y"), 42);
-            Assign::global(access!(g, "x"), 67);
+            Assign::set(access!(d1, "x"), 37);
+            Assign::set(access!(d2, "x", "y"), 42);
+            Assign::set(access!(g, "x"), 67);
         }
 
         #ensure (|ctx: &mut Context| {
