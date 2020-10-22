@@ -70,6 +70,7 @@ impl RuValue {
                     unreachable!()
                 }
             }
+            RuValue::Ref(Some(r)) => r.borrow_mut().delete(key)?,
             _ => return Err("value does not support `delete`".into()),
         }
         Ok(())

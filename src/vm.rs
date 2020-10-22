@@ -137,30 +137,29 @@ fn deref_total(val: &mut RuValue) {
 
 fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<RuValue> {
     let start_idx = match start {
-        RuValue::Nil => None,
-        _ => Some(start.into_integer()?),
+        RuValue::Nil => 0,
+        _ => {
+            if let RuValue::Int(n) = start.into_integer()? {
+                n
+            } else {
+                unreachable!()
+            }
+        }
     };
     let end_idx = match end {
-        RuValue::Nil => None,
-        _ => Some(end.into_integer()?),
+        RuValue::Nil => target.len()? as i64,
+        _ => {
+            if let RuValue::Int(n) = end.into_integer()? {
+                n
+            } else {
+                unreachable!()
+            }
+        }
     };
     let mut slice = vec![];
 
-    match (start_idx, end_idx) {
-        (Some(s), Some(e)) => {
-            let mut idx = s.clone();
-            let n = match e.sub(s) {
-                RuValue::Int(n) => n,
-                _ => todo!(),
-            };
-            for _ in 0..n {
-                slice.push(target.get(idx.clone())?);
-                idx = idx.add(RuValue::Int(1));
-            }
-        }
-        (Some(_s), None) => todo!(),
-        (None, Some(_e)) => todo!(),
-        (None, None) => todo!(),
+    for idx in start_idx..end_idx {
+        slice.push(target.get(RuValue::from(idx))?);
     }
 
     Ok(RuValue::List(slice))

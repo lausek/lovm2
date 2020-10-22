@@ -49,6 +49,17 @@ impl pyo3::class::basic::PyObjectProtocol for Expr {
 
 #[pymethods]
 impl Expr {
+    pub fn ty(&self) -> PyResult<String> {
+        let name = match &self.inner {
+            Lovm2Expr::Access(_) => "access",
+            _ => "none",
+        };
+        Ok(name.to_string())
+    }
+}
+
+#[pymethods]
+impl Expr {
     #[classmethod]
     #[args(args = "*")]
     pub fn access(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
@@ -68,6 +79,22 @@ impl Expr {
         let args = pyargs_to_exprs(args)?;
         Ok(Self {
             inner: Lovm2Expr::Call(Call::with_args(name, args)),
+        })
+    }
+
+    #[classmethod]
+    pub fn slice(_this: &PyAny, target: &PyAny, start: &PyAny, end: &PyAny) -> PyResult<Self> {
+        use lovm2::prelude::*;
+        let target = any_to_expr(target)?;
+        let mut slice = Slice::new(target);
+        if !start.is_none() {
+            slice = slice.start(any_to_expr(start)?);
+        }
+        if !end.is_none() {
+            slice = slice.end(any_to_expr(end)?);
+        }
+        Ok(Self {
+            inner: slice.into(),
         })
     }
 
