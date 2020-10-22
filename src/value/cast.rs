@@ -36,7 +36,10 @@ impl RuValue {
             RuValue::Bool(b) => Ok(RuValue::Float(if b { 1. } else { 0. })),
             RuValue::Int(n) => Ok(RuValue::Float(n as f64)),
             RuValue::Float(_) => Ok(self),
-            RuValue::Str(_) => unimplemented!(),
+            RuValue::Str(s) => s
+                .parse::<f64>()
+                .map(RuValue::from)
+                .map_err(|_| "not a float".into()),
             RuValue::Dict(_) => unimplemented!(),
             RuValue::List(_) => unimplemented!(),
             _ => panic!("TODO: ref does not have a type"),
@@ -49,7 +52,10 @@ impl RuValue {
             RuValue::Bool(b) => Ok(RuValue::Int(if b { 1 } else { 0 })),
             RuValue::Int(_) => Ok(self),
             RuValue::Float(n) => Ok(RuValue::Int(n as i64)),
-            RuValue::Str(_) => unimplemented!(),
+            RuValue::Str(s) => s
+                .parse::<i64>()
+                .map(RuValue::from)
+                .map_err(|_| "not an integer".into()),
             RuValue::Dict(_) => unimplemented!(),
             RuValue::List(_) => unimplemented!(),
             _ => panic!("TODO: ref does not have a type"),
