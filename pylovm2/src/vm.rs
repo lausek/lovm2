@@ -56,6 +56,7 @@ impl Vm {
             .inner
             .take()
             .expect("module given was already loaded");
+        // TODO: this should raise an ImportError
         self.inner
             .load_and_import_all(module)
             .map_err(create_exception)
@@ -117,14 +118,16 @@ impl Vm {
 }
 
 pub(crate) fn create_exception(e: Lovm2Error) -> PyErr {
-    match e {
-        Lovm2Error::Msg(Some(ty), msg) => match ty.as_ref() {
+    let msg = e.to_string();
+    if let Some(ty) = &e.ty {
+        match ty.as_ref() {
             "AssertionError" => AssertionError::py_err(msg),
             "Exception" => Exception::py_err(msg),
             "ImportError" => ImportError::py_err(msg),
             "ZeroDivisionError" => ZeroDivisionError::py_err(msg),
             _ => Exception::py_err(msg),
-        },
-        Lovm2Error::Msg(_, msg) => Exception::py_err(msg),
+        }
+    } else {
+        Exception::py_err(msg)
     }
 }
