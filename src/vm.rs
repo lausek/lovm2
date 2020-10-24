@@ -303,7 +303,11 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                     ctx.modules
                         .get(&mname)
                         .and_then(|module| module.location())
-                        .cloned()
+                        .and_then(|module_location| {
+                            std::path::Path::new(module_location)
+                                .parent()
+                                .map(|path| path.to_str().unwrap().to_string())
+                        })
                 } else {
                     None
                 };

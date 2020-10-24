@@ -2,6 +2,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
+use lovm2::context::LoadRequest;
 use lovm2::prelude::*;
 
 use crate::code::pyerr;
@@ -97,10 +98,15 @@ impl Vm {
     }
 
     pub fn set_load_hook(&mut self, func: PyObject) -> PyResult<()> {
-        let hook = move |name: String| {
+        let hook = move |req: &LoadRequest| {
             let guard = Python::acquire_gil();
             let py = guard.python();
-            let args = PyTuple::new(py, vec![name.to_object(py)]);
+            let relative_to = if let Some(relative_to) = &req.relative_to {
+                relative_to.to_object(py)
+            } else {
+                py.None()
+            };
+            let args = PyTuple::new(py, vec![req.module.to_object(py), relative_to]);
 
             let ret = func.call1(py, args).map_err(|e| pyerr(&e, py))?;
             if ret.is_none() {

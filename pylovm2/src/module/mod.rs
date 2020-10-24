@@ -52,6 +52,13 @@ impl Module {
         // TODO: implement this
         Ok(vec![])
     }
+
+    pub fn location(&self) -> PyResult<Option<&String>> {
+        if let Some(inner) = self.inner.as_ref() {
+            return Ok(inner.location());
+        }
+        RuntimeError::into("inner module not loaded")
+    }
 }
 
 #[pyproto]

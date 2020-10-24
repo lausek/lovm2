@@ -11,7 +11,7 @@ use crate::module::{GenericModule, Module};
 use crate::value::RuValue;
 use crate::var::Variable;
 
-pub type LoadHookFn = dyn Fn(String) -> Lovm2Result<Option<GenericModule>>;
+pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>>;
 pub type InterruptFn = dyn Fn(&mut Context) -> Lovm2Result<()>;
 
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
@@ -29,6 +29,11 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
         }
     }
     Err(format!("{} not found", name).into())
+}
+
+pub struct LoadRequest {
+    pub module: String,
+    pub relative_to: Option<String>,
 }
 
 /// the state of the virtual machine
@@ -86,11 +91,14 @@ impl Context {
         let mut module = None;
 
         if let Some(load_hook) = self.load_hook.clone() {
-            module = load_hook(name.to_string())?;
+            let load_request = LoadRequest {
+                module: name.to_string(),
+                relative_to: relative_to.clone(),
+            };
+            module = load_hook(&load_request)?;
         }
 
         if let Some(relative_to) = relative_to {
-            println!("searching relative to {:?}", relative_to);
             if let Ok(path) = find_module(name, &[relative_to.to_string()]) {
                 module = Some(Module::load_from_file(path)?);
             }
@@ -128,7 +136,7 @@ impl Context {
 
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(String) -> Lovm2Result<Option<GenericModule>> + Sized + 'static,
+        T: Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }

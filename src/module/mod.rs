@@ -54,12 +54,16 @@ pub trait ModuleProtocol: std::fmt::Debug {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
+    // TODO: can we skip this?
+    //#[serde(skip_deserializing)]
+    //#[serde(skip_serializing)]
     pub name: String,
-    pub slots: Slots,
 
     #[serde(skip_deserializing)]
     #[serde(skip_serializing)]
-    loc: Option<String>,
+    pub loc: Option<String>,
+
+    pub slots: Slots,
 }
 
 impl Into<GenericModule> for Module {
@@ -102,9 +106,8 @@ impl Module {
     pub fn new() -> Self {
         Self {
             name: String::new(),
-            slots: Slots::new(),
-
             loc: None,
+            slots: Slots::new(),
         }
     }
 
@@ -126,6 +129,7 @@ impl Module {
             .to_str()
             .unwrap()
             .to_string();
+        let loc = path.as_ref().to_str().unwrap().to_string();
         let file = File::open(path).map_err(|e| e.to_string())?;
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
@@ -134,6 +138,7 @@ impl Module {
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
         module.name = name;
+        module.loc = Some(loc);
 
         for (_, slot) in module.slots.iter_mut() {
             Rc::get_mut(slot).unwrap().set_module(module.name.clone());

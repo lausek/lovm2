@@ -49,14 +49,20 @@ impl ModuleBuilder {
     }
 
     // TODO: can we avoid duplicating the code here?
-    pub fn build(&mut self, py: Python) -> PyResult<Module> {
+    pub fn build(&mut self, py: Python, module_location: Option<String>) -> PyResult<Module> {
         let mut module = Lovm2Module::new();
         module.name = self.name.clone();
+        module.loc = module_location;
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
             match co_builder.complete() {
-                Ok(co) => {
+                Ok(mut co) => {
+                    {
+                        use lovm2::code::CallProtocol;
+                        co.set_module(module.name.clone());
+                    }
+
                     module.slots.insert(var::Variable::from(key), Rc::new(co));
                 }
                 Err(msg) => return Err(msg),
