@@ -27,6 +27,7 @@ pub struct SharedObjectModule {
     slots: Slots,
 }
 
+// TODO: add module name to SharedObjectSlot
 impl ModuleProtocol for SharedObjectModule {
     fn name(&self) -> &str {
         &self.name

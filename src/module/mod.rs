@@ -35,6 +35,10 @@ pub trait ModuleProtocol: std::fmt::Debug {
         unimplemented!()
     }
 
+    fn location(&self) -> Option<&String> {
+        None
+    }
+
     fn slots(&self) -> &Slots {
         unimplemented!()
     }
@@ -52,6 +56,10 @@ pub trait ModuleProtocol: std::fmt::Debug {
 pub struct Module {
     pub name: String,
     pub slots: Slots,
+
+    #[serde(skip_deserializing)]
+    #[serde(skip_serializing)]
+    loc: Option<String>,
 }
 
 impl Into<GenericModule> for Module {
@@ -63,6 +71,10 @@ impl Into<GenericModule> for Module {
 impl ModuleProtocol for Module {
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn location(&self) -> Option<&String> {
+        self.loc.as_ref()
     }
 
     fn slots(&self) -> &Slots {
@@ -91,6 +103,8 @@ impl Module {
         Self {
             name: String::new(),
             slots: Slots::new(),
+
+            loc: None,
         }
     }
 
@@ -120,6 +134,11 @@ impl Module {
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
         module.name = name;
+
+        for (_, slot) in module.slots.iter_mut() {
+            Rc::get_mut(slot).unwrap().set_module(module.name.clone());
+        }
+
         Ok(Rc::new(module) as GenericModule)
     }
 }

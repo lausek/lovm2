@@ -26,7 +26,13 @@ pub trait CallProtocol: std::fmt::Debug {
         None
     }
 
+    fn module(&self) -> Option<String> {
+        None
+    }
+
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()>;
+
+    fn set_module(&mut self, _module: String) {}
 }
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
@@ -43,6 +49,10 @@ pub struct CodeObject {
     pub globals: Vec<Variable>,
 
     pub code: Vec<Instruction>,
+
+    #[serde(skip_deserializing)]
+    #[serde(skip_serializing)]
+    module: Option<String>,
 }
 
 impl CallProtocol for CodeObject {
@@ -50,8 +60,15 @@ impl CallProtocol for CodeObject {
         Some(self)
     }
 
+    fn module(&self) -> Option<String> {
+        self.module.as_ref().cloned()
+    }
+
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
         run_bytecode(self, ctx)
+    }
+    fn set_module(&mut self, module: String) {
+        self.module = Some(module);
     }
 }
 
@@ -102,6 +119,7 @@ impl CodeObjectBuilder {
             globals: self.globals,
 
             code: self.code,
+            module: None,
         })
     }
 }

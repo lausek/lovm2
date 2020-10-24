@@ -74,7 +74,11 @@ impl Context {
     }
 
     /// lookup a module name in `load_paths` and add it to the context
-    pub fn load_and_import_by_name(&mut self, name: &str) -> Lovm2Result<()> {
+    pub fn load_and_import_by_name(
+        &mut self,
+        name: &str,
+        relative_to: Option<String>,
+    ) -> Lovm2Result<()> {
         if self.modules.get(name).is_some() {
             return Ok(());
         }
@@ -83,6 +87,13 @@ impl Context {
 
         if let Some(load_hook) = self.load_hook.clone() {
             module = load_hook(name.to_string())?;
+        }
+
+        if let Some(relative_to) = relative_to {
+            println!("searching relative to {:?}", relative_to);
+            if let Ok(path) = find_module(name, &[relative_to.to_string()]) {
+                module = Some(Module::load_from_file(path)?);
+            }
         }
 
         if module.is_none() {
@@ -96,8 +107,8 @@ impl Context {
     /// add the module and all of its slots to `scope`
     pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
         if !self.modules.get(module.name()).is_some() {
-            for (key, co_object) in module.slots().iter() {
-                if self.scope.insert(key.clone(), co_object.clone()).is_some() {
+            for (key, co) in module.slots().iter() {
+                if self.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err(format!("import conflict: `{}` is already defined", key).into());
                 }
             }

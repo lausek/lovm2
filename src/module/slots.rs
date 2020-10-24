@@ -25,6 +25,10 @@ impl Slots {
         self.0.iter()
     }
 
+    pub fn iter_mut(&mut self) -> std::collections::hash_map::IterMut<'_, Variable, CodeObjectRef> {
+        self.0.iter_mut()
+    }
+
     pub fn get(&self, var: &Variable) -> Option<&CodeObjectRef> {
         self.0.get(var)
     }

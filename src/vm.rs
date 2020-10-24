@@ -299,7 +299,15 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 let name = ctx.pop_value()?;
                 // TODO: use to_string() here
                 let name = format!("{}", name);
-                ctx.load_and_import_by_name(name.as_ref())?;
+                let relative_to = if let Some(mname) = co.module() {
+                    ctx.modules
+                        .get(&mname)
+                        .and_then(|module| module.location())
+                        .cloned()
+                } else {
+                    None
+                };
+                ctx.load_and_import_by_name(name.as_ref(), relative_to)?;
             }
             Instruction::Box => {
                 let value = ctx.pop_value()?;
