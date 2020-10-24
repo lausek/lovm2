@@ -61,7 +61,7 @@ pub struct CodeObjectBuilder {
     locals: Vec<Variable>,
     globals: Vec<Variable>,
 
-    code: Option<Vec<Instruction>>,
+    code: Vec<Instruction>,
 }
 
 impl CodeObjectBuilder {
@@ -71,7 +71,7 @@ impl CodeObjectBuilder {
             locals: vec![],
             globals: vec![],
 
-            code: None,
+            code: vec![],
         }
     }
 
@@ -91,20 +91,17 @@ impl CodeObjectBuilder {
     }
 
     pub fn code(mut self, code: Vec<Instruction>) -> Self {
-        self.code = Some(code);
+        self.code = code;
         self
     }
 
     pub fn build(self) -> Lovm2CompileResult<CodeObject> {
-        if self.code.is_none() {
-            return Err("code missing".into());
-        }
         Ok(CodeObject {
             consts: self.consts,
             locals: self.locals,
             globals: self.globals,
 
-            code: self.code.unwrap(),
+            code: self.code,
         })
     }
 }
