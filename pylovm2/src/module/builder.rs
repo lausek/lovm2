@@ -16,6 +16,7 @@ use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
 pub struct ModuleBuilder {
     name: String,
     slots: HashMap<String, Py<ModuleBuilderSlot>>,
+    uses: Vec<String>,
 }
 
 #[pymethods]
@@ -25,6 +26,7 @@ impl ModuleBuilder {
         Self {
             name: "<unknown>".to_string(),
             slots: HashMap::new(),
+            uses: vec![],
         }
     }
 
@@ -33,6 +35,7 @@ impl ModuleBuilder {
         Self {
             name,
             slots: HashMap::new(),
+            uses: vec![],
         }
     }
 
@@ -40,6 +43,12 @@ impl ModuleBuilder {
         let inst = Py::new(py, ModuleBuilderSlot::new()).unwrap();
         self.slots.insert(name.clone(), inst);
         self.slots.get(&name).unwrap().clone_ref(py)
+    }
+
+    pub fn add_dependency(&mut self, name: String) {
+        if !self.uses.contains(&name) {
+            self.uses.push(name);
+        }
     }
 
     pub fn add_slot(&mut self, py: Python, name: String, slot: ModuleBuilderSlot) -> PyResult<()> {
@@ -53,6 +62,7 @@ impl ModuleBuilder {
         let mut module = Lovm2Module::new();
         module.name = self.name.clone();
         module.loc = module_location;
+        module.uses = self.uses.clone();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();

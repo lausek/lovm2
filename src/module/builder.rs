@@ -33,7 +33,9 @@ impl ModuleBuilder {
     }
 
     pub fn add_dependency(&mut self, name: String) {
-        self.uses.push(name);
+        if !self.uses.contains(&name) {
+            self.uses.push(name);
+        }
     }
 
     pub fn add<T>(&mut self, name: T) -> &mut ModuleBuilderSlot
