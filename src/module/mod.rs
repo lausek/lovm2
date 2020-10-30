@@ -50,6 +50,10 @@ pub trait ModuleProtocol: std::fmt::Debug {
     fn store_to_file(&self, _path: &str) -> Lovm2Result<()> {
         unimplemented!()
     }
+
+    fn uses(&self) -> &[String] {
+        &[]
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -64,6 +68,7 @@ pub struct Module {
     pub loc: Option<String>,
 
     pub slots: Slots,
+    pub uses: Vec<String>,
 }
 
 impl Into<GenericModule> for Module {
@@ -100,6 +105,10 @@ impl ModuleProtocol for Module {
             .serialize_into(file, self)
             .map_err(|e| e.to_string().into())
     }
+
+    fn uses(&self) -> &[String] {
+        self.uses.as_ref()
+    }
 }
 
 impl Module {
@@ -108,6 +117,7 @@ impl Module {
             name: String::new(),
             loc: None,
             slots: Slots::new(),
+            uses: vec![],
         }
     }
 

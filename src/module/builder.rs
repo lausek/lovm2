@@ -11,6 +11,7 @@ use crate::var::Variable;
 pub struct ModuleBuilder {
     name: String,
     pub slots: HashMap<Variable, ModuleBuilderSlot>,
+    pub uses: Vec<String>,
 }
 
 impl ModuleBuilder {
@@ -18,6 +19,7 @@ impl ModuleBuilder {
         Self {
             name: "<unnamed>".to_string(),
             slots: HashMap::new(),
+            uses: vec![],
         }
     }
 
@@ -28,6 +30,10 @@ impl ModuleBuilder {
         let mut builder = Self::new();
         builder.name = name.to_string();
         builder
+    }
+
+    pub fn add_dependency(&mut self, name: String) {
+        self.uses.push(name);
     }
 
     pub fn add<T>(&mut self, name: T) -> &mut ModuleBuilderSlot
@@ -57,6 +63,7 @@ impl ModuleBuilder {
         }
 
         module.name = self.name;
+        module.uses = self.uses;
 
         Ok(module)
     }

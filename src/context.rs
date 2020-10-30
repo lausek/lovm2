@@ -115,6 +115,10 @@ impl Context {
     /// add the module and all of its slots to `scope`
     pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
         if !self.modules.get(module.name()).is_some() {
+            for used_module in module.uses() {
+                self.load_and_import_by_name(used_module, None)?;
+            }
+
             for (key, co) in module.slots().iter() {
                 if self.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err(format!("import conflict: `{}` is already defined", key).into());

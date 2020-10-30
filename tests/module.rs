@@ -50,3 +50,36 @@ fn deserialize_module() {
     let n = vm.context_mut().value_of(&var!(n)).unwrap();
     assert_eq!(RuValue::Int(10), n);
 }
+
+#[test]
+fn global_uses() {
+    use std::rc::Rc;
+
+    const PRELOADED: &str = "preloaded";
+
+    let mut builder = ModuleBuilder::new();
+    builder.add_dependency(PRELOADED.into());
+
+    let mut main_hir = HIR::new();
+    main_hir.push(Assign::global(var!(n), 10));
+    builder.add(ENTRY_POINT).hir(main_hir);
+
+    let module = builder.build().unwrap();
+
+    assert!(!module.uses().is_empty());
+
+    let mut vm = Vm::new();
+
+    let called = Rc::new(std::cell::Cell::new(false));
+    let called_ref = called.clone();
+    vm.context_mut().set_load_hook(move |req| {
+        assert_eq!(req.module, PRELOADED);
+        called_ref.set(true);
+        Ok(Some(Rc::new(Module::new())))
+    });
+
+    vm.load_and_import_all(module).unwrap();
+    vm.run().unwrap();
+
+    assert!(called.get());
+}
