@@ -14,6 +14,10 @@ use crate::var::Variable;
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>>;
 pub type InterruptFn = dyn Fn(&mut Context) -> Lovm2Result<()>;
 
+fn filter_entry_reimport(name: &Variable) -> bool {
+    name.as_ref() != crate::prelude::ENTRY_POINT
+}
+
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
     for path in load_paths.iter() {
@@ -29,10 +33,6 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
         }
     }
     Err(format!("{} not found", name).into())
-}
-
-fn filter_entry_reimport(name: &Variable) -> bool {
-    name.as_ref() != crate::prelude::ENTRY_POINT
 }
 
 pub struct LoadRequest {
