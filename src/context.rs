@@ -31,6 +31,10 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     Err(format!("{} not found", name).into())
 }
 
+fn filter_entry_reimport(name: &Variable) -> bool {
+    name.as_ref() != crate::prelude::ENTRY_POINT
+}
+
 pub struct LoadRequest {
     pub module: String,
     pub relative_to: Option<String>,
@@ -78,6 +82,31 @@ impl Context {
         }
     }
 
+    fn load_and_import_filter(
+        &mut self,
+        module: GenericModule,
+        filter: impl Fn(&Variable) -> bool,
+    ) -> Lovm2Result<()> {
+        if !self.modules.get(module.name()).is_some() {
+            for used_module in module.uses() {
+                self.load_and_import_by_name(used_module, None)?;
+            }
+
+            for (key, co) in module.slots().iter() {
+                if !filter(key) {
+                    continue;
+                }
+
+                if self.scope.insert(key.clone(), co.clone()).is_some() {
+                    return Err(format!("import conflict: `{}` is already defined", key).into());
+                }
+            }
+
+            self.modules.insert(module.name().to_string(), module);
+        }
+        Ok(())
+    }
+
     /// lookup a module name in `load_paths` and add it to the context
     pub fn load_and_import_by_name(
         &mut self,
@@ -109,26 +138,12 @@ impl Context {
             module = Some(Module::load_from_file(path)?);
         }
 
-        self.load_and_import_all(module.unwrap())
+        self.load_and_import_filter(module.unwrap(), filter_entry_reimport)
     }
 
     /// add the module and all of its slots to `scope`
     pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
-        if !self.modules.get(module.name()).is_some() {
-            for used_module in module.uses() {
-                self.load_and_import_by_name(used_module, None)?;
-            }
-
-            for (key, co) in module.slots().iter() {
-                if self.scope.insert(key.clone(), co.clone()).is_some() {
-                    return Err(format!("import conflict: `{}` is already defined", key).into());
-                }
-            }
-
-            self.modules.insert(module.name().to_string(), module);
-        }
-
-        Ok(())
+        self.load_and_import_filter(module, |_| true)
     }
 
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {
