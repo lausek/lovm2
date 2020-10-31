@@ -27,7 +27,19 @@ impl RuValue {
     }
 
     pub fn into_bool(self) -> CastResult {
-        unimplemented!()
+        match self {
+            RuValue::Bool(_) => Ok(self),
+            RuValue::Int(n) => Ok(RuValue::Bool(n != 0)),
+            RuValue::Str(s) => Ok(RuValue::Bool(!s.is_empty())),
+            RuValue::Dict(d) => Ok(RuValue::Bool(!d.is_empty())),
+            RuValue::List(ls) => Ok(RuValue::Bool(!ls.is_empty())),
+            // TODO: avoid clone
+            RuValue::Ref(Some(r)) => r.borrow().clone().into_bool(),
+            RuValue::Nil |
+            // TODO: comapare with 0
+            RuValue::Float(_) |
+            RuValue::Ref(_) => Ok(RuValue::Bool(false)),
+        }
     }
 
     pub fn into_float(self) -> CastResult {

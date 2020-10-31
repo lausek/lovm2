@@ -1,24 +1,47 @@
+mod ty;
+
+pub use crate::ty::Lovm2ErrorTy;
+
 pub type Lovm2Result<T> = Result<T, Lovm2Error>;
 pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
 
 // TODO: make this a struct
 #[derive(Debug)]
 pub struct Lovm2Error {
-    pub ty: Option<String>,
+    pub ty: Option<Lovm2ErrorTy>,
     pub msg: String,
 
     #[cfg(feature = "backtracing")]
     pub trace: backtrace::Backtrace,
 }
 
+impl From<Lovm2ErrorTy> for Lovm2Error {
+    fn from(ty: Lovm2ErrorTy) -> Self {
+        Self {
+            ty: Some(ty),
+            ..Self::default()
+        }
+    }
+}
+
+impl <T> From<(Lovm2ErrorTy, T)> for Lovm2Error
+where T: AsRef<str>
+{
+    fn from(descr: (Lovm2ErrorTy, T)) -> Self {
+        Self {
+            ty: Some(descr.0),
+            msg: descr.1.as_ref().to_string(),
+            ..Self::default()
+        }
+    }
+}
+
 impl From<(String, String)> for Lovm2Error {
     fn from(f: (String, String)) -> Self {
         Self {
-            ty: Some(f.0),
+            ty: Some(Lovm2ErrorTy::Custom(f.0)),
             msg: f.1,
-
-            #[cfg(feature = "backtracing")]
-            trace: backtrace::Backtrace::new(),
+            ..Self::default()
         }
     }
 }
@@ -26,11 +49,8 @@ impl From<(String, String)> for Lovm2Error {
 impl From<String> for Lovm2Error {
     fn from(f: String) -> Self {
         Self {
-            ty: None,
             msg: f,
-
-            #[cfg(feature = "backtracing")]
-            trace: backtrace::Backtrace::new(),
+            ..Self::default()
         }
     }
 }
@@ -38,11 +58,8 @@ impl From<String> for Lovm2Error {
 impl From<&str> for Lovm2Error {
     fn from(f: &str) -> Self {
         Self {
-            ty: None,
             msg: f.to_string(),
-
-            #[cfg(feature = "backtracing")]
-            trace: backtrace::Backtrace::new(),
+            ..Self::default()
         }
     }
 }
@@ -58,6 +75,18 @@ impl std::fmt::Display for Lovm2Error {
             write!(f, "{}: {}", ty, self.msg)
         } else {
             write!(f, "{}", self.msg)
+        }
+    }
+}
+
+impl Default for Lovm2Error {
+    fn default() -> Self {
+        Self {
+            ty: None,
+            msg: String::new(),
+
+            #[cfg(feature = "backtracing")]
+            trace: backtrace::Backtrace::new(),
         }
     }
 }

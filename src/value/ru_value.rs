@@ -16,11 +16,25 @@ pub fn box_ruvalue(value: RuValue) -> RuValue {
         RuValue::Dict(d) => {
             let mut hm = HashMap::new();
             for (key, val) in d.into_iter() {
-                hm.insert(key, box_ruvalue(val));
+                if let RuValue::Ref(_) = val {
+                    hm.insert(key, val);
+                } else {
+                    hm.insert(key, box_ruvalue(val));
+                }
             }
             RuValue::Dict(hm)
         }
-        RuValue::List(l) => RuValue::List(l.into_iter().map(box_ruvalue).collect::<Vec<_>>()),
+        RuValue::List(l) => RuValue::List(
+            l.into_iter()
+                .map(|val| {
+                    if let RuValue::Ref(_) = val {
+                        val
+                    } else {
+                        box_ruvalue(val)
+                    }
+                })
+                .collect::<Vec<_>>(),
+        ),
         value => value,
     };
     RuValue::Ref(Some(Rc::new(RefCell::new(outer))))
@@ -71,7 +85,7 @@ impl RuValue {
                 }
             }
             RuValue::Ref(Some(r)) => r.borrow_mut().delete(key)?,
-            _ => return Err("value does not support `delete`".into()),
+            _ => return Err((Lovm2ErrorTy::OperationNotSupported, "delete").into()),
         }
         Ok(())
     }
@@ -80,20 +94,20 @@ impl RuValue {
         match self {
             RuValue::Dict(dict) => match dict.get(&key) {
                 Some(val) => Ok(val.clone()),
-                None => Err(format!("key `{}` not found on value", key).into()),
+                None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
             },
             RuValue::List(list) => {
                 if let RuValue::Int(key) = key.into_integer()? {
                     match list.get(key as usize) {
                         Some(val) => Ok(val.clone()),
-                        None => Err(format!("key `{}` not found on value", key).into()),
+                        None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
                     }
                 } else {
                     unreachable!()
                 }
             }
             RuValue::Ref(Some(r)) => r.borrow().get(key),
-            _ => Err("value does not support `get`".into()),
+            _ => return Err((Lovm2ErrorTy::OperationNotSupported, "get").into()),
         }
     }
 
@@ -102,7 +116,7 @@ impl RuValue {
             RuValue::Dict(dict) => Ok(dict.len()),
             RuValue::List(list) => Ok(list.len()),
             RuValue::Ref(Some(r)) => r.borrow().len(),
-            _ => Err("value does not support `len`".into()),
+            _ => Err((Lovm2ErrorTy::OperationNotSupported, "len").into()),
         }
     }
 
@@ -125,7 +139,7 @@ impl RuValue {
                 }
             }
             RuValue::Ref(Some(r)) => r.borrow_mut().set(key, val),
-            _ => Err("value does not support `set`".into()),
+            _ => Err((Lovm2ErrorTy::OperationNotSupported, "set").into()),
         }
     }
 }
@@ -177,17 +191,6 @@ impl std::fmt::Display for RuValue {
         }
     }
 }
-
-/*
-impl<T> From<T> for RuValue
-where
-    T: Into<CoValue>,
-{
-    fn from(val: T) -> Self {
-        instantiate(&val.into())
-    }
-}
-*/
 
 impl From<bool> for RuValue {
     fn from(b: bool) -> Self {

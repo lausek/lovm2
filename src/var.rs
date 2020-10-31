@@ -11,10 +11,6 @@ impl Variable {
     pub fn as_bytes(&self) -> &[u8] {
         self.0.as_bytes()
     }
-
-    pub fn as_ref(&self) -> &str {
-        self.0.as_ref()
-    }
 }
 
 impl From<&str> for Variable {
@@ -26,6 +22,12 @@ impl From<&str> for Variable {
 impl From<String> for Variable {
     fn from(name: String) -> Self {
         Variable(name)
+    }
+}
+
+impl AsRef<str> for Variable {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
     }
 }
 

@@ -83,7 +83,7 @@ impl Vm {
             Expr::Value { val, .. } => Ok(instantiate(val)),
             Expr::Variable(var) => match self.ctx.globals.get(&var) {
                 Some(val) => Ok(val.clone()),
-                _ => Err(format!("variable `{}` not found", var).into()),
+                _ => Err((Lovm2ErrorTy::LookupFailed, var).into()),
             },
         }
     }
@@ -162,7 +162,7 @@ fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<Ru
         slice.push(target.get(RuValue::from(idx))?);
     }
 
-    Ok(RuValue::List(slice))
+    Ok(box_ruvalue(RuValue::List(slice)))
 }
 
 /// implementation of lovm2 bytecode behavior
@@ -170,21 +170,23 @@ fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<Ru
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
 /// if not handled correctly. see `Vm.run_object`
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
+    println!("{:?}", co);
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
+        println!("{:?} {:?}", inx, ctx.vstack);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
                 match ctx.frame_mut()?.value_of(variable) {
                     Some(local) => ctx.push_value(local),
-                    _ => return Err(format!("local `{}` not found", variable).into()),
+                    _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
                 }
             }
             Instruction::Pushg(gidx) => {
                 let variable = &co.globals[*gidx as usize];
                 match ctx.value_of(variable) {
                     Some(global) => ctx.push_value(global),
-                    _ => return Err(format!("global `{}` not found", variable).into()),
+                    _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
                 }
             }
             Instruction::Pushc(cidx) => {
@@ -207,7 +209,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             }
             Instruction::Dup => match ctx.stack_mut().last().cloned() {
                 Some(last) => ctx.push_value(last),
-                _ => return Err("no value on stack to duplicate".into()),
+                _ => return Err(Lovm2ErrorTy::ValueStackEmpty.into()),
             },
             Instruction::Swap => {}
             Instruction::Get => {
@@ -263,16 +265,14 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             }
             Instruction::Jt(addr) => {
                 let first = ctx.pop_value()?;
-                // TODO: allow to_bool conversion
-                if first == RuValue::Bool(true) {
+                if first.into_bool()? == RuValue::Bool(true) {
                     ip = *addr as usize;
                     continue;
                 }
             }
             Instruction::Jf(addr) => {
                 let first = ctx.pop_value()?;
-                // TODO: allow to_bool conversion
-                if first == RuValue::Bool(false) {
+                if first.into_bool()? == RuValue::Bool(false) {
                     ip = *addr as usize;
                     continue;
                 }

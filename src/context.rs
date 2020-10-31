@@ -32,7 +32,7 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
             }
         }
     }
-    Err(format!("{} not found", name).into())
+    Err((Lovm2ErrorTy::ModuleNotFound, name).into())
 }
 
 pub struct LoadRequest {
@@ -98,7 +98,7 @@ impl Context {
                 }
 
                 if self.scope.insert(key.clone(), co.clone()).is_some() {
-                    return Err(format!("import conflict: `{}` is already defined", key).into());
+                    return Err((Lovm2ErrorTy::ImportConflict, key).into());
                 }
             }
 
@@ -149,7 +149,7 @@ impl Context {
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {
         match self.scope.get(name).cloned() {
             Some(co) => Ok(co),
-            _ => Err(format!("code object `{}` not found", name).into()),
+            _ => Err((Lovm2ErrorTy::LookupFailed, name).into()),
         }
     }
 
@@ -174,7 +174,7 @@ impl Context {
     pub fn frame_mut(&mut self) -> Lovm2Result<&mut Frame> {
         match self.lstack.last_mut() {
             Some(frame) => Ok(frame),
-            _ => Err("no frame on stack".into()),
+            _ => Err(Lovm2ErrorTy::FrameStackEmpty.into()),
         }
     }
 
@@ -193,7 +193,7 @@ impl Context {
     pub fn pop_value(&mut self) -> Lovm2Result<RuValue> {
         match self.vstack.pop() {
             Some(val) => Ok(val),
-            _ => Err("no value on stack".into()),
+            _ => Err(Lovm2ErrorTy::ValueStackEmpty.into()),
         }
     }
 

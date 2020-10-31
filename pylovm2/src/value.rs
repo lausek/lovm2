@@ -5,7 +5,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use crate::expr::{any_to_ruvalue, any_to_value};
+use crate::expr::any_to_ruvalue;
 use crate::vm::create_exception;
 
 type Lovm2RuValueRaw = lovm2::value::RuValue;
@@ -108,17 +108,17 @@ impl pyo3::class::number::PyNumberProtocol for RuValue {
 #[pyproto]
 impl pyo3::class::mapping::PyMappingProtocol for RuValue {
     fn __delitem__(&mut self, key: &PyAny) -> PyResult<()> {
-        let key = any_to_value(key)?;
-        let key = lovm2::value::instantiate(&key);
-        self.inner.borrow_mut().delete(key).unwrap();
+        let key = any_to_ruvalue(key)?;
+        let key = key.inner.borrow();
+        self.inner.borrow_mut().delete(key.clone()).unwrap();
         Ok(())
     }
 
     fn __getitem__(&self, key: &PyAny) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let key = any_to_value(key)?;
-        let key = lovm2::value::instantiate(&key);
+        let key = any_to_ruvalue(key)?;
+        let key = key.inner.borrow();
         // TODO: avoid clone here
         match self.inner.borrow().get(key.clone()) {
             Ok(val) => {
