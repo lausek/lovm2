@@ -75,13 +75,13 @@ use crate::hir::block::Block;
 use crate::hir::element::HIRElement;
 use crate::hir::lowering::LoweringRuntime;
 use crate::hir::r#return::Return;
-use crate::value::CoValue;
+use crate::value::Value;
 use crate::var::Variable;
 
 #[derive(Clone)]
 pub struct HIR {
     pub args: Vec<Variable>,
-    pub consts: Vec<CoValue>,
+    pub consts: Vec<Value>,
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
 

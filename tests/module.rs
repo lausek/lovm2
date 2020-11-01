@@ -2,7 +2,7 @@ use std::path::Path;
 
 use lovm2::module::{Module, ModuleProtocol};
 use lovm2::prelude::*;
-use lovm2::value::RuValue;
+use lovm2::value::Value;
 use lovm2::vm::Vm;
 
 const SERIALIZE_PATH: &str = "/tmp/hello-world.lovm2c";
@@ -48,7 +48,7 @@ fn deserialize_module() {
     vm.run().unwrap();
 
     let n = vm.context_mut().value_of(&var!(n)).unwrap();
-    assert_eq!(RuValue::Int(10), n);
+    assert_eq!(Value::Int(10), n);
 }
 
 #[test]

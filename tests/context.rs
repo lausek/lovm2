@@ -1,7 +1,7 @@
 use lovm2::context::Context;
 use lovm2::module::Module;
 use lovm2::prelude::*;
-use lovm2::value::RuValue;
+use lovm2::value::Value;
 use lovm2::vm::Vm;
 
 fn run_module_test(
@@ -69,7 +69,7 @@ fn load_custom_module() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Int(2), frame.value_of(&var!(n)).unwrap());
+        assert_eq!(Value::Int(2), frame.value_of(&var!(n)).unwrap());
     })
     .unwrap();
 }

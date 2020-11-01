@@ -3,7 +3,7 @@
 use lovm2::context::Context;
 use lovm2::module::Module;
 use lovm2::prelude::*;
-use lovm2::value::RuValue;
+use lovm2::value::Value;
 use lovm2::vm::Vm;
 
 fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
@@ -57,7 +57,7 @@ fn assign_local() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(4), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(Value::Int(4), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -72,7 +72,7 @@ fn assign_local_add() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(4), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(Value::Int(4), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -86,7 +86,7 @@ fn rem_lowering() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(1), frame.value_of(&var!(rest)).unwrap());
+            assert_eq!(Value::Int(1), frame.value_of(&var!(rest)).unwrap());
         })
     }
 }
@@ -103,7 +103,7 @@ fn easy_loop() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(10), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(Value::Int(10), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -120,7 +120,7 @@ fn explicit_break() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(1), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(Value::Int(1), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -129,16 +129,16 @@ fn explicit_break() {
 fn try_getting() {
     define_test! {
         main {
-            Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
+            Assign::local(var!(dict), lv2_dict!(0 => 6, 1 => 7));
             Assign::local(var!(dat0), access!(dict, 1));
-            Assign::local(var!(list), co_list!("a", 10, 20., true));
+            Assign::local(var!(list), lv2_list!("a", 10, 20., true));
             Assign::local(var!(lat0), access!(list, 1));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(7), frame.value_of(&var!(dat0)).unwrap());
-            assert_eq!(RuValue::Int(10), frame.value_of(&var!(lat0)).unwrap());
+            assert_eq!(Value::Int(7), frame.value_of(&var!(dat0)).unwrap());
+            assert_eq!(Value::Int(10), frame.value_of(&var!(lat0)).unwrap());
         })
     }
 }
@@ -147,14 +147,14 @@ fn try_getting() {
 fn try_setting() {
     define_test! {
         main {
-            Assign::local(var!(list), co_list!("a", 10, 20., true));
+            Assign::local(var!(list), lv2_list!("a", 10, 20., true));
             Assign::set(access!(list, 1), 7);
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             let list = &frame.value_of(&var!(list)).unwrap();
-            assert_eq!(RuValue::Int(7), list.get(RuValue::Int(1)).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(7), list.get(Value::Int(1)).unwrap().deref().unwrap());
         })
     }
 }
@@ -163,16 +163,16 @@ fn try_setting() {
 fn try_retrieving_len() {
     define_test! {
         main {
-            Assign::local(var!(dict), co_dict!(0 => 6, 1 => 7));
-            Assign::local(var!(ls), co_list!(1, 2, 3));
+            Assign::local(var!(dict), lv2_dict!(0 => 6, 1 => 7));
+            Assign::local(var!(ls), lv2_list!(1, 2, 3));
             Assign::local(var!(lendict), call!(len, dict));
             Assign::local(var!(lenls), call!(len, ls));
         }
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(2), frame.value_of(&var!(lendict)).unwrap());
-            assert_eq!(RuValue::Int(3), frame.value_of(&var!(lenls)).unwrap());
+            assert_eq!(Value::Int(2), frame.value_of(&var!(lendict)).unwrap());
+            assert_eq!(Value::Int(3), frame.value_of(&var!(lenls)).unwrap());
         })
     }
 }
@@ -186,7 +186,7 @@ fn try_casting() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(5), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(Value::Int(5), frame.value_of(&var!(n)).unwrap());
         })
     }
 }
@@ -196,15 +196,15 @@ fn true_branching() {
     let mut builder = ModuleBuilder::new();
     let mut hir = HIR::new();
 
-    hir.push(Assign::local(var!(n), CoValue::Int(0)));
+    hir.push(Assign::local(var!(n), Value::Int(0)));
 
     let mut branch = Branch::new();
     branch
-        .add_condition(Expr::not(CoValue::Bool(false)))
-        .push(Assign::local(var!(n), CoValue::Int(2)));
+        .add_condition(Expr::not(Value::Bool(false)))
+        .push(Assign::local(var!(n), Value::Int(2)));
     branch
         .default_condition()
-        .push(Assign::local(var!(n), CoValue::Int(1)));
+        .push(Assign::local(var!(n), Value::Int(1)));
     hir.push(branch);
 
     hir.push(Interrupt::new(10));
@@ -213,7 +213,7 @@ fn true_branching() {
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Int(2), frame.value_of(&var!(n)).unwrap());
+        assert_eq!(Value::Int(2), frame.value_of(&var!(n)).unwrap());
     });
 }
 
@@ -222,31 +222,18 @@ fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
     let mut hir = HIR::new();
 
-    hir.push(Assign::local(var!(n), CoValue::Int(5)));
+    hir.push(Assign::local(var!(n), Value::Int(5)));
 
     let mut branch = Branch::new();
     branch
-        .add_condition(Expr::eq(
-            Expr::rem(var!(n), CoValue::Int(3)),
-            CoValue::Int(0),
-        ))
-        .push(Assign::local(
-            var!(result),
-            CoValue::Str("fizz".to_string()),
-        ));
+        .add_condition(Expr::eq(Expr::rem(var!(n), Value::Int(3)), Value::Int(0)))
+        .push(Assign::local(var!(result), Value::Str("fizz".to_string())));
     branch
-        .add_condition(Expr::eq(
-            Expr::rem(var!(n), CoValue::Int(5)),
-            CoValue::Int(0),
-        ))
-        .push(Assign::local(
-            var!(result),
-            CoValue::Str("buzz".to_string()),
-        ));
-    branch.default_condition().push(Assign::local(
-        var!(result),
-        CoValue::Str("none".to_string()),
-    ));
+        .add_condition(Expr::eq(Expr::rem(var!(n), Value::Int(5)), Value::Int(0)))
+        .push(Assign::local(var!(result), Value::Str("buzz".to_string())));
+    branch
+        .default_condition()
+        .push(Assign::local(var!(result), Value::Str("none".to_string())));
     hir.push(branch);
 
     hir.push(Interrupt::new(10));
@@ -256,7 +243,7 @@ fn multiple_branches() {
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
-            RuValue::Str("buzz".to_string()),
+            Value::Str("buzz".to_string()),
             frame.value_of(&var!(result)).unwrap()
         );
     });
@@ -277,8 +264,8 @@ fn taking_parameters() {
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Int(2), frame.value_of(&var!(a)).unwrap());
-        assert_eq!(RuValue::Int(7), frame.value_of(&var!(b)).unwrap());
+        assert_eq!(Value::Int(2), frame.value_of(&var!(a)).unwrap());
+        assert_eq!(Value::Int(7), frame.value_of(&var!(b)).unwrap());
     });
 }
 
@@ -298,7 +285,7 @@ fn return_values() {
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Int(10), frame.value_of(&var!(n)).unwrap());
+        assert_eq!(Value::Int(10), frame.value_of(&var!(n)).unwrap());
     });
 }
 
@@ -336,19 +323,19 @@ fn cast_to_string() {
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
-            RuValue::Str("10".to_string()),
+            Value::Str("10".to_string()),
             frame.value_of(&var!(a)).unwrap()
         );
         assert_eq!(
-            RuValue::Str("10.1".to_string()),
+            Value::Str("10.1".to_string()),
             frame.value_of(&var!(b)).unwrap()
         );
         assert_eq!(
-            RuValue::Str("10".to_string()),
+            Value::Str("10".to_string()),
             frame.value_of(&var!(c)).unwrap()
         );
         assert_eq!(
-            RuValue::Str("true".to_string()),
+            Value::Str("true".to_string()),
             frame.value_of(&var!(d)).unwrap()
         );
     });
@@ -375,8 +362,8 @@ fn folding_expr() {
     run_module_test(builder.build().unwrap(), |ctx| {
         let a = ctx.value_of(&var!(a)).unwrap();
         let n = ctx.value_of(&var!(n)).unwrap();
-        assert_eq!(RuValue::Int(2), a);
-        assert_eq!(RuValue::Int(1), n);
+        assert_eq!(Value::Int(2), a);
+        assert_eq!(Value::Int(1), n);
     });
 }
 
@@ -384,9 +371,9 @@ fn folding_expr() {
 fn get_field_from_dict() {
     define_test! {
         main {
-            Assign::local(var!(d1), co_dict!("x" => 37));
-            Assign::local(var!(d2), co_dict!("x" => co_dict!("y" => 42)));
-            Assign::global(var!(g), co_dict!("x" => 67));
+            Assign::local(var!(d1), lv2_dict!("x" => 37));
+            Assign::local(var!(d2), lv2_dict!("x" => lv2_dict!("y" => 42)));
+            Assign::global(var!(g), lv2_dict!("x" => 67));
             Assign::local(var!(x), access!(d1, "x"));
             Assign::local(var!(y), access!(d2, "x", "y"));
             Assign::local(var!(z), access!(g, "x"));
@@ -394,9 +381,9 @@ fn get_field_from_dict() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(37), frame.value_of(&var!(x)).unwrap());
-            assert_eq!(RuValue::Int(42), frame.value_of(&var!(y)).unwrap());
-            assert_eq!(RuValue::Int(67), frame.value_of(&var!(z)).unwrap());
+            assert_eq!(Value::Int(37), frame.value_of(&var!(x)).unwrap());
+            assert_eq!(Value::Int(42), frame.value_of(&var!(y)).unwrap());
+            assert_eq!(Value::Int(67), frame.value_of(&var!(z)).unwrap());
         })
     }
 }
@@ -405,9 +392,9 @@ fn get_field_from_dict() {
 fn set_field_on_dict() {
     define_test! {
         main {
-            Assign::local(var!(d1), co_dict!());
-            Assign::local(var!(d2), co_dict!("x" => co_dict!()));
-            Assign::global(var!(g), co_dict!());
+            Assign::local(var!(d1), lv2_dict!());
+            Assign::local(var!(d2), lv2_dict!("x" => lv2_dict!()));
+            Assign::global(var!(g), lv2_dict!());
             Assign::set(access!(d1, "x"), 37);
             Assign::set(access!(d2, "x", "y"), 42);
             Assign::set(access!(g, "x"), 67);
@@ -416,28 +403,28 @@ fn set_field_on_dict() {
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(
-                RuValue::Int(37),
+                Value::Int(37),
                 frame.value_of(&var!(d1)).unwrap()
-                    .get(RuValue::Str("x".to_string())).unwrap()
+                    .get(Value::Str("x".to_string())).unwrap()
                     .deref().unwrap()
             );
             assert!(
                 !frame.value_of(&var!(d2)).unwrap()
-                    .get(RuValue::Str("x".to_string())).unwrap()
+                    .get(Value::Str("x".to_string())).unwrap()
                     .deref().unwrap()
                     .is_ref()
             );
             assert_eq!(
-                RuValue::Int(42),
+                Value::Int(42),
                 frame.value_of(&var!(d2)).unwrap()
-                    .get(RuValue::Str("x".to_string())).unwrap()
-                    .get(RuValue::Str("y".to_string())).unwrap()
+                    .get(Value::Str("x".to_string())).unwrap()
+                    .get(Value::Str("y".to_string())).unwrap()
                     .deref().unwrap()
             );
             assert_eq!(
-                RuValue::Int(67),
+                Value::Int(67),
                 ctx.value_of(&var!(g)).unwrap()
-                    .get(RuValue::Str("x".to_string())).unwrap()
+                    .get(Value::Str("x".to_string())).unwrap()
                     .deref().unwrap()
             );
         })
@@ -469,12 +456,12 @@ fn call_into_vm() {
     let mut vm = Vm::new();
     vm.context_mut().set_interrupt(10, move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(RuValue::Int(10), frame.value_of(&var!(n)).unwrap());
+        assert_eq!(Value::Int(10), frame.value_of(&var!(n)).unwrap());
         called_ref.set(true);
         Ok(())
     });
     vm.load_and_import_all(module).unwrap();
-    vm.call("call_me", &[RuValue::Int(10)]).unwrap();
+    vm.call("call_me", &[Value::Int(10)]).unwrap();
 
     assert!(called.get());
 }
@@ -493,12 +480,12 @@ fn comparison() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(lt)).unwrap());
-            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(le1)).unwrap());
-            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(le2)).unwrap());
-            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(gt)).unwrap());
-            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(ge1)).unwrap());
-            assert_eq!(RuValue::Bool(true), frame.value_of(&var!(ge2)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&var!(lt)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&var!(le1)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&var!(le2)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&var!(gt)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&var!(ge1)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&var!(ge2)).unwrap());
         })
     }
 }
@@ -513,8 +500,8 @@ fn raise_to_power() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(8), frame.value_of(&var!(a)).unwrap());
-            assert_eq!(RuValue::Float(27.), frame.value_of(&var!(b)).unwrap());
+            assert_eq!(Value::Int(8), frame.value_of(&var!(a)).unwrap());
+            assert_eq!(Value::Float(27.), frame.value_of(&var!(b)).unwrap());
         })
     }
 }
@@ -524,10 +511,10 @@ fn initialize_objects() {
     define_test! {
         main {
             Assign::local(var!(n), 2);
-            Assign::local(var!(ae), co_list!(1, 2, 3));
-            Assign::local(var!(ag), co_list!(1, var!(n), 3));
-            Assign::local(var!(be), co_dict!(1 => 2, 2 => 2, 4 => 4));
-            Assign::local(var!(bg), co_dict!(1 => 2, var!(n) => var!(n), 4 => 4));
+            Assign::local(var!(ae), lv2_list!(1, 2, 3));
+            Assign::local(var!(ag), lv2_list!(1, var!(n), 3));
+            Assign::local(var!(be), lv2_dict!(1 => 2, 2 => 2, 4 => 4));
+            Assign::local(var!(bg), lv2_dict!(1 => 2, var!(n) => var!(n), 4 => 4));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -554,8 +541,8 @@ fn store_without_reference() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(RuValue::Int(2), frame.value_of(&var!(n)).unwrap());
-            assert_eq!(RuValue::Int(7), frame.value_of(&var!(y)).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(2), frame.value_of(&var!(n)).unwrap());
+            assert_eq!(Value::Int(7), frame.value_of(&var!(y)).unwrap().deref().unwrap());
         })
     }
 }
@@ -564,7 +551,7 @@ fn store_without_reference() {
 fn create_slice() {
     define_test! {
         main {
-            Assign::local(var!(ls), co_list!(1, 2, 3, 4, 5));
+            Assign::local(var!(ls), lv2_list!(1, 2, 3, 4, 5));
             Assign::local(var!(s), Slice::new(var!(ls)).start(1).end(4));
             Assign::set(access!(s, 1), 9);
         }
@@ -574,12 +561,12 @@ fn create_slice() {
             let ls = frame.value_of(&var!(ls)).unwrap();
             let s = frame.value_of(&var!(s)).unwrap();
             assert_eq!(
-                RuValue::Int(9),
-                s.get(RuValue::Int(1)).unwrap().deref().unwrap()
+                Value::Int(9),
+                s.get(Value::Int(1)).unwrap().deref().unwrap()
             );
             assert_eq!(
-                RuValue::Int(9),
-                ls.get(RuValue::Int(2)).unwrap().deref().unwrap()
+                Value::Int(9),
+                ls.get(Value::Int(2)).unwrap().deref().unwrap()
             );
         })
     }

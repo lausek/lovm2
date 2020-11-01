@@ -3,7 +3,7 @@
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
-use crate::value::RuValue;
+use crate::value::Value;
 
 /// loads a module by name into the vm
 #[derive(Clone)]
@@ -25,7 +25,7 @@ impl Include {
         T: Into<Expr>,
     {
         if let Expr::Value {
-            val: RuValue::Str(name),
+            val: Value::Str(name),
             ..
         } = name.into()
         {

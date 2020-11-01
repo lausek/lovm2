@@ -8,7 +8,7 @@ use lovm2_error::*;
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
 use crate::module::{GenericModule, Module};
-use crate::value::RuValue;
+use crate::value::Value;
 use crate::var::Variable;
 
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>>;
@@ -50,7 +50,7 @@ pub struct Context {
     /// list of loaded modules: `Module` or `SharedObjectModule`
     pub modules: HashMap<String, GenericModule>,
     /// global variables that can be altered from every object
-    pub globals: HashMap<Variable, RuValue>,
+    pub globals: HashMap<Variable, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CodeObjectRef>,
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
@@ -63,7 +63,7 @@ pub struct Context {
     /// call stack that contains local variables
     pub lstack: Vec<Frame>,
     /// value stack. this is shared across `CallProtocol` functionality
-    pub vstack: Vec<RuValue>,
+    pub vstack: Vec<Value>,
 }
 
 impl Context {
@@ -178,7 +178,7 @@ impl Context {
         self.interrupts[n as usize] = Some(Rc::new(func));
     }
 
-    pub fn stack_mut(&mut self) -> &mut Vec<RuValue> {
+    pub fn stack_mut(&mut self) -> &mut Vec<Value> {
         &mut self.vstack
     }
 
@@ -197,18 +197,18 @@ impl Context {
         self.lstack.pop();
     }
 
-    pub fn push_value(&mut self, value: RuValue) {
+    pub fn push_value(&mut self, value: Value) {
         self.vstack.push(value);
     }
 
-    pub fn pop_value(&mut self) -> Lovm2Result<RuValue> {
+    pub fn pop_value(&mut self) -> Lovm2Result<Value> {
         match self.vstack.pop() {
             Some(val) => Ok(val),
             _ => Err(Lovm2ErrorTy::ValueStackEmpty.into()),
         }
     }
 
-    pub fn value_of(&self, var: &Variable) -> Option<RuValue> {
+    pub fn value_of(&self, var: &Variable) -> Option<Value> {
         self.globals.get(var).cloned()
     }
 }

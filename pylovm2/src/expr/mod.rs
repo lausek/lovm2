@@ -10,7 +10,7 @@ pub use self::conv::*;
 
 pub(self) type Lovm2Access = lovm2::hir::assign::Access;
 pub(self) type Lovm2Expr = lovm2::hir::expr::Expr;
-pub(self) type Lovm2Value = lovm2::value::CoValue;
+pub(self) type Lovm2Value = lovm2::value::Value;
 
 macro_rules! auto_wrapper {
     ($method_name:ident, $($arg:expr),*) => {

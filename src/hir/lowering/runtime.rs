@@ -3,14 +3,14 @@ use lovm2_error::*;
 use crate::bytecode::Instruction;
 use crate::code::{CodeObject, CodeObjectBuilder};
 use crate::hir::HIR;
-use crate::value::CoValue;
+use crate::value::Value;
 use crate::var::Variable;
 
 use super::*;
 
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct LoweringRuntime {
-    pub consts: Vec<CoValue>,
+    pub consts: Vec<Value>,
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
     pub code: Vec<Instruction>,
@@ -73,7 +73,7 @@ impl LoweringRuntime {
         self.code.push(inx);
     }
 
-    pub fn index_const(&mut self, val: &CoValue) -> usize {
+    pub fn index_const(&mut self, val: &Value) -> usize {
         match self.consts.iter().position(|item| item == val) {
             Some(pos) => pos,
             None => {

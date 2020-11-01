@@ -8,16 +8,16 @@ use pyo3::types::*;
 use crate::expr::any_to_ruvalue;
 use crate::vm::create_exception;
 
-type Lovm2RuValueRaw = lovm2::value::RuValue;
-type Lovm2RuValue = lovm2::value::RuValueRef;
+type Lovm2ValueRaw = lovm2::value::Value;
+type Lovm2Value = lovm2::value::ValueRef;
 
-pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
+pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
     match val {
-        Lovm2RuValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
-        Lovm2RuValueRaw::Int(n) => (*n).into_py(py),
-        Lovm2RuValueRaw::Float(n) => (*n).into_py(py),
-        Lovm2RuValueRaw::Str(s) => s.into_py(py),
-        Lovm2RuValueRaw::Dict(dict) => {
+        Lovm2ValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
+        Lovm2ValueRaw::Int(n) => (*n).into_py(py),
+        Lovm2ValueRaw::Float(n) => (*n).into_py(py),
+        Lovm2ValueRaw::Str(s) => s.into_py(py),
+        Lovm2ValueRaw::Dict(dict) => {
             let map = PyDict::new(py);
             for (key, val) in dict.iter() {
                 let (key, val) = (lovm2py(key, py), lovm2py(val, py));
@@ -25,54 +25,54 @@ pub fn lovm2py(val: &Lovm2RuValueRaw, py: Python) -> PyObject {
             }
             map.to_object(py)
         }
-        Lovm2RuValueRaw::List(list) => list
+        Lovm2ValueRaw::List(list) => list
             .iter()
             .map(|item| lovm2py(item, py))
             .collect::<Vec<PyObject>>()
             .to_object(py),
-        Lovm2RuValueRaw::Nil => py.None(),
-        Lovm2RuValueRaw::Ref(Some(r)) => lovm2py(&r.borrow(), py),
-        Lovm2RuValueRaw::Ref(None) => py.None(),
+        Lovm2ValueRaw::Nil => py.None(),
+        Lovm2ValueRaw::Ref(Some(r)) => lovm2py(&r.borrow(), py),
+        Lovm2ValueRaw::Ref(None) => py.None(),
     }
 }
 
 // TODO: implement ToPyObject, FromPyObject for this type
 #[pyclass]
 #[derive(Clone)]
-pub struct RuValue {
-    inner: Lovm2RuValue,
+pub struct Value {
+    inner: Lovm2Value,
 }
 
-impl RuValue {
-    pub fn from(inner: Lovm2RuValue) -> Self {
+impl Value {
+    pub fn from(inner: Lovm2Value) -> Self {
         Self { inner }
     }
 
-    pub fn from_struct(inner: Lovm2RuValueRaw) -> Self {
+    pub fn from_struct(inner: Lovm2ValueRaw) -> Self {
         Self::from(Rc::new(RefCell::new(inner)))
     }
 }
 
 #[pymethods]
-impl RuValue {
+impl Value {
     pub fn to_py(&self, py: Python) -> PyObject {
         lovm2py(&*self.inner.borrow(), py)
     }
 }
 
 #[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for RuValue {
+impl pyo3::class::basic::PyObjectProtocol for Value {
     fn __bool__(&self) -> PyResult<bool> {
         let result = match &*self.inner.borrow() {
-            Lovm2RuValueRaw::Bool(b) => *b,
-            Lovm2RuValueRaw::Int(n) => *n == 0,
-            Lovm2RuValueRaw::Float(n) => *n as i64 == 0,
-            Lovm2RuValueRaw::Str(s) => !s.is_empty(),
-            Lovm2RuValueRaw::Dict(d) => !d.is_empty(),
-            Lovm2RuValueRaw::List(l) => !l.is_empty(),
-            Lovm2RuValueRaw::Nil => false,
+            Lovm2ValueRaw::Bool(b) => *b,
+            Lovm2ValueRaw::Int(n) => *n == 0,
+            Lovm2ValueRaw::Float(n) => *n as i64 == 0,
+            Lovm2ValueRaw::Str(s) => !s.is_empty(),
+            Lovm2ValueRaw::Dict(d) => !d.is_empty(),
+            Lovm2ValueRaw::List(l) => !l.is_empty(),
+            Lovm2ValueRaw::Nil => false,
             // TODO: is a reference true?
-            Lovm2RuValueRaw::Ref(_) => false,
+            Lovm2ValueRaw::Ref(_) => false,
         };
         Ok(result)
     }
@@ -83,13 +83,13 @@ impl pyo3::class::basic::PyObjectProtocol for RuValue {
 }
 
 #[pyproto]
-impl pyo3::class::number::PyNumberProtocol for RuValue {
+impl pyo3::class::number::PyNumberProtocol for Value {
     fn __int__(&self) -> PyResult<PyObject> {
         use lovm2::value::cast::RUVALUE_INT_TY;
         let gil = Python::acquire_gil();
         let py = gil.python();
         match self.inner.borrow().clone().cast(RUVALUE_INT_TY) {
-            Ok(val) => Ok(RuValue::from_struct(val).to_py(py)),
+            Ok(val) => Ok(Value::from_struct(val).to_py(py)),
             _ => RuntimeError::into("cannot convert value to int".to_string()),
         }
     }
@@ -99,14 +99,14 @@ impl pyo3::class::number::PyNumberProtocol for RuValue {
         let gil = Python::acquire_gil();
         let py = gil.python();
         match self.inner.borrow().clone().cast(RUVALUE_FLOAT_TY) {
-            Ok(val) => Ok(RuValue::from_struct(val).to_py(py)),
+            Ok(val) => Ok(Value::from_struct(val).to_py(py)),
             _ => RuntimeError::into("cannot convert value to float".to_string()),
         }
     }
 }
 
 #[pyproto]
-impl pyo3::class::mapping::PyMappingProtocol for RuValue {
+impl pyo3::class::mapping::PyMappingProtocol for Value {
     fn __delitem__(&mut self, key: &PyAny) -> PyResult<()> {
         let key = any_to_ruvalue(key)?;
         let key = key.inner.borrow();
@@ -122,8 +122,8 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
         // TODO: avoid clone here
         match self.inner.borrow().get(key.clone()) {
             Ok(val) => {
-                let val = lovm2::value::box_ruvalue(val);
-                Ok(RuValue::from_struct(val).to_py(py))
+                let val = lovm2::value::box_value(val);
+                Ok(Value::from_struct(val).to_py(py))
             }
             Err(_) => RuntimeError::into(format!("key {} not found on value", key)),
         }
@@ -148,7 +148,7 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
 
 /*
 #[pyproto]
-impl pyo3::class::iter::PyIterProtocol for RuValue {
+impl pyo3::class::iter::PyIterProtocol for Value {
     fn __iter__(mut slf: PyRefMut<Self>) -> PyResult<PyObject> {
         todo!()
     }

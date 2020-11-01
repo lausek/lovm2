@@ -26,32 +26,32 @@ fn true_branching() -> ModuleBuilder {
     let mut branch = Branch::new();
     branch
         .add_condition(Expr::eq(
-            Expr::rem(Variable::from("n"), CoValue::Int(3)),
-            CoValue::Int(0),
+            Expr::rem(Variable::from("n"), Value::Int(3)),
+            Value::Int(0),
         ))
         .from(Block::new().with(Assign::local(
             "result".into(),
-            CoValue::Str("fizz".to_string()),
+            Value::Str("fizz".to_string()),
         )));
 
     branch
         .add_condition(Expr::eq(
-            Expr::rem(Variable::from("n"), CoValue::Int(5)),
-            CoValue::Int(0),
+            Expr::rem(Variable::from("n"), Value::Int(5)),
+            Value::Int(0),
         ))
         .from(Block::new().with(Assign::local(
             "result".into(),
-            CoValue::Str("buzz".to_string()),
+            Value::Str("buzz".to_string()),
         )));
 
     branch
         .default_condition()
         .from(Block::new().with(Assign::local(
             "result".into(),
-            CoValue::Str("none".to_string()),
+            Value::Str("none".to_string()),
         )));
 
-    hir.push(Assign::local("n".into(), CoValue::Int(5)));
+    hir.push(Assign::local("n".into(), Value::Int(5)));
     hir.push(branch);
 
     builder.add("main").hir(hir);

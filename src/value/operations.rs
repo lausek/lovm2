@@ -1,21 +1,20 @@
-//! implementation of primitive operations on `RuValue` e.g. Add, Sub
+//! implementation of primitive operations on `Value` e.g. Add, Sub
 
 use std::cmp::Ordering;
 
-use crate::value::RuValue;
+use crate::value::Value;
 
 macro_rules! auto_implement_branch {
     ($v1:ident, $v2:ident; $ty1:ident, $ty2:ident => $func:tt) => {
-        if let (RuValue::$ty1(a), RuValue::$ty2(b)) = (&$v1, &$v2) {
-            return RuValue::$ty1($func(a.clone(), b.clone()));
+        if let (Value::$ty1(a), Value::$ty2(b)) = (&$v1, &$v2) {
+            return Value::$ty1($func(a.clone(), b.clone()));
         }
     };
     ($v1:ident, $v2:ident; $ty1:ident, $ty2:ident, $conv:ident => $func:tt) => {
         match ($v1, $v2) {
-            (RuValue::$ty1(a), inc @ RuValue::$ty2(_))
-            | (inc @ RuValue::$ty2(_), RuValue::$ty1(a)) => {
-                if let Ok(RuValue::$ty1(b)) = inc.$conv() {
-                    return RuValue::$ty1($func(a.clone(), b.clone()));
+            (Value::$ty1(a), inc @ Value::$ty2(_)) | (inc @ Value::$ty2(_), Value::$ty1(a)) => {
+                if let Ok(Value::$ty1(b)) = inc.$conv() {
+                    return Value::$ty1($func(a.clone(), b.clone()));
                 }
             }
             _ => {}
@@ -28,14 +27,14 @@ macro_rules! auto_implement {
         1, $tr:path, $method:ident;
         $( $($ty:ident),* => $func:tt; )*
     } => {
-        impl $tr for RuValue {
-            type Output = RuValue;
+        impl $tr for Value {
+            type Output = Value;
 
-            fn $method(self) -> RuValue {
+            fn $method(self) -> Value {
                 match self {
                     $(
                         $(
-                            RuValue::$ty(a) => RuValue::$ty($func(a)),
+                            Value::$ty(a) => Value::$ty($func(a)),
                         )*
                     )*
                     _ => unimplemented!(),
@@ -48,10 +47,10 @@ macro_rules! auto_implement {
         2, $tr:path, $method:ident;
         $( $ty1:ident, $ty2:ident $(, $conv:ident)? => $func:tt; )*
     } => {
-        impl $tr for RuValue {
-            type Output = RuValue;
+        impl $tr for Value {
+            type Output = Value;
 
-            fn $method(self, other: RuValue) -> RuValue {
+            fn $method(self, other: Value) -> Value {
                 $(
                     auto_implement_branch!(self, other; $ty1, $ty2 $(, $conv)? => $func);
                 )*
@@ -115,12 +114,12 @@ auto_implement! {
     Int => (|a: i64| !a);
 }
 
-impl RuValue {
-    pub fn pow(&self, exp: RuValue) -> RuValue {
-        if let RuValue::Int(exp) = exp.into_integer().unwrap() {
+impl Value {
+    pub fn pow(&self, exp: Value) -> Value {
+        if let Value::Int(exp) = exp.into_integer().unwrap() {
             return match self {
-                RuValue::Int(base) => RuValue::Int(base.pow(exp as u32).into()),
-                RuValue::Float(base) => RuValue::Float(base.powi(exp as i32).into()),
+                Value::Int(base) => Value::Int(base.pow(exp as u32).into()),
+                Value::Float(base) => Value::Float(base.powi(exp as i32).into()),
                 _ => unimplemented!(),
             };
         }
@@ -128,22 +127,22 @@ impl RuValue {
     }
 }
 
-impl std::cmp::PartialOrd for RuValue {
-    fn partial_cmp(&self, other: &RuValue) -> Option<Ordering> {
+impl std::cmp::PartialOrd for Value {
+    fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
         match (self, other) {
-            (RuValue::Int(a), RuValue::Int(b)) => a.partial_cmp(b),
-            (RuValue::Float(a), RuValue::Float(b)) => a.partial_cmp(b),
-            (RuValue::Str(a), RuValue::Str(b)) => a.partial_cmp(b),
+            (Value::Int(a), Value::Int(b)) => a.partial_cmp(b),
+            (Value::Float(a), Value::Float(b)) => a.partial_cmp(b),
+            (Value::Str(a), Value::Str(b)) => a.partial_cmp(b),
             // TODO: test this
-            (inc @ RuValue::Int(_), RuValue::Float(b)) => {
-                if let Ok(RuValue::Float(a)) = inc.clone().into_float() {
+            (inc @ Value::Int(_), Value::Float(b)) => {
+                if let Ok(Value::Float(a)) = inc.clone().into_float() {
                     a.partial_cmp(b)
                 } else {
                     None
                 }
             }
-            (RuValue::Float(a), inc @ RuValue::Int(_)) => {
-                if let Ok(RuValue::Float(b)) = inc.clone().into_float() {
+            (Value::Float(a), inc @ Value::Int(_)) => {
+                if let Ok(Value::Float(b)) = inc.clone().into_float() {
                     a.partial_cmp(&b)
                 } else {
                     None
@@ -153,22 +152,22 @@ impl std::cmp::PartialOrd for RuValue {
         }
     }
 
-    fn lt(&self, other: &RuValue) -> bool {
+    fn lt(&self, other: &Value) -> bool {
         self.partial_cmp(other) == Some(Ordering::Less)
     }
 
-    fn le(&self, other: &RuValue) -> bool {
+    fn le(&self, other: &Value) -> bool {
         match self.partial_cmp(other) {
             Some(Ordering::Less) | Some(Ordering::Equal) => true,
             _ => false,
         }
     }
 
-    fn gt(&self, other: &RuValue) -> bool {
+    fn gt(&self, other: &Value) -> bool {
         self.partial_cmp(other) == Some(Ordering::Greater)
     }
 
-    fn ge(&self, other: &RuValue) -> bool {
+    fn ge(&self, other: &Value) -> bool {
         match self.partial_cmp(other) {
             Some(Ordering::Greater) | Some(Ordering::Equal) => true,
             _ => false,

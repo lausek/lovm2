@@ -5,7 +5,7 @@ use crate::hir::cast::Cast;
 use crate::hir::initialize::Initialize;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 use crate::hir::slice::Slice;
-use crate::value::CoValue;
+use crate::value::Value;
 use crate::var::Variable;
 
 macro_rules! auto_implement {
@@ -41,7 +41,7 @@ pub enum Expr {
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Slice(Slice),
-    Value { val: CoValue, boxed: bool },
+    Value { val: Value, boxed: bool },
     Variable(Variable),
 }
 
@@ -126,14 +126,14 @@ impl Expr {
     pub fn dict() -> Self {
         use std::collections::HashMap;
         Expr::Value {
-            val: CoValue::Dict(HashMap::new()),
+            val: Value::Dict(HashMap::new()),
             boxed: false,
         }
     }
 
     pub fn list() -> Self {
         Expr::Value {
-            val: CoValue::List(vec![]),
+            val: Value::List(vec![]),
             boxed: false,
         }
     }
@@ -202,7 +202,7 @@ impl From<Slice> for Expr {
 
 impl<T> From<T> for Expr
 where
-    T: Into<CoValue>,
+    T: Into<Value>,
 {
     fn from(val: T) -> Expr {
         Expr::Value {

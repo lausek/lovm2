@@ -1,7 +1,7 @@
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
-use crate::value::RuValue;
+use crate::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Slice {
@@ -46,13 +46,13 @@ impl Lowering for Slice {
         if let Some(start) = self.start {
             start.lower(runtime);
         } else {
-            Expr::from(RuValue::Nil).lower(runtime);
+            Expr::from(Value::Nil).lower(runtime);
         }
 
         if let Some(end) = self.end {
             end.lower(runtime);
         } else {
-            Expr::from(RuValue::Nil).lower(runtime);
+            Expr::from(Value::Nil).lower(runtime);
         }
 
         runtime.emit(Instruction::Slice);

@@ -3,11 +3,11 @@ use std::collections::HashMap;
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
-use crate::value::CoValue;
+use crate::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Initialize {
-    base: CoValue,
+    base: Value,
     slots: Vec<(Expr, Expr)>,
 }
 
@@ -25,23 +25,23 @@ impl Initialize {
     }
 
     pub fn dict() -> Self {
-        Self::new(CoValue::Dict(HashMap::new()).into())
+        Self::new(Value::Dict(HashMap::new()).into())
     }
 
     pub fn list() -> Self {
-        Self::new(CoValue::List(vec![]).into())
+        Self::new(Value::List(vec![]).into())
     }
 
     pub fn add<T>(&mut self, val: T)
     where
         T: Into<Expr>,
     {
-        if let CoValue::List(list) = &mut self.base {
+        if let Value::List(list) = &mut self.base {
             match val.into() {
                 Expr::Value { val, .. } => list.push(val),
                 val => {
                     let key = list.len() as i64;
-                    list.push(CoValue::Nil);
+                    list.push(Value::Nil);
                     self.slots.push((key.into(), val));
                 }
             }
@@ -55,7 +55,7 @@ impl Initialize {
         T: Into<Expr>,
         U: Into<Expr>,
     {
-        if let CoValue::Dict(dict) = &mut self.base {
+        if let Value::Dict(dict) = &mut self.base {
             match (key.into(), val.into()) {
                 (Expr::Value { val: key, .. }, Expr::Value { val, .. }) => {
                     dict.insert(key, val);
@@ -73,8 +73,8 @@ impl Initialize {
 impl Lowering for Initialize {
     fn lower(self, runtime: &mut LoweringRuntime) {
         let requires_box = match &self.base {
-            CoValue::Dict(_) => true,
-            CoValue::List(_) => true,
+            Value::Dict(_) => true,
+            Value::List(_) => true,
             _ => false,
         };
 

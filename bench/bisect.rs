@@ -1,7 +1,7 @@
 use criterion::Criterion;
 
 use lovm2::prelude::*;
-use lovm2::value::RuValue;
+use lovm2::value::Value;
 use lovm2::vm::Vm;
 
 /*
@@ -63,7 +63,7 @@ fn derive_hir() -> HIR {
     computation_loop.push(Assign::local(var!(factor), Expr::sub(var!(factor), 1)));
 
     let mut hir = HIR::with_args(vec![var!(coeffs)]);
-    hir.push(Assign::local(var!(d), co_list!()));
+    hir.push(Assign::local(var!(d), lv2_list!()));
     hir.push(Assign::local(var!(i), 0));
     hir.push(Assign::local(
         var!(factor),
@@ -108,7 +108,7 @@ pub fn bisect(c: &mut Criterion) {
         var!(dcoeffs),
         Call::new("derive").arg(var!(coeffs)),
     ));
-    bisect_hir.push(Assign::local(var!(prev), CoValue::Nil));
+    bisect_hir.push(Assign::local(var!(prev), Value::Nil));
     bisect_hir.push(computation_loop);
     bisect_hir.push(Return::value(var!(x)));
 
@@ -125,7 +125,7 @@ pub fn bisect(c: &mut Criterion) {
     c.bench_function("bisect f", |b| {
         b.iter(|| {
             assert_eq!(
-                RuValue::from(0),
+                Value::from(0),
                 vm.call("bisect", &[vec![2, 2, -1, 0].into(), 1.into()])
                     .unwrap()
                     .into_integer_round()
@@ -138,7 +138,7 @@ pub fn bisect(c: &mut Criterion) {
     c.bench_function("bisect g", |b| {
         b.iter(|| {
             assert_eq!(
-                RuValue::from(2),
+                Value::from(2),
                 vm.call("bisect", &[vec![1, -4, 4].into(), 1.into()])
                     .unwrap()
                     .into_integer_round()
@@ -151,7 +151,7 @@ pub fn bisect(c: &mut Criterion) {
     c.bench_function("bisect h", |b| {
         b.iter(|| {
             assert_eq!(
-                RuValue::from(3),
+                Value::from(3),
                 vm.call("bisect", &[vec![1, -2, -3].into(), 1.into()])
                     .unwrap()
                     .into_integer_round()

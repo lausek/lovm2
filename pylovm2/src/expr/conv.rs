@@ -5,7 +5,7 @@ use pyo3::types::{PyDict, PyList, PyTuple};
 use lovm2::prelude::*;
 
 use super::{Lovm2Access, Lovm2Expr, Lovm2Value};
-use crate::value::RuValue;
+use crate::value::Value;
 use crate::Expr;
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
@@ -116,14 +116,13 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
     }
 }
 
-pub fn any_to_ruvalue(any: &PyAny) -> PyResult<RuValue> {
-    use lovm2::value::instantiate;
+pub fn any_to_ruvalue(any: &PyAny) -> PyResult<Value> {
     let ty = any.get_type().name();
     match ty.as_ref() {
-        "RuValue" => any.extract::<RuValue>(),
+        "Value" => any.extract::<Value>(),
         _ => {
             let val = any_to_value(any)?;
-            Ok(RuValue::from_struct(instantiate(&val)))
+            Ok(Value::from_struct(val.clone()))
         }
     }
 }

@@ -76,7 +76,7 @@ pub enum Instruction {
     /// trigger interrupt `n`
     Interrupt(u16),
 
-    /// convert top of stack into type. see `RuValue::type_id`
+    /// convert top of stack into type. see `Value::type_id`
     Cast(u16),
     /// take top of stack as name of module to load
     Load,

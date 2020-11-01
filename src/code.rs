@@ -7,7 +7,7 @@ use lovm2_error::*;
 
 use crate::bytecode::Instruction;
 use crate::context::Context;
-use crate::value::CoValue;
+use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::run_bytecode;
 
@@ -44,7 +44,7 @@ pub trait CallProtocol: std::fmt::Debug {
 /// `Nil` is implicitly returned.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CodeObject {
-    pub consts: Vec<CoValue>,
+    pub consts: Vec<Value>,
     pub locals: Vec<Variable>,
     pub globals: Vec<Variable>,
 
@@ -74,7 +74,7 @@ impl CallProtocol for CodeObject {
 
 #[derive(Debug)]
 pub struct CodeObjectBuilder {
-    consts: Vec<CoValue>,
+    consts: Vec<Value>,
     locals: Vec<Variable>,
     globals: Vec<Variable>,
 
@@ -92,7 +92,7 @@ impl CodeObjectBuilder {
         }
     }
 
-    pub fn consts(mut self, consts: Vec<CoValue>) -> Self {
+    pub fn consts(mut self, consts: Vec<Value>) -> Self {
         self.consts = consts;
         self
     }

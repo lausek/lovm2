@@ -9,7 +9,7 @@ use crate::code::pyerr;
 use crate::context::{Context, Lovm2Context};
 use crate::expr::any_to_expr;
 use crate::module::Module;
-use crate::value::RuValue;
+use crate::value::Value;
 
 #[pyclass]
 pub struct Vm {
@@ -30,7 +30,7 @@ impl Vm {
         &mut self,
         /* py: Python, */ name: &PyString,
         args: &PyTuple,
-    ) -> PyResult<RuValue> {
+    ) -> PyResult<Value> {
         let name = name.to_string()?.to_string();
 
         let mut ruargs = vec![];
@@ -43,7 +43,7 @@ impl Vm {
         }
 
         match self.inner.call(&name, ruargs.as_slice()) {
-            Ok(val) => Ok(RuValue::from_struct(val)),
+            Ok(val) => Ok(Value::from_struct(val)),
             Err(e) => create_exception(e).into(),
         }
     }

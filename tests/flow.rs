@@ -2,7 +2,7 @@ use lovm2::bytecode::Instruction;
 use lovm2::code::CodeObjectBuilder;
 use lovm2::define_code;
 use lovm2::hir::prelude::*;
-use lovm2::value::{CoValue, RuValue};
+use lovm2::value::Value;
 use lovm2::var::Variable;
 use lovm2::vm::Vm;
 
@@ -20,7 +20,7 @@ fn pushing_constant() {
     vm.run_object(&co).unwrap();
 
     assert_eq!(1, vm.context_mut().stack_mut().len());
-    assert_eq!(RuValue::Int(2), vm.context_mut().pop_value().unwrap());
+    assert_eq!(Value::Int(2), vm.context_mut().pop_value().unwrap());
 }
 
 #[test]
@@ -39,7 +39,7 @@ fn store_global() {
     vm.run_object(&co).unwrap();
 
     assert_eq!(
-        RuValue::Int(42),
+        Value::Int(42),
         vm.context_mut().value_of(&var!(globaln)).unwrap()
     );
 }
@@ -77,19 +77,19 @@ fn calculation() {
     vm.run_object(&co).unwrap();
 
     assert_eq!(
-        RuValue::Int(5),
+        Value::Int(5),
         vm.context_mut().value_of(&var!(result_add)).unwrap()
     );
     assert_eq!(
-        RuValue::Int(1),
+        Value::Int(1),
         vm.context_mut().value_of(&var!(result_sub)).unwrap()
     );
     assert_eq!(
-        RuValue::Int(6),
+        Value::Int(6),
         vm.context_mut().value_of(&var!(result_mul)).unwrap()
     );
     assert_eq!(
-        RuValue::Int(1),
+        Value::Int(1),
         vm.context_mut().value_of(&var!(result_div)).unwrap()
     );
 }
@@ -132,7 +132,7 @@ fn jumping() {
     vm.run_object(&co).unwrap();
 
     assert_eq!(
-        RuValue::Str("aaaaaaaaaa".to_string()),
+        Value::Str("aaaaaaaaaa".to_string()),
         vm.context_mut().value_of(&var!(output)).unwrap()
     );
 }

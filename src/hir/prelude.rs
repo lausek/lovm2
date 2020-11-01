@@ -15,6 +15,6 @@ pub use crate::hir::HIR;
 
 pub use crate::hir::expr::{Expr, Operator2};
 pub use crate::module::ModuleBuilder;
-pub use crate::value::CoValue;
+pub use crate::value::Value;
 pub use crate::var::Variable;
-pub use crate::{access, call, co_dict, co_list, var};
+pub use crate::{access, call, lv2_dict, lv2_list, var};

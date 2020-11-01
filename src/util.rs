@@ -9,7 +9,7 @@ macro_rules! define_code {
         }
     } => {{
         let builder = CodeObjectBuilder::new()
-            $(.consts(vec![$( CoValue::from($cval) ),*]))?
+            $(.consts(vec![$( Value::from($cval) ),*]))?
             $(.locals(vec![$( Variable::from(stringify!($lname)) ),*]))?
             $(.globals(vec![$( Variable::from(stringify!($gname)) ),*]))?
             ;
@@ -51,7 +51,7 @@ macro_rules! call {
 }
 
 #[macro_export]
-macro_rules! co_dict {
+macro_rules! lv2_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
         let mut dict = Initialize::dict();
         $(
@@ -62,7 +62,7 @@ macro_rules! co_dict {
 }
 
 #[macro_export]
-macro_rules! co_list {
+macro_rules! lv2_list {
     ($($val:expr),* $(,)?) => {{
         let mut list = Initialize::list();
         $(

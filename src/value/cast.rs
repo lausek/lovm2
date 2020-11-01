@@ -1,8 +1,8 @@
 use lovm2_error::*;
 
-use crate::value::RuValue;
+use crate::value::Value;
 
-pub type CastResult = Lovm2Result<RuValue>;
+pub type CastResult = Lovm2Result<Value>;
 
 pub const RUVALUE_NIL_TY: u16 = 0;
 pub const RUVALUE_BOOL_TY: u16 = 1;
@@ -12,7 +12,7 @@ pub const RUVALUE_STR_TY: u16 = 4;
 pub const RUVALUE_DICT_TY: u16 = 5;
 pub const RUVALUE_LIST_TY: u16 = 6;
 
-impl RuValue {
+impl Value {
     pub fn cast(self, tid: u16) -> CastResult {
         match tid {
             RUVALUE_NIL_TY => unimplemented!(),
@@ -28,73 +28,73 @@ impl RuValue {
 
     pub fn into_bool(self) -> CastResult {
         match self {
-            RuValue::Bool(_) => Ok(self),
-            RuValue::Int(n) => Ok(RuValue::Bool(n != 0)),
-            RuValue::Str(s) => Ok(RuValue::Bool(!s.is_empty())),
-            RuValue::Dict(d) => Ok(RuValue::Bool(!d.is_empty())),
-            RuValue::List(ls) => Ok(RuValue::Bool(!ls.is_empty())),
+            Value::Bool(_) => Ok(self),
+            Value::Int(n) => Ok(Value::Bool(n != 0)),
+            Value::Str(s) => Ok(Value::Bool(!s.is_empty())),
+            Value::Dict(d) => Ok(Value::Bool(!d.is_empty())),
+            Value::List(ls) => Ok(Value::Bool(!ls.is_empty())),
             // TODO: avoid clone
-            RuValue::Ref(Some(r)) => r.borrow().clone().into_bool(),
-            RuValue::Nil |
+            Value::Ref(Some(r)) => r.borrow().clone().into_bool(),
+            Value::Nil |
             // TODO: compare with 0
-            RuValue::Float(_) |
-            RuValue::Ref(_) => Ok(RuValue::Bool(false)),
+            Value::Float(_) |
+            Value::Ref(_) => Ok(Value::Bool(false)),
         }
     }
 
     pub fn into_float(self) -> CastResult {
         match self {
-            RuValue::Nil => unimplemented!(),
-            RuValue::Bool(b) => Ok(RuValue::Float(if b { 1. } else { 0. })),
-            RuValue::Int(n) => Ok(RuValue::Float(n as f64)),
-            RuValue::Float(_) => Ok(self),
-            RuValue::Str(s) => s
+            Value::Nil => unimplemented!(),
+            Value::Bool(b) => Ok(Value::Float(if b { 1. } else { 0. })),
+            Value::Int(n) => Ok(Value::Float(n as f64)),
+            Value::Float(_) => Ok(self),
+            Value::Str(s) => s
                 .parse::<f64>()
-                .map(RuValue::from)
+                .map(Value::from)
                 .map_err(|_| "not a float".into()),
-            RuValue::Dict(_) => unimplemented!(),
-            RuValue::List(_) => unimplemented!(),
+            Value::Dict(_) => unimplemented!(),
+            Value::List(_) => unimplemented!(),
             _ => panic!("TODO: ref does not have a type"),
         }
     }
 
     pub fn into_integer(self) -> CastResult {
         match self {
-            RuValue::Nil => unimplemented!(),
-            RuValue::Bool(b) => Ok(RuValue::Int(if b { 1 } else { 0 })),
-            RuValue::Int(_) => Ok(self),
-            RuValue::Float(n) => Ok(RuValue::Int(n as i64)),
-            RuValue::Str(s) => s
+            Value::Nil => unimplemented!(),
+            Value::Bool(b) => Ok(Value::Int(if b { 1 } else { 0 })),
+            Value::Int(_) => Ok(self),
+            Value::Float(n) => Ok(Value::Int(n as i64)),
+            Value::Str(s) => s
                 .parse::<i64>()
-                .map(RuValue::from)
+                .map(Value::from)
                 .map_err(|_| "not an integer".into()),
-            RuValue::Dict(_) => unimplemented!(),
-            RuValue::List(_) => unimplemented!(),
+            Value::Dict(_) => unimplemented!(),
+            Value::List(_) => unimplemented!(),
             _ => panic!("TODO: ref does not have a type"),
         }
     }
 
     pub fn into_integer_round(self) -> CastResult {
         match self {
-            RuValue::Float(n) => Ok(RuValue::Int(n.round() as i64)),
+            Value::Float(n) => Ok(Value::Int(n.round() as i64)),
             _ => self.into_integer(),
         }
     }
 
     pub fn into_str(self) -> CastResult {
         let s = format!("{}", self);
-        Ok(RuValue::Str(s))
+        Ok(Value::Str(s))
     }
 
     pub fn type_id(&self) -> u16 {
         match self {
-            RuValue::Nil => RUVALUE_BOOL_TY,
-            RuValue::Bool(_) => RUVALUE_BOOL_TY,
-            RuValue::Int(_) => RUVALUE_INT_TY,
-            RuValue::Float(_) => RUVALUE_FLOAT_TY,
-            RuValue::Str(_) => RUVALUE_STR_TY,
-            RuValue::Dict(_) => RUVALUE_DICT_TY,
-            RuValue::List(_) => RUVALUE_LIST_TY,
+            Value::Nil => RUVALUE_BOOL_TY,
+            Value::Bool(_) => RUVALUE_BOOL_TY,
+            Value::Int(_) => RUVALUE_INT_TY,
+            Value::Float(_) => RUVALUE_FLOAT_TY,
+            Value::Str(_) => RUVALUE_STR_TY,
+            Value::Dict(_) => RUVALUE_DICT_TY,
+            Value::List(_) => RUVALUE_LIST_TY,
             _ => panic!("TODO: ref does not have a type"),
         }
     }

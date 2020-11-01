@@ -8,7 +8,7 @@ use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
 use crate::module::{create_standard_module, GenericModule, ENTRY_POINT};
-use crate::value::{box_ruvalue, instantiate, RuValue};
+use crate::value::{box_value, Value};
 use crate::var::Variable;
 
 /// virtual machine for running bytecode
@@ -44,7 +44,7 @@ impl Vm {
         Self { ctx }
     }
 
-    pub fn call(&mut self, name: &str, args: &[RuValue]) -> Lovm2Result<RuValue> {
+    pub fn call(&mut self, name: &str, args: &[Value]) -> Lovm2Result<Value> {
         let name = Variable::from(name);
         let co = self.ctx.lookup_code_object(&name)?;
 
@@ -53,7 +53,7 @@ impl Vm {
             argn += 1;
             let arg = arg.clone();
             let arg = match arg {
-                RuValue::Dict(_) | RuValue::List(_) => box_ruvalue(arg),
+                Value::Dict(_) | Value::List(_) => box_value(arg),
                 _ => arg,
             };
             self.ctx.push_value(arg);
@@ -71,7 +71,7 @@ impl Vm {
         &mut self.ctx
     }
 
-    pub fn evaluate_expr(&mut self, expr: &Expr) -> Lovm2Result<RuValue> {
+    pub fn evaluate_expr(&mut self, expr: &Expr) -> Lovm2Result<Value> {
         match expr {
             Expr::Access(_) => todo!(),
             Expr::Call(_) => todo!(),
@@ -80,7 +80,7 @@ impl Vm {
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
             Expr::Slice(_) => todo!(),
-            Expr::Value { val, .. } => Ok(instantiate(val)),
+            Expr::Value { val, .. } => Ok(val.clone()),
             Expr::Variable(var) => match self.ctx.globals.get(&var) {
                 Some(val) => Ok(val.clone()),
                 _ => Err((Lovm2ErrorTy::LookupFailed, var).into()),
@@ -124,22 +124,22 @@ macro_rules! ruvalue_compare {
     ($ctx:expr, $fn:ident) => {{
         let second = $ctx.pop_value()?;
         let first = $ctx.pop_value()?;
-        $ctx.push_value(RuValue::Bool(first.$fn(&second)));
+        $ctx.push_value(Value::Bool(first.$fn(&second)));
     }};
 }
 
-fn deref_total(val: &mut RuValue) {
-    while let RuValue::Ref(Some(r)) = val {
+fn deref_total(val: &mut Value) {
+    while let Value::Ref(Some(r)) = val {
         let r = r.borrow().clone();
         *val = r;
     }
 }
 
-fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<RuValue> {
+fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     let start_idx = match start {
-        RuValue::Nil => 0,
+        Value::Nil => 0,
         _ => {
-            if let RuValue::Int(n) = start.into_integer()? {
+            if let Value::Int(n) = start.into_integer()? {
                 n
             } else {
                 unreachable!()
@@ -147,9 +147,9 @@ fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<Ru
         }
     };
     let end_idx = match end {
-        RuValue::Nil => target.len()? as i64,
+        Value::Nil => target.len()? as i64,
         _ => {
-            if let RuValue::Int(n) = end.into_integer()? {
+            if let Value::Int(n) = end.into_integer()? {
                 n
             } else {
                 unreachable!()
@@ -159,10 +159,10 @@ fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<Ru
     let mut slice = vec![];
 
     for idx in start_idx..end_idx {
-        slice.push(target.get(RuValue::from(idx))?);
+        slice.push(target.get(Value::from(idx))?);
     }
 
-    Ok(box_ruvalue(RuValue::List(slice)))
+    Ok(box_value(Value::List(slice)))
 }
 
 /// implementation of lovm2 bytecode behavior
@@ -188,9 +188,8 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 }
             }
             Instruction::Pushc(cidx) => {
-                use crate::value;
-                let value = value::instantiate(&co.consts[*cidx as usize]);
-                ctx.push_value(value);
+                let value = &co.consts[*cidx as usize];
+                ctx.push_value(value.clone());
             }
             Instruction::Movel(lidx) => {
                 let variable = &co.locals[*lidx as usize];
@@ -224,7 +223,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                     if Lovm2ErrorTy::KeyNotFound != e.ty {
                         return Err(e);
                     }
-                    obj.set(key.clone(), box_ruvalue(RuValue::Nil))?;
+                    obj.set(key.clone(), box_value(Value::Nil))?;
                 }
 
                 let val = obj.get(key)?;
@@ -237,7 +236,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 deref_total(&mut val);
 
                 match target {
-                    RuValue::Ref(Some(r)) => *r.borrow_mut() = val,
+                    Value::Ref(Some(r)) => *r.borrow_mut() = val,
                     _ => return Err(format!("cannot use {:?} as set target", target).into()),
                 }
             }
@@ -265,14 +264,14 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             }
             Instruction::Jt(addr) => {
                 let first = ctx.pop_value()?;
-                if first.into_bool()? == RuValue::Bool(true) {
+                if first.into_bool()? == Value::Bool(true) {
                     ip = *addr as usize;
                     continue;
                 }
             }
             Instruction::Jf(addr) => {
                 let first = ctx.pop_value()?;
-                if first.into_bool()? == RuValue::Bool(false) {
+                if first.into_bool()? == Value::Bool(false) {
                     ip = *addr as usize;
                     continue;
                 }
@@ -312,7 +311,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
             }
             Instruction::Box => {
                 let value = ctx.pop_value()?;
-                ctx.push_value(box_ruvalue(value));
+                ctx.push_value(box_value(value));
             }
             Instruction::Slice => {
                 let end = ctx.pop_value()?;

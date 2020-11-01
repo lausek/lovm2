@@ -6,7 +6,7 @@ use crate::code::CallProtocol;
 use crate::context::Context;
 use crate::lovm2_builtin;
 use crate::module::Module;
-use crate::value::RuValue;
+use crate::value::Value;
 
 pub const BUILTIN_FUNCTIONS: &[&str] = &["get", "input", "len", "print", "set"];
 
@@ -17,7 +17,7 @@ fn input(ctx: &mut Context) -> Lovm2Result<()> {
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
 
-    ctx.push_value(RuValue::Str(input));
+    ctx.push_value(Value::Str(input));
 
     Ok(())
 }
@@ -27,7 +27,7 @@ fn len(ctx: &mut Context) -> Lovm2Result<()> {
     let target = ctx.pop_value()?;
 
     let val = target.len()?;
-    ctx.push_value(RuValue::Int(val as i64));
+    ctx.push_value(Value::Int(val as i64));
 
     Ok(())
 }
@@ -46,7 +46,7 @@ fn print(ctx: &mut Context) -> Lovm2Result<()> {
 
     print!("{}", args.join(" "));
     std::io::stdout().flush().unwrap();
-    ctx.push_value(RuValue::Nil);
+    ctx.push_value(Value::Nil);
 
     Ok(())
 }
