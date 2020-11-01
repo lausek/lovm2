@@ -2,8 +2,6 @@
 
 use std::rc::Rc;
 
-use lovm2_error::*;
-
 use crate::code::CallProtocol;
 use crate::context::Context;
 use crate::lovm2_builtin;
@@ -11,21 +9,6 @@ use crate::module::Module;
 use crate::value::RuValue;
 
 pub const BUILTIN_FUNCTIONS: &[&str] = &["get", "input", "len", "print", "set"];
-
-/*
-#[lovm2_builtin]
-fn get(ctx: &mut Context) -> Result<(), String> {
-    let key = ctx.pop_value().unwrap();
-    let target = ctx.pop_value().unwrap();
-
-    match target.get(key) {
-        Ok(val) => ctx.push_value(val),
-        Err(msg) => return Err(msg),
-    }
-
-    Ok(())
-}
-*/
 
 #[lovm2_builtin]
 fn input(ctx: &mut Context) -> Lovm2Result<()> {
@@ -41,12 +24,10 @@ fn input(ctx: &mut Context) -> Lovm2Result<()> {
 
 #[lovm2_builtin]
 fn len(ctx: &mut Context) -> Lovm2Result<()> {
-    let target = ctx.pop_value().unwrap();
+    let target = ctx.pop_value()?;
 
-    match target.len() {
-        Ok(val) => ctx.push_value(RuValue::Int(val as i64)),
-        Err(e) => return Err(e.into()),
-    }
+    let val = target.len()?;
+    ctx.push_value(RuValue::Int(val as i64));
 
     Ok(())
 }
@@ -70,24 +51,10 @@ fn print(ctx: &mut Context) -> Lovm2Result<()> {
     Ok(())
 }
 
-/*
-#[lovm2_builtin]
-fn set(ctx: &mut Context) -> Result<(), String> {
-    let value = ctx.pop_value().unwrap();
-    let key = ctx.pop_value().unwrap();
-    let mut target = ctx.pop_value().unwrap();
-
-    ctx.push_value(RuValue::Nil);
-
-    target.set(key, value)
-}
-*/
-
 /// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
 
-    //module.slots.insert("get".into(), GetBuiltin::instantiate());
     module
         .slots
         .insert("input".into(), InputBuiltin::instantiate());
@@ -95,7 +62,6 @@ pub fn create_standard_module() -> Module {
     module
         .slots
         .insert("print".into(), PrintBuiltin::instantiate());
-    //module.slots.insert("set".into(), SetBuiltin::instantiate());
 
     module
 }
