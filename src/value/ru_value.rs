@@ -172,6 +172,7 @@ impl std::hash::Hash for RuValue {
 impl std::fmt::Display for RuValue {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            RuValue::Nil => write!(f, "Nil"),
             RuValue::Bool(b) => write!(f, "{}", b),
             RuValue::Int(n) => write!(f, "{}", n),
             RuValue::Float(n) => write!(f, "{}", n),
@@ -192,7 +193,8 @@ impl std::fmt::Display for RuValue {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            _ => unimplemented!(),
+            RuValue::Ref(Some(r)) => write!(f, "Ref({})", r.borrow()),
+            RuValue::Ref(None) => write!(f, "Ref(None)"),
         }
     }
 }

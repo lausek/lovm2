@@ -23,12 +23,13 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     for path in load_paths.iter() {
         if let Ok(dir) = read_dir(path) {
             for entry in dir {
-                let entry = entry.map_err(|e| e.to_string())?;
-                let fname = entry.path();
-                if fname.file_stem().unwrap() == name {
-                    let abspath = std::fs::canonicalize(fname).unwrap();
-                    let abspath = abspath.to_string_lossy();
-                    return Ok(abspath.into_owned());
+                if let Ok(entry) = entry {
+                    let fname = entry.path();
+                    if fname.file_stem().unwrap() == name {
+                        let abspath = std::fs::canonicalize(fname).unwrap();
+                        let abspath = abspath.to_string_lossy();
+                        return Ok(abspath.into_owned());
+                    }
                 }
             }
         }
@@ -90,7 +91,7 @@ impl Context {
     ) -> Lovm2Result<()> {
         if !self.modules.get(module.name()).is_some() {
             for used_module in module.uses() {
-                self.load_and_import_by_name(used_module, None)?;
+                self.load_and_import_by_name(used_module, module.location().cloned())?;
             }
 
             for (key, co) in module.slots().iter() {
@@ -128,9 +129,13 @@ impl Context {
             module = load_hook(&load_request)?;
         }
 
-        if let Some(relative_to) = relative_to {
-            if let Ok(path) = find_module(name, &[relative_to.to_string()]) {
-                module = Some(Module::load_from_file(path)?);
+        if module.is_none() {
+            if let Some(relative_to) = relative_to {
+                let path = std::path::Path::new(&relative_to);
+                let relative_to = path.parent().unwrap().to_str().unwrap();
+                if let Ok(path) = find_module(name, &[relative_to.to_string()]) {
+                    module = Some(Module::load_from_file(path)?);
+                }
             }
         }
 

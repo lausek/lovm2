@@ -170,10 +170,8 @@ fn create_slice(target: RuValue, start: RuValue, end: RuValue) -> Lovm2Result<Ru
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
 /// if not handled correctly. see `Vm.run_object`
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
-    println!("{:?}", co);
     let mut ip = 0;
     while let Some(inx) = co.code.get(ip) {
-        println!("{:?} {:?}", inx, ctx.vstack);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.locals[*lidx as usize];
@@ -303,11 +301,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                     ctx.modules
                         .get(&mname)
                         .and_then(|module| module.location())
-                        .and_then(|module_location| {
-                            std::path::Path::new(module_location)
-                                .parent()
-                                .map(|path| path.to_str().unwrap().to_string())
-                        })
+                        .map(String::to_string)
                 } else {
                     None
                 };

@@ -57,7 +57,6 @@ impl Vm {
             .inner
             .take()
             .expect("given module was already loaded");
-        // TODO: this should raise an ImportError
         self.inner
             .load_and_import_all(module)
             .map_err(create_exception)
