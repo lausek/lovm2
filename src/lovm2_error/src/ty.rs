@@ -1,7 +1,8 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Lovm2ErrorTy {
     Custom(String),
 
+    Basic,
     FrameStackEmpty,
     ImportConflict,
     KeyNotFound,

@@ -125,7 +125,7 @@ impl Vm {
 pub(crate) fn create_exception(e: Lovm2Error) -> PyErr {
     let msg = e.to_string();
     match &e.ty {
-        Some(Lovm2ErrorTy::Custom(ty)) => match ty.as_ref() {
+        Lovm2ErrorTy::Custom(ty) => match ty.as_ref() {
             "AssertionError" => AssertionError::py_err(msg),
             "Exception" => Exception::py_err(msg),
             "FileNotFoundError" => FileNotFoundError::py_err(msg),
@@ -133,7 +133,7 @@ pub(crate) fn create_exception(e: Lovm2Error) -> PyErr {
             "ZeroDivisionError" => ZeroDivisionError::py_err(msg),
             _ => Exception::py_err(msg),
         },
-        Some(Lovm2ErrorTy::ModuleNotFound) => ImportError::py_err(msg),
+        Lovm2ErrorTy::ModuleNotFound => ImportError::py_err(msg),
         _ => Exception::py_err(msg),
     }
 }

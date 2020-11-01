@@ -90,11 +90,13 @@ impl Context {
         filter: impl Fn(&Variable) -> bool,
     ) -> Lovm2Result<()> {
         if !self.modules.get(module.name()).is_some() {
+            // load static dependencies of module
             for used_module in module.uses() {
                 self.load_and_import_by_name(used_module, module.location().cloned())?;
             }
 
             for (key, co) in module.slots().iter() {
+                // if the key should be ignored by the filter function
                 if !filter(key) {
                     continue;
                 }
@@ -109,7 +111,8 @@ impl Context {
         Ok(())
     }
 
-    /// lookup a module name in `load_paths` and add it to the context
+    /// lookup a module name in `load_paths` and add it to the context.
+    /// `relative_to` is expected to be an absolute path to importing module
     pub fn load_and_import_by_name(
         &mut self,
         name: &str,
@@ -131,6 +134,8 @@ impl Context {
 
         if module.is_none() {
             if let Some(relative_to) = relative_to {
+                // take directory path from module location and search for requested
+                // module name
                 let path = std::path::Path::new(&relative_to);
                 let relative_to = path.parent().unwrap().to_str().unwrap();
                 if let Ok(path) = find_module(name, &[relative_to.to_string()]) {

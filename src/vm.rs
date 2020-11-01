@@ -220,8 +220,10 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 let key = ctx.pop_value()?;
                 let mut obj = ctx.pop_value()?;
 
-                // TODO: make sure that this is a not found error
-                if obj.get(key.clone()).is_err() {
+                if let Err(e) = obj.get(key.clone()) {
+                    if Lovm2ErrorTy::KeyNotFound != e.ty {
+                        return Err(e);
+                    }
                     obj.set(key.clone(), box_ruvalue(RuValue::Nil))?;
                 }
 
@@ -297,6 +299,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 let name = ctx.pop_value()?;
                 // TODO: use to_string() here
                 let name = format!("{}", name);
+                // path to the modules source code
                 let relative_to = if let Some(mname) = co.module() {
                     ctx.modules
                         .get(&mname)

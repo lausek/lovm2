@@ -36,7 +36,7 @@ impl RuValue {
             // TODO: avoid clone
             RuValue::Ref(Some(r)) => r.borrow().clone().into_bool(),
             RuValue::Nil |
-            // TODO: comapare with 0
+            // TODO: compare with 0
             RuValue::Float(_) |
             RuValue::Ref(_) => Ok(RuValue::Bool(false)),
         }

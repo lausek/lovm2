@@ -5,10 +5,9 @@ pub use crate::ty::Lovm2ErrorTy;
 pub type Lovm2Result<T> = Result<T, Lovm2Error>;
 pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
 
-// TODO: make this a struct
 #[derive(Debug)]
 pub struct Lovm2Error {
-    pub ty: Option<Lovm2ErrorTy>,
+    pub ty: Lovm2ErrorTy,
     pub msg: String,
 
     #[cfg(feature = "backtracing")]
@@ -18,7 +17,7 @@ pub struct Lovm2Error {
 impl From<Lovm2ErrorTy> for Lovm2Error {
     fn from(ty: Lovm2ErrorTy) -> Self {
         Self {
-            ty: Some(ty),
+            ty,
             ..Self::default()
         }
     }
@@ -29,7 +28,7 @@ where T: AsRef<str>
 {
     fn from(descr: (Lovm2ErrorTy, T)) -> Self {
         Self {
-            ty: Some(descr.0),
+            ty: descr.0,
             msg: descr.1.as_ref().to_string(),
             ..Self::default()
         }
@@ -39,7 +38,7 @@ where T: AsRef<str>
 impl From<(String, String)> for Lovm2Error {
     fn from(f: (String, String)) -> Self {
         Self {
-            ty: Some(Lovm2ErrorTy::Custom(f.0)),
+            ty: Lovm2ErrorTy::Custom(f.0),
             msg: f.1,
             ..Self::default()
         }
@@ -71,18 +70,14 @@ impl std::fmt::Display for Lovm2Error {
             write!(f, "{:?}", self.trace)?;
         }
 
-        if let Some(ty) = &self.ty {
-            write!(f, "{}: {}", ty, self.msg)
-        } else {
-            write!(f, "{}", self.msg)
-        }
+        write!(f, "{}: {}", self.ty, self.msg)
     }
 }
 
 impl Default for Lovm2Error {
     fn default() -> Self {
         Self {
-            ty: None,
+            ty: Lovm2ErrorTy::Basic,
             msg: String::new(),
 
             #[cfg(feature = "backtracing")]
