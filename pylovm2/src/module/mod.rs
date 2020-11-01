@@ -48,8 +48,15 @@ impl Module {
         RuntimeError::into("inner module not loaded")
     }
 
+    pub fn name(&self) -> PyResult<String> {
+        if let Some(inner) = self.inner.as_ref() {
+            return Ok(inner.name().to_string());
+        }
+        RuntimeError::into("inner module not loaded")
+    }
+
     pub fn uses(&self) -> PyResult<Vec<String>> {
-        // TODO: implement this
+        // TODO: return used dependencies
         Ok(vec![])
     }
 
