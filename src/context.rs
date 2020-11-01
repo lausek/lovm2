@@ -21,14 +21,15 @@ fn filter_entry_reimport(name: &Variable) -> bool {
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
     for path in load_paths.iter() {
-        let dir = read_dir(path).map_err(|e| e.to_string())?;
-        for entry in dir {
-            let entry = entry.map_err(|e| e.to_string())?;
-            let fname = entry.path();
-            if fname.file_stem().unwrap() == name {
-                let abspath = std::fs::canonicalize(fname).unwrap();
-                let abspath = abspath.to_string_lossy();
-                return Ok(abspath.into_owned());
+        if let Ok(dir) = read_dir(path) {
+            for entry in dir {
+                let entry = entry.map_err(|e| e.to_string())?;
+                let fname = entry.path();
+                if fname.file_stem().unwrap() == name {
+                    let abspath = std::fs::canonicalize(fname).unwrap();
+                    let abspath = abspath.to_string_lossy();
+                    return Ok(abspath.into_owned());
+                }
             }
         }
     }

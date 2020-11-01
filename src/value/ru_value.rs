@@ -121,6 +121,11 @@ impl RuValue {
     }
 
     pub fn set(&mut self, key: RuValue, val: RuValue) -> Lovm2Result<()> {
+        let val = match val {
+            RuValue::Ref(_) => val,
+            _ => box_ruvalue(val),
+        };
+
         match self {
             RuValue::Dict(dict) => {
                 dict.insert(key, val);

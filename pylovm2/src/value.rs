@@ -138,10 +138,10 @@ impl pyo3::class::mapping::PyMappingProtocol for RuValue {
 
     fn __setitem__(&mut self, key: &PyAny, val: &PyAny) -> PyResult<()> {
         let (key, val) = (any_to_ruvalue(key)?, any_to_ruvalue(val)?);
-        let (key, val) = (key.inner.borrow(), val.inner.borrow());
+        let (key, val) = (key.inner.borrow().clone(), val.inner.borrow().clone());
         self.inner
             .borrow_mut()
-            .set(key.clone(), val.clone())
+            .set(key, val)
             .map_err(create_exception)
     }
 }

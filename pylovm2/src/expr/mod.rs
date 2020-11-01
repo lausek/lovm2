@@ -3,7 +3,7 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::prelude::Operator2;
+use lovm2::prelude::{Cast, Operator2};
 use lovm2::var;
 
 pub use self::conv::*;
@@ -204,5 +204,32 @@ impl Expr {
     #[args(args = "*")]
     pub fn pow(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
         auto_wrapper!(Operator2::Pow, args)
+    }
+}
+
+#[pymethods]
+impl Expr {
+    pub fn to_bool(&self) -> PyResult<Self> {
+        Ok(Self {
+            inner: Cast::to_bool(self.inner.clone()).into(),
+        })
+    }
+
+    pub fn to_int(&self) -> PyResult<Self> {
+        Ok(Self {
+            inner: Cast::to_integer(self.inner.clone()).into(),
+        })
+    }
+
+    pub fn to_float(&self) -> PyResult<Self> {
+        Ok(Self {
+            inner: Cast::to_float(self.inner.clone()).into(),
+        })
+    }
+
+    pub fn to_str(&self) -> PyResult<Self> {
+        Ok(Self {
+            inner: Cast::to_str(self.inner.clone()).into(),
+        })
     }
 }
