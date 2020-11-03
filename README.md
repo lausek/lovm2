@@ -23,6 +23,12 @@ lovm2 = "0.3.8"
 
 - [lol - a lisp language](https://github.com/lausek/lol)
 
+### Source Code References
+
+- [Bytecode](https://github.com/lausek/lovm2/blob/master/src/bytecode.rs)
+- [Context](https://github.com/lausek/lovm2/blob/master/src/context.rs)
+- [Vm](https://github.com/lausek/lovm2/blob/master/src/vm.rs)
+
 ### Generating Bytecode
 
 ``` rust
