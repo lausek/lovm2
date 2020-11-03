@@ -10,6 +10,7 @@ proc-macro = true
 
 [dependencies]
 lovm2 = { path = "../../" }
+lovm2_error = { path = "../../src/lovm2_error" }
 quote = "1.0"
 
 [dependencies.syn]

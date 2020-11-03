@@ -44,11 +44,11 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     }
 }
 
-pub fn any_to_ident(any: &PyAny) -> PyResult<var::Variable> {
+pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::var::Variable> {
     match any.get_type().name().as_ref() {
         "str" => {
             let name = any.str().unwrap().to_string()?;
-            Ok(var::Variable::from(name.to_string()).into())
+            Ok(lovm2::var::Variable::from(name.to_string()).into())
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;
