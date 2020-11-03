@@ -13,8 +13,8 @@ fn serialize_module() {
     let mut builder = ModuleBuilder::new();
 
     let mut main_hir = HIR::new();
-    main_hir.push(Assign::local(var!(msg), "hello world"));
-    main_hir.push(call!(print, msg));
+    main_hir.push(Assign::local(lv2_var!(msg), "hello world"));
+    main_hir.push(lv2_call!(print, msg));
 
     builder.add(ENTRY_POINT).hir(main_hir);
 
@@ -30,7 +30,7 @@ fn deserialize_module() {
     let mut builder = ModuleBuilder::new();
 
     let mut main_hir = HIR::new();
-    main_hir.push(Assign::global(var!(n), 10));
+    main_hir.push(Assign::global(lv2_var!(n), 10));
 
     builder.add(ENTRY_POINT).hir(main_hir);
     builder
@@ -47,7 +47,7 @@ fn deserialize_module() {
     vm.load_and_import_all(module).unwrap();
     vm.run().unwrap();
 
-    let n = vm.context_mut().value_of(&var!(n)).unwrap();
+    let n = vm.context_mut().value_of(&lv2_var!(n)).unwrap();
     assert_eq!(Value::Int(10), n);
 }
 
@@ -61,7 +61,7 @@ fn global_uses() {
     builder.add_dependency(PRELOADED.into());
 
     let mut main_hir = HIR::new();
-    main_hir.push(Assign::global(var!(n), 10));
+    main_hir.push(Assign::global(lv2_var!(n), 10));
     builder.add(ENTRY_POINT).hir(main_hir);
 
     let module = builder.build().unwrap();

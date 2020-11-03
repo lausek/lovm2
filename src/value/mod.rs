@@ -1,3 +1,5 @@
+//! representation and operations for lovm2 values
+
 pub mod cast;
 pub mod data;
 pub mod operations;

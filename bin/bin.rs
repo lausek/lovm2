@@ -5,11 +5,11 @@ fn loading() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
 
     let mut hir = HIR::new();
-    hir.push(Assign::local(var!(n), 0));
+    hir.push(Assign::local(lv2_var!(n), 0));
 
-    let mut repeat = Repeat::until(Expr::eq(var!(n), 10));
-    repeat.push(call!(print, n));
-    repeat.push(Assign::local(var!(n), Expr::add(var!(n), 1)));
+    let mut repeat = Repeat::until(Expr::eq(lv2_var!(n), 10));
+    repeat.push(lv2_call!(print, n));
+    repeat.push(Assign::local(lv2_var!(n), Expr::add(lv2_var!(n), 1)));
     hir.push(repeat);
 
     builder.add("main").hir(hir);

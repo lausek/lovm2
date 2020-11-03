@@ -1,3 +1,8 @@
+//! stores local function values
+//!
+//! each frame contains the amount of arguments passed to the `CodeObject` on stack. make
+//! sure to pop exactly `argn` values from stack and leave one value as return.
+
 use std::collections::HashMap;
 
 use crate::value::Value;

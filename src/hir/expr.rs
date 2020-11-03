@@ -1,3 +1,5 @@
+//! expressions and operations that produce `Values`
+
 use crate::bytecode::Instruction;
 use crate::hir::assign::Access;
 use crate::hir::call::Call;

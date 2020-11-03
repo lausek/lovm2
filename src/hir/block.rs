@@ -1,3 +1,5 @@
+//! general collection for program statements
+
 use crate::hir::branch::Branch;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};

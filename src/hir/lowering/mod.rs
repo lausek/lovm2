@@ -1,4 +1,4 @@
-//! transform hir into actual bytecode
+//! transform HIR into actual bytecode
 
 pub mod branch;
 pub mod repeat;

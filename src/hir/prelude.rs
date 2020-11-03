@@ -17,4 +17,4 @@ pub use crate::hir::expr::{Expr, Operator2};
 pub use crate::module::ModuleBuilder;
 pub use crate::value::Value;
 pub use crate::var::Variable;
-pub use crate::{access, call, lv2_dict, lv2_list, var};
+pub use crate::{lv2_access, lv2_call, lv2_dict, lv2_list, lv2_var};

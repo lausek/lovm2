@@ -1,3 +1,5 @@
+//! execute a `CodeObject` by name using the given arguments
+
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};

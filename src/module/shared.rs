@@ -18,9 +18,11 @@ use crate::context::Context;
 use crate::module::{GenericModule, ModuleProtocol, Slots};
 use crate::var::Variable;
 
+/// name of the unmangled function name to call when initializing module slots
 pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CodeObjectRef>);
 
+/// contains the loaded shared object
 pub struct SharedObjectModule {
     name: String,
     lib: Rc<Library>,
@@ -96,6 +98,7 @@ impl Into<GenericModule> for SharedObjectModule {
     }
 }
 
+/// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
 pub struct SharedObjectSlot(Rc<Library>, String);
 
 impl SharedObjectSlot {

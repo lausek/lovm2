@@ -164,6 +164,7 @@ impl Context {
         }
     }
 
+    /// register a new callback function that is used for resolving dependencies at runtime
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
         T: Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>> + Sized + 'static,
@@ -171,6 +172,7 @@ impl Context {
         self.load_hook = Some(Rc::new(hook));
     }
 
+    /// register a new callback function on interrupt `n`
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)
     where
         T: Fn(&mut Context) -> Lovm2Result<()> + Sized + 'static,
@@ -182,6 +184,7 @@ impl Context {
         &mut self.vstack
     }
 
+    /// get last stack frame or raise error
     pub fn frame_mut(&mut self) -> Lovm2Result<&mut Frame> {
         match self.lstack.last_mut() {
             Some(frame) => Ok(frame),

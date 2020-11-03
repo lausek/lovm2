@@ -59,7 +59,7 @@ fn load_custom_module() {
 
     let mut hir = HIR::new();
     hir.push(Include::load("std"));
-    hir.push(Assign::local(var!(n), Call::new("calc")));
+    hir.push(Assign::local(lv2_var!(n), Call::new("calc")));
     hir.push(Interrupt::new(10));
 
     let mut builder = ModuleBuilder::named("main");
@@ -69,7 +69,7 @@ fn load_custom_module() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), frame.value_of(&var!(n)).unwrap());
+        assert_eq!(Value::Int(2), frame.value_of(&lv2_var!(n)).unwrap());
     })
     .unwrap();
 }

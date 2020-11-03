@@ -1,3 +1,5 @@
+//! representation of values
+
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -7,6 +9,7 @@ use lovm2_error::*;
 
 pub type ValueRef = Rc<RefCell<Value>>;
 
+/// wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
 pub fn box_value(value: Value) -> Value {
     let outer = match value {
         Value::Dict(d) => {
@@ -36,9 +39,7 @@ pub fn box_value(value: Value) -> Value {
     Value::Ref(Some(Rc::new(RefCell::new(outer))))
 }
 
-/// runtime values
-///
-/// this layout is more suited for runtime representation than `Value`
+/// runtime representation of values
 #[derive(Clone, PartialEq, Deserialize, Serialize)]
 pub enum Value {
     Nil,

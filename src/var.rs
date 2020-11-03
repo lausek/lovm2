@@ -1,3 +1,5 @@
+//! wrapper type for identifiers
+
 use serde::{Deserialize, Serialize};
 
 /// a thin wrapper around an identifier name.

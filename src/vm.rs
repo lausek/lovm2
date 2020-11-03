@@ -1,3 +1,5 @@
+//! runs modules and maintains program state
+
 use std::ops::*;
 use std::rc::Rc;
 

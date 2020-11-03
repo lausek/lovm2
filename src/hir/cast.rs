@@ -1,3 +1,5 @@
+//! do type conversion on a lowered `Expr` at runtime
+
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};

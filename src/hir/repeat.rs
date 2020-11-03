@@ -1,3 +1,5 @@
+//! runs a `Block` forever or until a condition is met
+
 use crate::bytecode::Instruction;
 use crate::hir::block::Block;
 use crate::hir::element::HIRElement;

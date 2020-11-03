@@ -1,4 +1,4 @@
-//! implementation of lovm2s builtin functions
+//! native implementation of lovm2s builtin functions
 
 use std::rc::Rc;
 
@@ -8,7 +8,7 @@ use crate::lovm2_builtin;
 use crate::module::Module;
 use crate::value::Value;
 
-pub const BUILTIN_FUNCTIONS: &[&str] = &["get", "input", "len", "print", "set"];
+pub const BUILTIN_FUNCTIONS: &[&str] = &["input", "len", "print"];
 
 #[lovm2_builtin]
 fn input(ctx: &mut Context) -> Lovm2Result<()> {

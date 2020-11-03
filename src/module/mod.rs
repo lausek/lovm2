@@ -1,4 +1,4 @@
-//! collections of runnable objects
+//! generic protocol for module like objects
 //!
 //! if a module gets loaded by the virtual machine, its code objects are not available by default.
 //! code objects need to be added to the scope to be callable by lovm2 bytecode.
@@ -23,6 +23,7 @@ pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
+/// name of the `CodeObject` that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
 pub type GenericModule = Rc<dyn ModuleProtocol>;
 
@@ -56,6 +57,7 @@ pub trait ModuleProtocol: std::fmt::Debug {
     }
 }
 
+/// a structure containing lovm2 `CodeObjects`
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
     // TODO: can we skip this?

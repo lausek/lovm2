@@ -1,3 +1,5 @@
+//! trigger a vm interrupt
+
 use crate::bytecode::Instruction;
 use crate::hir::lowering::{Lowering, LoweringRuntime};
 

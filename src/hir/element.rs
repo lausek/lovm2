@@ -1,3 +1,5 @@
+//! sum type for every HIR element
+
 use crate::hir::assign::Assign;
 use crate::hir::branch::Branch;
 use crate::hir::call::Call;

@@ -1,3 +1,7 @@
+//! return value from a `CodeObject`
+//!
+//! every `CodeObject` implicitly returns `Nil` if no return value was given
+
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};

@@ -1,3 +1,5 @@
+//! shared lowering state
+
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;

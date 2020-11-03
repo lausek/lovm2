@@ -1,3 +1,4 @@
+/// define `CodeObject` on a low-level basis
 #[macro_export]
 macro_rules! define_code {
     {
@@ -27,8 +28,9 @@ macro_rules! define_code {
     { compile_inx $inx:ident $(, $args:expr)+ } => { Instruction::$inx($($args),*) };
 }
 
+/// creates an `Access` expression
 #[macro_export]
-macro_rules! access {
+macro_rules! lv2_access {
     ($name:ident, $key:expr $(, $rest:expr)* $(,)?) => {{
         Access::target(stringify!($name).into())
             .at($key)
@@ -38,18 +40,20 @@ macro_rules! access {
     }};
 }
 
+/// creates a `Call` expression
 #[macro_export]
-macro_rules! call {
+macro_rules! lv2_call {
     ($name:ident $(, $arg:tt)* $(,)?) => {{
         Call::new(stringify!($name))
             $(
-                .arg(call!(1, $arg))
+                .arg(lv2_call!(1, $arg))
             )*
     }};
-    (1, $arg:ident) => {{ var!($arg) }};
+    (1, $arg:ident) => {{ lv2_var!($arg) }};
     (1, $arg:expr) => {{ $arg }};
 }
 
+/// creates a dict `Initialize` expression using `Expr` as items
 #[macro_export]
 macro_rules! lv2_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
@@ -61,6 +65,7 @@ macro_rules! lv2_dict {
     }};
 }
 
+/// creates a list `Initialize` expression using `Expr` as items
 #[macro_export]
 macro_rules! lv2_list {
     ($($val:expr),* $(,)?) => {{
@@ -72,8 +77,9 @@ macro_rules! lv2_list {
     }};
 }
 
+/// creates a `Variable` from a rust identifier
 #[macro_export]
-macro_rules! var {
+macro_rules! lv2_var {
     ($name:ident) => {
         Variable::from(stringify!($name))
     };

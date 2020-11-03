@@ -1,3 +1,5 @@
+//! instructions for storing data
+
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{Lowering, LoweringRuntime};

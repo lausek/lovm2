@@ -1,3 +1,5 @@
+//! conditional execution
+
 use crate::bytecode::Instruction;
 use crate::hir::block::Block;
 use crate::hir::expr::Expr;
@@ -17,12 +19,14 @@ impl Branch {
         }
     }
 
+    /// expects a condition that evaluates to boolean `true`
     pub fn add_condition(&mut self, condition: Expr) -> &mut Block {
         self.branches.push((condition, Block::new()));
         let (_, block) = self.branches.last_mut().unwrap();
         block
     }
 
+    /// `Block` to execute if no condition evaluates to `true`
     pub fn default_condition(&mut self) -> &mut Block {
         self.default = Some(Block::new());
         self.default.as_mut().unwrap()

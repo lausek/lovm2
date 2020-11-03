@@ -11,6 +11,7 @@ use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::run_bytecode;
 
+/// generic object implementing the `CallProtocol`
 pub type CodeObjectRef = Rc<dyn CallProtocol>;
 /// definition for statically linked function
 pub type StaticFunction = fn(&mut Context) -> Lovm2Result<()>;
@@ -21,6 +22,9 @@ pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 /// - lovm2 bytecode ([CodeObject](/latest/lovm2/code/struct.CodeObject.html))
 /// - statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
 /// - dynamically linked functions ([SharedObjectSlot](/latest/lovm2/module/shared/struct.SharedObjectSlot.html))
+///
+/// functions implementing this protocol can support variadic arguments by looking at
+/// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
 pub trait CallProtocol: std::fmt::Debug {
     fn code_object(&self) -> Option<&CodeObject> {
         None
@@ -72,6 +76,7 @@ impl CallProtocol for CodeObject {
     }
 }
 
+/// structure for building `CodeObjects`. only used by `LoweringRuntime`
 #[derive(Debug)]
 pub struct CodeObjectBuilder {
     consts: Vec<Value>,

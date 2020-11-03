@@ -1,3 +1,5 @@
+//! `CodeObject` items of a lovm2 module
+
 use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::rc::Rc;

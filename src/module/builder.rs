@@ -1,3 +1,5 @@
+//! building modules from HIR
+
 use std::collections::HashMap;
 use std::rc::Rc;
 

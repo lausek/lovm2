@@ -1,3 +1,5 @@
+//! initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
+
 use std::collections::HashMap;
 
 use crate::bytecode::Instruction;
