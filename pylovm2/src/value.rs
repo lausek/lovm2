@@ -37,7 +37,7 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
 }
 
 // TODO: implement ToPyObject, FromPyObject for this type
-#[pyclass]
+#[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Value {
     inner: Lovm2Value,
@@ -90,7 +90,9 @@ impl pyo3::class::number::PyNumberProtocol for Value {
         let py = gil.python();
         match self.inner.borrow().clone().cast(RUVALUE_INT_TY) {
             Ok(val) => Ok(Value::from_struct(val).to_py(py)),
-            _ => RuntimeError::into("cannot convert value to int".to_string()),
+            _ => Err(PyRuntimeError::new_err(
+                "cannot convert value to int".to_string(),
+            )),
         }
     }
 
@@ -100,7 +102,9 @@ impl pyo3::class::number::PyNumberProtocol for Value {
         let py = gil.python();
         match self.inner.borrow().clone().cast(RUVALUE_FLOAT_TY) {
             Ok(val) => Ok(Value::from_struct(val).to_py(py)),
-            _ => RuntimeError::into("cannot convert value to float".to_string()),
+            _ => Err(PyRuntimeError::new_err(
+                "cannot convert value to float".to_string(),
+            )),
         }
     }
 }
@@ -125,14 +129,19 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
                 let val = lovm2::value::box_value(val);
                 Ok(Value::from_struct(val).to_py(py))
             }
-            Err(_) => RuntimeError::into(format!("key {} not found on value", key)),
+            Err(_) => Err(PyRuntimeError::new_err(format!(
+                "key {} not found on value",
+                key
+            ))),
         }
     }
 
     fn __len__(&self) -> PyResult<usize> {
         match self.inner.borrow().len() {
             Ok(n) => Ok(n),
-            _ => RuntimeError::into("len not supported on this value".to_string()),
+            _ => Err(PyRuntimeError::new_err(
+                "len not supported on this value".to_string(),
+            )),
         }
     }
 

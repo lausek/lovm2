@@ -10,27 +10,14 @@ use crate::value::Value;
 
 pub type Lovm2CodeObject = lovm2::code::CodeObject;
 
-pub fn pyerr(e: &PyErr, py: Python) -> (String, String) {
-    use pyo3::PyErrValue;
-    let ty = e.ptype.as_ref(py).name().to_string();
-    let obj = match &e.pvalue {
-        PyErrValue::None => py.None(),
-        PyErrValue::Value(obj) => obj.clone_ref(py),
-        PyErrValue::ToArgs(args) => args.arguments(py),
-        PyErrValue::ToObject(obj) => obj.to_object(py),
-    };
-    let msg = obj
-        .as_ref(py)
-        .str()
-        .unwrap()
-        .to_string()
-        .unwrap()
-        .to_string();
-    (ty, msg)
+pub fn pyerr(e: &PyErr, py: Python) -> Lovm2Error {
+    let ty = e.ptype(py).name().to_string();
+    let msg = e.pvalue(py).to_string();
+    (ty, msg).into()
 }
 
 // TODO: change this to hold a Rc<CallProtocol>
-#[pyclass]
+#[pyclass(unsendable)]
 #[derive(Debug)]
 pub struct CodeObject {
     inner: CodeObjectWrapper,
@@ -61,10 +48,7 @@ impl code::CallProtocol for CodeObject {
                 let args = PyTuple::new(py, args.into_iter());
 
                 // call python function, catch exceptions
-                let res = pyfn.call1(py, args).map_err(|e| {
-                    let e: Lovm2Error = pyerr(&e, py).into();
-                    e
-                })?;
+                let res = pyfn.call1(py, args).map_err(|e| pyerr(&e, py))?;
 
                 // convert result of call into ruvalue representation
                 let res = any_to_value(res.as_ref(py))

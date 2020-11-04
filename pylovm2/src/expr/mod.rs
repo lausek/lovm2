@@ -34,7 +34,7 @@ macro_rules! auto_wrapper {
     }};
 }
 
-#[pyclass]
+#[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Expr {
     pub inner: lovm2::hir::expr::Expr,
@@ -75,7 +75,7 @@ impl Expr {
     #[args(args = "*")]
     pub fn call(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
         use lovm2::prelude::*;
-        let name = Variable::from(name.str().unwrap().to_string().unwrap().to_string());
+        let name = Variable::from(name.str()?.to_string());
         let args = pyargs_to_exprs(args)?;
         Ok(Self {
             inner: Lovm2Expr::Call(Call::with_args(name, args)),

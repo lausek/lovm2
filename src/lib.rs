@@ -45,7 +45,6 @@
 //! }
 //! ```
 
-#![feature(const_in_array_repeat_expressions)]
 #![allow(clippy::new_without_default)]
 #![allow(clippy::wrong_self_convention)]
 

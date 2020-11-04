@@ -12,7 +12,7 @@ use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
 
 use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct ModuleBuilder {
     name: String,
     slots: HashMap<String, Py<ModuleBuilderSlot>>,
@@ -92,7 +92,7 @@ impl ModuleBuilder {
     }
 }
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct BranchBuilder {
     inner: *mut Lovm2Branch,
 }
@@ -115,7 +115,7 @@ impl BranchBuilder {
     }
 }
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct BlockBuilder {
     pub(super) inner: *mut Lovm2Block,
 }
@@ -175,7 +175,9 @@ impl BlockBuilder {
                 (*self.inner).push(call.clone());
                 Ok(())
             },
-            _ => RuntimeError::into("expression cannot be placed here.".to_string()),
+            _ => Err(PyRuntimeError::new_err(
+                "expression cannot be placed here.".to_string(),
+            )),
         }
     }
 

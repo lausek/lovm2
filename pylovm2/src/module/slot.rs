@@ -15,7 +15,7 @@ enum ModuleBuilderSlotInner {
     PyFn(Option<PyObject>),
 }
 
-#[pyclass]
+#[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct ModuleBuilderSlot {
     inner: ModuleBuilderSlotInner,
@@ -30,20 +30,21 @@ impl ModuleBuilderSlot {
         }
     }
 
-    pub fn args(&mut self, args: &PyList) {
+    pub fn args(&mut self, args: &PyList) -> PyResult<()> {
         if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
             use lovm2::var::Variable;
-            let args = args
-                .iter()
-                .map(|name| {
-                    let name = name.str().unwrap().to_string().unwrap().to_string();
-                    Variable::from(name)
-                })
-                .collect();
-            hir.replace(hir::HIR::with_args(args));
+
+            let mut vars = vec![];
+            for arg in args.iter() {
+                let name = arg.str()?.to_string();
+                vars.push(Variable::from(name));
+            }
+
+            hir.replace(hir::HIR::with_args(vars));
         } else {
             unimplemented!()
         }
+        Ok(())
     }
 
     pub fn code(&mut self) -> PyResult<BlockBuilder> {
@@ -63,10 +64,10 @@ impl ModuleBuilderSlot {
                 if let Some(hir) = hir.take() {
                     return match hir.build() {
                         Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => RuntimeError::into(msg.to_string()),
+                        Err(msg) => Err(PyRuntimeError::new_err(msg.to_string())),
                     };
                 }
-                RuntimeError::into("hir was already built")
+                Err(PyRuntimeError::new_err("hir was already built"))
             }
             ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
                 Ok(CodeObject::from(pyfn.take().unwrap()))
