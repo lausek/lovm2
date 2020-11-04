@@ -13,7 +13,7 @@ type Lovm2Branch = lovm2::hir::branch::Branch;
 type Lovm2Block = lovm2::hir::block::Block;
 type Lovm2Module = lovm2::module::Module;
 
-#[pyclass]
+#[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Module {
     pub inner: Option<GenericModule>,
@@ -31,10 +31,10 @@ impl Module {
 impl Module {
     #[classmethod]
     pub fn load(_this: &PyAny, path: &PyAny) -> PyResult<Self> {
-        let path = path.str()?.to_string()?;
-        match Lovm2Module::load_from_file(path.as_ref()) {
+        let path = path.str()?.to_str()?;
+        match Lovm2Module::load_from_file(path) {
             Ok(inner) => Ok(Self { inner: Some(inner) }),
-            Err(err) => RuntimeError::into(err.to_string()),
+            Err(err) => Err(PyRuntimeError::new_err(err.to_string())),
         }
     }
 
@@ -42,17 +42,17 @@ impl Module {
         if let Some(inner) = self.inner.as_ref() {
             return match inner.store_to_file(&path) {
                 Ok(_) => Ok(()),
-                Err(err) => RuntimeError::into(err.to_string()),
+                Err(err) => Err(PyRuntimeError::new_err(err.to_string())),
             };
         }
-        RuntimeError::into("inner module not loaded")
+        Err(PyRuntimeError::new_err("inner module not loaded"))
     }
 
     pub fn name(&self) -> PyResult<String> {
         if let Some(inner) = self.inner.as_ref() {
             return Ok(inner.name().to_string());
         }
-        RuntimeError::into("inner module not loaded")
+        Err(PyRuntimeError::new_err("inner module not loaded"))
     }
 
     pub fn uses(&self) -> PyResult<Vec<String>> {
@@ -64,7 +64,7 @@ impl Module {
         if let Some(inner) = self.inner.as_ref() {
             return Ok(inner.location());
         }
-        RuntimeError::into("inner module not loaded")
+        Err(PyRuntimeError::new_err("inner module not loaded"))
     }
 }
 
@@ -78,7 +78,7 @@ impl pyo3::class::basic::PyObjectProtocol for Module {
 #[pyproto]
 impl pyo3::class::sequence::PySequenceProtocol for Module {
     fn __contains__(&self, key: &PyAny) -> PyResult<bool> {
-        let key = key.str()?.to_string()?.to_string();
+        let key = key.str()?.to_str()?;
         Ok(match &self.inner {
             Some(m) => m.slot(&key.into()).is_some(),
             _ => false,

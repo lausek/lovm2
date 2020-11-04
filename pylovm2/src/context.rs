@@ -5,7 +5,7 @@ use crate::value::lovm2py;
 pub type Lovm2Context = lovm2::context::Context;
 pub type Lovm2Frame = lovm2::frame::Frame;
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct Context {
     inner: *mut Lovm2Context,
 }
@@ -64,7 +64,7 @@ impl Context {
     }
 }
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct Frame {
     inner: *mut Lovm2Frame,
 }

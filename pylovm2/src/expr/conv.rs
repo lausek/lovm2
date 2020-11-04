@@ -40,24 +40,32 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
             let data = any.extract::<Expr>()?;
             Ok(data.inner)
         }
-        _ => RuntimeError::into(format!("value {} cannot be converted to expression", any)),
+        _ => Err(PyRuntimeError::new_err(format!(
+            "value {} cannot be converted to expression",
+            any
+        ))),
     }
 }
 
 pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::var::Variable> {
     match any.get_type().name().as_ref() {
         "str" => {
-            let name = any.str().unwrap().to_string()?;
-            Ok(lovm2::var::Variable::from(name.to_string()).into())
+            let name = any.str()?.to_string();
+            Ok(lovm2::var::Variable::from(name).into())
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;
             match &data.inner {
                 Lovm2Expr::Variable(var) => Ok(var.clone()),
-                _ => RuntimeError::into("expression is not an identifier".to_string()),
+                _ => Err(PyRuntimeError::new_err(
+                    "expression is not an identifier".to_string(),
+                )),
             }
         }
-        _ => RuntimeError::into(format!("value {} cannot be converted to identifier", any)),
+        _ => Err(PyRuntimeError::new_err(format!(
+            "value {} cannot be converted to identifier",
+            any
+        ))),
     }
 }
 
@@ -65,8 +73,8 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
     let ty = any.get_type().name();
     match ty.as_ref() {
         "str" => {
-            let data = any.str().unwrap().to_string()?;
-            Ok(Lovm2Value::Str(data.to_string()))
+            let data = any.str()?.to_string();
+            Ok(Lovm2Value::Str(data))
         }
         "bool" => {
             let data = any.extract::<bool>()?;
@@ -103,16 +111,16 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
             let data = any.extract::<Expr>()?;
             match data.inner {
                 Lovm2Expr::Value { val, .. } => Ok(val),
-                _ => RuntimeError::into(format!(
+                _ => Err(PyRuntimeError::new_err(format!(
                     "value {} of type {} cannot be converted to value",
                     any, ty
-                )),
+                ))),
             }
         }
-        _ => RuntimeError::into(format!(
+        _ => Err(PyRuntimeError::new_err(format!(
             "value {} of type {} cannot be converted to value",
             any, ty
-        )),
+        ))),
     }
 }
 

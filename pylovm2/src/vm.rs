@@ -11,7 +11,7 @@ use crate::expr::any_to_expr;
 use crate::module::Module;
 use crate::value::Value;
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct Vm {
     inner: lovm2::vm::Vm,
 }
@@ -31,20 +31,20 @@ impl Vm {
         /* py: Python, */ name: &PyString,
         args: &PyTuple,
     ) -> PyResult<Value> {
-        let name = name.to_string()?.to_string();
+        let name = name.to_str()?.to_string();
 
         let mut ruargs = vec![];
         for arg in args.iter() {
             let arg = any_to_expr(arg)?;
             match self.inner.evaluate_expr(&arg) {
                 Ok(val) => ruargs.push(val),
-                Err(e) => return create_exception(e).into(),
+                Err(e) => return Err(create_exception(e)),
             }
         }
 
         match self.inner.call(&name, ruargs.as_slice()) {
             Ok(val) => Ok(Value::from_struct(val)),
-            Err(e) => create_exception(e).into(),
+            Err(e) => Err(create_exception(e)),
         }
     }
 
@@ -65,7 +65,7 @@ impl Vm {
     pub fn run(&mut self) -> PyResult<()> {
         match self.inner.run() {
             Ok(_) => Ok(()),
-            Err(e) => create_exception(e).into(),
+            Err(e) => Err(create_exception(e)),
         }
     }
 
@@ -73,7 +73,7 @@ impl Vm {
         use pyo3::types::PyTuple;
 
         if !func.is_callable() {
-            return RuntimeError::into("given function is not callable");
+            return Err(PyRuntimeError::new_err("given function is not callable"));
         }
 
         let func = func.to_object(py);
@@ -108,7 +108,7 @@ impl Vm {
             let args = PyTuple::new(py, vec![req.module.to_object(py), relative_to]);
 
             let ret = func.call1(py, args).map_err(|e| pyerr(&e, py))?;
-            if ret.is_none() {
+            if ret.is_none(py) {
                 return Ok(None);
             }
 
@@ -126,14 +126,14 @@ pub(crate) fn create_exception(e: Lovm2Error) -> PyErr {
     let msg = e.to_string();
     match &e.ty {
         Lovm2ErrorTy::Custom(ty) => match ty.as_ref() {
-            "AssertionError" => AssertionError::py_err(msg),
-            "Exception" => Exception::py_err(msg),
-            "FileNotFoundError" => FileNotFoundError::py_err(msg),
-            "ImportError" => ImportError::py_err(msg),
-            "ZeroDivisionError" => ZeroDivisionError::py_err(msg),
-            _ => Exception::py_err(msg),
+            "AssertionError" => PyAssertionError::new_err(msg),
+            "Exception" => PyException::new_err(msg),
+            "FileNotFoundError" => PyFileNotFoundError::new_err(msg),
+            "ImportError" => PyImportError::new_err(msg),
+            "ZeroDivisionError" => PyZeroDivisionError::new_err(msg),
+            _ => PyException::new_err(msg),
         },
-        Lovm2ErrorTy::ModuleNotFound => ImportError::py_err(msg),
-        _ => Exception::py_err(msg),
+        Lovm2ErrorTy::ModuleNotFound => PyImportError::new_err(msg),
+        _ => PyException::new_err(msg),
     }
 }
