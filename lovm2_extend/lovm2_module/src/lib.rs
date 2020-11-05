@@ -20,13 +20,21 @@ use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
 pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let tree = syn::parse::<ItemMod>(item).unwrap();
 
-    let (mut idents, mut blocks) = (vec![], vec![]);
+    let (mut idents, mut bodies) = (vec![], vec![]);
 
     for func in tree.content.unwrap().1.into_iter() {
         match func {
             syn::Item::Fn(item_fn) => {
                 idents.push(item_fn.sig.ident);
-                blocks.push(item_fn.block);
+
+                let body = match item_fn.sig.output {
+                    syn::ReturnType::Default => quote! {
+                        ctx.push_value(Value::Nil)
+                    },
+                    _ => panic!("unexpected return type"),
+                };
+                
+                bodies.push(body);
             }
             _ => panic!("anything except function not expected inside lovm2_module."),
         }
@@ -53,6 +61,8 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #(
             #[no_mangle]
             pub extern fn #idents(ctx: &mut Context) -> lovm2_extend::prelude::Lovm2Result<()> {
+                #bodies
+                /*
                 let result: Option<Lovm2CError> = { #blocks };
 
                 match result {
@@ -69,6 +79,7 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     }.into()),
                     None => Ok(()),
                 }
+                */
             }
         )*
     };
