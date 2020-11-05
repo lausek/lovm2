@@ -6,7 +6,7 @@
 
 ``` bash
 sudo docker build -t pylovm2-build .
-sudo docker run -it pylovm2-build
+sudo docker run -it -v $(pwd):/io pylovm2-build
 $ ./build-wheels
 ```
 
