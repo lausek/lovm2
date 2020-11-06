@@ -31,4 +31,9 @@ mod shared {
     fn assert_this(b: bool) {
         assert!(b);
     }
+
+    fn use_context(context: &mut Context) -> i64 {
+        assert!(context.frame_mut().is_ok());
+        2
+    }
 }

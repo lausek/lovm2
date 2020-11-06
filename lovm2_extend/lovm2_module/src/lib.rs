@@ -18,16 +18,21 @@ use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
 // 
 // + check if the expected arguments in `argn` have been taken from stack
 
-fn to_type_name(path: &syn::Type) -> &syn::Ident {
-    match path {
+fn accept_type(ty: &syn::Type) -> &syn::Type {
+    match ty {
         syn::Type::Path(ty_path) => if let Some(ident) = ty_path.path.get_ident() {
             let ident_name = ident.to_string();
             match ident_name.as_ref() {
-                "bool" | "f64" | "i64" | "String" => ident,
+                "bool" | "f64" | "i64" | "String" | "Context" => ty,
                 _ => panic!("unexpected type"),
             }
         } else {
             panic!("unexpected type")
+        }
+        syn::Type::Reference(ref_type) => {
+            assert!(ref_type.mutability.is_some());
+            accept_type(&ref_type.elem);
+            ty
         }
         _ => panic!("unexpected type"),
     }
@@ -35,21 +40,28 @@ fn to_type_name(path: &syn::Type) -> &syn::Ident {
 
 fn generate_prelude(item_fn: &ItemFn) -> impl quote::ToTokens {
     let mut names: Vec<syn::Ident> = vec![];
-    let mut tys: Vec<syn::Ident> = vec![];
+    let mut tys: Vec<syn::Type> = vec![];
+    let mut ctx: Vec<syn::Ident> = vec![];
 
     let it = item_fn.sig.inputs.iter();
     for item in it.rev() {
         match item {
             syn::FnArg::Typed(syn::PatType { box pat, box ty, ..}) => {
-                let ty = to_type_name(ty);
+                let ty = accept_type(ty);
+
                 let name = if let syn::Pat::Ident(pat_ident) = pat {
                     &pat_ident.ident
                 } else {
                     panic!("identifier needed")
                 };
 
-                names.push(name.clone());
-                tys.push(ty.clone());
+                if let syn::Type::Reference(_) = ty {
+                    assert!(ctx.is_empty());
+                    ctx.push(name.clone());
+                } else {
+                    names.push(name.clone());
+                    tys.push(ty.clone());
+                }
             }
             _ => panic!("unexpected argument type"),
         }
@@ -58,6 +70,9 @@ fn generate_prelude(item_fn: &ItemFn) -> impl quote::ToTokens {
     quote! {
         #(
             let #names: #tys = ctx.pop_value()?.into();
+        )*
+        #(
+            let #ctx: &mut Context = ctx;
         )*
     }
 }
@@ -69,7 +84,7 @@ fn generate_postlude(item_fn: &ItemFn) -> impl quote::ToTokens {
             Ok(())
         },
         syn::ReturnType::Type(_, box ret) => {
-            to_type_name(&ret);
+            accept_type(&ret);
             let ident = format_ident!("_lv2_return_value");
             quote! {
                 ctx.push_value(Value::from(#ident));
@@ -85,8 +100,10 @@ fn generate_body(item_fn: &ItemFn) -> impl quote::ToTokens {
     let body = &item_fn.block;
 
     quote! {
-        #prelude
-        let _lv2_return_value = { #body };
+        let _lv2_return_value = {
+            #prelude
+            { #body }
+        };
         #postlude
     }
 }
