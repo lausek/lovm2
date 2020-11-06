@@ -104,3 +104,22 @@ fn native_only_create() {
     let n = vm.context_mut().globals.get(&lv2_var!(n)).unwrap();
     assert_eq!(Value::from(2), *n);
 }
+
+#[test]
+fn native_assert_this() {
+    let mut builder = ModuleBuilder::new();
+    builder.add_dependency("primitives".to_string());
+
+    let mut hir = HIR::new();
+    hir.code.push(Assign::global(lv2_var!(b), true));
+    hir.code.push(lv2_call!(assert_this, b));
+
+    builder.add("main").hir(hir);
+
+    let module = builder.build().unwrap();
+    println!("{:?}", module);
+
+    let mut vm = create_vm();
+    vm.load_and_import_all(module).unwrap();
+    vm.run().unwrap();
+}

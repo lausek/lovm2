@@ -27,4 +27,8 @@ mod shared {
     fn enden_der_wurst() -> i64 {
         1 + 1
     }
+
+    fn assert_this(b: bool) {
+        assert!(b);
+    }
 }

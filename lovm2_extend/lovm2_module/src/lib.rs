@@ -11,10 +11,10 @@ use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
 
 // TODO: wrapped functions either return:
 // () -> no errors expected, Lovm2Result == Ok(_)
-// Value -> no errors expected, push Value on stack
-// Option<Value> -> no errors expected, push Value or Nil on stack
 // Lovm2CResult -> convert errors to Lovm2Result or push Value on stack
+// Value -> no errors expected, push Value on stack
 // Option<Lovm2CResult> -> convert errors to Lovm2Result or push Nil
+// Option<Value> -> no errors expected, push Value or Nil on stack
 // 
 // + check if the expected arguments in `argn` have been taken from stack
 
@@ -65,7 +65,7 @@ fn generate_prelude(item_fn: &ItemFn) -> impl quote::ToTokens {
 fn generate_postlude(item_fn: &ItemFn) -> impl quote::ToTokens {
     match &item_fn.sig.output {
         syn::ReturnType::Default => quote! {
-            ctx.push_value(Value::Nil)?;
+            ctx.push_value(Value::Nil);
             Ok(())
         },
         syn::ReturnType::Type(_, box ret) => {
