@@ -114,7 +114,7 @@ impl Vm {
     }
 }
 
-macro_rules! ruvalue_operation {
+macro_rules! value_operation {
     ($ctx:expr, $fn:ident) => {{
         let second = $ctx.pop_value()?;
         let first = $ctx.pop_value()?;
@@ -122,7 +122,7 @@ macro_rules! ruvalue_operation {
     }};
 }
 
-macro_rules! ruvalue_compare {
+macro_rules! value_compare {
     ($ctx:expr, $fn:ident) => {{
         let second = $ctx.pop_value()?;
         let first = $ctx.pop_value()?;
@@ -242,24 +242,24 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                     _ => return Err(format!("cannot use {:?} as set target", target).into()),
                 }
             }
-            Instruction::Add => ruvalue_operation!(ctx, add),
-            Instruction::Sub => ruvalue_operation!(ctx, sub),
-            Instruction::Mul => ruvalue_operation!(ctx, mul),
-            Instruction::Div => ruvalue_operation!(ctx, div),
-            Instruction::Pow => ruvalue_operation!(ctx, pow),
-            Instruction::Rem => ruvalue_operation!(ctx, rem),
-            Instruction::And => ruvalue_operation!(ctx, bitand),
-            Instruction::Or => ruvalue_operation!(ctx, bitor),
+            Instruction::Add => value_operation!(ctx, add),
+            Instruction::Sub => value_operation!(ctx, sub),
+            Instruction::Mul => value_operation!(ctx, mul),
+            Instruction::Div => value_operation!(ctx, div),
+            Instruction::Pow => value_operation!(ctx, pow),
+            Instruction::Rem => value_operation!(ctx, rem),
+            Instruction::And => value_operation!(ctx, bitand),
+            Instruction::Or => value_operation!(ctx, bitor),
             Instruction::Not => {
                 let first = ctx.pop_value()?;
                 ctx.push_value(!first);
             }
-            Instruction::Eq => ruvalue_compare!(ctx, eq),
-            Instruction::Ne => ruvalue_compare!(ctx, ne),
-            Instruction::Ge => ruvalue_compare!(ctx, ge),
-            Instruction::Gt => ruvalue_compare!(ctx, gt),
-            Instruction::Le => ruvalue_compare!(ctx, le),
-            Instruction::Lt => ruvalue_compare!(ctx, lt),
+            Instruction::Eq => value_compare!(ctx, eq),
+            Instruction::Ne => value_compare!(ctx, ne),
+            Instruction::Ge => value_compare!(ctx, ge),
+            Instruction::Gt => value_compare!(ctx, gt),
+            Instruction::Le => value_compare!(ctx, le),
+            Instruction::Lt => value_compare!(ctx, lt),
             Instruction::Jmp(addr) => {
                 ip = *addr as usize;
                 continue;

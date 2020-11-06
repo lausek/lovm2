@@ -1,9 +1,11 @@
+#![feature(box_patterns)]
+
 extern crate syn;
 #[macro_use]
 extern crate quote;
 
 use proc_macro::TokenStream;
-use syn::{export::Span, Ident, ItemMod};
+use syn::{export::Span, Ident, ItemFn, ItemMod};
 
 use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
 
@@ -16,6 +18,79 @@ use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
 // 
 // + check if the expected arguments in `argn` have been taken from stack
 
+fn to_type_name(path: &syn::Type) -> &syn::Ident {
+    match path {
+        syn::Type::Path(ty_path) => if let Some(ident) = ty_path.path.get_ident() {
+            let ident_name = ident.to_string();
+            match ident_name.as_ref() {
+                "bool" | "f64" | "i64" | "String" => ident,
+                _ => panic!("unexpected type"),
+            }
+        } else {
+            panic!("unexpected type")
+        }
+        _ => panic!("unexpected type"),
+    }
+}
+
+fn generate_prelude(item_fn: &ItemFn) -> impl quote::ToTokens {
+    let mut names: Vec<syn::Ident> = vec![];
+    let mut tys: Vec<syn::Ident> = vec![];
+
+    let it = item_fn.sig.inputs.iter();
+    for item in it.rev() {
+        match item {
+            syn::FnArg::Typed(syn::PatType { box pat, box ty, ..}) => {
+                let ty = to_type_name(ty);
+                let name = if let syn::Pat::Ident(pat_ident) = pat {
+                    &pat_ident.ident
+                } else {
+                    panic!("identifier needed")
+                };
+
+                names.push(name.clone());
+                tys.push(ty.clone());
+            }
+            _ => panic!("unexpected argument type"),
+        }
+    }
+
+    quote! {
+        #(
+            let #names: #tys = ctx.pop_value()?.into();
+        )*
+    }
+}
+
+fn generate_postlude(item_fn: &ItemFn) -> impl quote::ToTokens {
+    match &item_fn.sig.output {
+        syn::ReturnType::Default => quote! {
+            ctx.push_value(Value::Nil)?;
+            Ok(())
+        },
+        syn::ReturnType::Type(_, box ret) => {
+            to_type_name(&ret);
+            let ident = format_ident!("_lv2_return_value");
+            quote! {
+                ctx.push_value(Value::from(#ident));
+                Ok(())
+            }
+        }
+    }
+}
+
+fn generate_body(item_fn: &ItemFn) -> impl quote::ToTokens {
+    let prelude = generate_prelude(&item_fn);
+    let postlude = generate_postlude(&item_fn);
+    let body = &item_fn.block;
+
+    quote! {
+        #prelude
+        let _lv2_return_value = { #body };
+        #postlude
+    }
+}
+
 #[proc_macro_attribute]
 pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let tree = syn::parse::<ItemMod>(item).unwrap();
@@ -25,15 +100,9 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
     for func in tree.content.unwrap().1.into_iter() {
         match func {
             syn::Item::Fn(item_fn) => {
-                idents.push(item_fn.sig.ident);
-
-                let body = match item_fn.sig.output {
-                    syn::ReturnType::Default => quote! {
-                        ctx.push_value(Value::Nil)
-                    },
-                    _ => panic!("unexpected return type"),
-                };
+                let body = generate_body(&item_fn);
                 
+                idents.push(item_fn.sig.ident);
                 bodies.push(body);
             }
             _ => panic!("anything except function not expected inside lovm2_module."),

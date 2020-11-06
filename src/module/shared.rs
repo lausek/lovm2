@@ -54,7 +54,7 @@ impl ModuleProtocol for SharedObjectModule {
 }
 
 impl SharedObjectModule {
-    fn from_library(lib: Library, name: String) -> Self {
+    fn from_library(lib: Library, name: String) -> Lovm2Result<Self> {
         unsafe {
             let lib = Rc::new(lib);
             let lookup: Result<Symbol<ExternInitializer>, Error> =
@@ -63,13 +63,13 @@ impl SharedObjectModule {
                 Ok(initializer) => {
                     let mut slots = HashMap::new();
                     initializer(lib.clone(), &mut slots);
-                    Self {
+                    Ok(Self {
                         name,
                         lib,
                         slots: Slots::from(slots),
-                    }
+                    })
                 }
-                Err(_) => unimplemented!(),
+                Err(_) => Err(Lovm2ErrorTy::Basic.into()),
             }
         }
     }
@@ -79,8 +79,20 @@ impl SharedObjectModule {
         T: AsRef<Path>,
     {
         let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
-        match Library::new(path.as_ref().as_os_str()) {
-            Ok(lib) => Ok(SharedObjectModule::from_library(lib, name.to_string())),
+
+        // this fixes some segfault errors. https://github.com/nagisa/rust_libloading/issues/41
+        // load and initialize library
+        #[cfg(target_os = "linux")]
+        let library: Result<Library, libloading::Error> = {
+            // load library with `RTLD_NOW | RTLD_NODELETE` to fix a SIGSEGV
+            ::libloading::os::unix::Library::open(Some(path.as_ref()), 0x2 | 0x1000)
+                .map(Library::from)
+        };
+        #[cfg(not(target_os = "linux"))]
+        let library = Library::new(path.as_ref());
+
+        match library {
+            Ok(lib) => SharedObjectModule::from_library(lib, name.to_string()),
             Err(err) => Err(format!("{}", err).into()),
         }
     }

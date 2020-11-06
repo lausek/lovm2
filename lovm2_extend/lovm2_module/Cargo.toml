@@ -11,8 +11,8 @@ proc-macro = true
 [dependencies]
 lovm2 = { path = "../../" }
 lovm2_error = { path = "../../src/lovm2_error" }
-quote = "1.0"
+quote = "1.0.7"
 
 [dependencies.syn]
-version = "1.0.33"
-features = ["full"]
+version = "1.0.48"
+features = ["full", "printing"]

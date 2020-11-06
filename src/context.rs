@@ -84,6 +84,10 @@ impl Context {
         }
     }
 
+    pub fn add_load_path(&mut self, path: String) {
+        self.load_paths.push(path);
+    }
+
     fn load_and_import_filter(
         &mut self,
         module: GenericModule,

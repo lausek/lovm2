@@ -220,12 +220,54 @@ impl From<&str> for Value {
     }
 }
 
+impl From<String> for Value {
+    fn from(s: String) -> Self {
+        Value::Str(s)
+    }
+}
+
 impl<T> From<Vec<T>> for Value
 where
     T: Into<Value>,
 {
     fn from(val: Vec<T>) -> Self {
         Value::List(val.into_iter().map(T::into).collect())
+    }
+}
+
+impl Into<bool> for Value {
+    fn into(self) -> bool {
+        match self.into_bool().unwrap() {
+            Value::Bool(b) => b,
+            _ => panic!("cannot convert from bool"),
+        }
+    }
+}
+
+impl Into<i64> for Value {
+    fn into(self) -> i64 {
+        match self.into_integer().unwrap() {
+            Value::Int(n) => n,
+            _ => panic!("cannot convert from integer"),
+        }
+    }
+}
+
+impl Into<f64> for Value {
+    fn into(self) -> f64 {
+        match self.into_float().unwrap() {
+            Value::Float(n) => n,
+            _ => panic!("cannot convert from float"),
+        }
+    }
+}
+
+impl Into<String> for Value {
+    fn into(self) -> String {
+        match self.into_str().unwrap() {
+            Value::Str(s) => s,
+            _ => panic!("cannot convert from string"),
+        }
     }
 }
 
