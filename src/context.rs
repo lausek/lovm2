@@ -122,8 +122,12 @@ impl Context {
                 }
 
                 let key = if let Some(import_hook) = self.import_hook.as_ref().cloned() {
-                    let patched_key = import_hook(module.name(), key.as_ref());
-                    Variable::from(patched_key)
+                    if key.as_ref() == crate::prelude::ENTRY_POINT {
+                        key.clone()
+                    } else {
+                        let patched_key = import_hook(module.name(), key.as_ref());
+                        Variable::from(patched_key)
+                    }
                 } else {
                     key.clone()
                 };
