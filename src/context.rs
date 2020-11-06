@@ -11,8 +11,9 @@ use crate::module::{GenericModule, Module};
 use crate::value::Value;
 use crate::var::Variable;
 
-pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>>;
 pub type InterruptFn = dyn Fn(&mut Context) -> Lovm2Result<()>;
+pub type ImportHookFn = dyn Fn(&str, &str) -> String;
+pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>>;
 
 fn filter_entry_reimport(name: &Variable) -> bool {
     name.as_ref() != crate::prelude::ENTRY_POINT
@@ -66,6 +67,7 @@ pub struct Context {
     pub globals: HashMap<Variable, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CodeObjectRef>,
+    import_hook: Option<Rc<ImportHookFn>>,
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: Vec<Option<Rc<InterruptFn>>>,
     /// function to call if a module is about to be loaded
@@ -85,6 +87,7 @@ impl Context {
             modules: HashMap::new(),
             globals: HashMap::new(),
             scope: HashMap::new(),
+            import_hook: None,
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![format!(
@@ -117,6 +120,13 @@ impl Context {
                 if !filter(key) {
                     continue;
                 }
+
+                let key = if let Some(import_hook) = self.import_hook.as_ref().cloned() {
+                    let patched_key = import_hook(module.name(), key.as_ref());
+                    Variable::from(patched_key)
+                } else {
+                    key.clone()
+                };
 
                 if self.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
@@ -179,6 +189,13 @@ impl Context {
             Some(co) => Ok(co),
             _ => Err((Lovm2ErrorTy::LookupFailed, name).into()),
         }
+    }
+
+    pub fn set_import_hook<T>(&mut self, hook: T)
+    where
+        T: Fn(&str, &str) -> String + 'static,
+    {
+        self.import_hook = Some(Rc::new(hook));
     }
 
     /// register a new callback function that is used for resolving dependencies at runtime

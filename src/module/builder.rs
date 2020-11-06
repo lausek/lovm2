@@ -19,7 +19,7 @@ pub struct ModuleBuilder {
 impl ModuleBuilder {
     pub fn new() -> Self {
         Self {
-            name: "<unnamed>".to_string(),
+            name: String::new(),
             slots: HashMap::new(),
             uses: vec![],
         }
