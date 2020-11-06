@@ -37,6 +37,19 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     Err((Lovm2ErrorTy::ModuleNotFound, name).into())
 }
 
+pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
+    if let Some(relative_to) = &req.relative_to {
+        let paths = &[std::path::Path::new(relative_to)
+            .parent()
+            .unwrap()
+            .display()
+            .to_string()];
+        find_module(&req.module, paths)
+    } else {
+        Err((Lovm2ErrorTy::ModuleNotFound, &req.module).into())
+    }
+}
+
 pub struct LoadRequest {
     pub module: String,
     pub relative_to: Option<String>,
