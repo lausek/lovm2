@@ -108,6 +108,7 @@ impl Context {
         &mut self,
         module: GenericModule,
         filter: impl Fn(&Variable) -> bool,
+        importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
         if !self.modules.get(module.name()).is_some() {
             // load static dependencies of module
@@ -121,16 +122,14 @@ impl Context {
                     continue;
                 }
 
-                let key = if let Some(import_hook) = self.import_hook.as_ref().cloned() {
-                    if key.as_ref() == crate::prelude::ENTRY_POINT {
-                        key.clone()
-                    } else {
-                        let patched_key = import_hook(module.name(), key.as_ref());
-                        Variable::from(patched_key)
-                    }
+                /*
+                let key = if let Some(import_hook) = importer.as_ref().cloned() {
+                    let patched_key = import_hook(module.name(), key.as_ref());
+                    Variable::from(patched_key)
                 } else {
                     key.clone()
                 };
+                */
 
                 if self.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
@@ -180,12 +179,14 @@ impl Context {
             module = Some(Module::load_from_file(path)?);
         }
 
-        self.load_and_import_filter(module.unwrap(), filter_entry_reimport)
+        let import_hook = self.import_hook.as_ref().cloned();
+
+        self.load_and_import_filter(module.unwrap(), filter_entry_reimport, import_hook)
     }
 
     /// add the module and all of its slots to `scope`
     pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
-        self.load_and_import_filter(module, |_| true)
+        self.load_and_import_filter(module, |_| true, None)
     }
 
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {

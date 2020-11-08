@@ -32,7 +32,7 @@ fn load_hook_none() {
     vm.context_mut().set_load_hook(|_name| Ok(None));
 
     let mut hir = HIR::new();
-    hir.push(Include::load("std"));
+    hir.push(Include::load("notfound"));
     hir.push(Interrupt::new(10));
 
     let mut builder = ModuleBuilder::new();
@@ -50,7 +50,7 @@ fn load_custom_module() {
         let mut hir = HIR::new();
         hir.push(Return::value(Expr::add(1, 1)));
 
-        let mut builder = ModuleBuilder::new();
+        let mut builder = ModuleBuilder::named("extern");
         builder.add("calc").hir(hir);
         Ok(Some(
             std::rc::Rc::new(builder.build().unwrap()) as GenericModule
@@ -58,7 +58,7 @@ fn load_custom_module() {
     });
 
     let mut hir = HIR::new();
-    hir.push(Include::load("std"));
+    hir.push(Include::load("extern"));
     hir.push(Assign::local(lv2_var!(n), Call::new("calc")));
     hir.push(Interrupt::new(10));
 
@@ -99,11 +99,11 @@ fn load_avoid_sigabrt() {
 fn avoid_double_import() {
     use std::rc::Rc;
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = ModuleBuilder::named("main");
 
     let mut main_hir = HIR::new();
-    main_hir.push(Include::load("std"));
-    main_hir.push(Include::load("std"));
+    main_hir.push(Include::load("abc"));
+    main_hir.push(Include::load("abc"));
     main_hir.push(Interrupt::new(10));
 
     builder.add(ENTRY_POINT).hir(main_hir);
@@ -112,11 +112,10 @@ fn avoid_double_import() {
 
     let mut vm = Vm::new();
     vm.context_mut().set_load_hook(|_name| {
-        let mut builder = ModuleBuilder::new();
+        let mut builder = ModuleBuilder::named("abc");
         builder.add("add").hir(HIR::new());
         let module = builder.build().unwrap();
         Ok(Some(Rc::new(module) as GenericModule))
     });
-
     assert!(run_module_test(vm, module, |_ctx| ()).is_ok());
 }

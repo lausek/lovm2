@@ -117,11 +117,10 @@ impl Value {
         }
     }
 
-    pub fn set(&mut self, key: Value, val: Value) -> Lovm2Result<()> {
-        let val = match val {
-            Value::Ref(_) => val,
-            _ => box_value(val),
-        };
+    pub fn set(&mut self, key: Value, mut val: Value) -> Lovm2Result<()> {
+        if !val.is_ref() {
+            val = box_value(val);
+        }
 
         match self {
             Value::Dict(dict) => {

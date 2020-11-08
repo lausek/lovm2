@@ -54,6 +54,7 @@ fn print(ctx: &mut Context) -> Lovm2Result<()> {
 /// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
+    module.name = "std".to_string();
 
     module
         .slots
