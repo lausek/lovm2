@@ -7,13 +7,13 @@ use lovm2_error::*;
 
 use crate::code::CodeObjectRef;
 use crate::frame::Frame;
-use crate::module::{GenericModule, Module};
+use crate::module::{GenericModule, LoadableModule, Module};
 use crate::value::Value;
 use crate::var::Variable;
 
 pub type InterruptFn = dyn Fn(&mut Context) -> Lovm2Result<()>;
 pub type ImportHookFn = dyn Fn(&str, &str) -> String;
-pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>>;
+pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<LoadableModule>>;
 
 fn filter_entry_reimport(name: &Variable) -> bool {
     name.as_ref() != crate::prelude::ENTRY_POINT
@@ -106,7 +106,7 @@ impl Context {
 
     fn load_and_import_filter(
         &mut self,
-        module: GenericModule,
+        module: LoadableModule,
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
@@ -136,7 +136,8 @@ impl Context {
                 }
             }
 
-            self.modules.insert(module.name().to_string(), module);
+            self.modules
+                .insert(module.name().to_string(), module.into_generic());
         }
         Ok(())
     }
@@ -185,8 +186,11 @@ impl Context {
     }
 
     /// add the module and all of its slots to `scope`
-    pub fn load_and_import_all(&mut self, module: GenericModule) -> Lovm2Result<()> {
-        self.load_and_import_filter(module, |_| true, None)
+    pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
+    where
+        T: Into<LoadableModule>,
+    {
+        self.load_and_import_filter(module.into(), |_| true, None)
     }
 
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {
@@ -206,7 +210,7 @@ impl Context {
     /// register a new callback function that is used for resolving dependencies at runtime
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&LoadRequest) -> Lovm2Result<Option<GenericModule>> + Sized + 'static,
+        T: Fn(&LoadRequest) -> Lovm2Result<Option<LoadableModule>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }

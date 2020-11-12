@@ -75,7 +75,7 @@ fn global_uses() {
     vm.context_mut().set_load_hook(move |req| {
         assert_eq!(req.module, PRELOADED);
         called_ref.set(true);
-        Ok(Some(Rc::new(Module::new())))
+        Ok(Some(Module::new().into()))
     });
 
     vm.load_and_import_all(module).unwrap();

@@ -4,6 +4,7 @@
 //! code objects need to be added to the scope to be callable by lovm2 bytecode.
 
 pub mod builder;
+pub mod loadable;
 pub mod shared;
 pub mod slots;
 pub mod standard;
@@ -19,6 +20,7 @@ use crate::code::CallProtocol;
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
+pub use self::loadable::LoadableModule;
 pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
@@ -124,13 +126,13 @@ impl Module {
     }
 
     /// tries to load the file as shared object first and tries regular deserialization if it failed
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<GenericModule>
+    pub fn load_from_file<T>(path: T) -> Lovm2Result<LoadableModule>
     where
         T: AsRef<Path>,
     {
         // try loading module as shared object
         if let Ok(so_module) = SharedObjectModule::load_from_file(&path) {
-            return Ok(Rc::new(so_module) as GenericModule);
+            return Ok(so_module.into());
         }
 
         use bincode::Options;
@@ -156,6 +158,6 @@ impl Module {
             Rc::get_mut(slot).unwrap().set_module(module.name.clone());
         }
 
-        Ok(Rc::new(module) as GenericModule)
+        Ok(module.into())
     }
 }

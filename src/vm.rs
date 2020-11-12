@@ -1,7 +1,6 @@
 //! runs modules and maintains program state
 
 use std::ops::*;
-use std::rc::Rc;
 
 use lovm2_error::*;
 
@@ -9,7 +8,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, GenericModule, ENTRY_POINT};
+use crate::module::{create_standard_module, LoadableModule, ENTRY_POINT};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
@@ -41,8 +40,7 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
-        ctx.load_and_import_all(Rc::new(create_standard_module()) as GenericModule)
-            .unwrap();
+        ctx.load_and_import_all(create_standard_module()).unwrap();
         Self { ctx }
     }
 
@@ -93,9 +91,9 @@ impl Vm {
     // TODO: add `ImportOptions` parameter to specify what names to import
     pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
     where
-        T: Into<GenericModule>,
+        T: Into<LoadableModule>,
     {
-        self.ctx.load_and_import_all(module.into())
+        self.ctx.load_and_import_all(module)
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
