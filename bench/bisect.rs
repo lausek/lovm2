@@ -1,5 +1,6 @@
 use criterion::Criterion;
 
+use lovm2::module::ModuleProtocol;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
@@ -129,6 +130,9 @@ pub fn bisect(c: &mut Criterion) {
     module.add("derive").hir(derive_hir());
     module.add("bisect").hir(bisect_hir);
     let module = module.build().unwrap();
+
+    // check filesize of module
+    assert_eq!(369, module.to_bytes().unwrap().len());
 
     let mut vm = Vm::new();
     vm.load_and_import_all(module).unwrap();

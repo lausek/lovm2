@@ -4,7 +4,8 @@ cd $(dirname `realpath $0`)
 
 lastgid=`git rev-parse --short HEAD`
 
-if [[ $(ls -R target/criterion/ | grep $lastgid) ]]; then
+ls -R target/criterion/ | grep $lastgid
+if [ $? -eq 0 ]; then
     echo "baseline $lastgid"
     cargo bench -- --baseline "$lastgid"
 else

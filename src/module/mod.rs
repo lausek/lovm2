@@ -50,7 +50,13 @@ pub trait ModuleProtocol: std::fmt::Debug {
         unimplemented!()
     }
 
+    // TODO: move this function out of the trait
+    #[deprecated]
     fn store_to_file(&self, _path: &str) -> Lovm2Result<()> {
+        unimplemented!()
+    }
+
+    fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
         unimplemented!()
     }
 
@@ -100,14 +106,20 @@ impl ModuleProtocol for Module {
             .map(|co_ref| co_ref.clone() as Rc<dyn CallProtocol>)
     }
 
-    // TODO: could lead to errors when two threads serialize to the same file
-    fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+    fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
         use bincode::Options;
-        let file = File::create(path).map_err(|e| e.to_string())?;
         bincode::options()
             .with_varint_encoding()
-            .serialize_into(file, self)
+            .serialize(self)
             .map_err(|e| e.to_string().into())
+    }
+
+    // TODO: could lead to errors when two threads serialize to the same file
+    fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+        use std::io::Write;
+        let mut file = File::create(path).map_err(|e| e.to_string())?;
+        let bytes = self.to_bytes()?;
+        file.write_all(&bytes).map_err(|e| e.to_string().into())
     }
 
     fn uses(&self) -> &[String] {
