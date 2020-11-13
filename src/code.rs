@@ -172,7 +172,7 @@ impl CodeObjectBuilder {
 /// values will be returned over the value stack. every code object has
 /// to return some value on termination. if no value is produced,
 /// `Nil` is implicitly returned.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CodeObject {
     pub name: String,
     pub loc: Option<String>,

@@ -24,12 +24,14 @@ pub struct CodeObject {
 }
 
 impl code::CallProtocol for CodeObject {
+    /*
     fn code_object(&self) -> Option<&Lovm2CodeObject> {
         match &self.inner {
             CodeObjectWrapper::Lovm2(co) => Some(&co),
             _ => None,
         }
     }
+    */
 
     fn run(&self, ctx: &mut context::Context) -> Lovm2Result<()> {
         match &self.inner {

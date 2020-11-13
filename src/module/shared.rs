@@ -23,6 +23,7 @@ pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CodeObjectRef>);
 
 /// contains the loaded shared object
+#[derive(Clone)]
 pub struct SharedObjectModule {
     name: String,
     lib: Rc<Library>,

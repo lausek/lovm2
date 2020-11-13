@@ -58,6 +58,7 @@ impl ModuleBuilderSlot {
     }
 
     // TODO: can we use consuming self here?
+    /*
     pub fn complete(&mut self) -> PyResult<CodeObject> {
         match &mut self.inner {
             ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
@@ -74,6 +75,7 @@ impl ModuleBuilderSlot {
             }
         }
     }
+    */
 
     pub fn pyfn(&mut self, pyfn: PyObject) -> PyResult<()> {
         self.inner = ModuleBuilderSlotInner::PyFn(Some(pyfn));

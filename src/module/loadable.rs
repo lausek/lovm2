@@ -1,7 +1,7 @@
 use super::{CallableModule, GenericModule, /* Module, */ ModuleProtocol, SharedObjectModule};
 use crate::code::CodeObject;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum LoadableModule {
     Generic(CallableModule),
     Lovm2(CodeObject),

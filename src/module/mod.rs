@@ -182,16 +182,20 @@ impl Module {
 }
 */
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CallableModule {
-    name: String,
-    slots: Slots,
+    pub name: String,
+    pub loc: Option<String>,
+    pub uses: Vec<String>,
+    pub slots: Slots,
 }
 
 impl CallableModule {
     pub fn new() -> Self {
         Self {
             name: String::new(),
+            loc: None,
+            uses: vec![],
             slots: Slots::new(),
         }
     }
@@ -202,7 +206,15 @@ impl ModuleProtocol for CallableModule {
         &self.name
     }
 
+    fn location(&self) -> Option<&String> {
+        self.loc.as_ref()
+    }
+
     fn slots(&self) -> &Slots {
         &self.slots
+    }
+
+    fn uses(&self) -> &[String] {
+        self.uses.as_ref()
     }
 }

@@ -10,7 +10,7 @@ use lovm2::var;
 
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
 
-use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
+use super::{Lovm2Block, Lovm2Branch, Lovm2CallableModule, Lovm2Module, Module, ModuleBuilderSlot};
 
 #[pyclass(unsendable)]
 pub struct ModuleBuilder {
@@ -59,7 +59,7 @@ impl ModuleBuilder {
 
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python, module_location: Option<String>) -> PyResult<Module> {
-        let mut module = Lovm2Module::new();
+        let mut module = Lovm2CallableModule::new();
         module.name = self.name.clone();
         module.loc = module_location;
         module.uses = self.uses.clone();
@@ -68,10 +68,12 @@ impl ModuleBuilder {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
             match co_builder.complete() {
                 Ok(mut co) => {
+                    /*
                     {
                         use lovm2::code::CallProtocol;
                         co.set_module(module.name.clone());
                     }
+                    */
 
                     module.slots.insert(var::Variable::from(key), Rc::new(co));
                 }
