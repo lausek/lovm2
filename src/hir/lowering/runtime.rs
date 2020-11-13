@@ -14,6 +14,7 @@ use super::*;
 pub struct LoweringRuntime {
     pub name: String,
     pub entries: Vec<(usize, usize)>,
+    pub uses: Vec<String>,
     pub consts: Vec<Value>,
     pub idents: Vec<Variable>,
     pub code: Vec<Instruction>,
@@ -28,6 +29,7 @@ impl LoweringRuntime {
         Self {
             name: String::new(),
             entries: vec![],
+            uses: vec![],
             consts: vec![],
             idents: vec![],
             code: vec![],
@@ -57,6 +59,7 @@ impl LoweringRuntime {
         let mut co = CodeObject::new();
         co.name = self.name;
         co.entries = self.entries;
+        co.uses = self.uses;
         co.consts = self.consts;
         co.idents = self.idents;
         co.code = self.code;

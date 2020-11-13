@@ -8,7 +8,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, LoadableModule /*, ENTRY_POINT */};
+use crate::module::{create_standard_module, Module /* LoadableModule, ENTRY_POINT */};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
@@ -92,7 +92,7 @@ impl Vm {
     // TODO: add `ImportOptions` parameter to specify what names to import
     pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
     where
-        T: Into<LoadableModule>,
+        T: Into<Module>,
     {
         self.ctx.load_and_import_all(module)
     }
@@ -108,9 +108,10 @@ impl Vm {
 
     /// start the execution at `ENTRY_POINT`
     pub fn run(&mut self) -> Lovm2Result<()> {
-        match self.ctx.entry.take() {
-            Some(callable) => self.run_object(callable.as_ref()),
-            _ => todo!(),
+        if let Some(callable) = self.ctx.entry.take() {
+            self.run_object(callable.as_ref())
+        } else {
+            Err(Lovm2ErrorTy::NoEntryPoint.into())
         }
         //let co = self.ctx.lookup_code_object(&ENTRY_POINT.into())?;
     }

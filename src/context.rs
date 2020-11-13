@@ -5,15 +5,15 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::{CallProtocol, CodeObjectFunction, CodeObjectRef};
+use crate::code::{CallProtocol, /* CodeObjectFunction, */ CodeObjectRef};
 use crate::frame::Frame;
-use crate::module::{GenericModule, LoadableModule, Module};
+use crate::module::Module;
 use crate::value::Value;
 use crate::var::Variable;
 
 pub type InterruptFn = dyn Fn(&mut Context) -> Lovm2Result<()>;
 pub type ImportHookFn = dyn Fn(&str, &str) -> String;
-pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<LoadableModule>>;
+pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
 
 fn filter_entry_reimport(name: &Variable) -> bool {
     name.as_ref() != crate::prelude::ENTRY_POINT
@@ -63,7 +63,7 @@ pub struct LoadRequest {
 pub struct Context {
     pub entry: Option<Rc<dyn CallProtocol>>,
     /// list of loaded modules: `Module` or `SharedObjectModule`
-    pub modules: HashMap<String, GenericModule>,
+    pub modules: HashMap<String, Rc<Module>>,
     /// global variables that can be altered from every object
     pub globals: HashMap<Variable, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
@@ -108,11 +108,11 @@ impl Context {
 
     fn load_and_import_filter(
         &mut self,
-        module: LoadableModule,
+        module: Module,
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
-        use crate::module::ModuleProtocol;
+        //use crate::module::ModuleProtocol;
         use crate::prelude::ENTRY_POINT;
 
         println!("{:?}", module);
@@ -122,7 +122,16 @@ impl Context {
                 self.load_and_import_by_name(used_module, module.location().cloned())?;
             }
 
-            println!("{:?}", module);
+            let module = Rc::new(module);
+            for (key, co) in module.slots().iter() {
+                if self.scope.insert(key.clone(), co.clone()).is_some() {
+                    return Err((Lovm2ErrorTy::ImportConflict, key).into());
+                } else if key.as_ref() == ENTRY_POINT {
+                    self.entry = Some(co.clone());
+                }
+            }
+
+            /*
             let module = match module {
                 LoadableModule::Generic(m) => {
                     let boxed = Rc::new(m);
@@ -168,6 +177,7 @@ impl Context {
                     boxed as GenericModule
                 }
             };
+            */
 
             self.modules.insert(module.name().to_string(), module);
 
@@ -242,7 +252,7 @@ impl Context {
     /// add the module and all of its slots to `scope`
     pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
     where
-        T: Into<LoadableModule>,
+        T: Into<Module>,
     {
         self.load_and_import_filter(module.into(), |_| true, None)
     }
@@ -264,7 +274,7 @@ impl Context {
     /// register a new callback function that is used for resolving dependencies at runtime
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&LoadRequest) -> Lovm2Result<Option<LoadableModule>> + Sized + 'static,
+        T: Fn(&LoadRequest) -> Lovm2Result<Option<Module>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }

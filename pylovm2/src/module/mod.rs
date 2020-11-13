@@ -4,25 +4,22 @@ mod slot;
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
-use lovm2::module::LoadableModule;
+//use lovm2::module::LoadableModule;
 use lovm2::prelude::*;
 
 pub use self::builder::ModuleBuilder;
 pub use self::slot::ModuleBuilderSlot;
 
-type Lovm2Branch = lovm2::hir::branch::Branch;
-type Lovm2Block = lovm2::hir::block::Block;
-type Lovm2CallableModule = lovm2::module::CallableModule;
-type Lovm2Module = lovm2::module::Module;
+use crate::lv2::*;
 
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Module {
-    pub inner: Option<LoadableModule>,
+    pub inner: Option<Lovm2Module>,
 }
 
 impl Module {
-    pub fn from(inner: Lovm2CallableModule) -> Self {
+    pub fn from(inner: Lovm2Module) -> Self {
         Self {
             inner: Some(inner.into()),
         }

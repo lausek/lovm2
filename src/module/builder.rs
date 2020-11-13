@@ -5,10 +5,12 @@ use std::collections::HashMap;
 
 use lovm2_error::*;
 
-use crate::code::CodeObject;
+//use crate::code::CodeObject;
 use crate::hir::{lowering::LoweringRuntime, HIR};
-use crate::module::{standard::BUILTIN_FUNCTIONS, /* Module, */ ENTRY_POINT};
+use crate::module::{standard::BUILTIN_FUNCTIONS, CodeObjectFunction, Module, ENTRY_POINT};
 use crate::var::Variable;
+
+use std::rc::Rc;
 
 pub struct ModuleBuilder {
     name: String,
@@ -54,11 +56,12 @@ impl ModuleBuilder {
         self.slots.get_mut(&name).unwrap()
     }
 
-    pub fn build(mut self) -> Lovm2CompileResult<CodeObject> {
+    pub fn build(mut self) -> Lovm2CompileResult<Module> {
         //let mut module = Module::new();
         //let mut entries = vec![];
         let mut ru = LoweringRuntime::new();
         ru.name = self.name;
+        ru.uses = self.uses;
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
@@ -74,9 +77,15 @@ impl ModuleBuilder {
             co_builder.complete(&mut ru)?;
         }
 
-        let mut co = ru.complete()?;
-        co.uses = self.uses;
-        Ok(co)
+        let mut module: Module = ru.complete()?.into();
+
+        for (iidx, offset) in module.code_object.entries.iter() {
+            let key = &module.code_object.idents[*iidx];
+            let func = CodeObjectFunction::from(module.code_object.clone(), *offset);
+            module.slots.insert(key.clone(), Rc::new(func));
+        }
+
+        Ok(module)
     }
 
     pub fn entry(&mut self) -> &mut ModuleBuilderSlot {

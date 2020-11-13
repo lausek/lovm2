@@ -7,10 +7,10 @@ use lovm2::hir;
 use crate::code::CodeObject;
 
 use super::builder::*;
-use super::Lovm2Block;
+use crate::lv2::*;
 
 #[derive(Clone)]
-enum ModuleBuilderSlotInner {
+pub(super) enum ModuleBuilderSlotInner {
     Lovm2Hir(Option<hir::HIR>),
     PyFn(Option<PyObject>),
 }
@@ -18,7 +18,7 @@ enum ModuleBuilderSlotInner {
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct ModuleBuilderSlot {
-    inner: ModuleBuilderSlotInner,
+    pub(super) inner: ModuleBuilderSlotInner,
 }
 
 #[pymethods]
@@ -82,3 +82,30 @@ impl ModuleBuilderSlot {
         Ok(())
     }
 }
+
+/*
+impl ModuleBuilderSlot {
+    pub fn complete(&mut self, builder: &mut Lovm2ModuleBuilder, slots: &mut Lovm2Slots) -> Lovm2Result<()> {
+        match &mut self.inner {
+            ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
+                if let Some(hir) = hir.take() {
+                    todo!()
+                    /*
+                    builder.add()
+                    return match hir.build() {
+                        Ok(co) => Ok(CodeObject::from(co)),
+                        Err(msg) => Err(PyRuntimeError::new_err(msg.to_string())),
+                    };
+                    */
+                }
+                //Err(PyRuntimeError::new_err("hir was already built"))
+            }
+            ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
+                todo!()
+                //Ok(CodeObject::from(pyfn.take().unwrap()))
+            }
+        }
+        Ok(())
+    }
+}
+*/

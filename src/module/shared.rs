@@ -13,9 +13,9 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::{CallProtocol, CodeObjectRef, ExternFunction};
+use crate::code::{CallProtocol, CodeObject, CodeObjectRef, ExternFunction};
 use crate::context::Context;
-use crate::module::{GenericModule, ModuleProtocol, Slots};
+use crate::module::{/* GenericModule, */ Module, /* ModuleProtocol, */ Slots};
 use crate::var::Variable;
 
 /// name of the unmangled function name to call when initializing module slots
@@ -23,6 +23,7 @@ pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CodeObjectRef>);
 
 /// contains the loaded shared object
+/*
 #[derive(Clone)]
 pub struct SharedObjectModule {
     name: String,
@@ -53,52 +54,62 @@ impl ModuleProtocol for SharedObjectModule {
         }
     }
 }
+*/
 
-impl SharedObjectModule {
-    fn from_library(lib: Library, name: String) -> Lovm2Result<Self> {
-        unsafe {
-            let lib = Rc::new(lib);
-            let lookup: Result<Symbol<ExternInitializer>, Error> =
-                lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
-            match lookup {
-                Ok(initializer) => {
-                    let mut slots = HashMap::new();
-                    initializer(lib.clone(), &mut slots);
-                    Ok(Self {
-                        name,
-                        lib,
-                        slots: Slots::from(slots),
-                    })
-                }
-                Err(_) => Err(Lovm2ErrorTy::Basic.into()),
+fn load_slots(lib: Library) -> Lovm2Result<Slots> {
+    unsafe {
+        let lib = Rc::new(lib);
+        let lookup: Result<Symbol<ExternInitializer>, Error> =
+            lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
+        match lookup {
+            Ok(initializer) => {
+                let mut slots = HashMap::new();
+                initializer(lib.clone(), &mut slots);
+                Ok(Slots::from(slots))
             }
-        }
-    }
-
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<SharedObjectModule>
-    where
-        T: AsRef<Path>,
-    {
-        let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
-
-        // this fixes some segfault errors. https://github.com/nagisa/rust_libloading/issues/41
-        // load and initialize library
-        #[cfg(target_os = "linux")]
-        let library: Result<Library, libloading::Error> = {
-            // load library with `RTLD_NOW | RTLD_NODELETE` to fix a SIGSEGV
-            ::libloading::os::unix::Library::open(Some(path.as_ref()), 0x2 | 0x1000)
-                .map(Library::from)
-        };
-        #[cfg(not(target_os = "linux"))]
-        let library = Library::new(path.as_ref());
-
-        match library {
-            Ok(lib) => SharedObjectModule::from_library(lib, name.to_string()),
-            Err(err) => Err(format!("{}", err).into()),
+            Err(_) => Err(Lovm2ErrorTy::Basic.into()),
         }
     }
 }
 
+pub fn load_from_file<T>(path: T) -> Lovm2Result<Module>
+where
+    T: AsRef<Path>,
+{
+    let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
+
+    // this fixes some segfault errors. https://github.com/nagisa/rust_libloading/issues/41
+    // load and initialize library
+    #[cfg(target_os = "linux")]
+    let library: Result<Library, libloading::Error> = {
+        // load library with `RTLD_NOW | RTLD_NODELETE` to fix a SIGSEGV
+        ::libloading::os::unix::Library::open(Some(path.as_ref()), 0x2 | 0x1000).map(Library::from)
+    };
+    #[cfg(not(target_os = "linux"))]
+    let library = Library::new(path.as_ref());
+
+    let library = library.map_err(|e| Lovm2Error::from(format!("{}", e)))?;
+
+    let code_object = CodeObject {
+        name: name.to_string(),
+        loc: Some(path.as_ref().display().to_string()),
+        ..CodeObject::default()
+    };
+
+    /*
+    let slots = match library {
+        Ok(lib) => ,
+        Err(err) => Err(format!("{}", err).into()),
+    }?;
+    */
+
+    Ok(Module {
+        code_object: Rc::new(code_object),
+        slots: load_slots(library)?,
+    })
+}
+
+/*
 impl std::fmt::Debug for SharedObjectModule {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "<extern module>")
@@ -110,6 +121,7 @@ impl Into<GenericModule> for SharedObjectModule {
         Rc::new(self) as GenericModule
     }
 }
+*/
 
 /// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
 pub struct SharedObjectSlot(Rc<Library>, String);

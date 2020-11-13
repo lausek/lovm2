@@ -37,8 +37,11 @@ impl Slots {
         self.0.get(var)
     }
 
-    pub fn insert(&mut self, var: Variable, val: CodeObjectRef) {
-        self.0.insert(var, val);
+    pub fn insert<T>(&mut self, var: T, val: CodeObjectRef)
+    where
+        T: Into<Variable>,
+    {
+        self.0.insert(var.into(), val);
     }
 }
 

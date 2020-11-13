@@ -8,7 +8,7 @@ macro_rules! define_code {
             $( $inx:ident $($args:expr),* ; )*
         }
     } => {{
-        let mut co = lovm2::code::NewCodeObject::new();
+        let mut co = lovm2::code::CodeObject::new();
         $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
         $( co.consts = vec![$( Value::from($cval) ),*]; )?
 

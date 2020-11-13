@@ -8,7 +8,7 @@ use lovm2_error::*;
 
 use crate::bytecode::Instruction;
 use crate::context::Context;
-use crate::module::{LoadableModule, ModuleProtocol, SharedObjectModule};
+//use crate::module::ModuleProtocol;
 use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::run_bytecode;
@@ -193,6 +193,7 @@ impl CallProtocol for CodeObject {
     }
 }
 
+/*
 impl ModuleProtocol for CodeObject {
     fn name(&self) -> &str {
         // TODO: don't unwrap here
@@ -236,9 +237,10 @@ impl ModuleProtocol for CodeObject {
         self.uses.as_ref()
     }
 }
+*/
 
-impl CodeObject {
-    pub fn new() -> Self {
+impl std::default::Default for CodeObject {
+    fn default() -> Self {
         Self {
             name: String::new(),
             loc: None,
@@ -249,19 +251,20 @@ impl CodeObject {
             code: vec![],
         }
     }
+}
+
+impl CodeObject {
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     /// tries to load the file as shared object first and tries regular deserialization if it failed
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<LoadableModule>
+    pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
     where
         T: AsRef<Path>,
     {
-        use std::fs::File;
-        // try loading module as shared object
-        if let Ok(so_module) = SharedObjectModule::load_from_file(&path) {
-            return Ok(so_module.into());
-        }
-
         use bincode::Options;
+        use std::fs::File;
         let name = path
             .as_ref()
             .file_stem()
@@ -273,12 +276,12 @@ impl CodeObject {
         let file = File::open(path).map_err(|e| e.to_string())?;
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
-        let mut module: CodeObject = bincode::options()
+        let mut co: CodeObject = bincode::options()
             .with_varint_encoding()
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
-        module.name = name;
-        module.loc = Some(loc);
+        co.name = name;
+        co.loc = Some(loc);
 
         /*
         for (_, slot) in module.slots.iter_mut() {
@@ -286,7 +289,24 @@ impl CodeObject {
         }
         */
 
-        Ok(module.into())
+        Ok(co)
+    }
+
+    pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
+        use bincode::Options;
+        bincode::options()
+            .with_varint_encoding()
+            .serialize(self)
+            .map_err(|e| e.to_string().into())
+    }
+
+    // TODO: could lead to errors when two threads serialize to the same file
+    pub fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+        let mut file = File::create(path).map_err(|e| e.to_string())?;
+        let bytes = self.to_bytes()?;
+        file.write_all(&bytes).map_err(|e| e.to_string().into())
     }
 }
 
