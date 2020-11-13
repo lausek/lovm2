@@ -9,15 +9,15 @@ pub mod shared;
 pub mod slots;
 pub mod standard;
 
-use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::path::Path;
+//use serde::{Deserialize, Serialize};
+//use std::fs::File;
+//use std::path::Path;
 use std::rc::Rc;
 
 use lovm2_error::*;
 
 use crate::code::CallProtocol;
-use crate::code::NewCodeObject;
+use crate::code::CodeObject;
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
@@ -29,7 +29,7 @@ pub use self::standard::create_standard_module;
 /// name of the `CodeObject` that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
 pub type GenericModule = Rc<dyn ModuleProtocol>;
-pub type Module = NewCodeObject;
+pub type Module = CodeObject;
 
 /// generalization for loadable modules
 /// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))

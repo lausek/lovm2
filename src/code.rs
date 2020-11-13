@@ -28,22 +28,27 @@ pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 /// functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
 pub trait CallProtocol: std::fmt::Debug {
+    /*
     // TODO: is this needed?
     fn code_object(&self) -> Option<&CodeObject> {
         None
     }
+    */
 
-    // TODO: why does this return an optino?
+    // TODO: why does this return an option?
     fn module(&self) -> Option<String> {
         None
     }
 
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()>;
 
+    /*
     // TODO: is this needed?
     fn set_module(&mut self, _module: String) {}
+    */
 }
 
+/*
 /// `CodeObject` contains the bytecode as well as all the data used by it.
 ///
 /// identifiers for called functions will end up in the `globals` vector.
@@ -65,9 +70,11 @@ pub struct CodeObject {
 }
 
 impl CallProtocol for CodeObject {
+    /*
     fn code_object(&self) -> Option<&CodeObject> {
         Some(self)
     }
+    */
 
     fn module(&self) -> Option<String> {
         self.module.as_ref().cloned()
@@ -83,7 +90,6 @@ impl CallProtocol for CodeObject {
     }
 }
 
-/*
 /// structure for building `CodeObjects`. only used by `LoweringRuntime`
 #[derive(Debug)]
 pub struct CodeObjectBuilder {
@@ -159,8 +165,15 @@ impl CodeObjectBuilder {
 }
 */
 
+/// `CodeObject` contains the bytecode as well as all the data used by it.
+///
+/// identifiers for called functions will end up in the `globals` vector.
+///
+/// values will be returned over the value stack. every code object has
+/// to return some value on termination. if no value is produced,
+/// `Nil` is implicitly returned.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct NewCodeObject {
+pub struct CodeObject {
     pub name: String,
     pub loc: Option<String>,
     pub uses: Vec<String>,
@@ -170,7 +183,7 @@ pub struct NewCodeObject {
     pub code: Vec<Instruction>,
 }
 
-impl CallProtocol for NewCodeObject {
+impl CallProtocol for CodeObject {
     fn module(&self) -> Option<String> {
         Some(self.name.clone())
     }
@@ -180,7 +193,7 @@ impl CallProtocol for NewCodeObject {
     }
 }
 
-impl ModuleProtocol for NewCodeObject {
+impl ModuleProtocol for CodeObject {
     fn name(&self) -> &str {
         // TODO: don't unwrap here
         self.name.as_ref()
@@ -224,7 +237,7 @@ impl ModuleProtocol for NewCodeObject {
     }
 }
 
-impl NewCodeObject {
+impl CodeObject {
     pub fn new() -> Self {
         Self {
             name: String::new(),
@@ -260,11 +273,11 @@ impl NewCodeObject {
         let file = File::open(path).map_err(|e| e.to_string())?;
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
-        let mut module: NewCodeObject = bincode::options()
+        let mut module: CodeObject = bincode::options()
             .with_varint_encoding()
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
-        //module.name = name;
+        module.name = name;
         module.loc = Some(loc);
 
         /*
@@ -280,11 +293,11 @@ impl NewCodeObject {
 #[derive(Debug)]
 pub struct CodeObjectFunction {
     offset: usize,
-    on: Rc<NewCodeObject>,
+    on: Rc<CodeObject>,
 }
 
 impl CodeObjectFunction {
-    pub fn from(on: Rc<NewCodeObject>, offset: usize) -> Self {
+    pub fn from(on: Rc<CodeObject>, offset: usize) -> Self {
         Self { offset, on }
     }
 }

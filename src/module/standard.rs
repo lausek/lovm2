@@ -5,7 +5,7 @@ use std::rc::Rc;
 use crate::code::CallProtocol;
 use crate::context::Context;
 use crate::lovm2_builtin;
-use crate::module::Module;
+//use crate::module::Module;
 use crate::value::Value;
 
 pub const BUILTIN_FUNCTIONS: &[&str] = &["input", "len", "print"];

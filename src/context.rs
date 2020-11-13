@@ -61,7 +61,7 @@ pub struct LoadRequest {
 /// this contains all necessary runtime data and gets shared with objects that
 /// implement `CallProtocol` as well as interrupts.
 pub struct Context {
-    pub entry: Option<Rc<CallProtocol>>,
+    pub entry: Option<Rc<dyn CallProtocol>>,
     /// list of loaded modules: `Module` or `SharedObjectModule`
     pub modules: HashMap<String, GenericModule>,
     /// global variables that can be altered from every object
@@ -143,7 +143,7 @@ impl Context {
                     for (iidx, offset) in boxed.entries.iter() {
                         let key = &boxed.idents[*iidx];
                         let callable = CodeObjectFunction::from(boxed.clone(), *offset);
-                        let callable = Rc::new(callable) as Rc<CallProtocol>;
+                        let callable = Rc::new(callable) as Rc<dyn CallProtocol>;
 
                         if self.scope.insert(key.clone(), callable.clone()).is_some() {
                             return Err((Lovm2ErrorTy::ImportConflict, key).into());

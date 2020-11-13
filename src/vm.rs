@@ -5,10 +5,10 @@ use std::ops::*;
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
-use crate::code::{CallProtocol, CodeObject, NewCodeObject};
+use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, LoadableModule, ENTRY_POINT};
+use crate::module::{create_standard_module, LoadableModule /*, ENTRY_POINT */};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
@@ -173,7 +173,7 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
 /// if not handled correctly. see `Vm.run_object`
-pub fn run_bytecode(co: &NewCodeObject, ctx: &mut Context, offset: usize) -> Lovm2Result<()> {
+pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2Result<()> {
     let mut ip = offset;
     while let Some(inx) = co.code.get(ip) {
         println!("{:?} {:?}", inx, ctx.vstack);

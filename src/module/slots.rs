@@ -1,16 +1,18 @@
 //! `CodeObject` items of a lovm2 module
 
-use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
+//use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
-use std::rc::Rc;
+//use std::rc::Rc;
 
-use crate::code::{CallProtocol, CodeObject, CodeObjectRef};
+use crate::code::CodeObjectRef;
 use crate::var::Variable;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug)]
 pub struct Slots(
+    /*
     #[serde(serialize_with = "serialize_slots")]
     #[serde(deserialize_with = "deserialize_slots")]
+    */
     HashMap<Variable, CodeObjectRef>,
 );
 
@@ -40,6 +42,7 @@ impl Slots {
     }
 }
 
+/*
 fn serialize_slots<S>(slots: &HashMap<Variable, CodeObjectRef>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -80,3 +83,4 @@ where
 
     d.deserialize_map(Unslotter)
 }
+*/

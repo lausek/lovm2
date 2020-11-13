@@ -1,13 +1,13 @@
 //! building modules from HIR
 
 use std::collections::HashMap;
-use std::rc::Rc;
+//use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::NewCodeObject;
+use crate::code::CodeObject;
 use crate::hir::{lowering::LoweringRuntime, HIR};
-use crate::module::{standard::BUILTIN_FUNCTIONS, Module, ENTRY_POINT};
+use crate::module::{standard::BUILTIN_FUNCTIONS, /* Module, */ ENTRY_POINT};
 use crate::var::Variable;
 
 pub struct ModuleBuilder {
@@ -54,7 +54,7 @@ impl ModuleBuilder {
         self.slots.get_mut(&name).unwrap()
     }
 
-    pub fn build(mut self) -> Lovm2CompileResult<NewCodeObject> {
+    pub fn build(mut self) -> Lovm2CompileResult<CodeObject> {
         //let mut module = Module::new();
         //let mut entries = vec![];
         let mut ru = LoweringRuntime::new();

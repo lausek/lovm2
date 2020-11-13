@@ -3,7 +3,7 @@
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
-use crate::code::{CodeObject, NewCodeObject};
+use crate::code::CodeObject;
 use crate::hir::HIR;
 use crate::value::Value;
 use crate::var::Variable;
@@ -53,8 +53,8 @@ impl LoweringRuntime {
         Ok(())
     }
 
-    pub fn complete(self) -> Lovm2CompileResult<NewCodeObject> {
-        let mut co = NewCodeObject::new();
+    pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
+        let mut co = CodeObject::new();
         co.name = self.name;
         co.entries = self.entries;
         co.consts = self.consts;

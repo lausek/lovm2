@@ -1,10 +1,10 @@
-use super::{CallableModule, GenericModule, Module, ModuleProtocol, SharedObjectModule};
-use crate::code::NewCodeObject;
+use super::{CallableModule, GenericModule, /* Module, */ ModuleProtocol, SharedObjectModule};
+use crate::code::CodeObject;
 
 #[derive(Debug)]
 pub enum LoadableModule {
     Generic(CallableModule),
-    Lovm2(NewCodeObject),
+    Lovm2(CodeObject),
     Shared(SharedObjectModule),
 }
 
@@ -36,8 +36,8 @@ impl From<CallableModule> for LoadableModule {
     }
 }
 
-impl From<NewCodeObject> for LoadableModule {
-    fn from(m: NewCodeObject) -> Self {
+impl From<CodeObject> for LoadableModule {
+    fn from(m: CodeObject) -> Self {
         Self::Lovm2(m)
     }
 }

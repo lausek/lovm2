@@ -19,12 +19,12 @@ pub mod prelude;
 
 use lovm2_error::*;
 
-use crate::code::CodeObject;
+//use crate::code::CodeObject;
 use crate::hir::block::Block;
 use crate::hir::element::HIRElement;
 use crate::hir::lowering::LoweringRuntime;
 use crate::hir::r#return::Return;
-use crate::value::Value;
+//use crate::value::Value;
 use crate::var::Variable;
 
 #[derive(Clone)]
