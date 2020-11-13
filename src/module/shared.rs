@@ -13,48 +13,14 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::{CallProtocol, CodeObject, CodeObjectRef, ExternFunction};
+use crate::code::{CallProtocol, CallableRef, CodeObject, ExternFunction};
 use crate::context::Context;
-use crate::module::{/* GenericModule, */ Module, /* ModuleProtocol, */ Slots};
+use crate::module::{Module, Slots};
 use crate::var::Variable;
 
 /// name of the unmangled function name to call when initializing module slots
 pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
-pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CodeObjectRef>);
-
-/// contains the loaded shared object
-/*
-#[derive(Clone)]
-pub struct SharedObjectModule {
-    name: String,
-    lib: Rc<Library>,
-    slots: Slots,
-}
-
-// TODO: add module name to SharedObjectSlot
-impl ModuleProtocol for SharedObjectModule {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn slots(&self) -> &Slots {
-        &self.slots
-    }
-
-    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
-        unsafe {
-            let lookup: Result<Symbol<ExternFunction>, Error> = self.lib.get(name.as_bytes());
-            match lookup {
-                Ok(_) => Some(
-                    Rc::new(SharedObjectSlot::new(self.lib.clone(), name.to_string()))
-                        as Rc<dyn CallProtocol>,
-                ),
-                Err(_) => None,
-            }
-        }
-    }
-}
-*/
+pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CallableRef>);
 
 fn load_slots(lib: Library) -> Lovm2Result<Slots> {
     unsafe {
@@ -96,32 +62,11 @@ where
         ..CodeObject::default()
     };
 
-    /*
-    let slots = match library {
-        Ok(lib) => ,
-        Err(err) => Err(format!("{}", err).into()),
-    }?;
-    */
-
     Ok(Module {
         code_object: Rc::new(code_object),
         slots: load_slots(library)?,
     })
 }
-
-/*
-impl std::fmt::Debug for SharedObjectModule {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "<extern module>")
-    }
-}
-
-impl Into<GenericModule> for SharedObjectModule {
-    fn into(self) -> GenericModule {
-        Rc::new(self) as GenericModule
-    }
-}
-*/
 
 /// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
 pub struct SharedObjectSlot(Rc<Library>, String);

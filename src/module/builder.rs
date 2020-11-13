@@ -1,11 +1,9 @@
 //! building modules from HIR
 
 use std::collections::HashMap;
-//use std::rc::Rc;
 
 use lovm2_error::*;
 
-//use crate::code::CodeObject;
 use crate::hir::{lowering::LoweringRuntime, HIR};
 use crate::module::{standard::BUILTIN_FUNCTIONS, CodeObjectFunction, Module, ENTRY_POINT};
 use crate::var::Variable;
@@ -14,16 +12,19 @@ use std::rc::Rc;
 
 pub struct ModuleBuilder {
     name: String,
-    pub slots: HashMap<Variable, ModuleBuilderSlot>,
+    pub loc: Option<String>,
     pub uses: Vec<String>,
+
+    pub slots: HashMap<Variable, ModuleBuilderSlot>,
 }
 
 impl ModuleBuilder {
     pub fn new() -> Self {
         Self {
             name: String::new(),
-            slots: HashMap::new(),
+            loc: None,
             uses: vec![],
+            slots: HashMap::new(),
         }
     }
 
@@ -57,11 +58,10 @@ impl ModuleBuilder {
     }
 
     pub fn build(mut self) -> Lovm2CompileResult<Module> {
-        //let mut module = Module::new();
-        //let mut entries = vec![];
         let mut ru = LoweringRuntime::new();
         ru.name = self.name;
         ru.uses = self.uses;
+        ru.loc = self.loc;
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);

@@ -1,89 +1,38 @@
 //! `CodeObject` items of a lovm2 module
 
-//use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
-//use std::rc::Rc;
 
-use crate::code::CodeObjectRef;
+use crate::code::CallableRef;
 use crate::var::Variable;
 
 #[derive(Clone, Debug)]
-pub struct Slots(
-    /*
-    #[serde(serialize_with = "serialize_slots")]
-    #[serde(deserialize_with = "deserialize_slots")]
-    */
-    HashMap<Variable, CodeObjectRef>,
-);
+pub struct Slots(HashMap<Variable, CallableRef>);
 
 impl Slots {
     pub fn new() -> Self {
         Self(HashMap::new())
     }
 
-    pub fn from(slots: HashMap<Variable, CodeObjectRef>) -> Self {
+    pub fn from(slots: HashMap<Variable, CallableRef>) -> Self {
         Self(slots)
     }
 
-    pub fn iter(&self) -> std::collections::hash_map::Iter<'_, Variable, CodeObjectRef> {
+    pub fn iter(&self) -> std::collections::hash_map::Iter<'_, Variable, CallableRef> {
         self.0.iter()
     }
 
-    pub fn iter_mut(&mut self) -> std::collections::hash_map::IterMut<'_, Variable, CodeObjectRef> {
+    pub fn iter_mut(&mut self) -> std::collections::hash_map::IterMut<'_, Variable, CallableRef> {
         self.0.iter_mut()
     }
 
-    pub fn get(&self, var: &Variable) -> Option<&CodeObjectRef> {
+    pub fn get(&self, var: &Variable) -> Option<&CallableRef> {
         self.0.get(var)
     }
 
-    pub fn insert<T>(&mut self, var: T, val: CodeObjectRef)
+    pub fn insert<T>(&mut self, var: T, val: CallableRef)
     where
         T: Into<Variable>,
     {
         self.0.insert(var.into(), val);
     }
 }
-
-/*
-fn serialize_slots<S>(slots: &HashMap<Variable, CodeObjectRef>, s: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    let mut m = s.serialize_map(Some(slots.len()))?;
-    for (key, value) in slots.iter() {
-        if let Some(co) = value.code_object() {
-            m.serialize_entry(key, co)?;
-        }
-    }
-    m.end()
-}
-
-fn deserialize_slots<'d, D>(d: D) -> Result<HashMap<Variable, CodeObjectRef>, D::Error>
-where
-    D: Deserializer<'d>,
-{
-    struct Unslotter;
-
-    impl<'de> Visitor<'de> for Unslotter {
-        type Value = HashMap<Variable, CodeObjectRef>;
-
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-            write!(formatter, "do things")
-        }
-
-        fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::MapAccess<'de>,
-        {
-            let mut map = HashMap::new();
-            while let Some((key, value)) = access.next_entry::<Variable, CodeObject>()? {
-                map.insert(key, Rc::new(value) as Rc<dyn CallProtocol>);
-            }
-            Ok(map)
-        }
-    }
-
-    d.deserialize_map(Unslotter)
-}
-*/

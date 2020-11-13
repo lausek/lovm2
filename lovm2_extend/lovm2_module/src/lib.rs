@@ -135,7 +135,7 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let result = quote! {
         #[no_mangle]
-        pub extern fn #lovm2_initializer(lib: Rc<Library>, slots: &mut HashMap<Variable, CodeObjectRef>) {
+        pub extern fn #lovm2_initializer(lib: Rc<Library>, slots: &mut HashMap<Variable, CallableRef>) {
             #(
                 slots.insert(
                     Variable::from(#names),

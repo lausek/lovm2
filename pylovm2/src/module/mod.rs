@@ -4,9 +4,6 @@ mod slot;
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
-//use lovm2::module::LoadableModule;
-use lovm2::prelude::*;
-
 pub use self::builder::ModuleBuilder;
 pub use self::slot::ModuleBuilderSlot;
 

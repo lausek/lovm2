@@ -8,13 +8,12 @@ use lovm2_error::*;
 
 use crate::bytecode::Instruction;
 use crate::context::Context;
-//use crate::module::ModuleProtocol;
 use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::run_bytecode;
 
 /// generic object implementing the `CallProtocol`
-pub type CodeObjectRef = Rc<dyn CallProtocol>;
+pub type CallableRef = Rc<dyn CallProtocol>;
 /// definition for statically linked function
 pub type StaticFunction = fn(&mut Context) -> Lovm2Result<()>;
 /// definition for dynamically linked function
@@ -28,142 +27,13 @@ pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 /// functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
 pub trait CallProtocol: std::fmt::Debug {
-    /*
-    // TODO: is this needed?
-    fn code_object(&self) -> Option<&CodeObject> {
-        None
-    }
-    */
-
     // TODO: why does this return an option?
     fn module(&self) -> Option<String> {
         None
     }
 
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()>;
-
-    /*
-    // TODO: is this needed?
-    fn set_module(&mut self, _module: String) {}
-    */
 }
-
-/*
-/// `CodeObject` contains the bytecode as well as all the data used by it.
-///
-/// identifiers for called functions will end up in the `globals` vector.
-///
-/// values will be returned over the value stack. every code object has
-/// to return some value on termination. if no value is produced,
-/// `Nil` is implicitly returned.
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CodeObject {
-    pub consts: Vec<Value>,
-    pub locals: Vec<Variable>,
-    pub globals: Vec<Variable>,
-
-    pub code: Vec<Instruction>,
-
-    #[serde(skip_deserializing)]
-    #[serde(skip_serializing)]
-    module: Option<String>,
-}
-
-impl CallProtocol for CodeObject {
-    /*
-    fn code_object(&self) -> Option<&CodeObject> {
-        Some(self)
-    }
-    */
-
-    fn module(&self) -> Option<String> {
-        self.module.as_ref().cloned()
-    }
-
-    fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
-        todo!()
-        //run_bytecode(self, ctx)
-    }
-
-    fn set_module(&mut self, module: String) {
-        self.module = Some(module);
-    }
-}
-
-/// structure for building `CodeObjects`. only used by `LoweringRuntime`
-#[derive(Debug)]
-pub struct CodeObjectBuilder {
-    pub name: Option<String>,
-    loc: Option<String>,
-    entries: Vec<(usize, usize)>,
-    consts: Vec<Value>,
-    idents: Vec<Variable>,
-    code: Vec<Instruction>,
-}
-
-impl CodeObjectBuilder {
-    pub fn new() -> Self {
-        Self {
-            name: None,
-            loc: None,
-            uses: vec![],
-            entries: vec![],
-            consts: vec![],
-            idents: vec![],
-            code: vec![],
-        }
-    }
-
-    pub fn uses(mut self, uses: Vec<String>) -> Self {
-        self.uses = uses;
-        self
-    }
-
-    pub fn entries(mut self, entries: Vec<(usize, usize)>) -> Self {
-        self.entries = entries;
-        self
-    }
-
-    pub fn code(mut self, code: Vec<Instruction>) -> Self {
-        self.code = code;
-        self
-    }
-
-    pub fn consts(mut self, consts: Vec<Value>) -> Self {
-        self.consts = consts;
-        self
-    }
-
-    pub fn idents(mut self, idents: Vec<Variable>) -> Self {
-        self.idents = idents;
-        self
-    }
-
-    pub fn location(mut self, loc: String) -> Self {
-        self.loc = Some(loc);
-        self
-    }
-
-    /*
-    pub fn globals(mut self, globals: Vec<Variable>) -> Self {
-        self.globals = globals;
-        self
-    }
-    */
-
-    pub fn build(self) -> Lovm2CompileResult<NewCodeObject> {
-        Ok(NewCodeObject {
-            name: self.name,
-            loc: self.loc,
-            uses: self.uses,
-            entries: self.entries,
-            consts: self.consts,
-            idents: self.idents,
-            code: self.code,
-        })
-    }
-}
-*/
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
 ///
@@ -192,52 +62,6 @@ impl CallProtocol for CodeObject {
         run_bytecode(&self, ctx, 0)
     }
 }
-
-/*
-impl ModuleProtocol for CodeObject {
-    fn name(&self) -> &str {
-        // TODO: don't unwrap here
-        self.name.as_ref()
-    }
-
-    fn location(&self) -> Option<&String> {
-        self.loc.as_ref()
-    }
-
-    /*
-    fn slots(&self) -> &Slots {
-        &self.slots
-    }
-
-    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
-        self.slots
-            .get(name)
-            .map(|co_ref| co_ref.clone() as Rc<dyn CallProtocol>)
-    }
-    */
-
-    fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
-        use bincode::Options;
-        bincode::options()
-            .with_varint_encoding()
-            .serialize(self)
-            .map_err(|e| e.to_string().into())
-    }
-
-    // TODO: could lead to errors when two threads serialize to the same file
-    fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
-        use std::fs::File;
-        use std::io::Write;
-        let mut file = File::create(path).map_err(|e| e.to_string())?;
-        let bytes = self.to_bytes()?;
-        file.write_all(&bytes).map_err(|e| e.to_string().into())
-    }
-
-    fn uses(&self) -> &[String] {
-        self.uses.as_ref()
-    }
-}
-*/
 
 impl std::default::Default for CodeObject {
     fn default() -> Self {
@@ -282,12 +106,6 @@ impl CodeObject {
             .map_err(|e| e.to_string())?;
         co.name = name;
         co.loc = Some(loc);
-
-        /*
-        for (_, slot) in module.slots.iter_mut() {
-            Rc::get_mut(slot).unwrap().set_module(module.name.clone());
-        }
-        */
 
         Ok(co)
     }

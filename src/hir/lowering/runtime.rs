@@ -13,6 +13,7 @@ use super::*;
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct LoweringRuntime {
     pub name: String,
+    pub loc: Option<String>,
     pub entries: Vec<(usize, usize)>,
     pub uses: Vec<String>,
     pub consts: Vec<Value>,
@@ -28,6 +29,7 @@ impl LoweringRuntime {
     pub fn new() -> Self {
         Self {
             name: String::new(),
+            loc: None,
             entries: vec![],
             uses: vec![],
             consts: vec![],
@@ -58,6 +60,7 @@ impl LoweringRuntime {
     pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
         let mut co = CodeObject::new();
         co.name = self.name;
+        co.loc = self.loc;
         co.entries = self.entries;
         co.uses = self.uses;
         co.consts = self.consts;

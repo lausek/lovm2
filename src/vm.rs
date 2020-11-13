@@ -8,7 +8,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, Module /* LoadableModule, ENTRY_POINT */};
+use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
@@ -40,7 +40,6 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
-        // TODO: add a new `Generic` variant to LoadableModule
         ctx.load_and_import_all(create_standard_module()).unwrap();
         Self { ctx }
     }
@@ -113,7 +112,6 @@ impl Vm {
         } else {
             Err(Lovm2ErrorTy::NoEntryPoint.into())
         }
-        //let co = self.ctx.lookup_code_object(&ENTRY_POINT.into())?;
     }
 }
 
@@ -177,7 +175,6 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
 pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2Result<()> {
     let mut ip = offset;
     while let Some(inx) = co.code.get(ip) {
-        println!("{:?} {:?}", inx, ctx.vstack);
         match inx {
             Instruction::Pushl(lidx) => {
                 let variable = &co.idents[*lidx as usize];

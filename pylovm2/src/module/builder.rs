@@ -6,12 +6,10 @@ use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
 use lovm2::hir;
-use lovm2::var;
 
 use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
 use crate::lv2::*;
-use crate::vm::create_exception;
 
 use super::{slot::ModuleBuilderSlotInner, Module, ModuleBuilderSlot};
 
@@ -62,29 +60,18 @@ impl ModuleBuilder {
 
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python, module_location: Option<String>) -> PyResult<Module> {
-        let mut builder = Lovm2ModuleBuilder::new();
+        let mut builder = Lovm2ModuleBuilder::named(self.name.clone());
         let mut slots = Lovm2Slots::new();
-        /*
-        module.name = self.name.clone();
-        module.loc = module_location;
-        module.uses = self.uses.clone();
-        */
+        builder.loc = module_location;
+        builder.uses = self.uses.clone();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
-            //co_builder.complete(&mut builder, &mut slots).map_err(create_exception)?;
 
             match &mut co_builder.inner {
                 ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
                     if let Some(hir) = hir.take() {
                         builder.add(key).hir(hir);
-                    /*
-                    builder.add()
-                    return match hir.build() {
-                        Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => Err(PyRuntimeError::new_err(msg.to_string())),
-                    };
-                    */
                     } else {
                         return Err(PyRuntimeError::new_err("hir was already built"));
                     }
@@ -92,25 +79,8 @@ impl ModuleBuilder {
                 ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
                     let func = CodeObject::from(pyfn.take().unwrap());
                     slots.insert(key, Rc::new(func));
-                    //todo!()
-                    //Ok(CodeObject::from(pyfn.take().unwrap()))
                 }
             }
-            /*
-                match  {
-                    Ok(mut co) => {
-                        /*
-                        {
-                            use lovm2::code::CallProtocol;
-                            co.set_module(module.name.clone());
-                        }
-                        */
-
-                        //module.slots.insert(var::Variable::from(key), Rc::new(co));
-                    }
-                    Err(msg) => return Err(msg),
-                }
-            */
         }
 
         // TODO: correctly raise error
@@ -119,8 +89,6 @@ impl ModuleBuilder {
         for (key, callable) in slots.iter() {
             module.slots.insert(key.clone(), callable.clone());
         }
-        //module.slots.extend(slots);
-        //let mut module = builder.build().map_err(create_exception)?;
 
         Ok(Module::from(module))
     }

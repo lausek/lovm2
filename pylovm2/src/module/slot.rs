@@ -1,10 +1,7 @@
-use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
 use lovm2::hir;
-
-use crate::code::CodeObject;
 
 use super::builder::*;
 use crate::lv2::*;
@@ -57,55 +54,8 @@ impl ModuleBuilderSlot {
         }
     }
 
-    // TODO: can we use consuming self here?
-    /*
-    pub fn complete(&mut self) -> PyResult<CodeObject> {
-        match &mut self.inner {
-            ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
-                if let Some(hir) = hir.take() {
-                    return match hir.build() {
-                        Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => Err(PyRuntimeError::new_err(msg.to_string())),
-                    };
-                }
-                Err(PyRuntimeError::new_err("hir was already built"))
-            }
-            ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
-                Ok(CodeObject::from(pyfn.take().unwrap()))
-            }
-        }
-    }
-    */
-
     pub fn pyfn(&mut self, pyfn: PyObject) -> PyResult<()> {
         self.inner = ModuleBuilderSlotInner::PyFn(Some(pyfn));
         Ok(())
     }
 }
-
-/*
-impl ModuleBuilderSlot {
-    pub fn complete(&mut self, builder: &mut Lovm2ModuleBuilder, slots: &mut Lovm2Slots) -> Lovm2Result<()> {
-        match &mut self.inner {
-            ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
-                if let Some(hir) = hir.take() {
-                    todo!()
-                    /*
-                    builder.add()
-                    return match hir.build() {
-                        Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => Err(PyRuntimeError::new_err(msg.to_string())),
-                    };
-                    */
-                }
-                //Err(PyRuntimeError::new_err("hir was already built"))
-            }
-            ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
-                todo!()
-                //Ok(CodeObject::from(pyfn.take().unwrap()))
-            }
-        }
-        Ok(())
-    }
-}
-*/

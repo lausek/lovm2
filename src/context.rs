@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::{CallProtocol, /* CodeObjectFunction, */ CodeObjectRef};
+use crate::code::{CallProtocol, CallableRef};
 use crate::frame::Frame;
 use crate::module::Module;
 use crate::value::Value;
@@ -67,7 +67,7 @@ pub struct Context {
     /// global variables that can be altered from every object
     pub globals: HashMap<Variable, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
-    pub scope: HashMap<Variable, CodeObjectRef>,
+    pub scope: HashMap<Variable, CallableRef>,
     import_hook: Option<Rc<ImportHookFn>>,
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: Vec<Option<Rc<InterruptFn>>>,
@@ -112,10 +112,8 @@ impl Context {
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
-        //use crate::module::ModuleProtocol;
         use crate::prelude::ENTRY_POINT;
 
-        println!("{:?}", module);
         if !self.modules.get(module.name()).is_some() {
             // load static dependencies of module
             for used_module in module.uses() {
@@ -131,77 +129,7 @@ impl Context {
                 }
             }
 
-            /*
-            let module = match module {
-                LoadableModule::Generic(m) => {
-                    let boxed = Rc::new(m);
-
-                    for (key, co) in boxed.slots().iter() {
-                        if self.scope.insert(key.clone(), co.clone()).is_some() {
-                            return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                        } else if key.as_ref() == ENTRY_POINT {
-                            self.entry = Some(co.clone());
-                        }
-                    }
-
-                    boxed as GenericModule
-                }
-                LoadableModule::Lovm2(m) => {
-                    let boxed = Rc::new(m);
-
-                    for (iidx, offset) in boxed.entries.iter() {
-                        let key = &boxed.idents[*iidx];
-                        let callable = CodeObjectFunction::from(boxed.clone(), *offset);
-                        let callable = Rc::new(callable) as Rc<dyn CallProtocol>;
-
-                        if self.scope.insert(key.clone(), callable.clone()).is_some() {
-                            return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                        } else if key.as_ref() == ENTRY_POINT {
-                            self.entry = Some(callable);
-                        }
-                    }
-
-                    boxed as GenericModule
-                }
-                LoadableModule::Shared(m) => {
-                    let boxed = Rc::new(m);
-
-                    for (key, co) in boxed.slots().iter() {
-                        if self.scope.insert(key.clone(), co.clone()).is_some() {
-                            return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                        } else if key.as_ref() == ENTRY_POINT {
-                            self.entry = Some(co.clone());
-                        }
-                    }
-
-                    boxed as GenericModule
-                }
-            };
-            */
-
             self.modules.insert(module.name().to_string(), module);
-
-            /*
-            for (key, co) in module.slots().iter() {
-                // if the key should be ignored by the filter function
-                if !filter(key) {
-                    continue;
-                }
-
-                /*
-                let key = if let Some(import_hook) = importer.as_ref().cloned() {
-                    let patched_key = import_hook(module.name(), key.as_ref());
-                    Variable::from(patched_key)
-                } else {
-                    key.clone()
-                };
-                */
-
-                if self.scope.insert(key.clone(), co.clone()).is_some() {
-                    return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                }
-            }
-            */
         }
         Ok(())
     }
@@ -257,7 +185,7 @@ impl Context {
         self.load_and_import_filter(module.into(), |_| true, None)
     }
 
-    pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CodeObjectRef> {
+    pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CallableRef> {
         match self.scope.get(name).cloned() {
             Some(co) => Ok(co),
             _ => Err((Lovm2ErrorTy::LookupFailed, name).into()),
