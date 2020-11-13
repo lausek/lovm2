@@ -51,10 +51,11 @@ fn print(ctx: &mut Context) -> Lovm2Result<()> {
     Ok(())
 }
 
-/*
+use crate::module::CallableModule;
+
 /// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
-pub fn create_standard_module() -> Module {
-    let mut module = Module::new();
+pub fn create_standard_module() -> CallableModule {
+    let mut module = CallableModule::new();
     module.name = "std".to_string();
 
     module
@@ -67,4 +68,3 @@ pub fn create_standard_module() -> Module {
 
     module
 }
-*/

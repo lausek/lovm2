@@ -58,7 +58,7 @@ impl ModuleBuilder {
         //let mut module = Module::new();
         //let mut entries = vec![];
         let mut ru = LoweringRuntime::new();
-        ru.name = Some(self.name);
+        ru.name = self.name;
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
@@ -74,9 +74,9 @@ impl ModuleBuilder {
             co_builder.complete(&mut ru)?;
         }
 
-        //module.uses = self.uses;
-
-        ru.complete()
+        let mut co = ru.complete()?;
+        co.uses = self.uses;
+        Ok(co)
     }
 
     pub fn entry(&mut self) -> &mut ModuleBuilderSlot {

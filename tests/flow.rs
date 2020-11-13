@@ -1,5 +1,5 @@
 use lovm2::bytecode::Instruction;
-use lovm2::code::CodeObjectBuilder;
+//use lovm2::code::CodeObjectBuilder;
 use lovm2::define_code;
 use lovm2::hir::prelude::*;
 use lovm2::value::Value;

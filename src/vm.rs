@@ -8,7 +8,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject, NewCodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{/*create_standard_module, */ LoadableModule, ENTRY_POINT};
+use crate::module::{create_standard_module, LoadableModule, ENTRY_POINT};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
@@ -41,7 +41,7 @@ impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
         // TODO: add a new `Generic` variant to LoadableModule
-        //ctx.load_and_import_all(create_standard_module()).unwrap();
+        ctx.load_and_import_all(create_standard_module()).unwrap();
         Self { ctx }
     }
 

@@ -24,7 +24,7 @@ pub use self::builder::ModuleBuilder;
 pub use self::loadable::LoadableModule;
 pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
-//pub use self::standard::create_standard_module;
+pub use self::standard::create_standard_module;
 
 /// name of the `CodeObject` that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
@@ -181,3 +181,28 @@ impl Module {
     }
 }
 */
+
+#[derive(Debug)]
+pub struct CallableModule {
+    name: String,
+    slots: Slots,
+}
+
+impl CallableModule {
+    pub fn new() -> Self {
+        Self {
+            name: String::new(),
+            slots: Slots::new(),
+        }
+    }
+}
+
+impl ModuleProtocol for CallableModule {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn slots(&self) -> &Slots {
+        &self.slots
+    }
+}

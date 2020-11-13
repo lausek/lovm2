@@ -115,6 +115,7 @@ impl Context {
         use crate::module::ModuleProtocol;
         use crate::prelude::ENTRY_POINT;
 
+        println!("{:?}", module);
         if !self.modules.get(module.name()).is_some() {
             // load static dependencies of module
             for used_module in module.uses() {
@@ -123,6 +124,19 @@ impl Context {
 
             println!("{:?}", module);
             let module = match module {
+                LoadableModule::Generic(m) => {
+                    let boxed = Rc::new(m);
+
+                    for (key, co) in boxed.slots().iter() {
+                        if self.scope.insert(key.clone(), co.clone()).is_some() {
+                            return Err((Lovm2ErrorTy::ImportConflict, key).into());
+                        } else if key.as_ref() == ENTRY_POINT {
+                            self.entry = Some(co.clone());
+                        }
+                    }
+
+                    boxed as GenericModule
+                }
                 LoadableModule::Lovm2(m) => {
                     let boxed = Rc::new(m);
 

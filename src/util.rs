@@ -8,10 +8,9 @@ macro_rules! define_code {
             $( $inx:ident $($args:expr),* ; )*
         }
     } => {{
-        let builder = CodeObjectBuilder::new()
-            $(.idents(vec![$( Variable::from(stringify!($name)) ),*]))?
-            $(.consts(vec![$( Value::from($cval) ),*]))?
-            ;
+        let mut co = lovm2::code::NewCodeObject::new();
+        $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
+        $( co.consts = vec![$( Value::from($cval) ),*]; )?
 
         let mut c = vec![
             $(
@@ -19,7 +18,8 @@ macro_rules! define_code {
             )*
         ];
 
-        builder.code(c).build().unwrap()
+        co.code = c;
+        co
     }};
 
     { compile_inx $inx:ident } => { Instruction::$inx };

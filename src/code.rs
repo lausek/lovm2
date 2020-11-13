@@ -28,16 +28,19 @@ pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 /// functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
 pub trait CallProtocol: std::fmt::Debug {
+    // TODO: is this needed?
     fn code_object(&self) -> Option<&CodeObject> {
         None
     }
 
+    // TODO: why does this return an optino?
     fn module(&self) -> Option<String> {
         None
     }
 
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()>;
 
+    // TODO: is this needed?
     fn set_module(&mut self, _module: String) {}
 }
 
@@ -80,6 +83,7 @@ impl CallProtocol for CodeObject {
     }
 }
 
+/*
 /// structure for building `CodeObjects`. only used by `LoweringRuntime`
 #[derive(Debug)]
 pub struct CodeObjectBuilder {
@@ -96,11 +100,17 @@ impl CodeObjectBuilder {
         Self {
             name: None,
             loc: None,
+            uses: vec![],
             entries: vec![],
             consts: vec![],
             idents: vec![],
             code: vec![],
         }
+    }
+
+    pub fn uses(mut self, uses: Vec<String>) -> Self {
+        self.uses = uses;
+        self
     }
 
     pub fn entries(mut self, entries: Vec<(usize, usize)>) -> Self {
@@ -139,6 +149,7 @@ impl CodeObjectBuilder {
         Ok(NewCodeObject {
             name: self.name,
             loc: self.loc,
+            uses: self.uses,
             entries: self.entries,
             consts: self.consts,
             idents: self.idents,
@@ -146,11 +157,13 @@ impl CodeObjectBuilder {
         })
     }
 }
+*/
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NewCodeObject {
-    pub name: Option<String>,
+    pub name: String,
     pub loc: Option<String>,
+    pub uses: Vec<String>,
     pub entries: Vec<(usize, usize)>,
     pub consts: Vec<Value>,
     pub idents: Vec<Variable>,
@@ -159,7 +172,7 @@ pub struct NewCodeObject {
 
 impl CallProtocol for NewCodeObject {
     fn module(&self) -> Option<String> {
-        self.name.as_ref().cloned()
+        Some(self.name.clone())
     }
 
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
@@ -170,7 +183,7 @@ impl CallProtocol for NewCodeObject {
 impl ModuleProtocol for NewCodeObject {
     fn name(&self) -> &str {
         // TODO: don't unwrap here
-        self.name.as_ref().unwrap()
+        self.name.as_ref()
     }
 
     fn location(&self) -> Option<&String> {
@@ -206,18 +219,17 @@ impl ModuleProtocol for NewCodeObject {
         file.write_all(&bytes).map_err(|e| e.to_string().into())
     }
 
-    /*
     fn uses(&self) -> &[String] {
         self.uses.as_ref()
     }
-    */
 }
 
 impl NewCodeObject {
     pub fn new() -> Self {
         Self {
-            name: None,
+            name: String::new(),
             loc: None,
+            uses: vec![],
             entries: vec![],
             consts: vec![],
             idents: vec![],
@@ -279,7 +291,7 @@ impl CodeObjectFunction {
 
 impl CallProtocol for CodeObjectFunction {
     fn module(&self) -> Option<String> {
-        self.on.name.as_ref().cloned()
+        Some(self.on.name.clone())
     }
 
     fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {

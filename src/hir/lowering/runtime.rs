@@ -3,7 +3,7 @@
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
-use crate::code::{CodeObject, CodeObjectBuilder, NewCodeObject};
+use crate::code::{CodeObject, NewCodeObject};
 use crate::hir::HIR;
 use crate::value::Value;
 use crate::var::Variable;
@@ -12,7 +12,7 @@ use super::*;
 
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct LoweringRuntime {
-    pub name: Option<String>,
+    pub name: String,
     pub entries: Vec<(usize, usize)>,
     pub consts: Vec<Value>,
     pub idents: Vec<Variable>,
@@ -26,7 +26,7 @@ pub struct LoweringRuntime {
 impl LoweringRuntime {
     pub fn new() -> Self {
         Self {
-            name: None,
+            name: String::new(),
             entries: vec![],
             consts: vec![],
             idents: vec![],
@@ -54,14 +54,13 @@ impl LoweringRuntime {
     }
 
     pub fn complete(self) -> Lovm2CompileResult<NewCodeObject> {
-        let mut co_builder = CodeObjectBuilder::new();
-        co_builder.name = self.name;
-        co_builder
-            .entries(self.entries)
-            .consts(self.consts)
-            .idents(self.idents)
-            .code(self.code)
-            .build()
+        let mut co = NewCodeObject::new();
+        co.name = self.name;
+        co.entries = self.entries;
+        co.consts = self.consts;
+        co.idents = self.idents;
+        co.code = self.code;
+        Ok(co)
     }
 
     pub fn add_prelude(&mut self, args: Vec<Variable>) -> Lovm2CompileResult<()> {
