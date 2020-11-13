@@ -5,10 +5,10 @@ use std::ops::*;
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
-use crate::code::{CallProtocol, CodeObject};
+use crate::code::{CallProtocol, CodeObject, NewCodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, LoadableModule, ENTRY_POINT};
+use crate::module::{/*create_standard_module, */ LoadableModule, ENTRY_POINT};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
@@ -40,7 +40,8 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         let mut ctx = Context::new();
-        ctx.load_and_import_all(create_standard_module()).unwrap();
+        // TODO: add a new `Generic` variant to LoadableModule
+        //ctx.load_and_import_all(create_standard_module()).unwrap();
         Self { ctx }
     }
 
@@ -107,8 +108,11 @@ impl Vm {
 
     /// start the execution at `ENTRY_POINT`
     pub fn run(&mut self) -> Lovm2Result<()> {
-        let co = self.ctx.lookup_code_object(&ENTRY_POINT.into())?;
-        self.run_object(co.as_ref())
+        match self.ctx.entry.take() {
+            Some(callable) => self.run_object(callable.as_ref()),
+            _ => todo!(),
+        }
+        //let co = self.ctx.lookup_code_object(&ENTRY_POINT.into())?;
     }
 }
 
@@ -169,19 +173,20 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
 /// if not handled correctly. see `Vm.run_object`
-pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
-    let mut ip = 0;
+pub fn run_bytecode(co: &NewCodeObject, ctx: &mut Context, offset: usize) -> Lovm2Result<()> {
+    let mut ip = offset;
     while let Some(inx) = co.code.get(ip) {
+        println!("{:?} {:?}", inx, ctx.vstack);
         match inx {
             Instruction::Pushl(lidx) => {
-                let variable = &co.locals[*lidx as usize];
+                let variable = &co.idents[*lidx as usize];
                 match ctx.frame_mut()?.value_of(variable) {
                     Some(local) => ctx.push_value(local),
                     _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
                 }
             }
             Instruction::Pushg(gidx) => {
-                let variable = &co.globals[*gidx as usize];
+                let variable = &co.idents[*gidx as usize];
                 match ctx.value_of(variable) {
                     Some(global) => ctx.push_value(global),
                     _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
@@ -192,12 +197,12 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 ctx.push_value(value.clone());
             }
             Instruction::Movel(lidx) => {
-                let variable = &co.locals[*lidx as usize];
+                let variable = &co.idents[*lidx as usize];
                 let value = ctx.pop_value()?;
                 ctx.frame_mut()?.locals.insert(variable.clone(), value);
             }
             Instruction::Moveg(gidx) => {
-                let variable = &co.globals[*gidx as usize];
+                let variable = &co.idents[*gidx as usize];
                 let value = ctx.pop_value()?;
                 ctx.globals.insert(variable.clone(), value);
             }
@@ -277,7 +282,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 }
             }
             Instruction::Call(argn, gidx) => {
-                let func = &co.globals[*gidx as usize];
+                let func = &co.idents[*gidx as usize];
                 let other_co = ctx.lookup_code_object(func)?;
                 ctx.push_frame(*argn);
                 other_co.run(ctx)?;

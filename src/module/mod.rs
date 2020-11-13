@@ -17,17 +17,19 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::code::CallProtocol;
+use crate::code::NewCodeObject;
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
 pub use self::loadable::LoadableModule;
 pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
-pub use self::standard::create_standard_module;
+//pub use self::standard::create_standard_module;
 
 /// name of the `CodeObject` that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
 pub type GenericModule = Rc<dyn ModuleProtocol>;
+pub type Module = NewCodeObject;
 
 /// generalization for loadable modules
 /// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
@@ -65,6 +67,7 @@ pub trait ModuleProtocol: std::fmt::Debug {
     }
 }
 
+/*
 /// a structure containing lovm2 `CodeObjects`
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Module {
@@ -126,7 +129,9 @@ impl ModuleProtocol for Module {
         self.uses.as_ref()
     }
 }
+*/
 
+/*
 impl Module {
     pub fn new() -> Self {
         Self {
@@ -159,17 +164,20 @@ impl Module {
         let file = File::open(path).map_err(|e| e.to_string())?;
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
-        let mut module: Module = bincode::options()
+        let mut module: NewCodeObject = bincode::options()
             .with_varint_encoding()
             .deserialize_from(file)
             .map_err(|e| e.to_string())?;
-        module.name = name;
+        //module.name = name;
         module.loc = Some(loc);
 
+        /*
         for (_, slot) in module.slots.iter_mut() {
             Rc::get_mut(slot).unwrap().set_module(module.name.clone());
         }
+        */
 
         Ok(module.into())
     }
 }
+*/

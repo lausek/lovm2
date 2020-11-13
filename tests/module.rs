@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use lovm2::code::NewCodeObject;
 use lovm2::module::{Module, ModuleProtocol};
 use lovm2::prelude::*;
 use lovm2::value::Value;
@@ -75,7 +76,7 @@ fn global_uses() {
     vm.context_mut().set_load_hook(move |req| {
         assert_eq!(req.module, PRELOADED);
         called_ref.set(true);
-        Ok(Some(Module::new().into()))
+        Ok(Some(NewCodeObject::new().into()))
     });
 
     vm.load_and_import_all(module).unwrap();

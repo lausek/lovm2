@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::CodeObjectRef;
+use crate::code::{CallProtocol, CodeObjectFunction, CodeObjectRef};
 use crate::frame::Frame;
 use crate::module::{GenericModule, LoadableModule, Module};
 use crate::value::Value;
@@ -61,6 +61,7 @@ pub struct LoadRequest {
 /// this contains all necessary runtime data and gets shared with objects that
 /// implement `CallProtocol` as well as interrupts.
 pub struct Context {
+    pub entry: Option<Rc<CallProtocol>>,
     /// list of loaded modules: `Module` or `SharedObjectModule`
     pub modules: HashMap<String, GenericModule>,
     /// global variables that can be altered from every object
@@ -84,6 +85,7 @@ pub struct Context {
 impl Context {
     pub fn new() -> Self {
         Self {
+            entry: None,
             modules: HashMap::new(),
             globals: HashMap::new(),
             scope: HashMap::new(),
@@ -110,12 +112,52 @@ impl Context {
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
+        use crate::module::ModuleProtocol;
+        use crate::prelude::ENTRY_POINT;
+
         if !self.modules.get(module.name()).is_some() {
             // load static dependencies of module
             for used_module in module.uses() {
                 self.load_and_import_by_name(used_module, module.location().cloned())?;
             }
 
+            println!("{:?}", module);
+            let module = match module {
+                LoadableModule::Lovm2(m) => {
+                    let boxed = Rc::new(m);
+
+                    for (iidx, offset) in boxed.entries.iter() {
+                        let key = &boxed.idents[*iidx];
+                        let callable = CodeObjectFunction::from(boxed.clone(), *offset);
+                        let callable = Rc::new(callable) as Rc<CallProtocol>;
+
+                        if self.scope.insert(key.clone(), callable.clone()).is_some() {
+                            return Err((Lovm2ErrorTy::ImportConflict, key).into());
+                        } else if key.as_ref() == ENTRY_POINT {
+                            self.entry = Some(callable);
+                        }
+                    }
+
+                    boxed as GenericModule
+                }
+                LoadableModule::Shared(m) => {
+                    let boxed = Rc::new(m);
+
+                    for (key, co) in boxed.slots().iter() {
+                        if self.scope.insert(key.clone(), co.clone()).is_some() {
+                            return Err((Lovm2ErrorTy::ImportConflict, key).into());
+                        } else if key.as_ref() == ENTRY_POINT {
+                            self.entry = Some(co.clone());
+                        }
+                    }
+
+                    boxed as GenericModule
+                }
+            };
+
+            self.modules.insert(module.name().to_string(), module);
+
+            /*
             for (key, co) in module.slots().iter() {
                 // if the key should be ignored by the filter function
                 if !filter(key) {
@@ -135,9 +177,7 @@ impl Context {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
                 }
             }
-
-            self.modules
-                .insert(module.name().to_string(), module.into_generic());
+            */
         }
         Ok(())
     }

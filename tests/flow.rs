@@ -28,7 +28,7 @@ fn store_global() {
     let mut vm = Vm::new();
     let co = define_code! {
         consts { 42 }
-        globals { globaln }
+        idents { globaln }
 
         {
             Pushc 0;
@@ -49,7 +49,7 @@ fn calculation() {
     let mut vm = Vm::new();
     let co = define_code! {
         consts { 2, 3 }
-        globals { result_add, result_sub, result_mul, result_div }
+        idents { result_add, result_sub, result_mul, result_div }
 
         {
             Pushc 1;
@@ -99,24 +99,23 @@ fn jumping() {
     let mut vm = Vm::new();
     let co = define_code! {
         consts { 0, 1, 10, "a" }
-        globals { output }
-        locals { i }
+        idents { i, output }
 
         {
             Pushc 1;
             Movel 0;
 
             Pushc 3;
-            Moveg 0;
+            Moveg 1;
 
             Pushl 0;
             Pushc 1;
             Add;
 
-            Pushg 0;
+            Pushg 1;
             Pushc 3;
             Add;
-            Moveg 0;
+            Moveg 1;
 
             Dup;
             Movel 0;

@@ -3,16 +3,14 @@
 macro_rules! define_code {
     {
         $(consts {$($cval:expr),*})?
-        $(globals {$($gname:ident),*})?
-        $(locals {$($lname:ident),*})?
+        $(idents {$($name:ident),*})?
         {
             $( $inx:ident $($args:expr),* ; )*
         }
     } => {{
         let builder = CodeObjectBuilder::new()
+            $(.idents(vec![$( Variable::from(stringify!($name)) ),*]))?
             $(.consts(vec![$( Value::from($cval) ),*]))?
-            $(.locals(vec![$( Variable::from(stringify!($lname)) ),*]))?
-            $(.globals(vec![$( Variable::from(stringify!($gname)) ),*]))?
             ;
 
         let mut c = vec![

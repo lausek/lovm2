@@ -1,7 +1,9 @@
 use super::{GenericModule, Module, ModuleProtocol, SharedObjectModule};
+use crate::code::NewCodeObject;
 
+#[derive(Debug)]
 pub enum LoadableModule {
-    Lovm2(Module),
+    Lovm2(NewCodeObject),
     Shared(SharedObjectModule),
 }
 
@@ -25,8 +27,8 @@ impl std::ops::Deref for LoadableModule {
     }
 }
 
-impl From<Module> for LoadableModule {
-    fn from(m: Module) -> Self {
+impl From<NewCodeObject> for LoadableModule {
+    fn from(m: NewCodeObject) -> Self {
         Self::Lovm2(m)
     }
 }

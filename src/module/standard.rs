@@ -51,6 +51,7 @@ fn print(ctx: &mut Context) -> Lovm2Result<()> {
     Ok(())
 }
 
+/*
 /// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
 pub fn create_standard_module() -> Module {
     let mut module = Module::new();
@@ -66,3 +67,4 @@ pub fn create_standard_module() -> Module {
 
     module
 }
+*/

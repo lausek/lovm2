@@ -293,7 +293,7 @@ impl Lowering for Expr {
                 }
             }
             Expr::Variable(ref var) => {
-                if runtime.locals.contains(var) {
+                if runtime.has_local(var) {
                     let lidx = runtime.index_local(var);
                     runtime.emit(Instruction::Pushl(lidx as u16));
                 } else {
