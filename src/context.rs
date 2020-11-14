@@ -16,7 +16,7 @@ pub type ImportHookFn = dyn Fn(&str, &str) -> String;
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
 
 fn filter_entry_reimport(name: &Variable) -> bool {
-    name.as_ref() != crate::prelude::ENTRY_POINT
+    name.as_ref() == crate::prelude::ENTRY_POINT
 }
 
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
@@ -112,8 +112,6 @@ impl Context {
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
-        use crate::prelude::ENTRY_POINT;
-
         if !self.modules.get(module.name()).is_some() {
             // load static dependencies of module
             for used_module in module.uses() {
@@ -122,15 +120,20 @@ impl Context {
 
             let module = Rc::new(module);
             for (key, co) in module.slots().iter() {
+                if filter(key) {
+                    continue;
+                }
+
                 if self.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                } else if key.as_ref() == ENTRY_POINT {
+                } else if key.as_ref() == crate::prelude::ENTRY_POINT {
                     self.entry = Some(co.clone());
                 }
             }
 
             self.modules.insert(module.name().to_string(), module);
         }
+
         Ok(())
     }
 
@@ -182,7 +185,7 @@ impl Context {
     where
         T: Into<Module>,
     {
-        self.load_and_import_filter(module.into(), |_| true, None)
+        self.load_and_import_filter(module.into(), |_| false, None)
     }
 
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CallableRef> {

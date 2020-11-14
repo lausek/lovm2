@@ -133,7 +133,7 @@ pub fn bisect(c: &mut Criterion) {
     // check filesize of module
     assert_eq!(321, module.to_bytes().unwrap().len());
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.load_and_import_all(module).unwrap();
 
     // f(x)=2x^3 + 2x^2 - x

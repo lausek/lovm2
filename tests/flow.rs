@@ -7,7 +7,7 @@ use lovm2::vm::Vm;
 
 #[test]
 fn pushing_constant() {
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     let co = define_code! {
         consts { 2 }
 
@@ -24,7 +24,7 @@ fn pushing_constant() {
 
 #[test]
 fn store_global() {
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     let co = define_code! {
         consts { 42 }
         idents { globaln }
@@ -45,7 +45,7 @@ fn store_global() {
 
 #[test]
 fn calculation() {
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     let co = define_code! {
         consts { 2, 3 }
         idents { result_add, result_sub, result_mul, result_div }
@@ -95,7 +95,7 @@ fn calculation() {
 
 #[test]
 fn jumping() {
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     let co = define_code! {
         consts { 0, 1, 10, "a" }
         idents { i, output }

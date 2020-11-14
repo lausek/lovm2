@@ -44,7 +44,7 @@ fn deserialize_module() {
 
     let module = Module::load_from_file(DESERIALIZE_PATH).unwrap();
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.load_and_import_all(module).unwrap();
     vm.run().unwrap();
 
@@ -69,7 +69,7 @@ fn global_uses() {
 
     assert!(!module.uses().is_empty());
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
 
     let called = Rc::new(std::cell::Cell::new(false));
     let called_ref = called.clone();

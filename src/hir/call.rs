@@ -55,17 +55,11 @@ impl Lowering for Call {
             arg.lower(runtime);
         }
 
-        match self.name.as_ref() {
-            "get" => runtime.emit(Instruction::Get),
-            "set" => runtime.emit(Instruction::Set),
-            _ => {
-                let gidx = runtime.index_global(&self.name);
-                runtime.emit(Instruction::Call(argn as u8, gidx as u16));
+        let gidx = runtime.index_global(&self.name);
+        runtime.emit(Instruction::Call(argn as u8, gidx as u16));
 
-                if !self.keep_value {
-                    runtime.emit(Instruction::Discard);
-                }
-            }
+        if !self.keep_value {
+            runtime.emit(Instruction::Discard);
         }
     }
 }

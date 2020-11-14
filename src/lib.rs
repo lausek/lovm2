@@ -39,7 +39,7 @@
 //!     println!("{:#?}", module);
 //!
 //!     // load the module and run it
-//!     let mut vm = Vm::new();
+//!     let mut vm = Vm::with_std();
 //!     vm.load_and_import_all(module).expect("load error");
 //!     vm.run().expect("run error");
 //! }

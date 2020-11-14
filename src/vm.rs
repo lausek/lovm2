@@ -39,9 +39,17 @@ pub struct Vm {
 
 impl Vm {
     pub fn new() -> Self {
-        let mut ctx = Context::new();
-        ctx.load_and_import_all(create_standard_module()).unwrap();
-        Self { ctx }
+        Self {
+            ctx: Context::new(),
+        }
+    }
+
+    pub fn with_std() -> Self {
+        let mut vm = Self::new();
+        vm.ctx
+            .load_and_import_all(create_standard_module())
+            .unwrap();
+        vm
     }
 
     pub fn call(&mut self, name: &str, args: &[Value]) -> Lovm2Result<Value> {

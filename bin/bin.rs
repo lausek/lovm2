@@ -22,9 +22,9 @@ fn main() {
 
     match builder.build() {
         Ok(result) => {
-            println!("{:#?}", result);
+            println!("{}", result);
 
-            let mut vm = Vm::new();
+            let mut vm = Vm::with_std();
             vm.load_and_import_all(result).unwrap();
 
             if let Err(err) = vm.run() {

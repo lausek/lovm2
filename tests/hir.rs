@@ -9,7 +9,7 @@ use lovm2::vm::Vm;
 fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
     let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     let called_ref = called.clone();
     vm.context_mut().set_interrupt(10, move |ctx| {
         called_ref.set(true);
@@ -466,7 +466,7 @@ fn call_into_vm() {
     let called = std::rc::Rc::new(std::cell::Cell::new(false));
     let called_ref = called.clone();
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.context_mut().set_interrupt(10, move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(10), frame.value_of(&lv2_var!(n)).unwrap());
