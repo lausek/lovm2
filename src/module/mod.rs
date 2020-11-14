@@ -107,7 +107,6 @@ impl std::fmt::Display for Module {
         }
 
         if !self.code_object.idents.is_empty() {
-            //writeln!(f, "- idents: {:?}", self.code_object.idents)?;
             write!(f, "- idents: [")?;
             for (i, ident) in self.code_object.idents.iter().enumerate() {
                 if i == 0 {

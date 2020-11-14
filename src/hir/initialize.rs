@@ -74,11 +74,7 @@ impl Initialize {
 
 impl Lowering for Initialize {
     fn lower(self, runtime: &mut LoweringRuntime) {
-        let requires_box = match &self.base {
-            Value::Dict(_) => true,
-            Value::List(_) => true,
-            _ => false,
-        };
+        let requires_box = matches!(&self.base, Value::Dict(_) | Value::List(_));
 
         Expr::from(self.base).lower(runtime);
 

@@ -112,7 +112,7 @@ impl Context {
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
-        if !self.modules.get(module.name()).is_some() {
+        if self.modules.get(module.name()).is_none() {
             // load static dependencies of module
             for used_module in module.uses() {
                 self.load_and_import_by_name(used_module, module.location().cloned())?;
