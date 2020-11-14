@@ -90,3 +90,71 @@ impl From<CodeObject> for Module {
         Self { code_object, slots }
     }
 }
+
+impl std::fmt::Display for Module {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        writeln!(
+            f,
+            "module({:?}, {:?}):",
+            self.code_object.name, self.code_object.loc
+        )?;
+        if !self.code_object.uses.is_empty() {
+            writeln!(f, "- uses: {:?}", self.code_object.uses)?;
+        }
+
+        if !self.code_object.consts.is_empty() {
+            writeln!(f, "- consts: {:?}", self.code_object.consts)?;
+        }
+
+        if !self.code_object.idents.is_empty() {
+            //writeln!(f, "- idents: {:?}", self.code_object.idents)?;
+            write!(f, "- idents: [")?;
+            for (i, ident) in self.code_object.idents.iter().enumerate() {
+                if i == 0 {
+                    write!(f, "{}", ident)?;
+                } else {
+                    write!(f, ", {}", ident)?;
+                }
+            }
+            writeln!(f, "]")?;
+        }
+
+        if !self.code_object.code.is_empty() {
+            use crate::bytecode::Instruction::*;
+
+            let mut entry_iter = self.code_object.entries.iter();
+            let mut entry_current = entry_iter.next();
+
+            writeln!(f, "- code:")?;
+            for (off, inx) in self.code_object.code.iter().enumerate() {
+                match entry_current {
+                    Some(current) if current.1 == off => {
+                        let entry_name = &self.code_object.idents[current.0];
+                        writeln!(f, "{}:", entry_name)?;
+                        entry_current = entry_iter.next();
+                    }
+                    _ => {}
+                }
+
+                write!(f, "\t{: >4}. {:<16}", off, format!("{:?}", inx))?;
+
+                match inx {
+                    Pushl(idx) | Pushg(idx) | Movel(idx) | Moveg(idx) => {
+                        write!(f, "{}", self.code_object.idents[*idx as usize])?;
+                    }
+                    Call(_, idx) => {
+                        write!(f, "{}", self.code_object.idents[*idx as usize])?;
+                    }
+                    Pushc(idx) => {
+                        write!(f, "{}", self.code_object.consts[*idx as usize])?;
+                    }
+                    _ => {}
+                }
+
+                writeln!(f)?;
+            }
+        }
+
+        Ok(())
+    }
+}

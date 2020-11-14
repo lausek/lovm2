@@ -1,6 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use lovm2::module::ModuleProtocol;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
@@ -37,7 +36,7 @@ fn fibonacci(c: &mut Criterion) {
     let module = module.build().unwrap();
 
     // check filesize of module
-    assert_eq!(92, module.to_bytes().unwrap().len());
+    assert_eq!(93, module.to_bytes().unwrap().len());
 
     let mut vm = Vm::new();
     vm.load_and_import_all(module).unwrap();

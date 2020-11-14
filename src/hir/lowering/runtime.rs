@@ -45,14 +45,14 @@ impl LoweringRuntime {
     pub fn add_hir(&mut self, hir: HIR) -> Lovm2CompileResult<()> {
         let hir_elements = hir.code.into_iter();
 
+        // after lowering a code object function, reset locals
+        self.locals.clear();
+
         self.add_prelude(hir.args)?;
 
         for element in hir_elements {
             element.lower(self);
         }
-
-        // after lowering a code object function, reset locals
-        self.locals.clear();
 
         Ok(())
     }
@@ -103,10 +103,12 @@ impl LoweringRuntime {
     }
 
     pub fn index_local(&mut self, var: &Variable) -> usize {
+        if !self.has_local(var) {
+            self.locals.push(var.clone());
+        }
         match self.idents.iter().position(|item| item == var) {
             Some(pos) => pos,
             None => {
-                self.locals.push(var.clone());
                 self.idents.push(var.clone());
                 self.idents.len() - 1
             }

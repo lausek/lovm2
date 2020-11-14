@@ -45,6 +45,8 @@ pub trait CallProtocol: std::fmt::Debug {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CodeObject {
     pub name: String,
+    #[serde(skip_deserializing)]
+    #[serde(skip_serializing)]
     pub loc: Option<String>,
     pub uses: Vec<String>,
     pub entries: Vec<(usize, usize)>,
