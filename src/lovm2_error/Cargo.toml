@@ -1,6 +1,6 @@
 [package]
 name = "lovm2_error"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
