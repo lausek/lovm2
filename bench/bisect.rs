@@ -130,7 +130,10 @@ pub fn bisect(c: &mut Criterion) {
     module.add("bisect").hir(bisect_hir);
     let module = module.build().unwrap();
 
-    let mut vm = Vm::new();
+    // check filesize of module
+    assert_eq!(321, module.to_bytes().unwrap().len());
+
+    let mut vm = Vm::with_std();
     vm.load_and_import_all(module).unwrap();
 
     // f(x)=2x^3 + 2x^2 - x

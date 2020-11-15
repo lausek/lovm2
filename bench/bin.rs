@@ -35,7 +35,10 @@ fn fibonacci(c: &mut Criterion) {
     module.add("fib").hir(fib_hir);
     let module = module.build().unwrap();
 
-    let mut vm = Vm::new();
+    // check filesize of module
+    assert_eq!(93, module.to_bytes().unwrap().len());
+
+    let mut vm = Vm::with_std();
     vm.load_and_import_all(module).unwrap();
 
     c.bench_function("fib 0", |b| {

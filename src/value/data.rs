@@ -63,10 +63,7 @@ impl Value {
     }
 
     pub fn is_ref(&self) -> bool {
-        match self {
-            Value::Ref(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::Ref(_))
     }
 
     pub fn delete(&mut self, key: Value) -> Lovm2Result<()> {
@@ -104,7 +101,7 @@ impl Value {
                 }
             }
             Value::Ref(Some(r)) => r.borrow().get(key),
-            _ => return Err((Lovm2ErrorTy::OperationNotSupported, "get").into()),
+            _ => Err((Lovm2ErrorTy::OperationNotSupported, "get").into()),
         }
     }
 

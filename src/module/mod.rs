@@ -1,161 +1,160 @@
 //! generic protocol for module like objects
 //!
-//! if a module gets loaded by the virtual machine, its code objects are not available by default.
-//! code objects need to be added to the scope to be callable by lovm2 bytecode.
+//! a `Module` can be created from a `CodeObject` or by loading a lovm2 compatible shared object
+//! library.  it maintains an internal map of callable objects, meaning that everything
+//! implementing the `CallProtocol` can be added and executed from inside the vm. on load, all
+//! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
 pub mod builder;
 pub mod shared;
 pub mod slots;
 pub mod standard;
 
-use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::path::Path;
 use std::rc::Rc;
 
 use lovm2_error::*;
 
 use crate::code::CallProtocol;
+use crate::code::{CodeObject, CodeObjectFunction};
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
-pub use self::shared::SharedObjectModule;
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
-/// name of the `CodeObject` that is used as a programs starting point inside `vm.run()`
+/// name of the `CodeObject` entry that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
-pub type GenericModule = Rc<dyn ModuleProtocol>;
 
-/// generalization for loadable modules
-/// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
-/// - shared objects `.so`
-/// ([SharedObjectModule](/latest/lovm2/module/shared/struct.SharedObjectModule.html))
-pub trait ModuleProtocol: std::fmt::Debug {
-    fn name(&self) -> &str {
-        unimplemented!()
-    }
-
-    fn location(&self) -> Option<&String> {
-        None
-    }
-
-    fn slots(&self) -> &Slots {
-        unimplemented!()
-    }
-
-    fn slot(&self, _name: &Variable) -> Option<Rc<dyn CallProtocol>> {
-        unimplemented!()
-    }
-
-    fn store_to_file(&self, _path: &str) -> Lovm2Result<()> {
-        unimplemented!()
-    }
-
-    fn uses(&self) -> &[String] {
-        &[]
-    }
-}
-
-/// a structure containing lovm2 `CodeObjects`
-#[derive(Debug, Deserialize, Serialize)]
+/// main runtime representation for loadable modules.
+#[derive(Clone, Debug)]
 pub struct Module {
-    // TODO: can we skip this?
-    //#[serde(skip_deserializing)]
-    //#[serde(skip_serializing)]
-    pub name: String,
-
-    #[serde(skip_deserializing)]
-    #[serde(skip_serializing)]
-    pub loc: Option<String>,
-
+    /// always required. shared object libraries will only fill the `name` and `loc` attribute
+    pub code_object: Rc<CodeObject>,
+    /// contains `CallProtocol` entries that will be added to the context
     pub slots: Slots,
-    pub uses: Vec<String>,
-}
-
-impl Into<GenericModule> for Module {
-    fn into(self) -> GenericModule {
-        Rc::new(self) as GenericModule
-    }
-}
-
-impl ModuleProtocol for Module {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn location(&self) -> Option<&String> {
-        self.loc.as_ref()
-    }
-
-    fn slots(&self) -> &Slots {
-        &self.slots
-    }
-
-    fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
-        self.slots
-            .get(name)
-            .map(|co_ref| co_ref.clone() as Rc<dyn CallProtocol>)
-    }
-
-    // TODO: could lead to errors when two threads serialize to the same file
-    fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
-        use bincode::Options;
-        let file = File::create(path).map_err(|e| e.to_string())?;
-        bincode::options()
-            .with_varint_encoding()
-            .serialize_into(file, self)
-            .map_err(|e| e.to_string().into())
-    }
-
-    fn uses(&self) -> &[String] {
-        self.uses.as_ref()
-    }
 }
 
 impl Module {
-    pub fn new() -> Self {
-        Self {
-            name: String::new(),
-            loc: None,
-            slots: Slots::new(),
-            uses: vec![],
+    pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
+    where
+        T: AsRef<std::path::Path>,
+    {
+        // try loading module as shared object
+        if let Ok(so_module) = shared::load_from_file(&path) {
+            Ok(so_module)
+        } else {
+            let co = CodeObject::load_from_file(path)?;
+            Ok(co.into())
         }
     }
 
-    /// tries to load the file as shared object first and tries regular deserialization if it failed
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<GenericModule>
-    where
-        T: AsRef<Path>,
-    {
-        // try loading module as shared object
-        if let Ok(so_module) = SharedObjectModule::load_from_file(&path) {
-            return Ok(Rc::new(so_module) as GenericModule);
+    pub fn name(&self) -> &str {
+        self.code_object.name.as_ref()
+    }
+
+    pub fn location(&self) -> Option<&String> {
+        self.code_object.loc.as_ref()
+    }
+
+    pub fn slots(&self) -> &Slots {
+        &self.slots
+    }
+
+    pub fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
+        self.slots.get(name).cloned()
+    }
+
+    pub fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+        self.code_object.store_to_file(path)
+    }
+
+    pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
+        self.code_object.to_bytes()
+    }
+
+    pub fn uses(&self) -> &[String] {
+        &self.code_object.uses
+    }
+}
+
+impl From<CodeObject> for Module {
+    fn from(code_object: CodeObject) -> Self {
+        let code_object = Rc::new(code_object);
+        let mut slots = Slots::new();
+
+        for (iidx, offset) in code_object.entries.iter() {
+            let var = &code_object.idents[*iidx];
+            let func = CodeObjectFunction::from(code_object.clone(), *offset);
+            slots.insert(var.clone(), Rc::new(func));
         }
 
-        use bincode::Options;
-        let name = path
-            .as_ref()
-            .file_stem()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
-        let loc = path.as_ref().to_str().unwrap().to_string();
-        let file = File::open(path).map_err(|e| e.to_string())?;
-        // avoid misinterpreting random bytes as length of buffer
-        // this could lead to memory allocation faults
-        let mut module: Module = bincode::options()
-            .with_varint_encoding()
-            .deserialize_from(file)
-            .map_err(|e| e.to_string())?;
-        module.name = name;
-        module.loc = Some(loc);
+        Self { code_object, slots }
+    }
+}
 
-        for (_, slot) in module.slots.iter_mut() {
-            Rc::get_mut(slot).unwrap().set_module(module.name.clone());
+impl std::fmt::Display for Module {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        writeln!(
+            f,
+            "module({:?}, {:?}):",
+            self.code_object.name, self.code_object.loc
+        )?;
+        if !self.code_object.uses.is_empty() {
+            writeln!(f, "- uses: {:?}", self.code_object.uses)?;
         }
 
-        Ok(Rc::new(module) as GenericModule)
+        if !self.code_object.consts.is_empty() {
+            writeln!(f, "- consts: {:?}", self.code_object.consts)?;
+        }
+
+        if !self.code_object.idents.is_empty() {
+            write!(f, "- idents: [")?;
+            for (i, ident) in self.code_object.idents.iter().enumerate() {
+                if i == 0 {
+                    write!(f, "{}", ident)?;
+                } else {
+                    write!(f, ", {}", ident)?;
+                }
+            }
+            writeln!(f, "]")?;
+        }
+
+        if !self.code_object.code.is_empty() {
+            use crate::bytecode::Instruction::*;
+
+            let mut entry_iter = self.code_object.entries.iter();
+            let mut entry_current = entry_iter.next();
+
+            writeln!(f, "- code:")?;
+            for (off, inx) in self.code_object.code.iter().enumerate() {
+                match entry_current {
+                    Some(current) if current.1 == off => {
+                        let entry_name = &self.code_object.idents[current.0];
+                        writeln!(f, "{}:", entry_name)?;
+                        entry_current = entry_iter.next();
+                    }
+                    _ => {}
+                }
+
+                write!(f, "\t{: >4}. {:<16}", off, format!("{:?}", inx))?;
+
+                match inx {
+                    Pushl(idx) | Pushg(idx) | Movel(idx) | Moveg(idx) => {
+                        write!(f, "{}", self.code_object.idents[*idx as usize])?;
+                    }
+                    Call(_, idx) => {
+                        write!(f, "{}", self.code_object.idents[*idx as usize])?;
+                    }
+                    Pushc(idx) => {
+                        write!(f, "{}", self.code_object.consts[*idx as usize])?;
+                    }
+                    _ => {}
+                }
+
+                writeln!(f)?;
+            }
+        }
+
+        Ok(())
     }
 }

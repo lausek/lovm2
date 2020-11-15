@@ -6,11 +6,12 @@ use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
 use lovm2::hir;
-use lovm2::var;
 
+use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
+use crate::lv2::*;
 
-use super::{Lovm2Block, Lovm2Branch, Lovm2Module, Module, ModuleBuilderSlot};
+use super::{slot::ModuleBuilderSlotInner, Module, ModuleBuilderSlot};
 
 #[pyclass(unsendable)]
 pub struct ModuleBuilder {
@@ -59,24 +60,34 @@ impl ModuleBuilder {
 
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python, module_location: Option<String>) -> PyResult<Module> {
-        let mut module = Lovm2Module::new();
-        module.name = self.name.clone();
-        module.loc = module_location;
-        module.uses = self.uses.clone();
+        let mut builder = Lovm2ModuleBuilder::named(self.name.clone());
+        let mut slots = Lovm2Slots::new();
+        builder.loc = module_location;
+        builder.uses = self.uses.clone();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
-            match co_builder.complete() {
-                Ok(mut co) => {
-                    {
-                        use lovm2::code::CallProtocol;
-                        co.set_module(module.name.clone());
-                    }
 
-                    module.slots.insert(var::Variable::from(key), Rc::new(co));
+            match &mut co_builder.inner {
+                ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
+                    if let Some(hir) = hir.take() {
+                        builder.add(key).hir(hir);
+                    } else {
+                        return Err(PyRuntimeError::new_err("hir was already built"));
+                    }
                 }
-                Err(msg) => return Err(msg),
+                ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
+                    let func = CodeObject::from(pyfn.take().unwrap());
+                    slots.insert(key, Rc::new(func));
+                }
             }
+        }
+
+        // TODO: correctly raise error
+        let mut module = builder.build().unwrap();
+
+        for (key, callable) in slots.iter() {
+            module.slots.insert(key.clone(), callable.clone());
         }
 
         Ok(Module::from(module))

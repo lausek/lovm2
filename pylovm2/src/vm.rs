@@ -25,6 +25,13 @@ impl Vm {
         }
     }
 
+    #[classmethod]
+    pub fn with_std(_this: &PyAny) -> Self {
+        Self {
+            inner: lovm2::vm::Vm::with_std(),
+        }
+    }
+
     #[args(args = "*")]
     pub fn call(
         &mut self,

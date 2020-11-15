@@ -8,6 +8,7 @@ pub enum Lovm2ErrorTy {
     KeyNotFound,
     LookupFailed,
     ModuleNotFound,
+    NoEntryPoint,
     OperationNotSupported,
     ValueStackEmpty,
 }

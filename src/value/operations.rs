@@ -22,6 +22,7 @@ macro_rules! auto_implement_branch {
     };
 }
 
+// TODO: this creates a closure and calls it. not good
 macro_rules! auto_implement {
     {
         1, $tr:path, $method:ident;
@@ -118,8 +119,8 @@ impl Value {
     pub fn pow(&self, exp: Value) -> Value {
         if let Value::Int(exp) = exp.into_integer().unwrap() {
             return match self {
-                Value::Int(base) => Value::Int(base.pow(exp as u32).into()),
-                Value::Float(base) => Value::Float(base.powi(exp as i32).into()),
+                Value::Int(base) => Value::Int(base.pow(exp as u32)),
+                Value::Float(base) => Value::Float(base.powi(exp as i32)),
                 _ => unimplemented!(),
             };
         }
@@ -157,10 +158,10 @@ impl std::cmp::PartialOrd for Value {
     }
 
     fn le(&self, other: &Value) -> bool {
-        match self.partial_cmp(other) {
-            Some(Ordering::Less) | Some(Ordering::Equal) => true,
-            _ => false,
-        }
+        matches!(
+            self.partial_cmp(other),
+            Some(Ordering::Less) | Some(Ordering::Equal)
+        )
     }
 
     fn gt(&self, other: &Value) -> bool {
@@ -168,9 +169,9 @@ impl std::cmp::PartialOrd for Value {
     }
 
     fn ge(&self, other: &Value) -> bool {
-        match self.partial_cmp(other) {
-            Some(Ordering::Greater) | Some(Ordering::Equal) => true,
-            _ => false,
-        }
+        matches!(
+            self.partial_cmp(other),
+            Some(Ordering::Greater) | Some(Ordering::Equal)
+        )
     }
 }

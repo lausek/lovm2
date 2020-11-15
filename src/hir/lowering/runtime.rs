@@ -3,7 +3,7 @@
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
-use crate::code::{CodeObject, CodeObjectBuilder};
+use crate::code::CodeObject;
 use crate::hir::HIR;
 use crate::value::Value;
 use crate::var::Variable;
@@ -12,44 +12,61 @@ use super::*;
 
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct LoweringRuntime {
+    pub name: String,
+    pub loc: Option<String>,
+    pub entries: Vec<(usize, usize)>,
+    pub uses: Vec<String>,
     pub consts: Vec<Value>,
-    pub locals: Vec<Variable>,
-    pub globals: Vec<Variable>,
+    pub idents: Vec<Variable>,
     pub code: Vec<Instruction>,
 
     branch_stack: Vec<LoweringBranch>,
+    locals: Vec<Variable>,
     loop_stack: Vec<LoweringLoop>,
 }
 
 impl LoweringRuntime {
     pub fn new() -> Self {
         Self {
+            name: String::new(),
+            loc: None,
+            entries: vec![],
+            uses: vec![],
             consts: vec![],
-            locals: vec![],
-            globals: vec![],
+            idents: vec![],
             code: vec![],
 
             branch_stack: vec![],
+            locals: vec![],
             loop_stack: vec![],
         }
     }
 
-    pub fn complete(hir: HIR) -> Lovm2CompileResult<CodeObject> {
-        let mut lowru = LoweringRuntime::new();
+    pub fn add_hir(&mut self, hir: HIR) -> Lovm2CompileResult<()> {
         let hir_elements = hir.code.into_iter();
 
-        lowru.add_prelude(hir.args)?;
+        // before lowering a code object function, reset locals
+        self.locals.clear();
+
+        self.add_prelude(hir.args)?;
 
         for element in hir_elements {
-            element.lower(&mut lowru);
+            element.lower(self);
         }
 
-        CodeObjectBuilder::new()
-            .consts(lowru.consts)
-            .locals(lowru.locals)
-            .globals(lowru.globals)
-            .code(lowru.code)
-            .build()
+        Ok(())
+    }
+
+    pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
+        let mut co = CodeObject::new();
+        co.name = self.name;
+        co.loc = self.loc;
+        co.entries = self.entries;
+        co.uses = self.uses;
+        co.consts = self.consts;
+        co.idents = self.idents;
+        co.code = self.code;
+        Ok(co)
     }
 
     pub fn add_prelude(&mut self, args: Vec<Variable>) -> Lovm2CompileResult<()> {
@@ -86,21 +103,22 @@ impl LoweringRuntime {
     }
 
     pub fn index_local(&mut self, var: &Variable) -> usize {
-        match self.locals.iter().position(|item| item == var) {
-            Some(pos) => pos,
-            None => {
-                self.locals.push(var.clone());
-                self.locals.len() - 1
-            }
+        if !self.has_local(var) {
+            self.locals.push(var.clone());
         }
+        self.index_ident(var)
     }
 
     pub fn index_global(&mut self, var: &Variable) -> usize {
-        match self.globals.iter().position(|item| item == var) {
+        self.index_ident(var)
+    }
+
+    pub fn index_ident(&mut self, var: &Variable) -> usize {
+        match self.idents.iter().position(|item| item == var) {
             Some(pos) => pos,
             None => {
-                self.globals.push(var.clone());
-                self.globals.len() - 1
+                self.idents.push(var.clone());
+                self.idents.len() - 1
             }
         }
     }

@@ -1,16 +1,13 @@
-use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
 use lovm2::hir;
 
-use crate::code::CodeObject;
-
 use super::builder::*;
-use super::Lovm2Block;
+use crate::lv2::*;
 
 #[derive(Clone)]
-enum ModuleBuilderSlotInner {
+pub(super) enum ModuleBuilderSlotInner {
     Lovm2Hir(Option<hir::HIR>),
     PyFn(Option<PyObject>),
 }
@@ -18,7 +15,7 @@ enum ModuleBuilderSlotInner {
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct ModuleBuilderSlot {
-    inner: ModuleBuilderSlotInner,
+    pub(super) inner: ModuleBuilderSlotInner,
 }
 
 #[pymethods]
@@ -54,24 +51,6 @@ impl ModuleBuilderSlot {
             Ok(BlockBuilder { inner })
         } else {
             unimplemented!()
-        }
-    }
-
-    // TODO: can we use consuming self here?
-    pub fn complete(&mut self) -> PyResult<CodeObject> {
-        match &mut self.inner {
-            ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
-                if let Some(hir) = hir.take() {
-                    return match hir.build() {
-                        Ok(co) => Ok(CodeObject::from(co)),
-                        Err(msg) => Err(PyRuntimeError::new_err(msg.to_string())),
-                    };
-                }
-                Err(PyRuntimeError::new_err("hir was already built"))
-            }
-            ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
-                Ok(CodeObject::from(pyfn.take().unwrap()))
-            }
         }
     }
 

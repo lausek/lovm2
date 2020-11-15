@@ -3,17 +3,14 @@
 macro_rules! define_code {
     {
         $(consts {$($cval:expr),*})?
-        $(globals {$($gname:ident),*})?
-        $(locals {$($lname:ident),*})?
+        $(idents {$($name:ident),*})?
         {
             $( $inx:ident $($args:expr),* ; )*
         }
     } => {{
-        let builder = CodeObjectBuilder::new()
-            $(.consts(vec![$( Value::from($cval) ),*]))?
-            $(.locals(vec![$( Variable::from(stringify!($lname)) ),*]))?
-            $(.globals(vec![$( Variable::from(stringify!($gname)) ),*]))?
-            ;
+        let mut co = lovm2::code::CodeObject::new();
+        $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
+        $( co.consts = vec![$( Value::from($cval) ),*]; )?
 
         let mut c = vec![
             $(
@@ -21,7 +18,8 @@ macro_rules! define_code {
             )*
         ];
 
-        builder.code(c).build().unwrap()
+        co.code = c;
+        co
     }};
 
     { compile_inx $inx:ident } => { Instruction::$inx };

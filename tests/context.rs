@@ -28,7 +28,7 @@ fn run_module_test(
 
 #[test]
 fn load_hook_none() {
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| Ok(None));
 
     let mut hir = HIR::new();
@@ -45,16 +45,14 @@ fn load_hook_none() {
 
 #[test]
 fn load_custom_module() {
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| {
         let mut hir = HIR::new();
         hir.push(Return::value(Expr::add(1, 1)));
 
         let mut builder = ModuleBuilder::named("extern");
         builder.add("calc").hir(hir);
-        Ok(Some(
-            std::rc::Rc::new(builder.build().unwrap()) as GenericModule
-        ))
+        Ok(Some(builder.build().unwrap().into()))
     });
 
     let mut hir = HIR::new();
@@ -88,7 +86,7 @@ fn load_avoid_sigabrt() {
 
     let this_dir = Path::new(file!()).parent().unwrap().canonicalize().unwrap();
     let this_dir = this_dir.to_str().unwrap();
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.context_mut().load_paths.clear();
     vm.context_mut().load_paths.push(this_dir.to_string());
 
@@ -97,8 +95,6 @@ fn load_avoid_sigabrt() {
 
 #[test]
 fn avoid_double_import() {
-    use std::rc::Rc;
-
     let mut builder = ModuleBuilder::named("main");
 
     let mut main_hir = HIR::new();
@@ -110,12 +106,12 @@ fn avoid_double_import() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::new();
+    let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| {
         let mut builder = ModuleBuilder::named("abc");
         builder.add("add").hir(HIR::new());
         let module = builder.build().unwrap();
-        Ok(Some(Rc::new(module) as GenericModule))
+        Ok(Some(module.into()))
     });
     assert!(run_module_test(vm, module, |_ctx| ()).is_ok());
 }

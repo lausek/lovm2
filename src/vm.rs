@@ -1,7 +1,6 @@
 //! runs modules and maintains program state
 
 use std::ops::*;
-use std::rc::Rc;
 
 use lovm2_error::*;
 
@@ -9,16 +8,16 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::hir::expr::Expr;
-use crate::module::{create_standard_module, GenericModule, ENTRY_POINT};
+use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
-/// virtual machine for running bytecode
+/// virtual machine for executing [modules](crate::module::Module)
 ///
 /// call convention is pascal style. if you have a function like `f(a, b, c)` it will be translated
 /// to
 ///
-/// ```ignore
+/// ``` ignore
 /// push a
 /// push b
 /// push c
@@ -27,7 +26,7 @@ use crate::var::Variable;
 ///
 /// and the function has to do the popping in reverse
 ///
-/// ```ignore
+/// ``` ignore
 /// pop c
 /// pop b
 /// pop a
@@ -40,10 +39,17 @@ pub struct Vm {
 
 impl Vm {
     pub fn new() -> Self {
-        let mut ctx = Context::new();
-        ctx.load_and_import_all(Rc::new(create_standard_module()) as GenericModule)
+        Self {
+            ctx: Context::new(),
+        }
+    }
+
+    pub fn with_std() -> Self {
+        let mut vm = Self::new();
+        vm.ctx
+            .load_and_import_all(create_standard_module())
             .unwrap();
-        Self { ctx }
+        vm
     }
 
     pub fn call(&mut self, name: &str, args: &[Value]) -> Lovm2Result<Value> {
@@ -93,9 +99,9 @@ impl Vm {
     // TODO: add `ImportOptions` parameter to specify what names to import
     pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
     where
-        T: Into<GenericModule>,
+        T: Into<Module>,
     {
-        self.ctx.load_and_import_all(module.into())
+        self.ctx.load_and_import_all(module)
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
@@ -109,8 +115,11 @@ impl Vm {
 
     /// start the execution at `ENTRY_POINT`
     pub fn run(&mut self) -> Lovm2Result<()> {
-        let co = self.ctx.lookup_code_object(&ENTRY_POINT.into())?;
-        self.run_object(co.as_ref())
+        if let Some(callable) = self.ctx.entry.take() {
+            self.run_object(callable.as_ref())
+        } else {
+            Err(Lovm2ErrorTy::NoEntryPoint.into())
+        }
     }
 }
 
@@ -171,19 +180,19 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
 ///
 /// *Note:* this function does not push a stack frame and could therefore mess up local variables
 /// if not handled correctly. see `Vm.run_object`
-pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
-    let mut ip = 0;
+pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2Result<()> {
+    let mut ip = offset;
     while let Some(inx) = co.code.get(ip) {
         match inx {
             Instruction::Pushl(lidx) => {
-                let variable = &co.locals[*lidx as usize];
+                let variable = &co.idents[*lidx as usize];
                 match ctx.frame_mut()?.value_of(variable) {
                     Some(local) => ctx.push_value(local),
                     _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
                 }
             }
             Instruction::Pushg(gidx) => {
-                let variable = &co.globals[*gidx as usize];
+                let variable = &co.idents[*gidx as usize];
                 match ctx.value_of(variable) {
                     Some(global) => ctx.push_value(global),
                     _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
@@ -194,12 +203,12 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 ctx.push_value(value.clone());
             }
             Instruction::Movel(lidx) => {
-                let variable = &co.locals[*lidx as usize];
+                let variable = &co.idents[*lidx as usize];
                 let value = ctx.pop_value()?;
                 ctx.frame_mut()?.locals.insert(variable.clone(), value);
             }
             Instruction::Moveg(gidx) => {
-                let variable = &co.globals[*gidx as usize];
+                let variable = &co.idents[*gidx as usize];
                 let value = ctx.pop_value()?;
                 ctx.globals.insert(variable.clone(), value);
             }
@@ -279,7 +288,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context) -> Lovm2Result<()> {
                 }
             }
             Instruction::Call(argn, gidx) => {
-                let func = &co.globals[*gidx as usize];
+                let func = &co.idents[*gidx as usize];
                 let other_co = ctx.lookup_code_object(func)?;
                 ctx.push_frame(*argn);
                 other_co.run(ctx)?;
