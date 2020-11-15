@@ -20,14 +20,13 @@ pub type StaticFunction = fn(&mut Context) -> Lovm2Result<()>;
 pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 
 /// generalization for runnable objects
-/// - lovm2 bytecode ([CodeObject](/latest/lovm2/code/struct.CodeObject.html))
+/// - lovm2 bytecode ([CodeObject])
 /// - statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
-/// - dynamically linked functions ([SharedObjectSlot](/latest/lovm2/module/shared/struct.SharedObjectSlot.html))
+/// - dynamically linked functions ([SharedObjectSlot](crate::module::shared::SharedObjectSlot))
 ///
 /// functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
 pub trait CallProtocol: std::fmt::Debug {
-    // TODO: why does this return an option?
     fn module(&self) -> Option<String> {
         None
     }
@@ -37,11 +36,22 @@ pub trait CallProtocol: std::fmt::Debug {
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
 ///
-/// identifiers for called functions will end up in the `globals` vector.
+/// the `entries` attribute is a vector of name-offset pairs where the first component is an
+/// index into `idents`. this information is essential for the [run_bytecode] function used by
+/// [CodeObjectFunction]. it shouldn't be necessary to manually alter `entries`. by default,
+/// the subprogram named [ENTRY_POINT](crate::module::ENTRY_POINT) will be at offset 0:
+///
+/// ``` ignored
+/// main:
+///     ...
+///     ret
+/// add:
+///     ...
+///     ret
+/// ```
 ///
 /// values will be returned over the value stack. every code object has
-/// to return some value on termination. if no value is produced,
-/// `Nil` is implicitly returned.
+/// to return some value on termination. if no value is produced, `Nil` is implicitly returned.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CodeObject {
     pub name: String,
@@ -130,6 +140,7 @@ impl CodeObject {
     }
 }
 
+/// implements `CallProtocol` to allow execution of bytecode from a certain offset.
 #[derive(Debug)]
 pub struct CodeObjectFunction {
     offset: usize,

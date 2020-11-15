@@ -1,7 +1,9 @@
 //! generic protocol for module like objects
 //!
-//! if a module gets loaded by the virtual machine, its code objects are not available by default.
-//! code objects need to be added to the scope to be callable by lovm2 bytecode.
+//! a `Module` can be created from a `CodeObject` or by loading a lovm2 compatible shared object
+//! library.  it maintains an internal map of callable objects, meaning that everything
+//! implementing the `CallProtocol` can be added and executed from inside the vm. on load, all
+//! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
 pub mod builder;
 pub mod shared;
@@ -20,16 +22,15 @@ pub use self::builder::ModuleBuilder;
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
-/// name of the `CodeObject` that is used as a programs starting point inside `vm.run()`
+/// name of the `CodeObject` entry that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
 
-/// generalization for loadable modules
-/// - lovm2 bytecode ([Module](/latest/lovm2/module/struct.Module.html))
-/// - shared objects `.so`
-/// ([SharedObjectModule](/latest/lovm2/module/shared/struct.SharedObjectModule.html))
+/// main runtime representation for loadable modules.
 #[derive(Clone, Debug)]
 pub struct Module {
+    /// always required. shared object libraries will only fill the `name` and `loc` attribute
     pub code_object: Rc<CodeObject>,
+    /// contains `CallProtocol` entries that will be added to the context
     pub slots: Slots,
 }
 

@@ -12,12 +12,12 @@ use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
-/// virtual machine for running bytecode
+/// virtual machine for executing [modules](crate::module::Module)
 ///
 /// call convention is pascal style. if you have a function like `f(a, b, c)` it will be translated
 /// to
 ///
-/// ```ignore
+/// ``` ignore
 /// push a
 /// push b
 /// push c
@@ -26,7 +26,7 @@ use crate::var::Variable;
 ///
 /// and the function has to do the popping in reverse
 ///
-/// ```ignore
+/// ``` ignore
 /// pop c
 /// pop b
 /// pop a
