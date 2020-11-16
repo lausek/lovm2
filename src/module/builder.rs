@@ -1,29 +1,24 @@
 //! building modules from HIR
 
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use lovm2_error::*;
 
 use crate::hir::{lowering::LoweringRuntime, HIR};
-use crate::module::{standard::BUILTIN_FUNCTIONS, CodeObjectFunction, Module, ENTRY_POINT};
 use crate::var::Variable;
 
-use std::rc::Rc;
+use super::*;
 
 pub struct ModuleBuilder {
-    name: String,
-    pub loc: Option<String>,
-    pub uses: Vec<String>,
-
+    meta: ModuleMeta,
     pub slots: HashMap<Variable, ModuleBuilderSlot>,
 }
 
 impl ModuleBuilder {
     pub fn new() -> Self {
         Self {
-            name: String::new(),
-            loc: None,
-            uses: vec![],
+            meta: ModuleMeta::default(),
             slots: HashMap::new(),
         }
     }
@@ -32,14 +27,22 @@ impl ModuleBuilder {
     where
         T: ToString,
     {
-        let mut builder = Self::new();
-        builder.name = name.to_string();
-        builder
+        Self::with_meta(name.to_string())
+    }
+
+    pub fn with_meta<T>(meta: T) -> Self
+    where
+        T: Into<ModuleMeta>,
+    {
+        Self {
+            meta: meta.into(),
+            slots: HashMap::new(),
+        }
     }
 
     pub fn add_dependency(&mut self, name: String) {
-        if !self.uses.contains(&name) {
-            self.uses.push(name);
+        if !self.meta.uses.contains(&name) {
+            self.meta.uses.push(name);
         }
     }
 
@@ -58,10 +61,7 @@ impl ModuleBuilder {
     }
 
     pub fn build(mut self) -> Lovm2CompileResult<Module> {
-        let mut ru = LoweringRuntime::new();
-        ru.name = self.name;
-        ru.uses = self.uses;
-        ru.loc = self.loc;
+        let mut ru = LoweringRuntime::new(self.meta);
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);

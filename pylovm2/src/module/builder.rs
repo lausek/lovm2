@@ -6,6 +6,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
 use lovm2::hir;
+use lovm2::module::ModuleMeta;
 
 use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
@@ -60,10 +61,9 @@ impl ModuleBuilder {
 
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, py: Python, module_location: Option<String>) -> PyResult<Module> {
-        let mut builder = Lovm2ModuleBuilder::named(self.name.clone());
+        let meta = ModuleMeta::new(self.name.clone(), module_location, self.uses.clone());
+        let mut builder = Lovm2ModuleBuilder::with_meta(meta);
         let mut slots = Lovm2Slots::new();
-        builder.loc = module_location;
-        builder.uses = self.uses.clone();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();

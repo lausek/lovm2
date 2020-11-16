@@ -6,6 +6,7 @@
 //! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
 pub mod builder;
+pub mod meta;
 pub mod shared;
 pub mod slots;
 pub mod standard;
@@ -19,8 +20,9 @@ use crate::code::{CodeObject, CodeObjectFunction};
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
+pub use self::meta::ModuleMeta;
 pub use self::slots::Slots;
-pub use self::standard::create_standard_module;
+pub use self::standard::{create_standard_module, BUILTIN_FUNCTIONS};
 
 /// name of the `CodeObject` entry that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";

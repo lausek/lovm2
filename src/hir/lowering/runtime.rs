@@ -5,6 +5,7 @@ use lovm2_error::*;
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::hir::HIR;
+use crate::module::ModuleMeta;
 use crate::value::Value;
 use crate::var::Variable;
 
@@ -12,10 +13,8 @@ use super::*;
 
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct LoweringRuntime {
-    pub name: String,
-    pub loc: Option<String>,
+    meta: ModuleMeta,
     pub entries: Vec<(usize, usize)>,
-    pub uses: Vec<String>,
     pub consts: Vec<Value>,
     pub idents: Vec<Variable>,
     pub code: Vec<Instruction>,
@@ -26,12 +25,10 @@ pub struct LoweringRuntime {
 }
 
 impl LoweringRuntime {
-    pub fn new() -> Self {
+    pub fn new(meta: ModuleMeta) -> Self {
         Self {
-            name: String::new(),
-            loc: None,
+            meta,
             entries: vec![],
-            uses: vec![],
             consts: vec![],
             idents: vec![],
             code: vec![],
@@ -59,10 +56,10 @@ impl LoweringRuntime {
 
     pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
         let mut co = CodeObject::new();
-        co.name = self.name;
-        co.loc = self.loc;
+        co.name = self.meta.name;
+        co.loc = self.meta.loc;
+        co.uses = self.meta.uses;
         co.entries = self.entries;
-        co.uses = self.uses;
         co.consts = self.consts;
         co.idents = self.idents;
         co.code = self.code;
