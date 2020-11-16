@@ -9,8 +9,6 @@ pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
 pub struct Lovm2Error {
     pub ty: Lovm2ErrorTy,
     pub msg: String,
-
-    #[cfg(feature = "backtracing")]
     pub trace: backtrace::Backtrace,
 }
 
@@ -65,12 +63,9 @@ impl From<&str> for Lovm2Error {
 
 impl std::fmt::Display for Lovm2Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        #[cfg(feature="backtracing")]
-        {
-            write!(f, "{:?}", self.trace)?;
-        }
-
-        write!(f, "{}: {}", self.ty, self.msg)
+        writeln!(f, "{}: {}", self.ty, self.msg)?;
+        writeln!(f, "{:?}", self.trace)?;
+        Ok(())
     }
 }
 
@@ -79,8 +74,6 @@ impl Default for Lovm2Error {
         Self {
             ty: Lovm2ErrorTy::Basic,
             msg: String::new(),
-
-            #[cfg(feature = "backtracing")]
             trace: backtrace::Backtrace::new(),
         }
     }

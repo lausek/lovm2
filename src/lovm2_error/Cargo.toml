@@ -14,9 +14,5 @@ description = "a lightweight virtual machine with a focus on simplicity and exte
 [lib]
 name = "lovm2_error"
 
-[features]
-default = ["backtracing"]
-backtracing = ["backtrace"]
-
 [dependencies]
-backtrace = { version = "0.3.53", optional = true }
+backtrace = { version = "0.3.53" }

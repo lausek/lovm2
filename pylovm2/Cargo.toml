@@ -1,6 +1,6 @@
 [package]
 name = "pylovm2"
-version = "0.4.0"
+version = "0.4.5"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
