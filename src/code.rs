@@ -1,7 +1,6 @@
 //! runnable bytecode objects
 
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 use std::rc::Rc;
 
 use lovm2_error::*;
@@ -97,7 +96,7 @@ impl CodeObject {
     /// tries to load the file as shared object first and tries regular deserialization if it failed
     pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
     where
-        T: AsRef<Path>,
+        T: AsRef<std::path::Path>,
     {
         use bincode::Options;
         use std::fs::File;
@@ -131,7 +130,10 @@ impl CodeObject {
     }
 
     // TODO: could lead to errors when two threads serialize to the same file
-    pub fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+    pub fn store_to_file<T>(&self, path: T) -> Lovm2Result<()>
+    where
+        T: AsRef<std::path::Path>,
+    {
         use std::fs::File;
         use std::io::Write;
         let mut file = File::create(path).map_err(|e| e.to_string())?;

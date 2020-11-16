@@ -66,7 +66,10 @@ impl Module {
         self.slots.get(name).cloned()
     }
 
-    pub fn store_to_file(&self, path: &str) -> Lovm2Result<()> {
+    pub fn store_to_file<T>(&self, path: T) -> Lovm2Result<()>
+    where
+        T: AsRef<std::path::Path>,
+    {
         self.code_object.store_to_file(path)
     }
 
