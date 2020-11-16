@@ -25,7 +25,7 @@ pub enum Instruction {
     Get,
     /// getr(obj, key): get key from object by reference and push it
     Getr,
-    /// set(obj, key, val): set key on object
+    /// set(ref, val): write value into a value reference
     Set,
 
     /// = first + second

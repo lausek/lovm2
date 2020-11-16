@@ -18,8 +18,8 @@ module = ModuleBuilder()
 main_hir = module.entry().code()
 main_hir.assign('n', 2)
 # call the module local function `add` with the value of `n`
-main_hir.assign('result', Expr.call('add', Expr.var('n'), 1))
-main_hir.call('print', 'got result: ', Expr.var('result'))
+main_hir.call('print', 'got result:', Expr.call('add', Expr.var('n'), 1), '\n')
+main_hir.call('print', 'got result from pyfn:', Expr.call('pyadd', Expr.var('n'), 1), '\n')
 
 # add new entry with arguments `a` and `b`
 # note: no direct usage of `.code()`
@@ -29,11 +29,14 @@ add_hir.args(['a', 'b'])
 add_hir = add_hir.code()
 add_hir.ret(Expr.add(Expr.var('a'), Expr.var('b')))
 
+# add a python function to the module
+module.add('pyadd').pyfn(lambda a, b: a.to_py() + b.to_py())
+
 # build the module and print it
 module = module.build()
 print(module)
 
-# create vm, load and run module with the lovm2 standard library
+# create vm, load and run module
 vm = Vm.with_std()
 vm.load(module)
 vm.run()
