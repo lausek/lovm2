@@ -47,7 +47,7 @@ pub enum Expr {
     Variable(Variable),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Operator2 {
     Add,
     Sub,
@@ -66,7 +66,7 @@ pub enum Operator2 {
     LessThan,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Operator1 {
     Not,
 }
