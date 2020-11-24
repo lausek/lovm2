@@ -1,11 +1,12 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use lovm2::prelude::*;
-use lovm2::value::Value;
 use lovm2::vm::Vm;
 
+//mod ack;
 mod bisect;
 
+//use ack::ackermann;
 use bisect::bisect;
 
 fn fibonacci(c: &mut Criterion) {
@@ -63,5 +64,5 @@ fn fibonacci(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bisect, fibonacci);
+criterion_group!(benches, bisect, fibonacci /*, ackermann */ );
 criterion_main!(benches);
