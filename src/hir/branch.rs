@@ -64,6 +64,9 @@ impl HirLowering for Branch {
 
         runtime.push_branch();
 
+        let branch_start = runtime.branch_mut().unwrap().start();
+        runtime.emit(LirElement::Label(branch_start));
+
         for (condition, block) in self.branches.into_iter() {
             let branch_end = runtime.branch_mut().unwrap().end();
             let cond = runtime.branch_mut().unwrap().add_condition();
@@ -86,5 +89,8 @@ impl HirLowering for Branch {
             let default = runtime.branch_mut().unwrap().add_default();
             default_block.lower(runtime);
         }
+
+        let branch_end = runtime.branch_mut().unwrap().end();
+        runtime.emit(LirElement::Label(branch_end));
     }
 }
