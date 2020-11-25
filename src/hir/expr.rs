@@ -272,9 +272,9 @@ impl HirLowering for Expr {
             }
             Expr::Variable(ref var) => {
                 if runtime.has_local(var) {
-                    runtime.emit(LirElement::store(Scope::Local, var.clone()));
+                    runtime.emit(LirElement::push_dynamic(Scope::Local, var.clone()));
                 } else {
-                    runtime.emit(LirElement::store(Scope::Global, var.clone()));
+                    runtime.emit(LirElement::push_dynamic(Scope::Global, var.clone()));
                 }
             }
         }

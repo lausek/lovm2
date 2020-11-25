@@ -3,7 +3,7 @@
 use crate::hir::block::Block;
 use crate::hir::element::HirElement;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 use crate::lir::LirElement;
 
 #[derive(Clone)]
@@ -46,6 +46,9 @@ impl HirLowering for Repeat {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         runtime.push_loop();
 
+        let repeat_start = runtime.loop_mut().unwrap().start();
+        runtime.emit(LirElement::Label(repeat_start));
+
         match self.condition {
             RepeatKind::Until(expr) => {
                 expr.lower(runtime);
@@ -54,9 +57,8 @@ impl HirLowering for Repeat {
                 // which is equal to a break. the instruction will
                 // receive its final address once the block has been
                 // lowered.
-                runtime.emit(LirElement::jump_conditional(true, todo!()));
-                let offset = runtime.offset();
-                runtime.loop_mut().unwrap().add_break(offset);
+                let repeat_end = runtime.loop_mut().unwrap().end();
+                runtime.emit(LirElement::jump_conditional(true, repeat_end));
             }
             RepeatKind::Endless => {}
         }
@@ -66,6 +68,9 @@ impl HirLowering for Repeat {
         // add a jump to the start of the loop. this is equal to
         // a continue statement.
         Continue::new().lower(runtime);
+
+        let repeat_end = runtime.loop_mut().unwrap().end();
+        runtime.emit(LirElement::Label(repeat_end));
     }
 }
 
@@ -74,9 +79,8 @@ pub struct Break {}
 
 impl HirLowering for Break {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
-        runtime.emit(LirElement::jump(todo!()));
-        let offset = runtime.offset();
-        runtime.loop_mut().unwrap().add_break(offset);
+        let repeat_end = runtime.loop_mut().unwrap().end();
+        runtime.emit(LirElement::jump(repeat_end));
     }
 }
 
@@ -97,8 +101,7 @@ impl Continue {
 
 impl HirLowering for Continue {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
-        runtime.emit(LirElement::jump(todo!()));
-        let offset = runtime.offset();
-        runtime.loop_mut().unwrap().add_continue(offset);
+        let repeat_start = runtime.loop_mut().unwrap().start();
+        runtime.emit(LirElement::jump(repeat_start));
     }
 }

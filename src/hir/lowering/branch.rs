@@ -1,59 +1,64 @@
-pub struct HirLoweringBranch {
-    pub start: usize,
-    pub end: Option<usize>,
+use std::rc::Rc;
 
-    pub conditions: Vec<HirLoweringCondition>,
+use crate::lir::Label;
+
+use super::*;
+
+pub struct HirLoweringBranch {
+    counter: LabelCounterRef,
+    id: usize,
 }
 
 impl HirLoweringBranch {
-    pub fn from(start: usize) -> Self {
+    pub fn new(counter: LabelCounterRef) -> Self {
         Self {
-            start,
-            end: None,
-
-            conditions: vec![],
+            counter: counter.clone(),
+            id: counter.borrow_mut().create_branch_id(),
         }
     }
 
-    pub fn condition_mut(&mut self) -> Option<&mut HirLoweringCondition> {
-        self.conditions.last_mut()
+    pub fn add_condition(&mut self) -> HirLoweringCondition {
+        HirLoweringCondition::new(self.counter.clone())
     }
 
-    pub fn default_mut(&mut self) -> Option<&mut HirLoweringCondition> {
-        self.conditions.iter_mut().find(|cond| cond.is_default)
+    pub fn add_default(&mut self) -> HirLoweringCondition {
+        HirLoweringCondition::new(self.counter.clone())
+    }
+}
+
+impl Jumpable for HirLoweringBranch {
+    fn new(counter: LabelCounterRef) -> Self {
+        Self {
+            counter: counter.clone(),
+            id: counter.borrow_mut().create_condition_id(),
+        }
     }
 
-    pub fn add_condition(&mut self, start: usize) -> &mut HirLoweringCondition {
-        self.conditions.push(HirLoweringCondition::from(start));
-        self.conditions.last_mut().unwrap()
+    fn end(&self) -> Label {
+        Label::Custom(format!("branch_{}_end", self.id))
     }
 
-    pub fn add_default(&mut self, start: usize) -> &mut HirLoweringCondition {
-        self.conditions.push(HirLoweringCondition::default(start));
-        self.conditions.last_mut().unwrap()
+    fn start(&self) -> Label {
+        Label::Custom(format!("branch_{}_start", self.id))
     }
 }
 
 pub struct HirLoweringCondition {
-    pub start: usize,
-    pub next: Option<usize>,
-    pub term: Option<usize>,
-    pub is_default: bool,
+    id: usize,
 }
 
-impl HirLoweringCondition {
-    pub fn from(start: usize) -> Self {
+impl Jumpable for HirLoweringCondition {
+    fn new(counter: LabelCounterRef) -> Self {
         Self {
-            start,
-            next: None,
-            term: None,
-            is_default: false,
+            id: counter.borrow_mut().create_condition_id(),
         }
     }
 
-    pub fn default(start: usize) -> Self {
-        let mut new = Self::from(start);
-        new.is_default = true;
-        new
+    fn end(&self) -> Label {
+        Label::Custom(format!("cond_{}_end", self.id))
+    }
+
+    fn start(&self) -> Label {
+        Label::Custom(format!("cond_{}_start", self.id))
     }
 }

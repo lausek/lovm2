@@ -8,7 +8,9 @@ pub use self::element::LirElement;
 pub use self::lowering::LirLoweringRuntime;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct Label(pub usize);
+pub enum Label {
+    Custom(String),
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Scope {

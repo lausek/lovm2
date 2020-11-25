@@ -2,7 +2,7 @@
 
 use crate::hir::block::Block;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 use crate::lir::LirElement;
 
 #[derive(Clone)]
@@ -65,43 +65,26 @@ impl HirLowering for Branch {
         runtime.push_branch();
 
         for (condition, block) in self.branches.into_iter() {
-            // adjust offset by one, because no condition instruction
-            // was emitted yet
-            let offset = runtime.offset() + 1;
-            runtime.branch_mut().unwrap().add_condition(offset);
+            let branch_end = runtime.branch_mut().unwrap().end();
+            let cond = runtime.branch_mut().unwrap().add_condition();
+
+            runtime.emit(LirElement::Label(cond.start()));
 
             condition.lower(runtime);
 
-            runtime.emit(LirElement::jump_conditional(false, todo!()));
-            runtime.branch_mut().unwrap().condition_mut().unwrap().next = Some(runtime.offset());
+            runtime.emit(LirElement::jump_conditional(false, cond.end()));
 
             block.lower(runtime);
 
-            runtime.emit(LirElement::jump(todo!()));
-            runtime.branch_mut().unwrap().condition_mut().unwrap().term = Some(runtime.offset());
+            runtime.emit(LirElement::jump(branch_end));
+            runtime.emit(LirElement::Label(cond.end()));
         }
 
         if let Some(default_block) = self.default {
             // adjust offset by one, because no default_block instruction
             // was emitted yet
-            let offset = runtime.offset() + 1;
-            runtime.branch_mut().unwrap().add_default(offset);
+            let default = runtime.branch_mut().unwrap().add_default();
             default_block.lower(runtime);
-        }
-
-        let mut lowering_branch = runtime.pop_branch().unwrap();
-
-        let lowering_branch_end = lowering_branch.end.unwrap();
-        let mut jump_chain = lowering_branch
-            .conditions
-            .iter()
-            .map(|cond| cond.start)
-            .collect::<Vec<usize>>();
-
-        if let Some(default_branch) = lowering_branch.default_mut() {
-            jump_chain.push(default_branch.start);
-        } else {
-            jump_chain.push(lowering_branch_end);
         }
     }
 }

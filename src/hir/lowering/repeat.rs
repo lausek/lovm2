@@ -1,25 +1,23 @@
-pub struct HirLoweringLoop {
-    pub start: usize,
-    pub end: Option<usize>,
-    pub breaks: Vec<usize>,
-    pub continues: Vec<usize>,
+use crate::lir::Label;
+
+use super::*;
+
+pub struct HirLoweringRepeat {
+    id: usize,
 }
 
-impl HirLoweringLoop {
-    pub fn from(start: usize) -> Self {
+impl Jumpable for HirLoweringRepeat {
+    fn new(counter: LabelCounterRef) -> Self {
         Self {
-            start,
-            end: None,
-            breaks: vec![],
-            continues: vec![],
+            id: counter.borrow_mut().create_repeat_id(),
         }
     }
 
-    pub fn add_break(&mut self, idx: usize) {
-        self.breaks.push(idx);
+    fn end(&self) -> Label {
+        Label::Custom(format!("rep_{}_end", self.id))
     }
 
-    pub fn add_continue(&mut self, idx: usize) {
-        self.continues.push(idx);
+    fn start(&self) -> Label {
+        Label::Custom(format!("rep_{}_start", self.id))
     }
 }

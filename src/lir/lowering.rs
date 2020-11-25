@@ -23,7 +23,7 @@ fn patch_addrs(
             Instruction::Jf(off) => *off = coff,
             Instruction::Jt(off) => *off = coff,
             Instruction::Jmp(off) => *off = coff,
-            _ => todo!(),
+            _ => unreachable!(),
         }
     }
 

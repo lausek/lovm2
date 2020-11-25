@@ -1,5 +1,8 @@
 //! shared lowering state
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
@@ -15,17 +18,19 @@ use super::*;
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct HirLoweringRuntime {
     code: Vec<LirElement>,
+    counter: LabelCounterRef,
     meta: ModuleMeta,
 
     branch_stack: Vec<HirLoweringBranch>,
     locals: Vec<Variable>,
-    loop_stack: Vec<HirLoweringLoop>,
+    loop_stack: Vec<HirLoweringRepeat>,
 }
 
 impl HirLoweringRuntime {
     pub fn new(meta: ModuleMeta) -> Self {
         Self {
             code: vec![],
+            counter: Rc::new(RefCell::new(LabelCounter::default())),
             meta,
 
             branch_stack: vec![],
@@ -35,7 +40,7 @@ impl HirLoweringRuntime {
     }
 
     pub fn create_new_label(&mut self) -> Label {
-        Label(0)
+        Label::Custom(String::new())
     }
 
     pub fn add_hir(&mut self, hir: HIR) -> Lovm2CompileResult<()> {
@@ -55,6 +60,7 @@ impl HirLoweringRuntime {
 
     pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
         let mut lo_runtime = LirLoweringRuntime::from(self.meta);
+        println!("{:#?}", self.code);
         lo_runtime.lower(self.code)
     }
 
@@ -65,10 +71,6 @@ impl HirLoweringRuntime {
             self.emit(LirElement::store(Scope::Local, arg));
         }
         Ok(())
-    }
-
-    pub fn offset(&self) -> usize {
-        todo!()
     }
 
     pub fn emit(&mut self, elem: LirElement) {
@@ -89,23 +91,18 @@ impl HirLoweringRuntime {
         self.locals.contains(var)
     }
 
-    pub fn loop_mut(&mut self) -> Option<&mut HirLoweringLoop> {
+    pub fn loop_mut(&mut self) -> Option<&mut HirLoweringRepeat> {
         self.loop_stack.last_mut()
     }
 
-    pub fn push_loop(&mut self) -> &mut HirLoweringLoop {
-        self.loop_stack.push(HirLoweringLoop::from(self.code.len()));
+    pub fn push_loop(&mut self) -> &mut HirLoweringRepeat {
+        self.loop_stack
+            .push(HirLoweringRepeat::new(self.counter.clone()));
         self.loop_stack.last_mut().unwrap()
     }
 
-    pub fn pop_loop(&mut self) -> Option<HirLoweringLoop> {
-        if let Some(mut lowering_loop) = self.loop_stack.pop() {
-            // point at offset after block
-            lowering_loop.end = Some(self.offset() + 1);
-            Some(lowering_loop)
-        } else {
-            None
-        }
+    pub fn pop_loop(&mut self) -> Option<HirLoweringRepeat> {
+        self.loop_stack.pop()
     }
 
     pub fn branch_mut(&mut self) -> Option<&mut HirLoweringBranch> {
@@ -114,16 +111,11 @@ impl HirLoweringRuntime {
 
     pub fn push_branch(&mut self) -> &mut HirLoweringBranch {
         self.branch_stack
-            .push(HirLoweringBranch::from(self.code.len()));
+            .push(HirLoweringBranch::new(self.counter.clone()));
         self.branch_stack.last_mut().unwrap()
     }
 
     pub fn pop_branch(&mut self) -> Option<HirLoweringBranch> {
-        if let Some(mut lowering_branch) = self.branch_stack.pop() {
-            lowering_branch.end = Some(self.offset() + 1);
-            Some(lowering_branch)
-        } else {
-            None
-        }
+        self.branch_stack.pop()
     }
 }

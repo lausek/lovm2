@@ -5,11 +5,58 @@ pub mod repeat;
 pub mod runtime;
 
 use crate::bytecode::Instruction;
+use crate::lir::Label;
 
-pub use branch::{HirLoweringBranch, HirLoweringCondition};
-pub use repeat::HirLoweringLoop;
-pub use runtime::HirLoweringRuntime;
+pub use self::branch::{HirLoweringBranch, HirLoweringCondition};
+pub use self::repeat::HirLoweringRepeat;
+pub use self::runtime::HirLoweringRuntime;
+
+pub type LabelCounterRef = std::rc::Rc<std::cell::RefCell<LabelCounter>>;
 
 pub trait HirLowering {
     fn lower(self, runtime: &mut HirLoweringRuntime);
+}
+
+pub trait Jumpable {
+    fn new(_: LabelCounterRef) -> Self;
+
+    fn end(&self) -> Label;
+
+    fn start(&self) -> Label;
+}
+
+pub struct LabelCounter {
+    branch: usize,
+    condition: usize,
+    repeat: usize,
+}
+
+impl LabelCounter {
+    pub fn create_branch_id(&mut self) -> usize {
+        let id = self.branch;
+        self.branch += 1;
+        id
+    }
+
+    pub fn create_condition_id(&mut self) -> usize {
+        let id = self.condition;
+        self.condition += 1;
+        id
+    }
+
+    pub fn create_repeat_id(&mut self) -> usize {
+        let id = self.repeat;
+        self.repeat += 1;
+        id
+    }
+}
+
+impl std::default::Default for LabelCounter {
+    fn default() -> Self {
+        Self {
+            branch: 0,
+            condition: 0,
+            repeat: 0,
+        }
+    }
 }
