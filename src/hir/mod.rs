@@ -20,8 +20,8 @@ pub mod prelude;
 use lovm2_error::*;
 
 use crate::hir::block::Block;
-use crate::hir::element::HIRElement;
-use crate::hir::lowering::LoweringRuntime;
+use crate::hir::element::HirElement;
+use crate::hir::lowering::HirLoweringRuntime;
 use crate::hir::r#return::Return;
 use crate::var::Variable;
 
@@ -45,10 +45,10 @@ impl HIR {
         hir
     }
 
-    pub fn build(mut self, ru: &mut LoweringRuntime) -> Lovm2CompileResult<()> {
+    pub fn build(mut self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
         // automatically add a `return nil` if not present already
         match self.code.last_mut() {
-            Some(HIRElement::Return(_)) => {}
+            Some(HirElement::Return(_)) => {}
             _ => self.code.push(Return::nil()),
         }
 
@@ -58,7 +58,7 @@ impl HIR {
 
     pub fn push<T>(&mut self, element: T)
     where
-        T: Into<HIRElement>,
+        T: Into<HirElement>,
     {
         self.code.push(element.into());
     }

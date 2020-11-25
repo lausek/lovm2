@@ -219,7 +219,6 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
                 Some(last) => ctx.push_value(last),
                 _ => return Err(Lovm2ErrorTy::ValueStackEmpty.into()),
             },
-            Instruction::Swap => {}
             Instruction::Get => {
                 let key = ctx.pop_value()?;
                 let obj = ctx.pop_value()?;

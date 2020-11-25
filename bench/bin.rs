@@ -64,5 +64,5 @@ fn fibonacci(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bisect, fibonacci /*, ackermann */ );
+criterion_group!(benches, bisect, fibonacci /*, ackermann */);
 criterion_main!(benches);

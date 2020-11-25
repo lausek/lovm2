@@ -2,7 +2,7 @@
 
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::var::Variable;
 
 #[derive(Clone, Debug)]
@@ -48,8 +48,8 @@ impl Call {
     }
 }
 
-impl Lowering for Call {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Call {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         let argn = self.args.len();
         for arg in self.args {
             arg.lower(runtime);

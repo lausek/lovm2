@@ -5,7 +5,7 @@ use crate::hir::assign::Access;
 use crate::hir::call::Call;
 use crate::hir::cast::Cast;
 use crate::hir::initialize::Initialize;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::hir::slice::Slice;
 use crate::value::Value;
 use crate::var::Variable;
@@ -220,9 +220,9 @@ impl From<Variable> for Expr {
     }
 }
 
-impl Lowering for Expr {
+impl HirLowering for Expr {
     // TODO: add short-circuit for and (can be implemented via branching), or
-    fn lower(self, runtime: &mut LoweringRuntime) {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         match self {
             Expr::Access(access) => {
                 let variable = access.target;

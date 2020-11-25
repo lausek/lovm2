@@ -2,7 +2,7 @@
 
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::value::Value;
 
 /// loads a module by name into the vm
@@ -36,8 +36,8 @@ impl Include {
     }
 }
 
-impl Lowering for Include {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Include {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         match self {
             Include::Dynamic { name } => {
                 name.lower(runtime);

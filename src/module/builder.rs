@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::hir::{lowering::LoweringRuntime, HIR};
+use crate::hir::{lowering::HirLoweringRuntime, HIR};
 use crate::var::Variable;
 
 use super::*;
@@ -61,7 +61,7 @@ impl ModuleBuilder {
     }
 
     pub fn build(mut self) -> Lovm2CompileResult<Module> {
-        let mut ru = LoweringRuntime::new(self.meta);
+        let mut ru = HirLoweringRuntime::new(self.meta);
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
@@ -110,7 +110,7 @@ impl ModuleBuilderSlot {
         self.hir = Some(hir);
     }
 
-    pub fn complete(self, ru: &mut LoweringRuntime) -> Lovm2CompileResult<()> {
+    pub fn complete(self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
         match self.hir {
             Some(hir) => hir.build(ru),
             None => Err("no hir for slot".into()),

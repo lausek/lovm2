@@ -3,7 +3,7 @@
 use crate::bytecode::Instruction;
 use crate::hir::block::Block;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{patch_addr, Lowering, LoweringRuntime};
+use crate::hir::lowering::{patch_addr, HirLowering, HirLoweringRuntime};
 
 #[derive(Clone)]
 pub struct Branch {
@@ -34,19 +34,19 @@ impl Branch {
 }
 
 // lowering for branches:
-// - push a new LoweringBranch onto branches_stack
+// - push a new HirLoweringBranch onto branches_stack
 // - whenever a new condition gets lowered
-//    - create a new LoweringCondition in top LoweringBranch
-//    - set start offset of LoweringCondition: `cond_start`
+//    - create a new HirLoweringCondition in top HirLoweringBranch
+//    - set start offset of HirLoweringCondition: `cond_start`
 //    - emit bytecode for condition
-//    - emit Jf instruction, remember jump offset in LoweringCondition: `cond_next`
+//    - emit Jf instruction, remember jump offset in HirLoweringCondition: `cond_next`
 //        - this jump will be used for skipping to the next condition
 //    - emit bytecode for block
-//    - emit Jmp instruction, remember jump offset in LoweringCondition: `cond_term`
+//    - emit Jmp instruction, remember jump offset in HirLoweringCondition: `cond_term`
 //        - this jump will be used for ending the branch / skipping all other conditions
 //    - repeat until all conditions are registered
 // - if it exists, emit default branch now
-// - pop LoweringBranch from branches_stack
+// - pop HirLoweringBranch from branches_stack
 //    - determine the BRANCH_END offset, pointing after the whole branch
 // - begin patching addresses
 //    - patch all `cond_term`s with BRANCH_END
@@ -56,8 +56,8 @@ impl Branch {
 //        - skip the first element of vector, as we won't jump to the first condition
 //        - take one offset from `cond_next`s, take one offset above vector; patch address
 //        - repeat until all addresses are patched
-impl Lowering for Branch {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Branch {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         if self.branches.is_empty() && self.default.is_some() {
             panic!("cannot lower branch: no conditions");
         }

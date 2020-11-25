@@ -55,6 +55,7 @@ pub mod code;
 pub mod context;
 pub mod frame;
 pub mod hir;
+pub mod lir;
 pub mod module;
 pub mod prelude;
 pub mod util;

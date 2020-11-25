@@ -2,7 +2,7 @@
 
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::value::Value;
 
 #[derive(Clone, Debug)]
@@ -41,8 +41,8 @@ impl Slice {
     }
 }
 
-impl Lowering for Slice {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Slice {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.target.lower(runtime);
 
         if let Some(start) = self.start {

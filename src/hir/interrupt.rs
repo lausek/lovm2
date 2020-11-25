@@ -1,7 +1,7 @@
 //! trigger a vm interrupt
 
 use crate::bytecode::Instruction;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 
 #[derive(Clone)]
 pub struct Interrupt {
@@ -14,8 +14,8 @@ impl Interrupt {
     }
 }
 
-impl Lowering for Interrupt {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Interrupt {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         runtime.emit(Instruction::Interrupt(self.n));
     }
 }

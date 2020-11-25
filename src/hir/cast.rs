@@ -2,7 +2,7 @@
 
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::value::cast::{RUVALUE_BOOL_TY, RUVALUE_FLOAT_TY, RUVALUE_INT_TY, RUVALUE_STR_TY};
 
 #[derive(Clone, Debug)]
@@ -48,8 +48,8 @@ impl Cast {
     }
 }
 
-impl Lowering for Cast {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Cast {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.expr.lower(runtime);
         runtime.emit(Instruction::Cast(self.tid));
     }

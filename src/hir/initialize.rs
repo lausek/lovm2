@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::value::Value;
 
 #[derive(Clone, Debug)]
@@ -72,8 +72,8 @@ impl Initialize {
     }
 }
 
-impl Lowering for Initialize {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Initialize {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         let requires_box = matches!(&self.base, Value::Dict(_) | Value::List(_));
 
         Expr::from(self.base).lower(runtime);

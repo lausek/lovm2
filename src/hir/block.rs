@@ -2,12 +2,12 @@
 
 use crate::hir::branch::Branch;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::hir::repeat::Repeat;
-use crate::hir::HIRElement;
+use crate::hir::HirElement;
 
 #[derive(Clone)]
-pub struct Block(Vec<HIRElement>);
+pub struct Block(Vec<HirElement>);
 
 impl Block {
     pub fn new() -> Self {
@@ -18,13 +18,13 @@ impl Block {
         self.0 = block.0;
     }
 
-    pub fn last_mut(&mut self) -> Option<&mut HIRElement> {
+    pub fn last_mut(&mut self) -> Option<&mut HirElement> {
         self.0.last_mut()
     }
 
     pub fn with<T>(mut self, hir: T) -> Self
     where
-        T: Into<HIRElement>,
+        T: Into<HirElement>,
     {
         self.0.push(hir.into());
         self
@@ -32,7 +32,7 @@ impl Block {
 
     pub fn push<T>(&mut self, hir: T)
     where
-        T: Into<HIRElement>,
+        T: Into<HirElement>,
     {
         self.0.push(hir.into());
     }
@@ -40,7 +40,7 @@ impl Block {
     pub fn branch(&mut self) -> &mut Branch {
         self.push(Branch::new());
         match self.last_mut().unwrap() {
-            HIRElement::Branch(ref mut r) => r,
+            HirElement::Branch(ref mut r) => r,
             _ => unreachable!(),
         }
     }
@@ -52,14 +52,14 @@ impl Block {
             self.push(Repeat::endless());
         }
         match self.last_mut().unwrap() {
-            HIRElement::Repeat(ref mut r) => r,
+            HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
         }
     }
 }
 
 impl std::iter::IntoIterator for Block {
-    type Item = HIRElement;
+    type Item = HirElement;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -67,8 +67,8 @@ impl std::iter::IntoIterator for Block {
     }
 }
 
-impl Lowering for Block {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Block {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         for element in self.0.into_iter() {
             element.lower(runtime);
         }

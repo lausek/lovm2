@@ -5,12 +5,12 @@ use crate::hir::branch::Branch;
 use crate::hir::call::Call;
 use crate::hir::include::Include;
 use crate::hir::interrupt::Interrupt;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::hir::r#return::Return;
 use crate::hir::repeat::{Break, Continue, Repeat};
 
 #[derive(Clone)]
-pub enum HIRElement {
+pub enum HirElement {
     Assign(Assign),
     Branch(Branch),
     Break(Break),
@@ -22,78 +22,78 @@ pub enum HIRElement {
     Return(Return),
 }
 
-impl Lowering for HIRElement {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for HirElement {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         match self {
-            HIRElement::Assign(assign) => assign.lower(runtime),
-            HIRElement::Branch(branch) => branch.lower(runtime),
-            HIRElement::Break(cmd) => cmd.lower(runtime),
-            HIRElement::Call(call) => call.lower(runtime),
-            HIRElement::Continue(cmd) => cmd.lower(runtime),
-            HIRElement::Include(include) => include.lower(runtime),
-            HIRElement::Interrupt(interrupt) => interrupt.lower(runtime),
-            HIRElement::Repeat(repeat) => repeat.lower(runtime),
-            HIRElement::Return(ret) => ret.lower(runtime),
+            HirElement::Assign(assign) => assign.lower(runtime),
+            HirElement::Branch(branch) => branch.lower(runtime),
+            HirElement::Break(cmd) => cmd.lower(runtime),
+            HirElement::Call(call) => call.lower(runtime),
+            HirElement::Continue(cmd) => cmd.lower(runtime),
+            HirElement::Include(include) => include.lower(runtime),
+            HirElement::Interrupt(interrupt) => interrupt.lower(runtime),
+            HirElement::Repeat(repeat) => repeat.lower(runtime),
+            HirElement::Return(ret) => ret.lower(runtime),
         }
     }
 }
 
-impl From<Assign> for HIRElement {
+impl From<Assign> for HirElement {
     fn from(assign: Assign) -> Self {
-        HIRElement::Assign(assign)
+        HirElement::Assign(assign)
     }
 }
 
-impl From<Branch> for HIRElement {
+impl From<Branch> for HirElement {
     fn from(branch: Branch) -> Self {
-        HIRElement::Branch(branch)
+        HirElement::Branch(branch)
     }
 }
 
-impl From<Break> for HIRElement {
+impl From<Break> for HirElement {
     fn from(cmd: Break) -> Self {
-        HIRElement::Break(cmd)
+        HirElement::Break(cmd)
     }
 }
 
-impl From<Call> for HIRElement {
+impl From<Call> for HirElement {
     fn from(call: Call) -> Self {
-        HIRElement::Call(call)
+        HirElement::Call(call)
     }
 }
 
-impl From<Continue> for HIRElement {
+impl From<Continue> for HirElement {
     fn from(cmd: Continue) -> Self {
-        HIRElement::Continue(cmd)
+        HirElement::Continue(cmd)
     }
 }
 
-impl From<Include> for HIRElement {
+impl From<Include> for HirElement {
     fn from(include: Include) -> Self {
-        HIRElement::Include(include)
+        HirElement::Include(include)
     }
 }
 
-impl From<Interrupt> for HIRElement {
+impl From<Interrupt> for HirElement {
     fn from(interrupt: Interrupt) -> Self {
-        HIRElement::Interrupt(interrupt)
+        HirElement::Interrupt(interrupt)
     }
 }
 
-impl From<Repeat> for HIRElement {
+impl From<Repeat> for HirElement {
     fn from(repeat: Repeat) -> Self {
-        HIRElement::Repeat(repeat)
+        HirElement::Repeat(repeat)
     }
 }
 
-impl From<&mut Repeat> for HIRElement {
+impl From<&mut Repeat> for HirElement {
     fn from(repeat: &mut Repeat) -> Self {
-        HIRElement::Repeat(repeat.clone())
+        HirElement::Repeat(repeat.clone())
     }
 }
 
-impl From<Return> for HIRElement {
+impl From<Return> for HirElement {
     fn from(ret: Return) -> Self {
-        HIRElement::Return(ret)
+        HirElement::Return(ret)
     }
 }

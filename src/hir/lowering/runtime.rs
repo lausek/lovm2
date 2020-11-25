@@ -12,19 +12,19 @@ use crate::var::Variable;
 use super::*;
 
 // TODO: add ExprOptimizer field for improving Exprs
-pub struct LoweringRuntime {
+pub struct HirLoweringRuntime {
     meta: ModuleMeta,
     pub entries: Vec<(usize, usize)>,
     pub consts: Vec<Value>,
     pub idents: Vec<Variable>,
     pub code: Vec<Instruction>,
 
-    branch_stack: Vec<LoweringBranch>,
+    branch_stack: Vec<HirLoweringBranch>,
     locals: Vec<Variable>,
-    loop_stack: Vec<LoweringLoop>,
+    loop_stack: Vec<HirLoweringLoop>,
 }
 
-impl LoweringRuntime {
+impl HirLoweringRuntime {
     pub fn new(meta: ModuleMeta) -> Self {
         Self {
             meta,
@@ -124,16 +124,16 @@ impl LoweringRuntime {
         self.locals.contains(var)
     }
 
-    pub fn loop_mut(&mut self) -> Option<&mut LoweringLoop> {
+    pub fn loop_mut(&mut self) -> Option<&mut HirLoweringLoop> {
         self.loop_stack.last_mut()
     }
 
-    pub fn push_loop(&mut self) -> &mut LoweringLoop {
-        self.loop_stack.push(LoweringLoop::from(self.code.len()));
+    pub fn push_loop(&mut self) -> &mut HirLoweringLoop {
+        self.loop_stack.push(HirLoweringLoop::from(self.code.len()));
         self.loop_stack.last_mut().unwrap()
     }
 
-    pub fn pop_loop(&mut self) -> Option<LoweringLoop> {
+    pub fn pop_loop(&mut self) -> Option<HirLoweringLoop> {
         if let Some(mut lowering_loop) = self.loop_stack.pop() {
             // point at offset after block
             lowering_loop.end = Some(self.offset() + 1);
@@ -143,17 +143,17 @@ impl LoweringRuntime {
         }
     }
 
-    pub fn branch_mut(&mut self) -> Option<&mut LoweringBranch> {
+    pub fn branch_mut(&mut self) -> Option<&mut HirLoweringBranch> {
         self.branch_stack.last_mut()
     }
 
-    pub fn push_branch(&mut self) -> &mut LoweringBranch {
+    pub fn push_branch(&mut self) -> &mut HirLoweringBranch {
         self.branch_stack
-            .push(LoweringBranch::from(self.code.len()));
+            .push(HirLoweringBranch::from(self.code.len()));
         self.branch_stack.last_mut().unwrap()
     }
 
-    pub fn pop_branch(&mut self) -> Option<LoweringBranch> {
+    pub fn pop_branch(&mut self) -> Option<HirLoweringBranch> {
         if let Some(mut lowering_branch) = self.branch_stack.pop() {
             lowering_branch.end = Some(self.offset() + 1);
             Some(lowering_branch)

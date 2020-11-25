@@ -18,8 +18,6 @@ pub enum Instruction {
     Discard,
     /// duplicates top of stack
     Dup,
-    /// TODO: implement
-    Swap,
 
     /// get(obj, key): get key from object and push it
     Get,

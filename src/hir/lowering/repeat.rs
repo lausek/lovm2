@@ -1,11 +1,11 @@
-pub struct LoweringLoop {
+pub struct HirLoweringLoop {
     pub start: usize,
     pub end: Option<usize>,
     pub breaks: Vec<usize>,
     pub continues: Vec<usize>,
 }
 
-impl LoweringLoop {
+impl HirLoweringLoop {
     pub fn from(start: usize) -> Self {
         Self {
             start,

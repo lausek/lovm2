@@ -2,7 +2,7 @@
 
 use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{Lowering, LoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::var::Variable;
 
 #[derive(Clone)]
@@ -104,7 +104,7 @@ impl From<Expr> for Access {
 }
 
 impl Assign {
-    fn lower_dynamic(self, runtime: &mut LoweringRuntime) {
+    fn lower_dynamic(self, runtime: &mut HirLoweringRuntime) {
         let variable = self.access.target;
 
         // push (initial) target onto stack
@@ -135,7 +135,7 @@ impl Assign {
         runtime.emit(Instruction::Set);
     }
 
-    fn lower_static(self, runtime: &mut LoweringRuntime) {
+    fn lower_static(self, runtime: &mut HirLoweringRuntime) {
         self.expr.lower(runtime);
 
         let variable = self.access.target;
@@ -153,8 +153,8 @@ impl Assign {
     }
 }
 
-impl Lowering for Assign {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Assign {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         match &self.ty {
             AssignType::StaticLocal | AssignType::StaticGlobal => self.lower_static(runtime),
             AssignType::Dynamic => self.lower_dynamic(runtime),

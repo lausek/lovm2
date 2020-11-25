@@ -6,21 +6,21 @@ pub mod runtime;
 
 use crate::bytecode::Instruction;
 
-pub use branch::{LoweringBranch, LoweringCondition};
-pub use repeat::LoweringLoop;
-pub use runtime::LoweringRuntime;
+pub use branch::{HirLoweringBranch, HirLoweringCondition};
+pub use repeat::HirLoweringLoop;
+pub use runtime::HirLoweringRuntime;
 
-pub trait Lowering {
-    fn lower(self, runtime: &mut LoweringRuntime);
+pub trait HirLowering {
+    fn lower(self, runtime: &mut HirLoweringRuntime);
 }
 
-pub fn patch_addrs(runtime: &mut LoweringRuntime, positions: &[usize], addr: usize) {
+pub fn patch_addrs(runtime: &mut HirLoweringRuntime, positions: &[usize], addr: usize) {
     for pos in positions.iter() {
         patch_addr(runtime, *pos, addr);
     }
 }
 
-pub fn patch_addr(runtime: &mut LoweringRuntime, position: usize, addr: usize) {
+pub fn patch_addr(runtime: &mut HirLoweringRuntime, position: usize, addr: usize) {
     let addr = addr as u16;
     if let Some(inx) = runtime.code.get_mut(position) {
         let unaddr = match inx {

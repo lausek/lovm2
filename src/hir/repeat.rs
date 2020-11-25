@@ -2,9 +2,9 @@
 
 use crate::bytecode::Instruction;
 use crate::hir::block::Block;
-use crate::hir::element::HIRElement;
+use crate::hir::element::HirElement;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{patch_addrs, Lowering, LoweringRuntime};
+use crate::hir::lowering::{patch_addrs, HirLowering, HirLoweringRuntime};
 
 #[derive(Clone)]
 pub enum RepeatKind {
@@ -35,15 +35,15 @@ impl Repeat {
 
     pub fn push<T>(&mut self, hir: T) -> &mut Self
     where
-        T: Into<HIRElement>,
+        T: Into<HirElement>,
     {
         self.block.push(hir.into());
         self
     }
 }
 
-impl Lowering for Repeat {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Repeat {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         runtime.push_loop();
 
         match self.condition {
@@ -76,8 +76,8 @@ impl Lowering for Repeat {
 #[derive(Clone)]
 pub struct Break {}
 
-impl Lowering for Break {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Break {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         runtime.emit(Instruction::Jmp(std::u16::MAX));
         let offset = runtime.offset();
         runtime.loop_mut().unwrap().add_break(offset);
@@ -99,8 +99,8 @@ impl Continue {
     }
 }
 
-impl Lowering for Continue {
-    fn lower(self, runtime: &mut LoweringRuntime) {
+impl HirLowering for Continue {
+    fn lower(self, runtime: &mut HirLoweringRuntime) {
         runtime.emit(Instruction::Jmp(std::u16::MAX));
         let offset = runtime.offset();
         runtime.loop_mut().unwrap().add_continue(offset);
