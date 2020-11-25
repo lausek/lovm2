@@ -1,8 +1,8 @@
 //! execute a `CodeObject` by name using the given arguments
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 use crate::var::Variable;
 
 #[derive(Clone, Debug)]
@@ -55,11 +55,10 @@ impl HirLowering for Call {
             arg.lower(runtime);
         }
 
-        let gidx = runtime.index_global(&self.name);
-        runtime.emit(Instruction::Call(argn as u8, gidx as u16));
+        runtime.emit(LirElement::call(argn as u8, self.name));
 
         if !self.keep_value {
-            runtime.emit(Instruction::Discard);
+            runtime.emit(LirElement::Discard);
         }
     }
 }

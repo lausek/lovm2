@@ -1,8 +1,8 @@
 //! loads a module by name into the vm
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 use crate::value::Value;
 
 /// loads a module by name into the vm
@@ -41,7 +41,7 @@ impl HirLowering for Include {
         match self {
             Include::Dynamic { name } => {
                 name.lower(runtime);
-                runtime.emit(Instruction::Load);
+                runtime.emit(LirElement::Load);
             }
             Include::Static { name: _ } => todo!(),
         }

@@ -5,9 +5,10 @@ pub mod prelude;
 use crate::hir::expr::{Operator1, Operator2};
 
 pub use self::element::LirElement;
+pub use self::lowering::LirLoweringRuntime;
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct Label(usize);
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct Label(pub usize);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Scope {
@@ -19,4 +20,16 @@ pub enum Scope {
 pub enum Operator {
     Operator1(Operator1),
     Operator2(Operator2),
+}
+
+impl From<Operator1> for Operator {
+    fn from(op: Operator1) -> Self {
+        Self::Operator1(op)
+    }
+}
+
+impl From<Operator2> for Operator {
+    fn from(op: Operator2) -> Self {
+        Self::Operator2(op)
+    }
 }

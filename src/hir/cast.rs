@@ -1,8 +1,8 @@
 //! do type conversion on a lowered `Expr` at runtime
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 use crate::value::cast::{RUVALUE_BOOL_TY, RUVALUE_FLOAT_TY, RUVALUE_INT_TY, RUVALUE_STR_TY};
 
 #[derive(Clone, Debug)]
@@ -51,6 +51,6 @@ impl Cast {
 impl HirLowering for Cast {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.expr.lower(runtime);
-        runtime.emit(Instruction::Cast(self.tid));
+        runtime.emit(LirElement::cast(self.tid));
     }
 }

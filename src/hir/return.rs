@@ -2,9 +2,9 @@
 //!
 //! every `CodeObject` implicitly returns `Nil` if no return value was given
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 use crate::value::Value;
 
 #[derive(Clone)]
@@ -30,6 +30,6 @@ impl Return {
 impl HirLowering for Return {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.expr.lower(runtime);
-        runtime.emit(Instruction::Ret);
+        runtime.emit(LirElement::Ret);
     }
 }

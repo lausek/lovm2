@@ -2,9 +2,9 @@
 
 use std::collections::HashMap;
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 use crate::value::Value;
 
 #[derive(Clone, Debug)]
@@ -79,16 +79,16 @@ impl HirLowering for Initialize {
         Expr::from(self.base).lower(runtime);
 
         if requires_box {
-            runtime.emit(Instruction::Box);
+            runtime.emit(LirElement::Box);
         }
 
         // slots are only allowed on `Dict` and `List`
         for (key, expr) in self.slots.into_iter() {
-            runtime.emit(Instruction::Dup);
+            runtime.emit(LirElement::Duplicate);
             key.lower(runtime);
-            runtime.emit(Instruction::Getr);
+            runtime.emit(LirElement::Getr);
             expr.lower(runtime);
-            runtime.emit(Instruction::Set);
+            runtime.emit(LirElement::Set);
         }
     }
 }

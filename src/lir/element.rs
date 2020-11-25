@@ -6,7 +6,6 @@ use super::{Label, Operator, Scope};
 
 #[derive(Clone, Debug)]
 pub enum LirElement {
-    Access(Access),
     Call {
         argn: u8,
         ident: Variable,
@@ -14,6 +13,17 @@ pub enum LirElement {
     Cast {
         tyid: u16,
     },
+    Entry {
+        ident: Variable,
+    },
+    // Jmp(u16), Jt(u16), Jf(u16)
+    Jump {
+        condition: Option<bool>,
+        label: Label,
+    },
+    Label(Label),
+    // Add, Sub, Mul, Div, Pow, Rem, And, Or, Not, Eq, Ne, Ge, Gt, Le, Lt
+    Operation(Operator),
     // Pushc(u16)
     PushConstant {
         value: Value,
@@ -27,13 +37,6 @@ pub enum LirElement {
     StoreDynamic {
         ident: Variable,
         scope: Scope,
-    },
-    // Add, Sub, Mul, Div, Pow, Rem, And, Or, Not, Eq, Ne, Ge, Gt, Le, Lt
-    Operation(Operator),
-    // Jmp(u16), Jt(u16), Jf(u16)
-    Jump {
-        condition: Option<bool>,
-        target: Label,
     },
 
     Box,
@@ -49,10 +52,48 @@ pub enum LirElement {
 }
 
 impl LirElement {
-    pub fn jump_absolute(target: Label) -> Self {
+    pub fn call(argn: u8, ident: Variable) -> Self {
+        Self::Call { argn, ident }
+    }
+
+    pub fn cast(tyid: u16) -> Self {
+        Self::Cast { tyid }
+    }
+
+    pub fn entry(ident: Variable) -> Self {
+        Self::Entry { ident }
+    }
+
+    pub fn jump(label: Label) -> Self {
         Self::Jump {
             condition: None,
-            target,
+            label,
         }
+    }
+
+    pub fn jump_conditional(cond: bool, label: Label) -> Self {
+        Self::Jump {
+            condition: Some(cond),
+            label,
+        }
+    }
+
+    pub fn push_constant(value: Value) -> Self {
+        Self::PushConstant { value }
+    }
+
+    pub fn push_dynamic(scope: Scope, ident: Variable) -> Self {
+        Self::PushDynamic { ident, scope }
+    }
+
+    pub fn operation<T>(op: T) -> Self
+    where
+        T: Into<Operator>,
+    {
+        Self::Operation(op.into())
+    }
+
+    pub fn store(scope: Scope, ident: Variable) -> Self {
+        Self::StoreDynamic { ident, scope }
     }
 }

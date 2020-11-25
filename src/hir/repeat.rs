@@ -1,10 +1,10 @@
 //! runs a `Block` forever or until a condition is met
 
-use crate::bytecode::Instruction;
 use crate::hir::block::Block;
 use crate::hir::element::HirElement;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{patch_addrs, HirLowering, HirLoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 
 #[derive(Clone)]
 pub enum RepeatKind {
@@ -54,7 +54,7 @@ impl HirLowering for Repeat {
                 // which is equal to a break. the instruction will
                 // receive its final address once the block has been
                 // lowered.
-                runtime.emit(Instruction::Jt(std::u16::MAX));
+                runtime.emit(LirElement::jump_conditional(true, todo!()));
                 let offset = runtime.offset();
                 runtime.loop_mut().unwrap().add_break(offset);
             }
@@ -66,10 +66,6 @@ impl HirLowering for Repeat {
         // add a jump to the start of the loop. this is equal to
         // a continue statement.
         Continue::new().lower(runtime);
-
-        let lowering_loop = runtime.pop_loop().unwrap();
-        patch_addrs(runtime, &lowering_loop.breaks, lowering_loop.end.unwrap());
-        patch_addrs(runtime, &lowering_loop.continues, lowering_loop.start);
     }
 }
 
@@ -78,7 +74,7 @@ pub struct Break {}
 
 impl HirLowering for Break {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
-        runtime.emit(Instruction::Jmp(std::u16::MAX));
+        runtime.emit(LirElement::jump(todo!()));
         let offset = runtime.offset();
         runtime.loop_mut().unwrap().add_break(offset);
     }
@@ -101,7 +97,7 @@ impl Continue {
 
 impl HirLowering for Continue {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
-        runtime.emit(Instruction::Jmp(std::u16::MAX));
+        runtime.emit(LirElement::jump(todo!()));
         let offset = runtime.offset();
         runtime.loop_mut().unwrap().add_continue(offset);
     }

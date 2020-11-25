@@ -5,6 +5,7 @@ use lovm2_error::*;
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::hir::HIR;
+use crate::lir::{Label, LirElement, LirLoweringRuntime, Scope};
 use crate::module::ModuleMeta;
 use crate::value::Value;
 use crate::var::Variable;
@@ -13,11 +14,8 @@ use super::*;
 
 // TODO: add ExprOptimizer field for improving Exprs
 pub struct HirLoweringRuntime {
+    code: Vec<LirElement>,
     meta: ModuleMeta,
-    pub entries: Vec<(usize, usize)>,
-    pub consts: Vec<Value>,
-    pub idents: Vec<Variable>,
-    pub code: Vec<Instruction>,
 
     branch_stack: Vec<HirLoweringBranch>,
     locals: Vec<Variable>,
@@ -27,16 +25,17 @@ pub struct HirLoweringRuntime {
 impl HirLoweringRuntime {
     pub fn new(meta: ModuleMeta) -> Self {
         Self {
-            meta,
-            entries: vec![],
-            consts: vec![],
-            idents: vec![],
             code: vec![],
+            meta,
 
             branch_stack: vec![],
             locals: vec![],
             loop_stack: vec![],
         }
+    }
+
+    pub fn create_new_label(&mut self) -> Label {
+        Label(0)
     }
 
     pub fn add_hir(&mut self, hir: HIR) -> Lovm2CompileResult<()> {
@@ -55,69 +54,35 @@ impl HirLoweringRuntime {
     }
 
     pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
-        let mut co = CodeObject::new();
-        co.name = self.meta.name;
-        co.loc = self.meta.loc;
-        co.uses = self.meta.uses;
-        co.entries = self.entries;
-        co.consts = self.consts;
-        co.idents = self.idents;
-        co.code = self.code;
-        Ok(co)
+        let mut lo_runtime = LirLoweringRuntime::from(self.meta);
+        lo_runtime.lower(self.code)
     }
 
     pub fn add_prelude(&mut self, args: Vec<Variable>) -> Lovm2CompileResult<()> {
         // read in code object parameters from value stack
         // read this in reverse, because last parameter is top of stack
         for arg in args.into_iter().rev() {
-            let lidx = self.index_local(&arg);
-            self.emit(Instruction::Movel(lidx as u16));
+            self.emit(LirElement::store(Scope::Local, arg));
         }
         Ok(())
     }
 
     pub fn offset(&self) -> usize {
-        let len = self.code.len();
-        if len == 0 {
-            0
-        } else {
-            len - 1
-        }
+        todo!()
     }
 
-    pub fn emit(&mut self, inx: Instruction) {
-        self.code.push(inx);
-    }
-
-    pub fn index_const(&mut self, val: &Value) -> usize {
-        match self.consts.iter().position(|item| item == val) {
-            Some(pos) => pos,
-            None => {
-                self.consts.push(val.clone());
-                self.consts.len() - 1
+    pub fn emit(&mut self, elem: LirElement) {
+        if let LirElement::StoreDynamic {
+            ident,
+            scope: Scope::Local,
+        } = &elem
+        {
+            if !self.has_local(ident) {
+                self.locals.push(ident.clone());
             }
         }
-    }
-
-    pub fn index_local(&mut self, var: &Variable) -> usize {
-        if !self.has_local(var) {
-            self.locals.push(var.clone());
-        }
-        self.index_ident(var)
-    }
-
-    pub fn index_global(&mut self, var: &Variable) -> usize {
-        self.index_ident(var)
-    }
-
-    pub fn index_ident(&mut self, var: &Variable) -> usize {
-        match self.idents.iter().position(|item| item == var) {
-            Some(pos) => pos,
-            None => {
-                self.idents.push(var.clone());
-                self.idents.len() - 1
-            }
-        }
+        // TODO: optimize lir
+        self.code.push(elem);
     }
 
     pub fn has_local(&self, var: &Variable) -> bool {

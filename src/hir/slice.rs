@@ -1,8 +1,8 @@
 //! create a new `List` containing references to values on the target `List`
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 use crate::value::Value;
 
 #[derive(Clone, Debug)]
@@ -57,6 +57,6 @@ impl HirLowering for Slice {
             Expr::from(Value::Nil).lower(runtime);
         }
 
-        runtime.emit(Instruction::Slice);
+        runtime.emit(LirElement::Slice);
     }
 }

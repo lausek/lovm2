@@ -1,8 +1,8 @@
 //! instructions for storing data
 
-use crate::bytecode::Instruction;
 use crate::hir::expr::Expr;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::{LirElement, Scope};
 use crate::var::Variable;
 
 #[derive(Clone)]
@@ -109,30 +109,28 @@ impl Assign {
 
         // push (initial) target onto stack
         if runtime.has_local(&variable) {
-            let lidx = runtime.index_local(&variable);
-            runtime.emit(Instruction::Pushl(lidx as u16));
+            runtime.emit(LirElement::push_dynamic(Scope::Local, variable));
         } else {
-            let gidx = runtime.index_global(&variable);
-            runtime.emit(Instruction::Pushg(gidx as u16));
+            runtime.emit(LirElement::push_dynamic(Scope::Global, variable));
         }
 
         let mut key_it = self.access.keys.into_iter().peekable();
         // push key onto stack
         if let Some(key) = key_it.next() {
             key.lower(runtime);
-            runtime.emit(Instruction::Getr);
+            runtime.emit(LirElement::Getr);
 
             while key_it.peek().is_some() {
                 let key = key_it.next().unwrap();
                 key.lower(runtime);
-                runtime.emit(Instruction::Getr);
+                runtime.emit(LirElement::Getr);
             }
         }
 
         // push value onto stack
         self.expr.lower(runtime);
 
-        runtime.emit(Instruction::Set);
+        runtime.emit(LirElement::Set);
     }
 
     fn lower_static(self, runtime: &mut HirLoweringRuntime) {
@@ -141,12 +139,10 @@ impl Assign {
         let variable = self.access.target;
         match self.ty {
             AssignType::StaticLocal => {
-                let lidx = runtime.index_local(&variable);
-                runtime.emit(Instruction::Movel(lidx as u16));
+                runtime.emit(LirElement::store(Scope::Local, variable));
             }
             AssignType::StaticGlobal => {
-                let gidx = runtime.index_global(&variable);
-                runtime.emit(Instruction::Moveg(gidx as u16));
+                runtime.emit(LirElement::store(Scope::Global, variable));
             }
             _ => unimplemented!(),
         }

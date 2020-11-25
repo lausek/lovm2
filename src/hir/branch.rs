@@ -1,9 +1,9 @@
 //! conditional execution
 
-use crate::bytecode::Instruction;
 use crate::hir::block::Block;
 use crate::hir::expr::Expr;
-use crate::hir::lowering::{patch_addr, HirLowering, HirLoweringRuntime};
+use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
+use crate::lir::LirElement;
 
 #[derive(Clone)]
 pub struct Branch {
@@ -72,12 +72,12 @@ impl HirLowering for Branch {
 
             condition.lower(runtime);
 
-            runtime.emit(Instruction::Jf(std::u16::MAX));
+            runtime.emit(LirElement::jump_conditional(false, todo!()));
             runtime.branch_mut().unwrap().condition_mut().unwrap().next = Some(runtime.offset());
 
             block.lower(runtime);
 
-            runtime.emit(Instruction::Jmp(std::u16::MAX));
+            runtime.emit(LirElement::jump(todo!()));
             runtime.branch_mut().unwrap().condition_mut().unwrap().term = Some(runtime.offset());
         }
 
@@ -102,18 +102,6 @@ impl HirLowering for Branch {
             jump_chain.push(default_branch.start);
         } else {
             jump_chain.push(lowering_branch_end);
-        }
-
-        let mut next_iter = jump_chain.into_iter().skip(1);
-
-        for lowering_condition in lowering_branch.conditions {
-            let next_addr = next_iter.next().unwrap();
-            if let Some(next_offset) = lowering_condition.next {
-                patch_addr(runtime, next_offset, next_addr);
-            }
-            if let Some(term_offset) = lowering_condition.term {
-                patch_addr(runtime, term_offset, lowering_branch_end);
-            }
         }
     }
 }

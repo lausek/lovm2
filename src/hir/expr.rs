@@ -1,12 +1,12 @@
 //! expressions and operations that produce `Values`
 
-use crate::bytecode::Instruction;
 use crate::hir::assign::Access;
 use crate::hir::call::Call;
 use crate::hir::cast::Cast;
 use crate::hir::initialize::Initialize;
 use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
 use crate::hir::slice::Slice;
+use crate::lir::{LirElement, Scope};
 use crate::value::Value;
 use crate::var::Variable;
 
@@ -230,11 +230,9 @@ impl HirLowering for Expr {
 
                 // push (initial) target onto stack
                 if runtime.has_local(&variable) {
-                    let lidx = runtime.index_local(&variable);
-                    runtime.emit(Instruction::Pushl(lidx as u16));
+                    runtime.emit(LirElement::push_dynamic(Scope::Local, variable));
                 } else {
-                    let gidx = runtime.index_global(&variable);
-                    runtime.emit(Instruction::Pushg(gidx as u16));
+                    runtime.emit(LirElement::push_dynamic(Scope::Global, variable));
                 }
 
                 // push key onto stack
@@ -242,12 +240,12 @@ impl HirLowering for Expr {
                 key.lower(runtime);
 
                 while key_it.peek().is_some() {
-                    runtime.emit(Instruction::Get);
+                    runtime.emit(LirElement::Get);
                     let key = key_it.next().unwrap();
                     key.lower(runtime);
                 }
 
-                runtime.emit(Instruction::Get);
+                runtime.emit(LirElement::Get);
             }
             Expr::Call(mut call) => {
                 call.keep(true);
@@ -257,48 +255,26 @@ impl HirLowering for Expr {
             Expr::DynamicValue(init) => init.lower(runtime),
             Expr::Operation1(op, expr) => {
                 expr.lower(runtime);
-                let inx = match op {
-                    Operator1::Not => Instruction::Not,
-                };
-                runtime.emit(inx);
+                runtime.emit(LirElement::operation(op));
             }
             Expr::Operation2(op, expr1, expr2) => {
                 expr1.lower(runtime);
                 expr2.lower(runtime);
-                let inx = match op {
-                    Operator2::Add => Instruction::Add,
-                    Operator2::Sub => Instruction::Sub,
-                    Operator2::Mul => Instruction::Mul,
-                    Operator2::Div => Instruction::Div,
-                    Operator2::Pow => Instruction::Pow,
-                    Operator2::Rem => Instruction::Rem,
-                    Operator2::And => Instruction::And,
-                    Operator2::Or => Instruction::Or,
-                    Operator2::Equal => Instruction::Eq,
-                    Operator2::NotEqual => Instruction::Ne,
-                    Operator2::GreaterEqual => Instruction::Ge,
-                    Operator2::GreaterThan => Instruction::Gt,
-                    Operator2::LessEqual => Instruction::Le,
-                    Operator2::LessThan => Instruction::Lt,
-                };
-                runtime.emit(inx);
+                runtime.emit(LirElement::operation(op));
             }
             Expr::Slice(slice) => slice.lower(runtime),
             Expr::Value { val, boxed } => {
-                let cidx = runtime.index_const(&val);
-                runtime.emit(Instruction::Pushc(cidx as u16));
+                runtime.emit(LirElement::push_constant(val));
 
                 if boxed {
-                    runtime.emit(Instruction::Box);
+                    runtime.emit(LirElement::Box);
                 }
             }
             Expr::Variable(ref var) => {
                 if runtime.has_local(var) {
-                    let lidx = runtime.index_local(var);
-                    runtime.emit(Instruction::Pushl(lidx as u16));
+                    runtime.emit(LirElement::store(Scope::Local, var.clone()));
                 } else {
-                    let gidx = runtime.index_global(var);
-                    runtime.emit(Instruction::Pushg(gidx as u16));
+                    runtime.emit(LirElement::store(Scope::Global, var.clone()));
                 }
             }
         }

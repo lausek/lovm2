@@ -6,6 +6,7 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::hir::{lowering::HirLoweringRuntime, HIR};
+use crate::lir::LirElement;
 use crate::var::Variable;
 
 use super::*;
@@ -66,14 +67,12 @@ impl ModuleBuilder {
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
         if let Some(co_builder) = self.slots.remove(&main_key) {
-            let iidx = ru.index_ident(&main_key);
-            ru.entries.push((iidx, ru.code.len()));
+            ru.emit(LirElement::entry(main_key));
             co_builder.complete(&mut ru)?;
         }
 
         for (key, co_builder) in self.slots.into_iter() {
-            let iidx = ru.index_ident(&key);
-            ru.entries.push((iidx, ru.code.len()));
+            ru.emit(LirElement::entry(key));
             co_builder.complete(&mut ru)?;
         }
 
