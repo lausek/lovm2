@@ -117,3 +117,35 @@ fn short_circuit_or() {
 
     assert_eq!(Value::Bool(true), result.clone());
 }
+
+#[test]
+fn compute_constants() {
+    let mut builder = ModuleBuilder::new();
+    let mut hir = HIR::new();
+
+    hir.push(Return::value(Expr::rem(
+        Expr::mul(Expr::add(Expr::sub(6, 1), 2), Expr::div(4, 2)),
+        5,
+    )));
+
+    builder.add(ENTRY_POINT).hir(hir);
+
+    let module = builder.build().unwrap();
+    println!("{}", module);
+
+    assert!(!module
+        .code_object
+        .code
+        .iter()
+        .any(|c| matches!(c, Instruction::Jt(_) | Instruction::Jf(_))));
+
+    let expected = Value::Int(4);
+    assert_eq!(1, module.code_object.consts.len());
+    assert!(module.code_object.consts.contains(&expected));
+
+    let mut vm = Vm::with_std();
+    vm.load_and_import_all(module).unwrap();
+    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+
+    assert_eq!(expected, result.clone());
+}

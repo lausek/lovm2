@@ -9,6 +9,7 @@ use crate::code::CodeObject;
 use crate::hir::HIR;
 use crate::lir::{Label, LirElement, LirLoweringRuntime, Scope};
 use crate::module::ModuleMeta;
+use crate::opt::*;
 use crate::var::Variable;
 
 use super::*;
@@ -18,7 +19,7 @@ pub struct HirLoweringRuntime {
     code: Vec<LirElement>,
     counter: LabelCounterRef,
     meta: ModuleMeta,
-    optimize: bool,
+    optimizer: Box<dyn Optimizer>,
 
     branch_stack: Vec<HirLoweringBranch>,
     locals: Vec<Variable>,
@@ -27,11 +28,16 @@ pub struct HirLoweringRuntime {
 
 impl HirLoweringRuntime {
     pub fn new(meta: ModuleMeta) -> Self {
+        let optimizer = if true {
+            Box::new(StandardOptimizer::new()) as Box<dyn Optimizer>
+        } else {
+            Box::new(NoOptimizer) as Box<dyn Optimizer>
+        };
         Self {
             code: vec![],
             counter: Rc::new(RefCell::new(LabelCounter::default())),
             meta,
-            optimize: true,
+            optimizer,
 
             branch_stack: vec![],
             locals: vec![],
@@ -84,28 +90,7 @@ impl HirLoweringRuntime {
 
         self.code.push(elem);
 
-        if self.optimize {
-            use crate::hir::expr::Operator1::*;
-            use crate::lir::LirElement::*;
-            use crate::lir::Operator::*;
-
-            loop {
-                let l = self.code.len().saturating_sub(3);
-                let view = &mut self.code[l..];
-
-                match view {
-                    [_, Operation(Operator1(Not)), Jump {
-                        condition: Some(cond),
-                        ..
-                    }] => {
-                        *cond = !*cond;
-                        view.swap(1, 2);
-                        self.code.pop();
-                    }
-                    _ => break,
-                }
-            }
-        }
+        self.optimizer.transform(&mut self.code);
     }
 
     pub fn has_local(&self, var: &Variable) -> bool {

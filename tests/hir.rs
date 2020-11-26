@@ -17,7 +17,7 @@ fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
         Ok(())
     });
 
-    println!("{:?}", module);
+    println!("{}", module);
     vm.load_and_import_all(module).unwrap();
     vm.run().unwrap();
 
