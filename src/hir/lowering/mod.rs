@@ -29,6 +29,7 @@ pub struct LabelCounter {
     branch: usize,
     condition: usize,
     repeat: usize,
+    other: usize,
 }
 
 impl LabelCounter {
@@ -44,6 +45,12 @@ impl LabelCounter {
         id
     }
 
+    pub fn create_new_label(&mut self) -> Label {
+        let id = self.other;
+        self.other += 1;
+        Label::Custom(format!("_{}", id))
+    }
+
     pub fn create_repeat_id(&mut self) -> usize {
         let id = self.repeat;
         self.repeat += 1;
@@ -57,6 +64,7 @@ impl std::default::Default for LabelCounter {
             branch: 0,
             condition: 0,
             repeat: 0,
+            other: 0,
         }
     }
 }

@@ -259,8 +259,29 @@ impl HirLowering for Expr {
             }
             Expr::Operation2(op, expr1, expr2) => {
                 expr1.lower(runtime);
+
+                // implement short-circuit for `And`/`Or`
+                // generates a random label as jump target
+                let sc_label = if matches!(op, Operator2::And | Operator2::Or) {
+                    let sc_label = runtime.create_new_label();
+                    // jump if first expression was already true
+                    let cond = op == Operator2::Or;
+
+                    runtime.emit(LirElement::Duplicate);
+                    runtime.emit(LirElement::jump_conditional(cond, sc_label.clone()));
+
+                    Some(sc_label)
+                } else {
+                    None
+                };
+
                 expr2.lower(runtime);
                 runtime.emit(LirElement::operation(op));
+
+                // if we have a short-circuit label, lower it after the operation
+                if let Some(sc_label) = sc_label {
+                    runtime.emit(LirElement::Label(sc_label));
+                }
             }
             Expr::Slice(slice) => slice.lower(runtime),
             Expr::Value { val, boxed } => {

@@ -91,3 +91,49 @@ fn merge_constant_jump() {
 
     assert_eq!(Value::Int(1), result.clone());
 }
+
+#[test]
+fn short_circuit_and() {
+    let mut builder = ModuleBuilder::new();
+    let mut hir = HIR::new();
+
+    hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
+    hir.push(Return::value(Expr::and(
+        Expr::eq(lv2_var!(n), Value::Int(1)),
+        Expr::div(Value::Int(1), lv2_var!(n)),
+    )));
+
+    builder.add(ENTRY_POINT).hir(hir);
+
+    let module = builder.build().unwrap();
+    println!("{}", module);
+
+    let mut vm = Vm::with_std();
+    vm.load_and_import_all(module).unwrap();
+    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+
+    assert_eq!(Value::Bool(false), result.clone());
+}
+
+#[test]
+fn short_circuit_or() {
+    let mut builder = ModuleBuilder::new();
+    let mut hir = HIR::new();
+
+    hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
+    hir.push(Return::value(Expr::or(
+        Expr::eq(lv2_var!(n), Value::Int(0)),
+        Expr::div(Value::Int(1), lv2_var!(n)),
+    )));
+
+    builder.add(ENTRY_POINT).hir(hir);
+
+    let module = builder.build().unwrap();
+    println!("{}", module);
+
+    let mut vm = Vm::with_std();
+    vm.load_and_import_all(module).unwrap();
+    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+
+    assert_eq!(Value::Bool(true), result.clone());
+}

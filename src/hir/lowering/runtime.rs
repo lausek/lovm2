@@ -40,7 +40,7 @@ impl HirLoweringRuntime {
     }
 
     pub fn create_new_label(&mut self) -> Label {
-        Label::Custom(String::new())
+        self.counter.borrow_mut().create_new_label()
     }
 
     pub fn add_hir(&mut self, hir: HIR) -> Lovm2CompileResult<()> {
