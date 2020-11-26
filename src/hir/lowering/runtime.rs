@@ -20,6 +20,7 @@ pub struct HirLoweringRuntime {
     code: Vec<LirElement>,
     counter: LabelCounterRef,
     meta: ModuleMeta,
+    optimize: bool,
 
     branch_stack: Vec<HirLoweringBranch>,
     locals: Vec<Variable>,
@@ -32,6 +33,7 @@ impl HirLoweringRuntime {
             code: vec![],
             counter: Rc::new(RefCell::new(LabelCounter::default())),
             meta,
+            optimize: true,
 
             branch_stack: vec![],
             locals: vec![],
@@ -81,8 +83,31 @@ impl HirLoweringRuntime {
                 self.locals.push(ident.clone());
             }
         }
-        // TODO: optimize lir
+
         self.code.push(elem);
+
+        if self.optimize {
+            use crate::hir::expr::Operator1::*;
+            use crate::lir::LirElement::*;
+            use crate::lir::Operator::*;
+
+            loop {
+                let l = self.code.len().checked_sub(3).unwrap_or(0);
+                let view = &mut self.code[l..];
+
+                match view {
+                    [_, Operation(Operator1(Not)), Jump {
+                        condition: Some(cond),
+                        ..
+                    }] => {
+                        *cond = !*cond;
+                        view.swap(1, 2);
+                        self.code.pop();
+                    }
+                    _ => break,
+                }
+            }
+        }
     }
 
     pub fn has_local(&self, var: &Variable) -> bool {
