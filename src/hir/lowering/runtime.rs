@@ -14,7 +14,6 @@ use crate::var::Variable;
 
 use super::*;
 
-// TODO: add ExprOptimizer field for improving Exprs
 pub struct HirLoweringRuntime {
     code: Vec<LirElement>,
     counter: LabelCounterRef,
@@ -33,6 +32,7 @@ impl HirLoweringRuntime {
         } else {
             Box::new(NoOptimizer) as Box<dyn Optimizer>
         };
+
         Self {
             code: vec![],
             counter: Rc::new(RefCell::new(LabelCounter::default())),

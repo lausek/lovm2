@@ -6,7 +6,7 @@
 Is a lightweight virtual machine with a focus on simplicity and extendability.
 
 ```
-lovm2 = "0.4.5"
+lovm2 = "0.4.6"
 ```
 
 ## Features
@@ -58,7 +58,7 @@ fn main() {
     // consumes the `ModuleBuilder` and transforms
     // it into a `Module`
     let module = module.build().unwrap();
-    println!("{:#?}", module);
+    println!("{}", module);
 
     // load the module and run it
     let mut vm = Vm::with_std();
