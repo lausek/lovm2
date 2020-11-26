@@ -1,4 +1,3 @@
-use crate::hir::assign::Access;
 use crate::value::Value;
 use crate::var::Variable;
 

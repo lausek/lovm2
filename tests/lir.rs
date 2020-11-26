@@ -1,27 +1,7 @@
 use lovm2::bytecode::Instruction;
-use lovm2::context::Context;
-use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
-
-fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
-
-    let mut vm = Vm::with_std();
-    let called_ref = called.clone();
-    vm.context_mut().set_interrupt(10, move |ctx| {
-        called_ref.set(true);
-        testfn(ctx);
-        Ok(())
-    });
-
-    println!("{:?}", module);
-    vm.load_and_import_all(module).unwrap();
-    vm.run().unwrap();
-
-    assert!(called.get());
-}
 
 #[test]
 fn merge_not_jump_false() {

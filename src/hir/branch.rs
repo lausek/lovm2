@@ -62,13 +62,13 @@ impl HirLowering for Branch {
             panic!("cannot lower branch: no conditions");
         }
 
-        runtime.push_branch();
+        let branch = runtime.push_branch();
+        let branch_start = branch.start();
+        let branch_end = branch.end();
 
-        let branch_start = runtime.branch_mut().unwrap().start();
         runtime.emit(LirElement::Label(branch_start));
 
         for (condition, block) in self.branches.into_iter() {
-            let branch_end = runtime.branch_mut().unwrap().end();
             let cond = runtime.branch_mut().unwrap().add_condition();
 
             runtime.emit(LirElement::Label(cond.start()));
@@ -79,18 +79,18 @@ impl HirLowering for Branch {
 
             block.lower(runtime);
 
-            runtime.emit(LirElement::jump(branch_end));
+            runtime.emit(LirElement::jump(branch_end.clone()));
             runtime.emit(LirElement::Label(cond.end()));
         }
 
         if let Some(default_block) = self.default {
             // adjust offset by one, because no default_block instruction
             // was emitted yet
-            let default = runtime.branch_mut().unwrap().add_default();
             default_block.lower(runtime);
         }
 
-        let branch_end = runtime.branch_mut().unwrap().end();
         runtime.emit(LirElement::Label(branch_end));
+
+        runtime.pop_branch().unwrap();
     }
 }

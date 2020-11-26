@@ -126,7 +126,7 @@ impl LirLoweringRuntime {
                 let coff = self.code.len();
 
                 if let Some(Offset::Unresolved(jmps)) =
-                    self.offsets.insert(label.clone(), Offset::Resolved(coff))
+                    self.offsets.insert(label, Offset::Resolved(coff))
                 {
                     patch_addrs(&mut self.code, jmps, coff)?;
                 }

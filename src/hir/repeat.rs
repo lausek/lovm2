@@ -44,9 +44,10 @@ impl Repeat {
 
 impl HirLowering for Repeat {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
-        runtime.push_loop();
+        let repeat = runtime.push_loop();
+        let repeat_start = repeat.start();
+        let repeat_end = repeat.end();
 
-        let repeat_start = runtime.loop_mut().unwrap().start();
         runtime.emit(LirElement::Label(repeat_start));
 
         match self.condition {
@@ -57,8 +58,7 @@ impl HirLowering for Repeat {
                 // which is equal to a break. the instruction will
                 // receive its final address once the block has been
                 // lowered.
-                let repeat_end = runtime.loop_mut().unwrap().end();
-                runtime.emit(LirElement::jump_conditional(true, repeat_end));
+                runtime.emit(LirElement::jump_conditional(true, repeat_end.clone()));
             }
             RepeatKind::Endless => {}
         }
@@ -69,8 +69,9 @@ impl HirLowering for Repeat {
         // a continue statement.
         Continue::new().lower(runtime);
 
-        let repeat_end = runtime.loop_mut().unwrap().end();
         runtime.emit(LirElement::Label(repeat_end));
+
+        runtime.pop_loop().unwrap();
     }
 }
 

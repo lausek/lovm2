@@ -5,12 +5,10 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::hir::HIR;
 use crate::lir::{Label, LirElement, LirLoweringRuntime, Scope};
 use crate::module::ModuleMeta;
-use crate::value::Value;
 use crate::var::Variable;
 
 use super::*;
@@ -92,7 +90,7 @@ impl HirLoweringRuntime {
             use crate::lir::Operator::*;
 
             loop {
-                let l = self.code.len().checked_sub(3).unwrap_or(0);
+                let l = self.code.len().saturating_sub(3);
                 let view = &mut self.code[l..];
 
                 match view {
@@ -118,7 +116,7 @@ impl HirLoweringRuntime {
         self.loop_stack.last_mut()
     }
 
-    pub fn push_loop(&mut self) -> &mut HirLoweringRepeat {
+    pub fn push_loop(&mut self) -> &HirLoweringRepeat {
         self.loop_stack
             .push(HirLoweringRepeat::new(self.counter.clone()));
         self.loop_stack.last_mut().unwrap()
@@ -132,7 +130,7 @@ impl HirLoweringRuntime {
         self.branch_stack.last_mut()
     }
 
-    pub fn push_branch(&mut self) -> &mut HirLoweringBranch {
+    pub fn push_branch(&mut self) -> &HirLoweringBranch {
         self.branch_stack
             .push(HirLoweringBranch::new(self.counter.clone()));
         self.branch_stack.last_mut().unwrap()

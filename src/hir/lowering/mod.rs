@@ -4,7 +4,6 @@ pub mod branch;
 pub mod repeat;
 pub mod runtime;
 
-use crate::bytecode::Instruction;
 use crate::lir::Label;
 
 pub use self::branch::{HirLoweringBranch, HirLoweringCondition};

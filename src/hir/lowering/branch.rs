@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::lir::Label;
 
 use super::*;
