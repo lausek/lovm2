@@ -59,6 +59,14 @@ impl LirLoweringRuntime {
     }
 
     pub fn lower(mut self, code: Vec<LirElement>) -> Lovm2CompileResult<CodeObject> {
+        if cfg!(debug_assertions) {
+            println!(">>> LIR");
+            for lir_element in code.iter() {
+                println!("{}", lir_element);
+            }
+            println!();
+        }
+
         for lir_element in code.into_iter() {
             self.emit(lir_element)?;
         }

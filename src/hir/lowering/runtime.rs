@@ -59,9 +59,7 @@ impl HirLoweringRuntime {
     }
 
     pub fn complete(self) -> Lovm2CompileResult<CodeObject> {
-        let mut lo_runtime = LirLoweringRuntime::from(self.meta);
-        println!("{:#?}", self.code);
-        lo_runtime.lower(self.code)
+        LirLoweringRuntime::from(self.meta).lower(self.code)
     }
 
     pub fn add_prelude(&mut self, args: Vec<Variable>) -> Lovm2CompileResult<()> {

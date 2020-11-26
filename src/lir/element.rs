@@ -97,3 +97,21 @@ impl LirElement {
         Self::StoreDynamic { ident, scope }
     }
 }
+
+impl std::fmt::Display for LirElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Call { argn, ident } => write!(f, "\tCall({}, {})", argn, ident),
+            Self::Cast { tyid } => write!(f, "\tCast({})", tyid),
+            Self::Entry { ident } => write!(f, "{}:", ident),
+            Self::Jump { condition, label } => write!(f, "\tJump({:?}, {})", condition, label),
+            Self::Label(label) => write!(f, "{}:", label),
+            Self::Operation(operator) => write!(f, "\t{:?}", operator),
+            Self::PushConstant { value } => write!(f, "\tPushc({})", value),
+            Self::PushDynamic { ident, scope } => write!(f, "\tPush({:?}, {})", scope, ident),
+            Self::StoreDynamic { ident, scope } => write!(f, "\tMove({:?}, {})", scope, ident),
+            Self::Interrupt(n) => write!(f, "\tInterrupt({})", n),
+            _ => write!(f, "\t{:?}", self),
+        }
+    }
+}
