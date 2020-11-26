@@ -4,21 +4,69 @@ use crate::lir::Operator;
 
 use super::*;
 
-pub struct StandardOptimizer;
+pub struct StandardOptimizer {
+    valid_path: ValidPath,
+}
+
+fn scan_valid_path(
+    vp: &mut ValidPath,
+    code: &mut Vec<LirElement>,
+    mut off: usize,
+    mut scanning: bool,
+) {
+    while let Some(elem) = code.get(off) {
+        if vp.is_valid(off) {
+            break;
+        }
+
+        if let LirElement::Entry { .. } = elem {
+            scanning = true;
+        }
+
+        if scanning {
+            vp.add(off);
+        }
+
+        match elem {
+            LirElement::Jump { condition, label } => {
+                let (label_off, _) = code
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, elem)| matches!(elem, LirElement::Label(l) if l == label))
+                    .next()
+                    .unwrap();
+
+                if condition.is_some() {
+                    scan_valid_path(vp, code, label_off, true);
+                } else {
+                    off = label_off;
+                    continue;
+                }
+            }
+            LirElement::Ret => scanning = false,
+            _ => {}
+        }
+
+        off += 1;
+    }
+}
 
 impl StandardOptimizer {
     pub fn new() -> Self {
-        Self
+        Self {
+            valid_path: ValidPath::new(),
+        }
     }
 }
 
 impl Optimizer for StandardOptimizer {
-    fn scan_back_for(&self, lir_element: &LirElement) -> usize {
-        match lir_element {
-            LirElement::Jump { .. } => 2,
-            LirElement::Operation(Operator::Operator2(_)) => 3,
-            //LirElement::Label(_) => 2,
-            _ => 0,
+    fn postprocess(&mut self, code: &mut Vec<LirElement>) {
+        scan_valid_path(&mut self.valid_path, code, 0, false);
+
+        for off in (0..code.len()).rev() {
+            if !self.valid_path.is_valid(off) {
+                code.remove(off);
+            }
         }
     }
 
@@ -103,6 +151,15 @@ impl Optimizer for StandardOptimizer {
                 }
                 _ => break,
             }
+        }
+    }
+
+    fn scan_back_for(&self, lir_element: &LirElement) -> usize {
+        match lir_element {
+            LirElement::Jump { .. } => 2,
+            LirElement::Operation(Operator::Operator2(_)) => 3,
+            //LirElement::Label(_) => 2,
+            _ => 0,
         }
     }
 }

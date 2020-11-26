@@ -64,6 +64,8 @@ fn merge_constant_jump() {
 
     // `false` is constant and should be eliminated
     assert!(!module.code_object.consts.contains(&Value::Bool(false)));
+    // check if dead code elimination is working
+    assert_eq!(2, module.code_object.code.len());
 
     let mut vm = Vm::with_std();
     vm.load_and_import_all(module).unwrap();

@@ -131,7 +131,7 @@ pub fn bisect(c: &mut Criterion) {
     let module = module.build().unwrap();
 
     // check filesize of module
-    assert_eq!(319, module.to_bytes().unwrap().len());
+    assert_eq!(317, module.to_bytes().unwrap().len());
 
     let mut vm = Vm::with_std();
     vm.load_and_import_all(module).unwrap();
