@@ -113,11 +113,11 @@ impl Optimizer for StandardOptimizer {
                 }
 
                 /*
+                // a jump should not target the next instruction
                 [LirElement::Jump {
                     label: jlabel,
                     ..
                 }, LirElement::Label(tlabel)] if jlabel == tlabel => {
-                    todo!()
                 }
                 */
                 // if two constants were pushed before an operation, remove all three instructions

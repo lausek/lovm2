@@ -108,7 +108,7 @@ impl std::fmt::Display for LirElement {
             Self::Operation(operator) => write!(f, "\t{:?}", operator),
             Self::PushConstant { value } => write!(f, "\tPushc({})", value),
             Self::PushDynamic { ident, scope } => write!(f, "\tPush({:?}, {})", scope, ident),
-            Self::StoreDynamic { ident, scope } => write!(f, "\tMove({:?}, {})", scope, ident),
+            Self::StoreDynamic { ident, scope } => write!(f, "\tStore({:?}, {})", scope, ident),
             Self::Interrupt(n) => write!(f, "\tInterrupt({})", n),
             _ => write!(f, "\t{:?}", self),
         }
