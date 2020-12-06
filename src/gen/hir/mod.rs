@@ -36,12 +36,12 @@ pub use self::repeat::{Break, Continue, Repeat};
 pub use self::slice::Slice;
 
 #[derive(Clone)]
-pub struct HIR {
+pub struct Hir {
     pub args: Vec<Variable>,
     pub code: Block,
 }
 
-impl HIR {
+impl Hir {
     pub fn new() -> Self {
         Self {
             args: vec![],

@@ -13,11 +13,11 @@ const DESERIALIZE_PATH: &str = "/tmp/assign-global.lovm2c";
 fn serialize_module() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main_hir = HIR::new();
+    let mut main_hir = Hir::new();
     main_hir.push(Assign::local(lv2_var!(msg), "hello world"));
     main_hir.push(lv2_call!(print, msg));
 
-    builder.add(ENTRY_POINT).hir(main_hir);
+    builder.entry().hir(main_hir);
 
     let module = builder.build().unwrap();
 
@@ -30,10 +30,10 @@ fn serialize_module() {
 fn deserialize_module() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main_hir = HIR::new();
+    let mut main_hir = Hir::new();
     main_hir.push(Assign::global(lv2_var!(n), 10));
 
-    builder.add(ENTRY_POINT).hir(main_hir);
+    builder.entry().hir(main_hir);
     builder
         .build()
         .unwrap()
@@ -61,9 +61,9 @@ fn global_uses() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency(PRELOADED.into());
 
-    let mut main_hir = HIR::new();
+    let mut main_hir = Hir::new();
     main_hir.push(Assign::global(lv2_var!(n), 10));
-    builder.add(ENTRY_POINT).hir(main_hir);
+    builder.entry().hir(main_hir);
 
     let module = builder.build().unwrap();
 

@@ -17,6 +17,7 @@ impl Include {
         Self::Dynamic { name: name.into() }
     }
 
+    // TODO: is this still needed?
     pub fn load_static<T>(name: T) -> Self
     where
         T: Into<Expr>,

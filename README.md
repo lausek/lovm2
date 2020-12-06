@@ -37,7 +37,7 @@ use lovm2::prelude::*;
 use lovm2::vm::Vm;
 
 fn main() {
-    let mut main_hir = HIR::new();
+    let mut main_hir = Hir::new();
 
     // set the local variable n to 10
     main_hir.push(Assign::local(lv2_var!(n), 10));

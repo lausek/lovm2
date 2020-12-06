@@ -4,7 +4,7 @@ use lovm2::vm::Vm;
 fn loading() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.push(Assign::local(lv2_var!(n), 0));
 
     let mut repeat = Repeat::until(Expr::eq(lv2_var!(n), 10));

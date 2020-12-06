@@ -34,7 +34,7 @@ macro_rules! define_test {
 
         $(
             let hir = {
-                let mut hir = HIR::new();
+                let mut hir = Hir::new();
                 $(
                     hir.code.push($inx);
                 )*
@@ -194,7 +194,7 @@ fn try_casting() {
 #[test]
 fn true_branching() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
 
@@ -209,7 +209,7 @@ fn true_branching() {
 
     hir.push(Interrupt::new(10));
 
-    builder.add(ENTRY_POINT).hir(hir);
+    builder.entry().hir(hir);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -220,7 +220,7 @@ fn true_branching() {
 #[test]
 fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(5)));
 
@@ -251,7 +251,7 @@ fn multiple_branches() {
 
     hir.push(Interrupt::new(10));
 
-    builder.add(ENTRY_POINT).hir(hir);
+    builder.entry().hir(hir);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -266,14 +266,14 @@ fn multiple_branches() {
 fn taking_parameters() {
     let mut builder = ModuleBuilder::new();
 
-    let mut called = HIR::with_args(vec![lv2_var!(a), lv2_var!(b)]);
+    let mut called = Hir::with_args(vec![lv2_var!(a), lv2_var!(b)]);
     called.push(Interrupt::new(10));
 
-    let mut main = HIR::new();
+    let mut main = Hir::new();
     main.push(Call::new("called").arg(2).arg(7));
 
     builder.add("called").hir(called);
-    builder.add(ENTRY_POINT).hir(main);
+    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -286,15 +286,15 @@ fn taking_parameters() {
 fn return_values() {
     let mut builder = ModuleBuilder::new();
 
-    let mut returner = HIR::new();
+    let mut returner = Hir::new();
     returner.push(Return::value(10));
 
-    let mut main = HIR::new();
+    let mut main = Hir::new();
     main.push(Assign::local(lv2_var!(n), Call::new("returner")));
     main.push(Interrupt::new(10));
 
     builder.add("returner").hir(returner);
-    builder.add(ENTRY_POINT).hir(main);
+    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -306,14 +306,14 @@ fn return_values() {
 fn drop_call_values() {
     let mut builder = ModuleBuilder::new();
 
-    let returner = HIR::new();
+    let returner = Hir::new();
 
-    let mut main = HIR::new();
+    let mut main = Hir::new();
     main.push(Call::new("returner"));
     main.push(Interrupt::new(10));
 
     builder.add("returner").hir(returner);
-    builder.add(ENTRY_POINT).hir(main);
+    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         assert!(ctx.vstack.is_empty());
@@ -324,14 +324,14 @@ fn drop_call_values() {
 fn cast_to_string() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main = HIR::new();
+    let mut main = Hir::new();
     main.push(Assign::local(lv2_var!(a), Cast::to_str(10)));
     main.push(Assign::local(lv2_var!(b), Cast::to_str(10.1)));
     main.push(Assign::local(lv2_var!(c), Cast::to_str("10")));
     main.push(Assign::local(lv2_var!(d), Cast::to_str(true)));
     main.push(Interrupt::new(10));
 
-    builder.add(ENTRY_POINT).hir(main);
+    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -358,7 +358,7 @@ fn cast_to_string() {
 fn folding_expr() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main = HIR::new();
+    let mut main = Hir::new();
 
     main.push(Assign::global(
         lv2_var!(a),
@@ -370,7 +370,7 @@ fn folding_expr() {
     ));
     main.push(Interrupt::new(10));
 
-    builder.add(ENTRY_POINT).hir(main);
+    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let a = ctx.value_of(&lv2_var!(a)).unwrap();
@@ -456,7 +456,7 @@ fn is_constant() {
 fn call_into_vm() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main = HIR::with_args(vec![lv2_var!(n)]);
+    let mut main = Hir::with_args(vec![lv2_var!(n)]);
     main.push(Interrupt::new(10));
     builder.add("call_me").hir(main);
 

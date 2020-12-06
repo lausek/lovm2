@@ -1,11 +1,11 @@
-//! building modules from HIR
+//! building modules from Hir
 
 use std::collections::HashMap;
 use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::gen::{CompileOptions, HirLoweringRuntime, LirElement, HIR};
+use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement};
 
 use crate::var::Variable;
 
@@ -103,7 +103,7 @@ impl ModuleBuilder {
 
 #[derive(Clone)]
 pub struct ModuleBuilderSlot {
-    hir: Option<HIR>,
+    hir: Option<Hir>,
 }
 
 impl ModuleBuilderSlot {
@@ -111,7 +111,7 @@ impl ModuleBuilderSlot {
         Self { hir: None }
     }
 
-    pub fn hir(&mut self, hir: HIR) {
+    pub fn hir(&mut self, hir: Hir) {
         self.hir = Some(hir);
     }
 

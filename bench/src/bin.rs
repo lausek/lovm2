@@ -27,7 +27,7 @@ fn fibonacci(c: &mut Criterion) {
     computation_loop.push(Assign::local(lv2_var!(l), lv2_var!(h)));
     computation_loop.push(Assign::local(lv2_var!(n), Expr::sub(lv2_var!(n), 1)));
 
-    let mut fib_hir = HIR::with_args(vec![lv2_var!(n)]);
+    let mut fib_hir = Hir::with_args(vec![lv2_var!(n)]);
     fib_hir.push(trivial_return);
     fib_hir.push(Assign::local(lv2_var!(l), 0));
     fib_hir.push(Assign::local(lv2_var!(r), 1));

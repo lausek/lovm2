@@ -8,7 +8,7 @@ use crate::lv2::*;
 
 #[derive(Clone)]
 pub(super) enum ModuleBuilderSlotInner {
-    Lovm2Hir(Option<gen::HIR>),
+    Lovm2Hir(Option<gen::Hir>),
     PyFn(Option<PyObject>),
 }
 
@@ -23,7 +23,7 @@ impl ModuleBuilderSlot {
     #[new]
     pub fn new() -> Self {
         Self {
-            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::HIR::new())),
+            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::Hir::new())),
         }
     }
 
@@ -37,7 +37,7 @@ impl ModuleBuilderSlot {
                 vars.push(Variable::from(name));
             }
 
-            hir.replace(gen::HIR::with_args(vars));
+            hir.replace(gen::Hir::with_args(vars));
         } else {
             unimplemented!()
         }

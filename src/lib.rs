@@ -15,7 +15,7 @@
 //! use lovm2::vm::Vm;
 //!
 //! fn main() {
-//!     let mut main_hir = HIR::new();
+//!     let mut main_hir = Hir::new();
 //!
 //!     // set the local variable n to 10
 //!     main_hir.push(Assign::local(lv2_var!(n), 10));
@@ -31,12 +31,12 @@
 //!
 //!     // a module needs a code object called `main`
 //!     // if you want to make it runnable
-//!     module.add("main").hir(main_hir);
+//!     module.entry().hir(main_hir);
 //!
 //!     // consumes the `ModuleBuilder` and transforms
 //!     // it into a `Module`
 //!     let module = module.build().unwrap();
-//!     println!("{:#?}", module);
+//!     println!("{}", module);
 //!
 //!     // load the module and run it
 //!     let mut vm = Vm::with_std();

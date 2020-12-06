@@ -46,7 +46,7 @@ impl HirLoweringRuntime {
         self.counter.borrow_mut().create_new_label()
     }
 
-    pub fn add_hir(&mut self, hir: HIR) -> Lovm2CompileResult<()> {
+    pub fn add_hir(&mut self, hir: Hir) -> Lovm2CompileResult<()> {
         let hir_elements = hir.code.into_iter();
 
         // before lowering a code object function, reset locals
