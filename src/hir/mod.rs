@@ -10,10 +10,12 @@ pub mod expr;
 pub mod include;
 pub mod initialize;
 pub mod interrupt;
-pub mod lowering;
 pub mod repeat;
 pub mod r#return;
 pub mod slice;
+
+pub(crate) mod lowering;
+pub(crate) mod opt;
 
 pub mod prelude;
 

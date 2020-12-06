@@ -57,7 +57,6 @@ pub mod frame;
 pub mod hir;
 pub mod lir;
 pub mod module;
-pub mod opt;
 pub mod prelude;
 pub mod util;
 pub mod value;

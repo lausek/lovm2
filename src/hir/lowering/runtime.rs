@@ -6,10 +6,9 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::code::CodeObject;
-use crate::hir::HIR;
+use crate::hir::{opt::*, HIR};
 use crate::lir::{Label, LirElement, LirLoweringRuntime, Scope};
 use crate::module::ModuleMeta;
-use crate::opt::*;
 use crate::var::Variable;
 
 use super::*;

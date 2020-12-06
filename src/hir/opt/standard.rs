@@ -33,8 +33,7 @@ fn scan_valid_path(
                 let (label_off, _) = code
                     .iter()
                     .enumerate()
-                    .filter(|(_, elem)| matches!(elem, LirElement::Label(l) if l == label))
-                    .next()
+                    .find(|(_, elem)| matches!(elem, LirElement::Label(l) if l == label))
                     .unwrap();
 
                 if condition.is_some() {
