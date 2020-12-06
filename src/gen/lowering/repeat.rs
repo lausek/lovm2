@@ -1,5 +1,3 @@
-use crate::lir::Label;
-
 use super::*;
 
 pub struct HirLoweringRepeat {

@@ -1,14 +1,14 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
-use lovm2::hir;
+use lovm2::gen;
 
 use super::builder::*;
 use crate::lv2::*;
 
 #[derive(Clone)]
 pub(super) enum ModuleBuilderSlotInner {
-    Lovm2Hir(Option<hir::HIR>),
+    Lovm2Hir(Option<gen::HIR>),
     PyFn(Option<PyObject>),
 }
 
@@ -23,7 +23,7 @@ impl ModuleBuilderSlot {
     #[new]
     pub fn new() -> Self {
         Self {
-            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(hir::HIR::new())),
+            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::HIR::new())),
         }
     }
 
@@ -37,7 +37,7 @@ impl ModuleBuilderSlot {
                 vars.push(Variable::from(name));
             }
 
-            hir.replace(hir::HIR::with_args(vars));
+            hir.replace(gen::HIR::with_args(vars));
         } else {
             unimplemented!()
         }

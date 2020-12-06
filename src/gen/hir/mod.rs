@@ -14,18 +14,26 @@ pub mod repeat;
 pub mod r#return;
 pub mod slice;
 
-pub(crate) mod lowering;
-pub(crate) mod opt;
-
-pub mod prelude;
-
 use lovm2_error::*;
 
-use crate::hir::block::Block;
-use crate::hir::element::HirElement;
-use crate::hir::lowering::HirLoweringRuntime;
-use crate::hir::r#return::Return;
+use crate::value::Value;
 use crate::var::Variable;
+
+use super::*;
+
+pub use self::assign::{Access, Assign};
+pub use self::block::Block;
+pub use self::branch::Branch;
+pub use self::call::Call;
+pub use self::cast::Cast;
+pub use self::element::HirElement;
+pub use self::expr::{Expr, Operator1, Operator2};
+pub use self::include::Include;
+pub use self::initialize::Initialize;
+pub use self::interrupt::Interrupt;
+pub use self::r#return::Return;
+pub use self::repeat::{Break, Continue, Repeat};
+pub use self::slice::Slice;
 
 #[derive(Clone)]
 pub struct HIR {
@@ -62,16 +70,5 @@ impl HIR {
         T: Into<HirElement>,
     {
         self.code.push(element.into());
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct CompileOptions {
-    pub optimize: bool,
-}
-
-impl std::default::Default for CompileOptions {
-    fn default() -> Self {
-        Self { optimize: true }
     }
 }

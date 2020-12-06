@@ -2,10 +2,7 @@
 //!
 //! every `CodeObject` implicitly returns `Nil` if no return value was given
 
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::lir::LirElement;
-use crate::value::Value;
+use super::*;
 
 #[derive(Clone)]
 pub struct Return {

@@ -1,4 +1,4 @@
-use lovm2::hir::prelude::*;
+use lovm2::gen::prelude::*;
 use lovm2::vm::Vm;
 
 fn loading() -> ModuleBuilder {

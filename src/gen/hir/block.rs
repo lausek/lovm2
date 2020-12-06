@@ -1,10 +1,6 @@
 //! general collection for program statements
 
-use crate::hir::branch::Branch;
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::hir::repeat::Repeat;
-use crate::hir::HirElement;
+use super::*;
 
 #[derive(Clone)]
 pub struct Block(Vec<HirElement>);

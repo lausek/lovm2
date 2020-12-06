@@ -1,7 +1,7 @@
 pub mod standard;
 pub mod valid;
 
-use crate::lir::LirElement;
+use super::*;
 
 pub use self::standard::StandardOptimizer;
 pub(self) use self::valid::ValidPath;

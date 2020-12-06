@@ -1,9 +1,6 @@
 //! loads a module by name into the vm
 
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::lir::LirElement;
-use crate::value::Value;
+use super::*;
 
 /// loads a module by name into the vm
 #[derive(Clone)]

@@ -4,7 +4,7 @@ pub mod branch;
 pub mod repeat;
 pub mod runtime;
 
-use crate::lir::Label;
+use super::*;
 
 pub use self::branch::{HirLoweringBranch, HirLoweringCondition};
 pub use self::repeat::HirLoweringRepeat;

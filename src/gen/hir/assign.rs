@@ -1,9 +1,6 @@
 //! instructions for storing data
 
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::lir::{LirElement, Scope};
-use crate::var::Variable;
+use super::*;
 
 #[derive(Clone)]
 pub enum AssignType {

@@ -1,13 +1,6 @@
 //! sum type for every HIR element
 
-use crate::hir::assign::Assign;
-use crate::hir::branch::Branch;
-use crate::hir::call::Call;
-use crate::hir::include::Include;
-use crate::hir::interrupt::Interrupt;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::hir::r#return::Return;
-use crate::hir::repeat::{Break, Continue, Repeat};
+use super::*;
 
 #[derive(Clone)]
 pub enum HirElement {

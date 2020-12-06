@@ -6,10 +6,8 @@ use pyo3::prelude::*;
 use pyo3::types::*;
 
 use crate::expr::any_to_ruvalue;
+use crate::lv2::*;
 use crate::vm::create_exception;
-
-type Lovm2ValueRaw = lovm2::value::Value;
-type Lovm2Value = lovm2::value::ValueRef;
 
 pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
     match val {

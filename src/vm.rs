@@ -7,7 +7,7 @@ use lovm2_error::*;
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::hir::expr::Expr;
+use crate::gen::Expr;
 use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;

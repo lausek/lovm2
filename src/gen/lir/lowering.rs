@@ -4,12 +4,11 @@ use lovm2_error::*;
 
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
-use crate::hir::expr::{Operator1, Operator2};
 use crate::prelude::ModuleMeta;
 use crate::value::Value;
 use crate::var::Variable;
 
-use super::{Label, LirElement, Operator, Scope};
+use super::*;
 
 fn patch_addrs(
     code: &mut Vec<Instruction>,

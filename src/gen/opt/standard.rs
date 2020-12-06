@@ -1,7 +1,3 @@
-use crate::hir::expr::{Operator1, Operator2};
-use crate::lir::LirElement;
-use crate::lir::Operator;
-
 use super::*;
 
 pub struct StandardOptimizer {

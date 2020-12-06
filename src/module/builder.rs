@@ -5,8 +5,8 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::hir::{lowering::HirLoweringRuntime, CompileOptions, HIR};
-use crate::lir::LirElement;
+use crate::gen::{CompileOptions, HirLoweringRuntime, LirElement, HIR};
+
 use crate::var::Variable;
 
 use super::*;

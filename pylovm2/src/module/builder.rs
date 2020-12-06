@@ -5,7 +5,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::hir;
+use lovm2::gen;
 use lovm2::module::ModuleMeta;
 
 use crate::code::CodeObject;
@@ -182,7 +182,7 @@ impl BlockBuilder {
 
     pub fn expr(&mut self, expr: &Expr) -> PyResult<()> {
         match &expr.inner {
-            hir::expr::Expr::Call(call) => unsafe {
+            gen::expr::Expr::Call(call) => unsafe {
                 (*self.inner).push(call.clone());
                 Ok(())
             },

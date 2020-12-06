@@ -1,10 +1,6 @@
 //! runs a `Block` forever or until a condition is met
 
-use crate::hir::block::Block;
-use crate::hir::element::HirElement;
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
-use crate::lir::LirElement;
+use super::*;
 
 #[derive(Clone)]
 pub enum RepeatKind {

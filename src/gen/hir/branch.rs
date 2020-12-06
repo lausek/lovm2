@@ -1,9 +1,6 @@
 //! conditional execution
 
-use crate::hir::block::Block;
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
-use crate::lir::LirElement;
+use super::*;
 
 #[derive(Clone)]
 pub struct Branch {

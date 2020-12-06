@@ -1,7 +1,6 @@
 //! trigger a vm interrupt
 
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::lir::LirElement;
+use super::*;
 
 #[derive(Clone)]
 pub struct Interrupt {

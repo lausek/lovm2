@@ -1,6 +1,6 @@
 use lovm2::bytecode::Instruction;
 use lovm2::define_code;
-use lovm2::hir::prelude::*;
+use lovm2::gen::prelude::*;
 use lovm2::value::Value;
 use lovm2::var::Variable;
 use lovm2::vm::Vm;

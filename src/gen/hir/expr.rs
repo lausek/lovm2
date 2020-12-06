@@ -1,14 +1,6 @@
 //! expressions and operations that produce `Values`
 
-use crate::hir::assign::Access;
-use crate::hir::call::Call;
-use crate::hir::cast::Cast;
-use crate::hir::initialize::Initialize;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::hir::slice::Slice;
-use crate::lir::{LirElement, Scope};
-use crate::value::Value;
-use crate::var::Variable;
+use super::*;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {

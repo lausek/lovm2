@@ -1,9 +1,6 @@
 //! execute a `CodeObject` by name using the given arguments
 
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::lir::LirElement;
-use crate::var::Variable;
+use super::*;
 
 #[derive(Clone, Debug)]
 pub struct Call {

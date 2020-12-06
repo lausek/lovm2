@@ -1,9 +1,6 @@
 //! create a new `List` containing references to values on the target `List`
 
-use crate::hir::expr::Expr;
-use crate::hir::lowering::{HirLowering, HirLoweringRuntime};
-use crate::lir::LirElement;
-use crate::value::Value;
+use super::*;
 
 #[derive(Clone, Debug)]
 pub struct Slice {
