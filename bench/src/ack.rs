@@ -1,8 +1,8 @@
 use criterion::Criterion;
 
 use lol::create_lol_module;
-use lovm2::prelude::*;
-use lovm2::vm::Vm;
+
+use super::*;
 
 pub fn ackermann(c: &mut Criterion) {
     /*
@@ -24,7 +24,7 @@ pub fn ackermann(c: &mut Criterion) {
         return m + 1
     */
 
-    let mut vm = Vm::new();
+    let mut vm = create_vm();
     let module = create_lol_module(
         "main",
         "
@@ -44,8 +44,15 @@ pub fn ackermann(c: &mut Criterion) {
                     (let m (ack n (- m 1))))
                 (let n (- n 1)))
             (ret (+ m 1)))
-        "
-    ).unwrap();
+        ",
+    )
+    .unwrap();
+
+    // hack to get around dev-dependency limitation:
+    // https://github.com/rust-lang/rust/issues/79381
+    const PERSISTANCE_HACK: &str = "/tmp/ack.lovm2c";
+    module.store_to_file(PERSISTANCE_HACK).unwrap();
+    let module = Module::load_from_file(PERSISTANCE_HACK).unwrap();
 
     vm.load_and_import_all(module).unwrap();
 

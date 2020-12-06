@@ -1,13 +1,16 @@
+#[allow(unused_variables)]
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use lovm2::prelude::*;
-use lovm2::vm::Vm;
 
-//mod ack;
+mod ack;
 mod bisect;
+#[macro_use]
+mod legacy;
 
-//use ack::ackermann;
-use bisect::bisect;
+use self::ack::ackermann;
+use self::bisect::bisect;
+use self::legacy::*;
 
 fn fibonacci(c: &mut Criterion) {
     let mut trivial_return = Branch::new();
@@ -39,7 +42,7 @@ fn fibonacci(c: &mut Criterion) {
     // check filesize of module
     //assert_eq!(94, module.to_bytes().unwrap().len());
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm();
     vm.load_and_import_all(module).unwrap();
 
     c.bench_function("fib 0", |b| {
@@ -64,5 +67,5 @@ fn fibonacci(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bisect, fibonacci /*, ackermann */);
+criterion_group!(benches, bisect, fibonacci, ackermann);
 criterion_main!(benches);
