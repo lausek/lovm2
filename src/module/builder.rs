@@ -5,12 +5,13 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::hir::{lowering::HirLoweringRuntime, HIR};
+use crate::hir::{lowering::HirLoweringRuntime, CompileOptions, HIR};
 use crate::lir::LirElement;
 use crate::var::Variable;
 
 use super::*;
 
+#[derive(Clone)]
 pub struct ModuleBuilder {
     meta: ModuleMeta,
     pub slots: HashMap<Variable, ModuleBuilderSlot>,
@@ -61,8 +62,12 @@ impl ModuleBuilder {
         self.slots.get_mut(&name).unwrap()
     }
 
-    pub fn build(mut self) -> Lovm2CompileResult<Module> {
-        let mut ru = HirLoweringRuntime::new(self.meta);
+    pub fn build(self) -> Lovm2CompileResult<Module> {
+        self.build_with_options(CompileOptions::default())
+    }
+
+    pub fn build_with_options(mut self, options: CompileOptions) -> Lovm2CompileResult<Module> {
+        let mut ru = HirLoweringRuntime::new(self.meta, options);
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
@@ -96,6 +101,7 @@ impl ModuleBuilder {
     }
 }
 
+#[derive(Clone)]
 pub struct ModuleBuilderSlot {
     hir: Option<HIR>,
 }

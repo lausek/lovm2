@@ -11,7 +11,7 @@ pub use crate::hir::interrupt::*;
 pub use crate::hir::r#return::*;
 pub use crate::hir::repeat::*;
 pub use crate::hir::slice::Slice;
-pub use crate::hir::HIR;
+pub use crate::hir::{CompileOptions, HIR};
 
 pub use crate::hir::expr::{Expr, Operator2};
 pub use crate::module::{ModuleBuilder, ModuleMeta};

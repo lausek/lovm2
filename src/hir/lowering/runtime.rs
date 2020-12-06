@@ -6,7 +6,7 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::code::CodeObject;
-use crate::hir::{opt::*, HIR};
+use crate::hir::{opt::*, CompileOptions, HIR};
 use crate::lir::{Label, LirElement, LirLoweringRuntime, Scope};
 use crate::module::ModuleMeta;
 use crate::var::Variable;
@@ -25,8 +25,8 @@ pub struct HirLoweringRuntime {
 }
 
 impl HirLoweringRuntime {
-    pub fn new(meta: ModuleMeta) -> Self {
-        let optimizer = if true {
+    pub fn new(meta: ModuleMeta, options: CompileOptions) -> Self {
+        let optimizer = if options.optimize {
             Box::new(StandardOptimizer::new()) as Box<dyn Optimizer>
         } else {
             Box::new(NoOptimizer) as Box<dyn Optimizer>

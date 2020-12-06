@@ -54,7 +54,6 @@ impl HIR {
             _ => self.code.push(Return::nil()),
         }
 
-        // TODO: optimise codeobject here; eg. `Not, Jf` is equal to `Jt`
         ru.add_hir(self)
     }
 
@@ -63,5 +62,16 @@ impl HIR {
         T: Into<HirElement>,
     {
         self.code.push(element.into());
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct CompileOptions {
+    pub optimize: bool,
+}
+
+impl std::default::Default for CompileOptions {
+    fn default() -> Self {
+        Self { optimize: true }
     }
 }

@@ -194,3 +194,20 @@ fn dead_code_elimination_else_branche() {
 
     assert_eq!(Value::Int(1), result.clone());
 }
+
+#[test]
+fn compile_options() {
+    let mut builder = ModuleBuilder::new();
+    let mut hir = HIR::new();
+
+    hir.push(Return::value(Expr::add(Expr::mul(3, 2), 2)));
+
+    builder.add(ENTRY_POINT).hir(hir);
+
+    let module = builder.clone().build().unwrap();
+    let module_noop = builder
+        .build_with_options(CompileOptions { optimize: false })
+        .unwrap();
+
+    assert!(module.code_object.code.len() < module_noop.code_object.code.len());
+}
