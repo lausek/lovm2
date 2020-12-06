@@ -9,7 +9,6 @@ fn scan_valid_path(
     code: &mut Vec<LirElement>,
     mut off: usize,
     mut scanning: bool,
-    stop_on_ret: bool,
 ) {
     while let Some(elem) = code.get(off) {
         if vp.is_valid(off) {
@@ -33,7 +32,7 @@ fn scan_valid_path(
                     .unwrap();
 
                 if condition.is_some() {
-                    scan_valid_path(vp, code, label_off, true, true);
+                    scan_valid_path(vp, code, label_off, true);
                 } else {
                     off = label_off;
                     continue;
@@ -41,10 +40,6 @@ fn scan_valid_path(
             }
             LirElement::Ret => {
                 scanning = false;
-
-                if stop_on_ret {
-                    break;
-                }
             }
             _ => {}
         }
@@ -63,7 +58,7 @@ impl StandardOptimizer {
 
 impl Optimizer for StandardOptimizer {
     fn postprocess(&mut self, code: &mut Vec<LirElement>) {
-        scan_valid_path(&mut self.valid_path, code, 0, false, false);
+        scan_valid_path(&mut self.valid_path, code, 0, false);
 
         for off in (0..code.len()).rev() {
             if !self.valid_path.is_valid(off) {
