@@ -126,6 +126,14 @@ pub fn bisect(c: &mut Criterion) {
     module.add("calc").hir(calc_hir());
     module.add("derive").hir(derive_hir());
     module.add("bisect").hir(bisect_hir);
+
+    c.bench_function("bisect compile", |b| {
+        b.iter(|| {
+            let module = module.clone();
+            module.build().unwrap()
+        })
+    });
+
     let module = module.build().unwrap();
 
     // check filesize of module

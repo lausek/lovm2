@@ -52,20 +52,22 @@ pub fn ackermann(c: &mut Criterion) {
     // https://github.com/rust-lang/rust/issues/79381
     const PERSISTANCE_HACK: &str = "/tmp/ack.lovm2c";
     module.store_to_file(PERSISTANCE_HACK).unwrap();
-    let module = Module::load_from_file(PERSISTANCE_HACK).unwrap();
+    if let Ok(module) = Module::load_from_file(PERSISTANCE_HACK) {
+        vm.load_and_import_all(module).unwrap();
 
-    vm.load_and_import_all(module).unwrap();
-
-    c.bench_function("ack", |b| {
-        b.iter(|| {
-            // ack(3, 2) = 29
-            assert_eq!(
-                Value::from(29),
-                vm.call("ack", &[3.into(), 2.into()])
-                    .unwrap()
-                    .into_integer_round()
-                    .unwrap()
-            );
-        })
-    });
+        c.bench_function("ack", |b| {
+            b.iter(|| {
+                // ack(3, 2) = 29
+                assert_eq!(
+                    Value::from(29),
+                    vm.call("ack", &[3.into(), 2.into()])
+                        .unwrap()
+                        .into_integer_round()
+                        .unwrap()
+                );
+            })
+        });
+    } else {
+        println!("lol and lovm2 versions are incompatible");
+    }
 }

@@ -37,6 +37,14 @@ fn fibonacci(c: &mut Criterion) {
 
     let mut module = ModuleBuilder::new();
     module.add("fib").hir(fib_hir);
+
+    c.bench_function("fib compile", |b| {
+        b.iter(|| {
+            let module = module.clone();
+            module.build().unwrap()
+        })
+    });
+
     let module = module.build().unwrap();
 
     // check filesize of module

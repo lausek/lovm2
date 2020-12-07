@@ -1,16 +1,20 @@
+use std::collections::HashSet;
+
 pub(super) struct ValidPath {
-    // TODO: this is inefficient
-    offsets: Vec<usize>,
+    // TODO: can this be done more efficiently?
+    offsets: HashSet<usize>,
 }
 
 impl ValidPath {
     pub fn new() -> Self {
-        Self { offsets: vec![] }
+        Self {
+            offsets: HashSet::new(),
+        }
     }
 
     pub fn add(&mut self, offset: usize) -> bool {
         if !self.is_valid(offset) {
-            self.offsets.push(offset);
+            self.offsets.insert(offset);
             true
         } else {
             false
