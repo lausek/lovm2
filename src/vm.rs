@@ -127,7 +127,7 @@ macro_rules! value_operation {
     ($ctx:expr, $fn:ident) => {{
         let second = $ctx.pop_value()?;
         let first = $ctx.pop_value()?;
-        $ctx.push_value(first.$fn(second));
+        $ctx.push_value(first.$fn(second)?);
     }};
 }
 
@@ -260,7 +260,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
             Instruction::Or => value_operation!(ctx, bitor),
             Instruction::Not => {
                 let first = ctx.pop_value()?;
-                ctx.push_value(!first);
+                ctx.push_value(first.not()?);
             }
             Instruction::Eq => value_compare!(ctx, eq),
             Instruction::Ne => value_compare!(ctx, ne),

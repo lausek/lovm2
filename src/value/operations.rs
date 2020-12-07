@@ -2,148 +2,175 @@
 
 use std::cmp::Ordering;
 
+use lovm2_error::*;
+
 use crate::value::Value;
+use crate::value::Value::*;
 
-macro_rules! auto_implement_branch {
-    ($v1:ident, $v2:ident; $ty1:ident, $ty2:ident => $func:tt) => {
-        if let (Value::$ty1(a), Value::$ty2(b)) = (&$v1, &$v2) {
-            return Value::$ty1($func(a.clone(), b.clone()));
-        }
-    };
-    ($v1:ident, $v2:ident; $ty1:ident, $ty2:ident, $conv:ident => $func:tt) => {
-        match ($v1, $v2) {
-            (Value::$ty1(a), inc @ Value::$ty2(_)) | (inc @ Value::$ty2(_), Value::$ty1(a)) => {
-                if let Ok(Value::$ty1(b)) = inc.$conv() {
-                    return Value::$ty1($func(a.clone(), b.clone()));
+fn not_supported() -> Lovm2Result<Value> {
+    Err(Lovm2ErrorTy::OperationNotSupported.into())
+}
+
+impl std::ops::Add for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn add(self, other: Value) -> Self::Output {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Value::Int(a + b)),
+            (Float(a), Float(b)) => Ok(Value::Float(a + b)),
+            (Str(a), Str(b)) => Ok(Value::Str(format!("{}{}", a, b))),
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
+                if let Float(b) = b.into_float()? {
+                    Ok(Value::Float(a + b))
+                } else {
+                    unreachable!()
                 }
             }
-            _ => {}
+            _ => not_supported(),
         }
-    };
+    }
 }
 
-// TODO: this creates a closure and calls it. not good
-macro_rules! auto_implement {
-    {
-        1, $tr:path, $method:ident;
-        $( $($ty:ident),* => $func:tt; )*
-    } => {
-        impl $tr for Value {
-            type Output = Value;
+impl std::ops::Sub for Value {
+    type Output = Lovm2Result<Value>;
 
-            fn $method(self) -> Value {
-                match self {
-                    $(
-                        $(
-                            Value::$ty(a) => Value::$ty($func(a)),
-                        )*
-                    )*
-                    _ => unimplemented!(),
+    fn sub(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Value::Int(a - b)),
+            (Float(a), Float(b)) => Ok(Value::Float(a - b)),
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
+                if let Float(b) = b.into_float()? {
+                    Ok(Value::Float(a - b))
+                } else {
+                    unreachable!()
                 }
             }
+            _ => not_supported(),
         }
-    };
+    }
+}
 
-    {
-        2, $tr:path, $method:ident;
-        $( $ty1:ident, $ty2:ident $(, $conv:ident)? => $func:tt; )*
-    } => {
-        impl $tr for Value {
-            type Output = Value;
+impl std::ops::Mul for Value {
+    type Output = Lovm2Result<Value>;
 
-            fn $method(self, other: Value) -> Value {
-                $(
-                    auto_implement_branch!(self, other; $ty1, $ty2 $(, $conv)? => $func);
-                )*
-                unimplemented!()
+    fn mul(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Value::Int(a * b)),
+            (Float(a), Float(b)) => Ok(Value::Float(a * b)),
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
+                if let Float(b) = b.into_float()? {
+                    Ok(Value::Float(a * b))
+                } else {
+                    unreachable!()
+                }
             }
+            _ => not_supported(),
         }
-    };
+    }
 }
 
-auto_implement! {
-    2, std::ops::Add, add;
-    Int, Int => (|a, b| a + b);
-    Float, Float => (|a, b| a + b);
-    Str, Str => (|a, b| format!("{}{}", a, b));
-    Float, Int, into_float => (|a, b| a + b);
+impl std::ops::Div for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn div(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Value::Int(a / b)),
+            (Float(a), Float(b)) => Ok(Value::Float(a / b)),
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
+                if let Float(b) = b.into_float()? {
+                    Ok(Value::Float(a / b))
+                } else {
+                    unreachable!()
+                }
+            }
+            _ => not_supported(),
+        }
+    }
 }
 
-auto_implement! {
-    2, std::ops::Sub, sub;
-    Int, Int => (|a, b| a - b);
-    Float, Float => (|a, b| a - b);
-    Float, Int, into_float => (|a, b| a - b);
+impl std::ops::Rem for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn rem(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Value::Int(a % b)),
+            (Float(a), Float(b)) => Ok(Value::Float(a % b)),
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
+                if let Float(b) = b.into_float()? {
+                    Ok(Value::Float(a % b))
+                } else {
+                    unreachable!()
+                }
+            }
+            _ => not_supported(),
+        }
+    }
 }
 
-auto_implement! {
-    2, std::ops::Mul, mul;
-    Int, Int => (|a, b| a * b);
-    Float, Float => (|a, b| a * b);
-    Float, Int, into_float => (|a, b| a * b);
+impl std::ops::BitAnd for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn bitand(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Bool(a), Bool(b)) => Ok(Value::Bool(a && b)),
+            (Int(a), Int(b)) => Ok(Value::Int(a & b)),
+            _ => not_supported(),
+        }
+    }
 }
 
-auto_implement! {
-    2, std::ops::Div, div;
-    Int, Int => (|a, b| a / b);
-    Float, Float => (|a, b| a / b);
-    Float, Int, into_float => (|a, b| a / b);
+impl std::ops::BitOr for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn bitor(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Bool(a), Bool(b)) => Ok(Value::Bool(a || b)),
+            (Int(a), Int(b)) => Ok(Value::Int(a | b)),
+            _ => not_supported(),
+        }
+    }
 }
 
-auto_implement! {
-    2, std::ops::Rem, rem;
-    Int, Int => (|a, b| a % b);
-    Float, Float => (|a, b| a % b);
-    Float, Int, into_float => (|a, b| a % b);
-}
+impl std::ops::Not for Value {
+    type Output = Lovm2Result<Value>;
 
-auto_implement! {
-    2, std::ops::BitAnd, bitand;
-    Bool, Bool => (|a, b| a && b);
-    Int, Int => (|a, b| a & b);
-}
-
-auto_implement! {
-    2, std::ops::BitOr, bitor;
-    Bool, Bool => (|a, b| a || b);
-    Int, Int => (|a, b| a | b);
-}
-
-auto_implement! {
-    1, std::ops::Not, not;
-    Bool => (|a: bool| !a);
-    Int => (|a: i64| !a);
+    fn not(self) -> Lovm2Result<Value> {
+        match self {
+            Bool(a) => Ok(Value::Bool(!a)),
+            Int(a) => Ok(Value::Int(!a)),
+            _ => not_supported(),
+        }
+    }
 }
 
 impl Value {
-    pub fn pow(&self, exp: Value) -> Value {
-        if let Value::Int(exp) = exp.into_integer().unwrap() {
+    pub fn pow(&self, exp: Value) -> Lovm2Result<Value> {
+        if let Int(exp) = exp.into_integer()? {
             return match self {
-                Value::Int(base) => Value::Int(base.pow(exp as u32)),
-                Value::Float(base) => Value::Float(base.powi(exp as i32)),
-                _ => unimplemented!(),
+                Int(base) => Ok(Int(base.pow(exp as u32))),
+                Float(base) => Ok(Float(base.powi(exp as i32))),
+                _ => not_supported(),
             };
         }
-        unimplemented!()
+        not_supported()
     }
 }
 
 impl std::cmp::PartialOrd for Value {
     fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
         match (self, other) {
-            (Value::Int(a), Value::Int(b)) => a.partial_cmp(b),
-            (Value::Float(a), Value::Float(b)) => a.partial_cmp(b),
-            (Value::Str(a), Value::Str(b)) => a.partial_cmp(b),
-            // TODO: test this
-            (inc @ Value::Int(_), Value::Float(b)) => {
-                if let Ok(Value::Float(a)) = inc.clone().into_float() {
+            (Int(a), Int(b)) => a.partial_cmp(b),
+            (Float(a), Float(b)) => a.partial_cmp(b),
+            (Str(a), Str(b)) => a.partial_cmp(b),
+            (inc @ Int(_), Float(b)) => {
+                if let Ok(Float(a)) = inc.clone().into_float() {
                     a.partial_cmp(b)
                 } else {
                     None
                 }
             }
-            (Value::Float(a), inc @ Value::Int(_)) => {
-                if let Ok(Value::Float(b)) = inc.clone().into_float() {
+            (Float(a), inc @ Int(_)) => {
+                if let Ok(Float(b)) = inc.clone().into_float() {
                     a.partial_cmp(&b)
                 } else {
                     None

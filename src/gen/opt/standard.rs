@@ -1,5 +1,7 @@
 use super::*;
 
+use std::ops::*;
+
 pub struct StandardOptimizer {
     valid_path: ValidPath,
 }
@@ -121,8 +123,6 @@ impl Optimizer for StandardOptimizer {
                 // and push the computed value instead
                 [LirElement::PushConstant { value: left }, LirElement::PushConstant { value: right }, LirElement::Operation(Operator::Operator2(op))] =>
                 {
-                    use std::ops::*;
-
                     let (left, right) = (left.clone(), right.clone());
                     let newval = match op {
                         Operator2::Add => left.add(right),
@@ -133,13 +133,14 @@ impl Optimizer for StandardOptimizer {
                         Operator2::Rem => left.rem(right),
                         Operator2::And => left.bitand(right),
                         Operator2::Or => left.bitor(right),
-                        Operator2::Equal => left.eq(&right).into(),
-                        Operator2::NotEqual => left.ne(&right).into(),
-                        Operator2::GreaterEqual => left.ge(&right).into(),
-                        Operator2::GreaterThan => left.gt(&right).into(),
-                        Operator2::LessEqual => left.le(&right).into(),
-                        Operator2::LessThan => left.lt(&right).into(),
-                    };
+                        Operator2::Equal => Ok(left.eq(&right).into()),
+                        Operator2::NotEqual => Ok(left.ne(&right).into()),
+                        Operator2::GreaterEqual => Ok(left.ge(&right).into()),
+                        Operator2::GreaterThan => Ok(left.gt(&right).into()),
+                        Operator2::LessEqual => Ok(left.le(&right).into()),
+                        Operator2::LessThan => Ok(left.lt(&right).into()),
+                    }
+                    .unwrap();
 
                     view[0] = LirElement::PushConstant { value: newval };
 
