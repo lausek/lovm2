@@ -12,13 +12,8 @@ impl ValidPath {
         }
     }
 
-    pub fn add(&mut self, offset: usize) -> bool {
-        if !self.is_valid(offset) {
-            self.offsets.insert(offset);
-            true
-        } else {
-            false
-        }
+    pub fn add(&mut self, offset: usize) {
+        self.offsets.insert(offset);
     }
 
     pub fn is_valid(&self, offset: usize) -> bool {
