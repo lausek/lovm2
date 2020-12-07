@@ -189,10 +189,10 @@ impl Context {
     }
 
     pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CallableRef> {
-        match self.scope.get(name).cloned() {
-            Some(co) => Ok(co),
-            _ => Err((Lovm2ErrorTy::LookupFailed, name).into()),
-        }
+        self.scope
+            .get(name)
+            .cloned()
+            .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, name).into())
     }
 
     pub fn set_import_hook<T>(&mut self, hook: T)
@@ -224,10 +224,9 @@ impl Context {
 
     /// get last stack frame or raise error
     pub fn frame_mut(&mut self) -> Lovm2Result<&mut Frame> {
-        match self.lstack.last_mut() {
-            Some(frame) => Ok(frame),
-            _ => Err(Lovm2ErrorTy::FrameStackEmpty.into()),
-        }
+        self.lstack
+            .last_mut()
+            .ok_or_else(|| Lovm2ErrorTy::FrameStackEmpty.into())
     }
 
     pub fn push_frame(&mut self, argn: u8) {
@@ -243,10 +242,15 @@ impl Context {
     }
 
     pub fn pop_value(&mut self) -> Lovm2Result<Value> {
-        match self.vstack.pop() {
-            Some(val) => Ok(val),
-            _ => Err(Lovm2ErrorTy::ValueStackEmpty.into()),
-        }
+        self.vstack
+            .pop()
+            .ok_or_else(|| Lovm2ErrorTy::ValueStackEmpty.into())
+    }
+
+    pub fn last_value_mut(&mut self) -> Lovm2Result<&mut Value> {
+        self.vstack
+            .last_mut()
+            .ok_or_else(|| Lovm2ErrorTy::ValueStackEmpty.into())
     }
 
     pub fn value_of(&self, var: &Variable) -> Option<Value> {

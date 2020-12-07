@@ -126,8 +126,9 @@ impl Vm {
 macro_rules! value_operation {
     ($ctx:expr, $fn:ident) => {{
         let second = $ctx.pop_value()?;
-        let first = $ctx.pop_value()?;
-        $ctx.push_value(first.$fn(second)?);
+        let first = $ctx.last_value_mut()?;
+        first.$fn(second)?;
+        //$ctx.push_value(first.$fn(second)?);
     }};
 }
 
@@ -250,14 +251,14 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
                     _ => return Err(format!("cannot use {:?} as set target", target).into()),
                 }
             }
-            Instruction::Add => value_operation!(ctx, add),
-            Instruction::Sub => value_operation!(ctx, sub),
-            Instruction::Mul => value_operation!(ctx, mul),
-            Instruction::Div => value_operation!(ctx, div),
-            Instruction::Pow => value_operation!(ctx, pow),
-            Instruction::Rem => value_operation!(ctx, rem),
-            Instruction::And => value_operation!(ctx, bitand),
-            Instruction::Or => value_operation!(ctx, bitor),
+            Instruction::Add => value_operation!(ctx, add_inplace),
+            Instruction::Sub => value_operation!(ctx, sub_inplace),
+            Instruction::Mul => value_operation!(ctx, mul_inplace),
+            Instruction::Div => value_operation!(ctx, div_inplace),
+            Instruction::Pow => value_operation!(ctx, pow_inplace),
+            Instruction::Rem => value_operation!(ctx, rem_inplace),
+            Instruction::And => value_operation!(ctx, and_inplace),
+            Instruction::Or => value_operation!(ctx, or_inplace),
             Instruction::Not => {
                 let first = ctx.pop_value()?;
                 ctx.push_value(first.not()?);

@@ -4,12 +4,8 @@ use std::cmp::Ordering;
 
 use lovm2_error::*;
 
-use crate::value::Value;
-use crate::value::Value::*;
-
-fn not_supported() -> Lovm2Result<Value> {
-    Err(Lovm2ErrorTy::OperationNotSupported.into())
-}
+use super::Value::*;
+use super::*;
 
 impl std::ops::Add for Value {
     type Output = Lovm2Result<Value>;
