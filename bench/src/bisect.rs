@@ -146,10 +146,10 @@ pub fn bisect(c: &mut Criterion) {
     c.bench_function("bisect f", |b| {
         b.iter(|| {
             assert_eq!(
-                Value::from(0),
+                0,
                 vm.call("bisect", &[vec![2, 2, -1, 0].into(), 1.into()])
                     .unwrap()
-                    .into_integer_round()
+                    .as_integer_round_inner()
                     .unwrap()
             );
         })
@@ -159,10 +159,10 @@ pub fn bisect(c: &mut Criterion) {
     c.bench_function("bisect g", |b| {
         b.iter(|| {
             assert_eq!(
-                Value::from(2),
+                2,
                 vm.call("bisect", &[vec![1, -4, 4].into(), 1.into()])
                     .unwrap()
-                    .into_integer_round()
+                    .as_integer_round_inner()
                     .unwrap()
             );
         })
@@ -172,10 +172,10 @@ pub fn bisect(c: &mut Criterion) {
     c.bench_function("bisect h", |b| {
         b.iter(|| {
             assert_eq!(
-                Value::from(3),
+                3,
                 vm.call("bisect", &[vec![1, -2, -3].into(), 1.into()])
                     .unwrap()
-                    .into_integer_round()
+                    .as_integer_round_inner()
                     .unwrap()
             );
         })

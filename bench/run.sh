@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RELEASES="2447288 dc0de41 9a5c378"
+RELEASES="2447288 dc0de41 9a5c378 51f54e6"
 
 TARGET="$(pwd)"
 LOVM2=$(realpath "$(pwd)"/..)

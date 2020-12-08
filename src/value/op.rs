@@ -12,16 +12,12 @@ impl std::ops::Add for Value {
 
     fn add(self, other: Value) -> Self::Output {
         match (self, other) {
-            (Int(a), Int(b)) => Ok(Value::Int(a + b)),
-            (Float(a), Float(b)) => Ok(Value::Float(a + b)),
-            (Str(a), Str(b)) => Ok(Value::Str(format!("{}{}", a, b))),
-            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
-                if let Float(b) = b.into_float()? {
-                    Ok(Value::Float(a + b))
-                } else {
-                    unreachable!()
-                }
-            }
+            (Int(a), Int(b)) => Ok(Int(a + b)),
+            (Float(a), Float(b)) => Ok(Float(a + b)),
+            (Str(a), Str(b)) => Ok(Str(format!("{}{}", a, b))),
+
+            // switching positions is okay, because add is commutative
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => Ok(Float(a + b.as_float_inner()?)),
             _ => not_supported(),
         }
     }
@@ -32,15 +28,12 @@ impl std::ops::Sub for Value {
 
     fn sub(self, other: Value) -> Lovm2Result<Value> {
         match (self, other) {
-            (Int(a), Int(b)) => Ok(Value::Int(a - b)),
-            (Float(a), Float(b)) => Ok(Value::Float(a - b)),
-            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
-                if let Float(b) = b.into_float()? {
-                    Ok(Value::Float(a - b))
-                } else {
-                    unreachable!()
-                }
-            }
+            (Int(a), Int(b)) => Ok(Int(a - b)),
+            (Float(a), Float(b)) => Ok(Float(a - b)),
+
+            // sub is not commutative
+            (Float(a), b @ Int(_)) => Ok(Float(a - b.as_float_inner()?)),
+            (b @ Int(_), Float(a)) => Ok(Float(b.as_float_inner()? - a)),
             _ => not_supported(),
         }
     }
@@ -51,15 +44,11 @@ impl std::ops::Mul for Value {
 
     fn mul(self, other: Value) -> Lovm2Result<Value> {
         match (self, other) {
-            (Int(a), Int(b)) => Ok(Value::Int(a * b)),
-            (Float(a), Float(b)) => Ok(Value::Float(a * b)),
-            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
-                if let Float(b) = b.into_float()? {
-                    Ok(Value::Float(a * b))
-                } else {
-                    unreachable!()
-                }
-            }
+            (Int(a), Int(b)) => Ok(Int(a * b)),
+            (Float(a), Float(b)) => Ok(Float(a * b)),
+
+            // switching positions is okay, because mul is commutative
+            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => Ok(Float(a * b.as_float_inner()?)),
             _ => not_supported(),
         }
     }
@@ -70,15 +59,12 @@ impl std::ops::Div for Value {
 
     fn div(self, other: Value) -> Lovm2Result<Value> {
         match (self, other) {
-            (Int(a), Int(b)) => Ok(Value::Int(a / b)),
-            (Float(a), Float(b)) => Ok(Value::Float(a / b)),
-            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
-                if let Float(b) = b.into_float()? {
-                    Ok(Value::Float(a / b))
-                } else {
-                    unreachable!()
-                }
-            }
+            (Int(a), Int(b)) => Ok(Int(a / b)),
+            (Float(a), Float(b)) => Ok(Float(a / b)),
+
+            // div is not commutative
+            (Float(a), b @ Int(_)) => Ok(Float(a / b.as_float_inner()?)),
+            (b @ Int(_), Float(a)) => Ok(Float(b.as_float_inner()? / a)),
             _ => not_supported(),
         }
     }
@@ -89,15 +75,12 @@ impl std::ops::Rem for Value {
 
     fn rem(self, other: Value) -> Lovm2Result<Value> {
         match (self, other) {
-            (Int(a), Int(b)) => Ok(Value::Int(a % b)),
-            (Float(a), Float(b)) => Ok(Value::Float(a % b)),
-            (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => {
-                if let Float(b) = b.into_float()? {
-                    Ok(Value::Float(a % b))
-                } else {
-                    unreachable!()
-                }
-            }
+            (Int(a), Int(b)) => Ok(Int(a % b)),
+            (Float(a), Float(b)) => Ok(Float(a % b)),
+
+            // rem is not commutative
+            (Float(a), b @ Int(_)) => Ok(Float(a % b.as_float_inner()?)),
+            (b @ Int(_), Float(a)) => Ok(Float(b.as_float_inner()? % a)),
             _ => not_supported(),
         }
     }
@@ -108,8 +91,8 @@ impl std::ops::BitAnd for Value {
 
     fn bitand(self, other: Value) -> Lovm2Result<Value> {
         match (self, other) {
-            (Bool(a), Bool(b)) => Ok(Value::Bool(a && b)),
-            (Int(a), Int(b)) => Ok(Value::Int(a & b)),
+            (Bool(a), Bool(b)) => Ok(Bool(a && b)),
+            (Int(a), Int(b)) => Ok(Int(a & b)),
             _ => not_supported(),
         }
     }
@@ -120,8 +103,8 @@ impl std::ops::BitOr for Value {
 
     fn bitor(self, other: Value) -> Lovm2Result<Value> {
         match (self, other) {
-            (Bool(a), Bool(b)) => Ok(Value::Bool(a || b)),
-            (Int(a), Int(b)) => Ok(Value::Int(a | b)),
+            (Bool(a), Bool(b)) => Ok(Bool(a || b)),
+            (Int(a), Int(b)) => Ok(Int(a | b)),
             _ => not_supported(),
         }
     }
@@ -132,8 +115,8 @@ impl std::ops::Not for Value {
 
     fn not(self) -> Lovm2Result<Value> {
         match self {
-            Bool(a) => Ok(Value::Bool(!a)),
-            Int(a) => Ok(Value::Int(!a)),
+            Bool(a) => Ok(Bool(!a)),
+            Int(a) => Ok(Int(!a)),
             _ => not_supported(),
         }
     }
@@ -141,14 +124,12 @@ impl std::ops::Not for Value {
 
 impl Value {
     pub fn pow(&self, exp: Value) -> Lovm2Result<Value> {
-        if let Int(exp) = exp.into_integer()? {
-            return match self {
-                Int(base) => Ok(Int(base.pow(exp as u32))),
-                Float(base) => Ok(Float(base.powi(exp as i32))),
-                _ => not_supported(),
-            };
+        let exp = exp.as_integer_inner()?;
+        match self {
+            Int(base) => Ok(Int(base.pow(exp as u32))),
+            Float(base) => Ok(Float(base.powi(exp as i32))),
+            _ => not_supported(),
         }
-        not_supported()
     }
 }
 
@@ -158,20 +139,8 @@ impl std::cmp::PartialOrd for Value {
             (Int(a), Int(b)) => a.partial_cmp(b),
             (Float(a), Float(b)) => a.partial_cmp(b),
             (Str(a), Str(b)) => a.partial_cmp(b),
-            (inc @ Int(_), Float(b)) => {
-                if let Ok(Float(a)) = inc.clone().into_float() {
-                    a.partial_cmp(b)
-                } else {
-                    None
-                }
-            }
-            (Float(a), inc @ Int(_)) => {
-                if let Ok(Float(b)) = inc.clone().into_float() {
-                    a.partial_cmp(&b)
-                } else {
-                    None
-                }
-            }
+            (inc @ Int(_), Float(b)) => inc.as_float_inner().ok().and_then(|a| a.partial_cmp(b)),
+            (Float(a), inc @ Int(_)) => inc.as_float_inner().ok().and_then(|b| a.partial_cmp(&b)),
             _ => None,
         }
     }

@@ -72,11 +72,8 @@ impl Value {
                 dict.remove(&key);
             }
             Value::List(list) => {
-                if let Value::Int(key) = key.into_integer()? {
-                    list.remove(key as usize);
-                } else {
-                    unreachable!()
-                }
+                let key = key.as_integer_inner()?;
+                list.remove(key as usize);
             }
             Value::Ref(Some(r)) => r.borrow_mut().delete(key)?,
             _ => return Err((Lovm2ErrorTy::OperationNotSupported, "delete").into()),
@@ -91,7 +88,7 @@ impl Value {
                 None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
             },
             Value::List(list) => {
-                if let Value::Int(key) = key.into_integer()? {
+                if let Value::Int(key) = key.as_integer()? {
                     match list.get(key as usize) {
                         Some(val) => Ok(val.clone()),
                         None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
@@ -125,16 +122,13 @@ impl Value {
                 Ok(())
             }
             Value::List(list) => {
-                if let Value::Int(idx) = key.into_integer()? {
-                    if list.len() == idx as usize {
-                        list.push(val);
-                    } else {
-                        list[idx as usize] = val;
-                    }
-                    Ok(())
+                let idx = key.as_integer_inner()?;
+                if list.len() == idx as usize {
+                    list.push(val);
                 } else {
-                    unreachable!()
+                    list[idx as usize] = val;
                 }
+                Ok(())
             }
             Value::Ref(Some(r)) => r.borrow_mut().set(key, val),
             _ => Err((Lovm2ErrorTy::OperationNotSupported, "set").into()),
@@ -233,37 +227,25 @@ where
 
 impl Into<bool> for Value {
     fn into(self) -> bool {
-        match self.into_bool().unwrap() {
-            Value::Bool(b) => b,
-            _ => panic!("cannot convert from bool"),
-        }
+        self.as_bool_inner().unwrap()
     }
 }
 
 impl Into<i64> for Value {
     fn into(self) -> i64 {
-        match self.into_integer().unwrap() {
-            Value::Int(n) => n,
-            _ => panic!("cannot convert from integer"),
-        }
+        self.as_integer_inner().unwrap()
     }
 }
 
 impl Into<f64> for Value {
     fn into(self) -> f64 {
-        match self.into_float().unwrap() {
-            Value::Float(n) => n,
-            _ => panic!("cannot convert from float"),
-        }
+        self.as_float_inner().unwrap()
     }
 }
 
 impl Into<String> for Value {
     fn into(self) -> String {
-        match self.into_str().unwrap() {
-            Value::Str(s) => s,
-            _ => panic!("cannot convert from string"),
-        }
+        self.as_str_inner().unwrap()
     }
 }
 

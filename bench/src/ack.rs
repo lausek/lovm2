@@ -59,10 +59,10 @@ pub fn ackermann(c: &mut Criterion) {
             b.iter(|| {
                 // ack(3, 2) = 29
                 assert_eq!(
-                    Value::from(29),
+                    29,
                     vm.call("ack", &[3.into(), 2.into()])
                         .unwrap()
-                        .into_integer_round()
+                        .as_integer_round_inner()
                         .unwrap()
                 );
             })

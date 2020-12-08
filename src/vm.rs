@@ -150,23 +150,11 @@ fn deref_total(val: &mut Value) {
 fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     let start_idx = match start {
         Value::Nil => 0,
-        _ => {
-            if let Value::Int(n) = start.into_integer()? {
-                n
-            } else {
-                unreachable!()
-            }
-        }
+        _ => start.as_integer_inner()?,
     };
     let end_idx = match end {
         Value::Nil => target.len()? as i64,
-        _ => {
-            if let Value::Int(n) = end.into_integer()? {
-                n
-            } else {
-                unreachable!()
-            }
-        }
+        _ => end.as_integer_inner()?,
     };
     let mut slice = vec![];
 
@@ -275,14 +263,14 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
             }
             Instruction::Jt(addr) => {
                 let first = ctx.pop_value()?;
-                if first.into_bool()? == Value::Bool(true) {
+                if first.as_bool_inner()? {
                     ip = *addr as usize;
                     continue;
                 }
             }
             Instruction::Jf(addr) => {
                 let first = ctx.pop_value()?;
-                if first.into_bool()? == Value::Bool(false) {
+                if !first.as_bool_inner()? {
                     ip = *addr as usize;
                     continue;
                 }
@@ -301,9 +289,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
                 }
             }
             Instruction::Cast(tid) => {
-                let val = ctx.pop_value()?;
-                let val = val.cast(*tid)?;
-                ctx.push_value(val);
+                ctx.last_value_mut()?.cast_inplace(*tid)?;
             }
             Instruction::Load => {
                 let name = ctx.pop_value()?;

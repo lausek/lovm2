@@ -11,13 +11,7 @@ impl Value {
             (Int(ref mut a), Int(b)) => *a += b,
             (Float(ref mut a), Float(b)) => *a += b,
             (Str(ref mut a), Str(b)) => *a = format!("{}{}", a, b),
-            (Float(ref mut a), b @ Int(_)) => {
-                if let Float(b) = b.into_float()? {
-                    *a += b
-                } else {
-                    unreachable!()
-                }
-            }
+            (Float(ref mut a), b @ Int(_)) => *a += b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() + b)?,
             _ => not_supported()?,
         }
@@ -28,13 +22,7 @@ impl Value {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a -= b,
             (Float(ref mut a), Float(b)) => *a -= b,
-            (Float(ref mut a), b @ Int(_)) => {
-                if let Float(b) = b.into_float()? {
-                    *a -= b
-                } else {
-                    unreachable!()
-                }
-            }
+            (Float(ref mut a), b @ Int(_)) => *a -= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() - b)?,
             _ => not_supported()?,
         }
@@ -45,13 +33,7 @@ impl Value {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a *= b,
             (Float(ref mut a), Float(b)) => *a *= b,
-            (Float(ref mut a), b @ Int(_)) => {
-                if let Float(b) = b.into_float()? {
-                    *a *= b
-                } else {
-                    unreachable!()
-                }
-            }
+            (Float(ref mut a), b @ Int(_)) => *a *= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() * b)?,
             _ => not_supported()?,
         }
@@ -62,13 +44,7 @@ impl Value {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a /= b,
             (Float(ref mut a), Float(b)) => *a /= b,
-            (Float(ref mut a), b @ Int(_)) => {
-                if let Float(b) = b.into_float()? {
-                    *a /= b
-                } else {
-                    unreachable!()
-                }
-            }
+            (Float(ref mut a), b @ Int(_)) => *a /= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() / b)?,
             _ => not_supported()?,
         }
@@ -79,13 +55,7 @@ impl Value {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a %= b,
             (Float(ref mut a), Float(b)) => *a %= b,
-            (Float(ref mut a), b @ Int(_)) => {
-                if let Float(b) = b.into_float()? {
-                    *a %= b
-                } else {
-                    unreachable!()
-                }
-            }
+            (Float(ref mut a), b @ Int(_)) => *a %= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() % b)?,
             _ => not_supported()?,
         }
@@ -93,16 +63,13 @@ impl Value {
     }
 
     pub fn pow_inplace(&mut self, exp: Value) -> Lovm2Result<()> {
-        if let Int(exp) = exp.into_integer()? {
-            match self {
-                Int(ref mut base) => *base = base.pow(exp as u32),
-                Float(ref mut base) => *base = base.powi(exp as i32),
-                _ => not_supported()?,
-            };
-            Ok(())
-        } else {
-            not_supported()
-        }
+        let exp = exp.as_integer_inner()?;
+        match self {
+            Int(ref mut base) => *base = base.pow(exp as u32),
+            Float(ref mut base) => *base = base.powi(exp as i32),
+            _ => not_supported()?,
+        };
+        Ok(())
     }
 
     pub fn and_inplace(&mut self, other: Value) -> Lovm2Result<()> {
