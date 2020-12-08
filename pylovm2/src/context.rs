@@ -1,9 +1,7 @@
 use pyo3::prelude::*;
 
+use crate::lv2::*;
 use crate::value::lovm2py;
-
-pub type Lovm2Context = lovm2::context::Context;
-pub type Lovm2Frame = lovm2::frame::Frame;
 
 #[pyclass(unsendable)]
 pub struct Context {

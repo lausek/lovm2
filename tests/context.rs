@@ -31,12 +31,12 @@ fn load_hook_none() {
     let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| Ok(None));
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.push(Include::load("notfound"));
     hir.push(Interrupt::new(10));
 
     let mut builder = ModuleBuilder::new();
-    builder.add(ENTRY_POINT).hir(hir);
+    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
 
@@ -47,7 +47,7 @@ fn load_hook_none() {
 fn load_custom_module() {
     let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| {
-        let mut hir = HIR::new();
+        let mut hir = Hir::new();
         hir.push(Return::value(Expr::add(1, 1)));
 
         let mut builder = ModuleBuilder::named("extern");
@@ -55,13 +55,13 @@ fn load_custom_module() {
         Ok(Some(builder.build().unwrap().into()))
     });
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.push(Include::load("extern"));
     hir.push(Assign::local(lv2_var!(n), Call::new("calc")));
     hir.push(Interrupt::new(10));
 
     let mut builder = ModuleBuilder::named("main");
-    builder.add(ENTRY_POINT).hir(hir);
+    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
 
@@ -76,12 +76,12 @@ fn load_custom_module() {
 fn load_avoid_sigabrt() {
     use std::path::Path;
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.push(Include::load("io"));
     hir.push(Interrupt::new(10));
 
     let mut builder = ModuleBuilder::new();
-    builder.add(ENTRY_POINT).hir(hir);
+    builder.entry().hir(hir);
     let module = builder.build().unwrap();
 
     let this_dir = Path::new(file!()).parent().unwrap().canonicalize().unwrap();
@@ -97,19 +97,19 @@ fn load_avoid_sigabrt() {
 fn avoid_double_import() {
     let mut builder = ModuleBuilder::named("main");
 
-    let mut main_hir = HIR::new();
+    let mut main_hir = Hir::new();
     main_hir.push(Include::load("abc"));
     main_hir.push(Include::load("abc"));
     main_hir.push(Interrupt::new(10));
 
-    builder.add(ENTRY_POINT).hir(main_hir);
+    builder.entry().hir(main_hir);
 
     let module = builder.build().unwrap();
 
     let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| {
         let mut builder = ModuleBuilder::named("abc");
-        builder.add("add").hir(HIR::new());
+        builder.add("add").hir(Hir::new());
         let module = builder.build().unwrap();
         Ok(Some(module.into()))
     });

@@ -6,8 +6,9 @@ use lovm2::context::LoadRequest;
 use lovm2::prelude::*;
 
 use crate::code::pyerr;
-use crate::context::{Context, Lovm2Context};
+use crate::context::Context;
 use crate::expr::any_to_expr;
+use crate::lv2::*;
 use crate::module::Module;
 use crate::value::Value;
 

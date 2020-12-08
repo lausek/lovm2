@@ -1,6 +1,6 @@
 use std::path::Path;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ModuleMeta {
     pub(crate) loc: Option<String>,
     pub(crate) name: String,

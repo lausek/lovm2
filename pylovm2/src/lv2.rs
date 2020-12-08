@@ -1,5 +1,9 @@
-pub type Lovm2Branch = lovm2::hir::branch::Branch;
-pub type Lovm2Block = lovm2::hir::block::Block;
+pub type Lovm2Branch = lovm2::gen::Branch;
+pub type Lovm2Block = lovm2::gen::Block;
+pub type Lovm2Context = lovm2::context::Context;
+pub type Lovm2Frame = lovm2::frame::Frame;
 pub type Lovm2Module = lovm2::module::Module;
 pub type Lovm2ModuleBuilder = lovm2::module::ModuleBuilder;
 pub type Lovm2Slots = lovm2::module::Slots;
+pub type Lovm2Value = lovm2::value::ValueRef;
+pub type Lovm2ValueRaw = lovm2::value::Value;

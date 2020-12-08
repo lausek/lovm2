@@ -19,7 +19,7 @@ fn native_add() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency("primitives".to_string());
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.code
         .push(Assign::global(lv2_var!(n), lv2_call!(native_add, 1, 2)));
 
@@ -41,7 +41,7 @@ fn native_negate() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency("primitives".to_string());
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.code.push(Assign::local(lv2_var!(b), false));
     hir.code
         .push(Assign::global(lv2_var!(n), lv2_call!(negate, b)));
@@ -64,7 +64,7 @@ fn native_to_string() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency("primitives".to_string());
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.code.push(Assign::local(lv2_var!(f), 5.));
     hir.code.push(Assign::local(lv2_var!(ext), "so"));
     hir.code
@@ -88,7 +88,7 @@ fn native_only_create() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency("primitives".to_string());
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.code
         .push(Assign::global(lv2_var!(n), lv2_call!(enden_der_wurst)));
 
@@ -110,7 +110,7 @@ fn native_assert_this() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency("primitives".to_string());
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.code.push(Assign::global(lv2_var!(b), true));
     hir.code.push(lv2_call!(assert_this, b));
 
@@ -129,7 +129,7 @@ fn native_use_context() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency("primitives".to_string());
 
-    let mut hir = HIR::new();
+    let mut hir = Hir::new();
     hir.code
         .push(Assign::global(lv2_var!(n), lv2_call!(use_context)));
 

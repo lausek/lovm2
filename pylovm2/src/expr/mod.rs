@@ -8,8 +8,8 @@ use lovm2::var;
 
 pub use self::conv::*;
 
-pub(self) type Lovm2Access = lovm2::hir::assign::Access;
-pub(self) type Lovm2Expr = lovm2::hir::expr::Expr;
+pub(self) type Lovm2Access = lovm2::gen::Access;
+pub(self) type Lovm2Expr = lovm2::gen::Expr;
 pub(self) type Lovm2Value = lovm2::value::Value;
 
 macro_rules! auto_wrapper {
@@ -37,7 +37,7 @@ macro_rules! auto_wrapper {
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Expr {
-    pub inner: lovm2::hir::expr::Expr,
+    pub inner: lovm2::gen::Expr,
 }
 
 #[pyproto]

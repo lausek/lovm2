@@ -2,7 +2,7 @@
 
 use lovm2_error::*;
 
-use crate::value::Value;
+use super::*;
 
 pub type CastResult = Lovm2Result<Value>;
 
@@ -17,75 +17,96 @@ pub const RUVALUE_LIST_TY: u16 = 6;
 impl Value {
     pub fn cast(self, tid: u16) -> CastResult {
         match tid {
-            RUVALUE_NIL_TY => unimplemented!(),
-            RUVALUE_BOOL_TY => self.into_bool(),
-            RUVALUE_INT_TY => self.into_integer(),
-            RUVALUE_FLOAT_TY => self.into_float(),
-            RUVALUE_STR_TY => self.into_str(),
-            RUVALUE_DICT_TY => unimplemented!(),
-            RUVALUE_LIST_TY => unimplemented!(),
-            _ => unimplemented!(),
+            RUVALUE_BOOL_TY => self.as_bool(),
+            RUVALUE_INT_TY => self.as_integer(),
+            RUVALUE_FLOAT_TY => self.as_float(),
+            RUVALUE_STR_TY => self.as_str(),
+            _ => not_supported(),
         }
     }
 
-    pub fn into_bool(self) -> CastResult {
+    pub fn cast_inplace(&mut self, tid: u16) -> Lovm2Result<()> {
+        match tid {
+            RUVALUE_BOOL_TY => *self = self.as_bool()?,
+            RUVALUE_INT_TY => *self = self.as_integer()?,
+            RUVALUE_FLOAT_TY => *self = self.as_float()?,
+            RUVALUE_STR_TY => *self = self.as_str()?,
+            _ => not_supported()?,
+        }
+        Ok(())
+    }
+
+    pub fn as_bool(&self) -> CastResult {
+        self.as_bool_inner().map(Value::Bool)
+    }
+
+    pub fn as_float(&self) -> CastResult {
+        self.as_float_inner().map(Value::Float)
+    }
+
+    pub fn as_integer(&self) -> CastResult {
+        self.as_integer_inner().map(Value::Int)
+    }
+
+    pub fn as_integer_round(&self) -> CastResult {
+        self.as_integer_round_inner().map(Value::Int)
+    }
+
+    pub fn as_str(&self) -> CastResult {
+        self.as_str_inner().map(Value::Str)
+    }
+
+    pub fn as_bool_inner(&self) -> Lovm2Result<bool> {
         match self {
-            Value::Bool(_) => Ok(self),
-            Value::Int(n) => Ok(Value::Bool(n != 0)),
-            Value::Str(s) => Ok(Value::Bool(!s.is_empty())),
-            Value::Dict(d) => Ok(Value::Bool(!d.is_empty())),
-            Value::List(ls) => Ok(Value::Bool(!ls.is_empty())),
-            // TODO: avoid clone
-            Value::Ref(Some(r)) => r.borrow().clone().into_bool(),
+            Value::Bool(b) => Ok(*b),
+            Value::Int(n) => Ok(*n != 0),
+            Value::Str(s) => Ok(!s.is_empty()),
+            Value::Dict(d) => Ok(!d.is_empty()),
+            Value::List(ls) => Ok(!ls.is_empty()),
+            Value::Ref(Some(r)) => r.borrow().as_bool_inner(),
             Value::Nil |
             // TODO: compare with 0
             Value::Float(_) |
-            Value::Ref(_) => Ok(Value::Bool(false)),
+            Value::Ref(_) => Ok(false),
         }
     }
 
-    pub fn into_float(self) -> CastResult {
+    pub fn as_float_inner(&self) -> Lovm2Result<f64> {
         match self {
-            Value::Nil => unimplemented!(),
-            Value::Bool(b) => Ok(Value::Float(if b { 1. } else { 0. })),
-            Value::Int(n) => Ok(Value::Float(n as f64)),
-            Value::Float(_) => Ok(self),
-            Value::Str(s) => s
-                .parse::<f64>()
-                .map(Value::from)
-                .map_err(|_| "not a float".into()),
-            Value::Dict(_) => unimplemented!(),
-            Value::List(_) => unimplemented!(),
+            Value::Nil => not_supported(),
+            Value::Bool(b) => Ok(if *b { 1. } else { 0. }),
+            Value::Int(n) => Ok(*n as f64),
+            Value::Float(n) => Ok(*n),
+            Value::Str(s) => s.parse::<f64>().map_err(|_| "not a float".into()),
+            Value::Dict(_) => not_supported(),
+            Value::List(_) => not_supported(),
             _ => panic!("TODO: ref does not have a type"),
         }
     }
 
-    pub fn into_integer(self) -> CastResult {
+    pub fn as_integer_inner(&self) -> Lovm2Result<i64> {
         match self {
-            Value::Nil => unimplemented!(),
-            Value::Bool(b) => Ok(Value::Int(if b { 1 } else { 0 })),
-            Value::Int(_) => Ok(self),
-            Value::Float(n) => Ok(Value::Int(n as i64)),
-            Value::Str(s) => s
-                .parse::<i64>()
-                .map(Value::from)
-                .map_err(|_| "not an integer".into()),
-            Value::Dict(_) => unimplemented!(),
-            Value::List(_) => unimplemented!(),
+            Value::Nil => not_supported(),
+            Value::Bool(b) => Ok(if *b { 1 } else { 0 }),
+            Value::Int(n) => Ok(*n),
+            Value::Float(n) => Ok(*n as i64),
+            Value::Str(s) => s.parse::<i64>().map_err(|_| "not an integer".into()),
+            Value::Dict(_) => not_supported(),
+            Value::List(_) => not_supported(),
             _ => panic!("TODO: ref does not have a type"),
         }
     }
 
-    pub fn into_integer_round(self) -> CastResult {
-        match self {
-            Value::Float(n) => Ok(Value::Int(n.round() as i64)),
-            _ => self.into_integer(),
+    pub fn as_integer_round_inner(&self) -> Lovm2Result<i64> {
+        if let Value::Float(n) = self {
+            Ok(n.round() as i64)
+        } else {
+            self.as_integer_inner()
         }
     }
 
-    pub fn into_str(self) -> CastResult {
-        let s = format!("{}", self);
-        Ok(Value::Str(s))
+    pub fn as_str_inner(&self) -> Lovm2Result<String> {
+        Ok(format!("{}", self))
     }
 
     pub fn type_id(&self) -> u16 {

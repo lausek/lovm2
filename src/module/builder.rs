@@ -1,15 +1,17 @@
-//! building modules from HIR
+//! building modules from Hir
 
 use std::collections::HashMap;
 use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::hir::{lowering::LoweringRuntime, HIR};
+use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement};
+
 use crate::var::Variable;
 
 use super::*;
 
+#[derive(Clone)]
 pub struct ModuleBuilder {
     meta: ModuleMeta,
     pub slots: HashMap<Variable, ModuleBuilderSlot>,
@@ -60,20 +62,22 @@ impl ModuleBuilder {
         self.slots.get_mut(&name).unwrap()
     }
 
-    pub fn build(mut self) -> Lovm2CompileResult<Module> {
-        let mut ru = LoweringRuntime::new(self.meta);
+    pub fn build(self) -> Lovm2CompileResult<Module> {
+        self.build_with_options(CompileOptions::default())
+    }
+
+    pub fn build_with_options(mut self, options: CompileOptions) -> Lovm2CompileResult<Module> {
+        let mut ru = HirLoweringRuntime::new(self.meta, options);
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
         if let Some(co_builder) = self.slots.remove(&main_key) {
-            let iidx = ru.index_ident(&main_key);
-            ru.entries.push((iidx, ru.code.len()));
+            ru.emit(LirElement::entry(main_key));
             co_builder.complete(&mut ru)?;
         }
 
         for (key, co_builder) in self.slots.into_iter() {
-            let iidx = ru.index_ident(&key);
-            ru.entries.push((iidx, ru.code.len()));
+            ru.emit(LirElement::entry(key));
             co_builder.complete(&mut ru)?;
         }
 
@@ -97,8 +101,9 @@ impl ModuleBuilder {
     }
 }
 
+#[derive(Clone)]
 pub struct ModuleBuilderSlot {
-    hir: Option<HIR>,
+    hir: Option<Hir>,
 }
 
 impl ModuleBuilderSlot {
@@ -106,11 +111,11 @@ impl ModuleBuilderSlot {
         Self { hir: None }
     }
 
-    pub fn hir(&mut self, hir: HIR) {
+    pub fn hir(&mut self, hir: Hir) {
         self.hir = Some(hir);
     }
 
-    pub fn complete(self, ru: &mut LoweringRuntime) -> Lovm2CompileResult<()> {
+    pub fn complete(self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
         match self.hir {
             Some(hir) => hir.build(ru),
             None => Err("no hir for slot".into()),

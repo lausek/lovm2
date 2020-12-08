@@ -7,7 +7,7 @@ use lovm2_error::*;
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::hir::expr::Expr;
+use crate::gen::Expr;
 use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
@@ -126,8 +126,9 @@ impl Vm {
 macro_rules! value_operation {
     ($ctx:expr, $fn:ident) => {{
         let second = $ctx.pop_value()?;
-        let first = $ctx.pop_value()?;
-        $ctx.push_value(first.$fn(second));
+        let first = $ctx.last_value_mut()?;
+        first.$fn(second)?;
+        //$ctx.push_value(first.$fn(second)?);
     }};
 }
 
@@ -149,23 +150,11 @@ fn deref_total(val: &mut Value) {
 fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     let start_idx = match start {
         Value::Nil => 0,
-        _ => {
-            if let Value::Int(n) = start.into_integer()? {
-                n
-            } else {
-                unreachable!()
-            }
-        }
+        _ => start.as_integer_inner()?,
     };
     let end_idx = match end {
         Value::Nil => target.len()? as i64,
-        _ => {
-            if let Value::Int(n) = end.into_integer()? {
-                n
-            } else {
-                unreachable!()
-            }
-        }
+        _ => end.as_integer_inner()?,
     };
     let mut slice = vec![];
 
@@ -219,7 +208,6 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
                 Some(last) => ctx.push_value(last),
                 _ => return Err(Lovm2ErrorTy::ValueStackEmpty.into()),
             },
-            Instruction::Swap => {}
             Instruction::Get => {
                 let key = ctx.pop_value()?;
                 let obj = ctx.pop_value()?;
@@ -251,17 +239,17 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
                     _ => return Err(format!("cannot use {:?} as set target", target).into()),
                 }
             }
-            Instruction::Add => value_operation!(ctx, add),
-            Instruction::Sub => value_operation!(ctx, sub),
-            Instruction::Mul => value_operation!(ctx, mul),
-            Instruction::Div => value_operation!(ctx, div),
-            Instruction::Pow => value_operation!(ctx, pow),
-            Instruction::Rem => value_operation!(ctx, rem),
-            Instruction::And => value_operation!(ctx, bitand),
-            Instruction::Or => value_operation!(ctx, bitor),
+            Instruction::Add => value_operation!(ctx, add_inplace),
+            Instruction::Sub => value_operation!(ctx, sub_inplace),
+            Instruction::Mul => value_operation!(ctx, mul_inplace),
+            Instruction::Div => value_operation!(ctx, div_inplace),
+            Instruction::Pow => value_operation!(ctx, pow_inplace),
+            Instruction::Rem => value_operation!(ctx, rem_inplace),
+            Instruction::And => value_operation!(ctx, and_inplace),
+            Instruction::Or => value_operation!(ctx, or_inplace),
             Instruction::Not => {
                 let first = ctx.pop_value()?;
-                ctx.push_value(!first);
+                ctx.push_value(first.not()?);
             }
             Instruction::Eq => value_compare!(ctx, eq),
             Instruction::Ne => value_compare!(ctx, ne),
@@ -275,14 +263,14 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
             }
             Instruction::Jt(addr) => {
                 let first = ctx.pop_value()?;
-                if first.into_bool()? == Value::Bool(true) {
+                if first.as_bool_inner()? {
                     ip = *addr as usize;
                     continue;
                 }
             }
             Instruction::Jf(addr) => {
                 let first = ctx.pop_value()?;
-                if first.into_bool()? == Value::Bool(false) {
+                if !first.as_bool_inner()? {
                     ip = *addr as usize;
                     continue;
                 }
@@ -301,9 +289,7 @@ pub fn run_bytecode(co: &CodeObject, ctx: &mut Context, offset: usize) -> Lovm2R
                 }
             }
             Instruction::Cast(tid) => {
-                let val = ctx.pop_value()?;
-                let val = val.cast(*tid)?;
-                ctx.push_value(val);
+                ctx.last_value_mut()?.cast_inplace(*tid)?;
             }
             Instruction::Load => {
                 let name = ctx.pop_value()?;
