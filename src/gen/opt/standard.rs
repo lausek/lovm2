@@ -2,68 +2,20 @@ use super::*;
 
 use std::ops::*;
 
-pub struct StandardOptimizer {
-    valid_path: ValidPath,
-}
-
-fn scan_valid_path(
-    vp: &mut ValidPath,
-    code: &mut Vec<LirElement>,
-    mut off: usize,
-    mut scanning: bool,
-) {
-    while let Some(elem) = code.get(off) {
-        if vp.is_valid(off) {
-            break;
-        }
-
-        if let LirElement::Entry { .. } = elem {
-            scanning = true;
-        }
-
-        if scanning {
-            vp.add(off);
-        }
-
-        match elem {
-            LirElement::Jump { condition, label } => {
-                let (label_off, _) = code
-                    .iter()
-                    .enumerate()
-                    .find(|(_, elem)| matches!(elem, LirElement::Label(l) if l == label))
-                    .unwrap();
-
-                if condition.is_some() {
-                    scan_valid_path(vp, code, label_off, true);
-                } else {
-                    off = label_off;
-                    continue;
-                }
-            }
-            LirElement::Ret => {
-                scanning = false;
-            }
-            _ => {}
-        }
-
-        off += 1;
-    }
-}
+pub struct StandardOptimizer;
 
 impl StandardOptimizer {
     pub fn new() -> Self {
-        Self {
-            valid_path: ValidPath::new(),
-        }
+        Self
     }
 }
 
 impl Optimizer for StandardOptimizer {
     fn postprocess(&mut self, code: &mut Vec<LirElement>) {
-        scan_valid_path(&mut self.valid_path, code, 0, false);
+        let vp = ValidPath::scan(code);
 
         for off in (0..code.len()).rev() {
-            if !self.valid_path.is_valid(off) {
+            if !vp.is_valid(off) {
                 code.remove(off);
             }
         }
