@@ -68,6 +68,10 @@ fn implicit_float_conversion_sub() {
 
     assert_eq!(-1., b.as_float_inner().unwrap());
     assert_eq!(a, b);
+
+    let mut c = Value::Int(1);
+    c.sub_inplace(Value::Float(2.)).unwrap();
+    assert_eq!(Value::Float(-1.), c);
 }
 
 #[test]
@@ -78,6 +82,10 @@ fn implicit_float_conversion_div() {
 
     assert_eq!(0.5, b.as_float_inner().unwrap());
     assert_eq!(a, b);
+
+    let mut c = Value::Int(1);
+    c.div_inplace(Value::Float(2.)).unwrap();
+    assert_eq!(Value::Float(0.5), c);
 }
 
 #[test]
@@ -88,4 +96,8 @@ fn implicit_float_conversion_rem() {
 
     assert_eq!(1., b.as_float_inner().unwrap());
     assert_eq!(a, b);
+
+    let mut c = Value::Int(1);
+    c.rem_inplace(Value::Float(2.)).unwrap();
+    assert_eq!(Value::Float(1.), c);
 }
