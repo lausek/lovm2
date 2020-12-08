@@ -53,7 +53,7 @@ fn main() {
 
     // a module needs a code object called `main`
     // if you want to make it runnable
-    module.add("main").hir(main_hir);
+    module.entry().hir(main_hir);
 
     // consumes the `ModuleBuilder` and transforms
     // it into a `Module`
