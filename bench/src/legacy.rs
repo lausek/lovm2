@@ -1,9 +1,15 @@
 #[cfg(lovm2_version = "0.4.6")]
 pub type Module = lovm2::module::Module;
+#[cfg(lovm2_version = "0.4.6")]
+pub type Hir = lovm2::hir::HIR;
 
 #[cfg(lovm2_version = "0.4.5")]
 pub type Module = lovm2::module::Module;
+#[cfg(lovm2_version = "0.4.5")]
+pub type Hir = lovm2::hir::HIR;
 
+#[cfg(lovm2_version = "0.3.7")]
+pub type Hir = lovm2::hir::HIR;
 #[cfg(lovm2_version = "0.3.7")]
 pub type Module = lovm2::module::Module;
 #[cfg(lovm2_version = "0.3.7")]
@@ -19,14 +25,14 @@ macro_rules! lv2_var {
 #[macro_export]
 macro_rules! lv2_access {
     ($name:ident, $key:expr $(, $rest:expr)* $(,)?) => {
-        lovm2::prelude::access!($name, $key, $($rest),*)
+        lovm2::access!($name, $key, $($rest),*)
     };
 }
 #[cfg(lovm2_version = "0.3.7")]
 #[macro_export]
 macro_rules! lv2_list {
     ($($val:expr),* $(,)?) => {
-        lovm2::prelude::co_list!($( $val ),*)
+        lovm2::co_list!($( $val ),*)
     };
 }
 
