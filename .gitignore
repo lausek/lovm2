@@ -1,3 +1,4 @@
 **/target/*
 bench/lovm2
 Cargo.lock
+book/book/*
