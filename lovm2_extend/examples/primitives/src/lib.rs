@@ -33,7 +33,7 @@ mod shared {
     }
 
     fn use_context(context: &mut Vm) -> i64 {
-        assert!(context.frame_mut().is_ok());
+        assert!(context.ctx.frame_mut().is_ok());
         2
     }
 }
