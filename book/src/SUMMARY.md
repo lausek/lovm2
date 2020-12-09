@@ -8,6 +8,7 @@
     - [Assignment](./building/assign.md)
     - [Branching](./building/branch.md)
     - [Repeating](./building/repeat.md)
+    - [Optimization](./building/optimization.md)
 - [Virtual Machine](./vm/introduction.md)
     - [Context](./vm/context.md)
     - [Load Hook](./vm/load.md)
