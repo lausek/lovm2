@@ -12,9 +12,9 @@ fn run_module_test(
     let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
     let called_ref = called.clone();
-    vm.context_mut().set_interrupt(10, move |ctx| {
+    vm.set_interrupt(10, move |vm| {
         called_ref.set(true);
-        testfn(ctx);
+        testfn(&mut vm.ctx);
         Ok(())
     });
 
@@ -29,7 +29,7 @@ fn run_module_test(
 #[test]
 fn load_hook_none() {
     let mut vm = Vm::with_std();
-    vm.context_mut().set_load_hook(|_name| Ok(None));
+    vm.set_load_hook(|_name| Ok(None));
 
     let mut hir = Hir::new();
     hir.push(Include::load("notfound"));
@@ -46,7 +46,7 @@ fn load_hook_none() {
 #[test]
 fn load_custom_module() {
     let mut vm = Vm::with_std();
-    vm.context_mut().set_load_hook(|_name| {
+    vm.set_load_hook(|_name| {
         let mut hir = Hir::new();
         hir.push(Return::value(Expr::add(1, 1)));
 
@@ -87,8 +87,8 @@ fn load_avoid_sigabrt() {
     let this_dir = Path::new(file!()).parent().unwrap().canonicalize().unwrap();
     let this_dir = this_dir.to_str().unwrap();
     let mut vm = Vm::with_std();
-    vm.context_mut().load_paths.clear();
-    vm.context_mut().load_paths.push(this_dir.to_string());
+    vm.load_paths.clear();
+    vm.load_paths.push(this_dir.to_string());
 
     assert!(run_module_test(vm, module, |_ctx| ()).is_err());
 }
@@ -107,7 +107,7 @@ fn avoid_double_import() {
     let module = builder.build().unwrap();
 
     let mut vm = Vm::with_std();
-    vm.context_mut().set_load_hook(|_name| {
+    vm.set_load_hook(|_name| {
         let mut builder = ModuleBuilder::named("abc");
         builder.add("add").hir(Hir::new());
         let module = builder.build().unwrap();

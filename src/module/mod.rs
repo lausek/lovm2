@@ -18,6 +18,7 @@ use lovm2_error::*;
 use crate::code::CallProtocol;
 use crate::code::{CodeObject, CodeObjectFunction};
 use crate::var::Variable;
+use crate::vm::Vm;
 
 pub use self::builder::ModuleBuilder;
 pub use self::meta::ModuleMeta;
@@ -26,6 +27,9 @@ pub use self::standard::{create_standard_module, BUILTIN_FUNCTIONS};
 
 /// name of the `CodeObject` entry that is used as a programs starting point inside `vm.run()`
 pub const ENTRY_POINT: &str = "main";
+
+/// definition for dynamically linked function
+pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
 
 /// main runtime representation for loadable modules.
 #[derive(Clone, Debug)]

@@ -2,8 +2,8 @@ use pyo3::prelude::*;
 use pyo3::types::*;
 
 use lovm2::code;
-use lovm2::context;
 use lovm2::prelude::{Lovm2Error, Lovm2Result};
+use lovm2::vm;
 
 use crate::expr::any_to_value;
 use crate::value::Value;
@@ -24,17 +24,17 @@ pub struct CodeObject {
 }
 
 impl code::CallProtocol for CodeObject {
-    fn run(&self, ctx: &mut context::Context) -> Lovm2Result<()> {
+    fn run(&self, vm: &mut vm::Vm) -> Lovm2Result<()> {
         match &self.inner {
-            CodeObjectWrapper::Lovm2(co) => co.run(ctx),
+            CodeObjectWrapper::Lovm2(co) => co.run(vm),
             CodeObjectWrapper::Py(pyfn) => {
                 let guard = Python::acquire_gil();
                 let py = guard.python();
 
-                let frame = ctx.frame_mut()?;
+                let frame = vm.ctx.frame_mut()?;
                 let mut args = vec![];
                 for _ in 0..frame.argn {
-                    let val = ctx.pop_value()?;
+                    let val = vm.ctx.pop_value()?;
                     let obj: PyObject = Value::from_struct(val).into_py(py);
                     args.insert(0, obj);
                 }
@@ -47,7 +47,7 @@ impl code::CallProtocol for CodeObject {
                 let res = any_to_value(res.as_ref(py))
                     .map_err(|_| "error in ruvalue conversion".to_string())?;
 
-                ctx.push_value(res.clone());
+                vm.ctx.push_value(res.clone());
 
                 Ok(())
             }

@@ -73,7 +73,7 @@ fn global_uses() {
 
     let called = Rc::new(std::cell::Cell::new(false));
     let called_ref = called.clone();
-    vm.context_mut().set_load_hook(move |req| {
+    vm.set_load_hook(move |req| {
         assert_eq!(req.module, PRELOADED);
         called_ref.set(true);
         Ok(Some(CodeObject::new().into()))

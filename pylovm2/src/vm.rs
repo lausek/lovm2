@@ -2,8 +2,8 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
-use lovm2::context::LoadRequest;
 use lovm2::prelude::*;
+use lovm2::vm::LoadRequest;
 
 use crate::code::pyerr;
 use crate::context::Context;
@@ -31,6 +31,21 @@ impl Vm {
         Self {
             inner: lovm2::vm::Vm::with_std(),
         }
+    }
+
+    pub fn add_load_path(&mut self, path: String) -> PyResult<()> {
+        if !self.inner.load_paths.contains(&path) {
+            self.inner.load_paths.push(path);
+        }
+        Ok(())
+    }
+
+    pub fn clear_load_path(&mut self) {
+        self.inner.load_paths.clear();
+    }
+
+    pub fn load_path(&self) -> PyResult<Vec<String>> {
+        Ok(self.inner.load_paths.clone())
     }
 
     #[args(args = "*")]
@@ -86,11 +101,11 @@ impl Vm {
 
         let func = func.to_object(py);
 
-        self.inner.context_mut().set_interrupt(id, move |ctx| {
+        self.inner.set_interrupt(id, move |vm| {
             let guard = Python::acquire_gil();
             let py = guard.python();
 
-            let context_ref = ctx as *mut Lovm2Context;
+            let context_ref = &mut vm.ctx as *mut Lovm2Context;
             let ctx = Py::new(py, Context::new(context_ref)).unwrap();
             let args = PyTuple::new(py, vec![ctx]);
 
@@ -125,7 +140,7 @@ impl Vm {
                 Err(e) => Err(pyerr(&e, py).into()),
             }
         };
-        self.inner.context_mut().set_load_hook(hook);
+        self.inner.set_load_hook(hook);
         Ok(())
     }
 }

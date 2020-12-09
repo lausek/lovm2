@@ -6,17 +6,12 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::bytecode::Instruction;
-use crate::context::Context;
 use crate::value::Value;
 use crate::var::Variable;
-use crate::vm::run_bytecode;
+use crate::vm::Vm;
 
 /// generic object implementing the `CallProtocol`
 pub type CallableRef = Rc<dyn CallProtocol>;
-/// definition for statically linked function
-pub type StaticFunction = fn(&mut Context) -> Lovm2Result<()>;
-/// definition for dynamically linked function
-pub type ExternFunction = unsafe extern "C" fn(&mut Context) -> Lovm2Result<()>;
 
 /// generalization for runnable objects
 /// - lovm2 bytecode ([CodeObject])
@@ -30,7 +25,7 @@ pub trait CallProtocol: std::fmt::Debug {
         None
     }
 
-    fn run(&self, ctx: &mut Context) -> Lovm2Result<()>;
+    fn run(&self, vm: &mut Vm) -> Lovm2Result<()>;
 }
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
@@ -69,8 +64,8 @@ impl CallProtocol for CodeObject {
         Some(self.name.clone())
     }
 
-    fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
-        run_bytecode(&self, ctx, 0)
+    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+        vm.run_bytecode(&self, 0)
     }
 }
 
@@ -160,7 +155,7 @@ impl CallProtocol for CodeObjectFunction {
         Some(self.on.name.clone())
     }
 
-    fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
-        run_bytecode(&self.on, ctx, self.offset)
+    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+        vm.run_bytecode(&self.on, self.offset)
     }
 }

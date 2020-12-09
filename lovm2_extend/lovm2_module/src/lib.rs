@@ -146,7 +146,7 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #(
             #[no_mangle]
-            pub extern fn #idents(ctx: &mut Context) -> lovm2_extend::prelude::Lovm2Result<()> {
+            pub extern fn #idents(ctx: &mut Vm) -> lovm2_extend::prelude::Lovm2Result<()> {
                 #bodies
                 /*
                 let result: Option<Lovm2CError> = { #blocks };

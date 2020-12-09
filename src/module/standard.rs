@@ -3,42 +3,42 @@
 use std::rc::Rc;
 
 use crate::code::{CallProtocol, CodeObject};
-use crate::context::Context;
 use crate::lovm2_builtin;
 use crate::module::Module;
 use crate::value::Value;
+use crate::vm::Vm;
 
 pub const BUILTIN_FUNCTIONS: &[&str] = &["input", "len", "print"];
 
 #[lovm2_builtin]
-fn input(ctx: &mut Context) -> Lovm2Result<()> {
+fn input(vm: &mut Vm) -> Lovm2Result<()> {
     use std::io::stdin;
 
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
 
-    ctx.push_value(Value::Str(input));
+    vm.ctx.push_value(Value::Str(input));
 
     Ok(())
 }
 
 #[lovm2_builtin]
-fn len(ctx: &mut Context) -> Lovm2Result<()> {
-    let target = ctx.pop_value()?;
+fn len(vm: &mut Vm) -> Lovm2Result<()> {
+    let target = vm.ctx.pop_value()?;
 
     let val = target.len()?;
-    ctx.push_value(Value::Int(val as i64));
+    vm.ctx.push_value(Value::Int(val as i64));
 
     Ok(())
 }
 
 #[lovm2_builtin]
-fn print(ctx: &mut Context) -> Lovm2Result<()> {
+fn print(vm: &mut Vm) -> Lovm2Result<()> {
     use std::io::Write;
 
-    let argn = ctx.frame_mut().unwrap().argn;
+    let argn = vm.ctx.frame_mut().unwrap().argn;
     let mut args: Vec<String> = (0..argn)
-        .map(|_| ctx.pop_value().unwrap())
+        .map(|_| vm.ctx.pop_value().unwrap())
         .map(|x| format!("{}", x))
         .collect();
 
@@ -46,7 +46,7 @@ fn print(ctx: &mut Context) -> Lovm2Result<()> {
 
     print!("{}", args.join(" "));
     std::io::stdout().flush().unwrap();
-    ctx.push_value(Value::Nil);
+    vm.ctx.push_value(Value::Nil);
 
     Ok(())
 }
