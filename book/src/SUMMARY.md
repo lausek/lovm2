@@ -4,6 +4,7 @@
 - [Concepts](./concepts/introduction.md)
     - [Bytecode](./concepts/bytecode.md)
     - [Modules](./concepts/modules.md)
+    - [Types](./concepts/types.md)
 - [Building Programs](./building/introduction.md)
     - [Assignment](./building/assign.md)
     - [Branching](./building/branch.md)
