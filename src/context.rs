@@ -68,6 +68,7 @@ pub struct Context {
     pub globals: HashMap<Variable, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CallableRef>,
+    /*
     import_hook: Option<Rc<ImportHookFn>>,
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: Vec<Option<Rc<InterruptFn>>>,
@@ -75,6 +76,7 @@ pub struct Context {
     pub load_hook: Option<Rc<LoadHookFn>>,
     /// list of directories for module lookup
     pub load_paths: Vec<String>,
+    */
 
     /// call stack that contains local variables
     pub lstack: Vec<Frame>,
@@ -89,6 +91,7 @@ impl Context {
             modules: HashMap::new(),
             globals: HashMap::new(),
             scope: HashMap::new(),
+            /*
             import_hook: None,
             interrupts: vec![None; 256],
             load_hook: None,
@@ -96,6 +99,7 @@ impl Context {
                 "{}/.local/lib/lovm2/",
                 dirs::home_dir().unwrap().to_str().unwrap()
             )],
+            */
 
             lstack: vec![],
             vstack: vec![],
