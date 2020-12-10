@@ -66,10 +66,10 @@ impl Value {
         matches!(self, Value::Ref(_))
     }
 
-    pub fn delete(&mut self, key: Value) -> Lovm2Result<()> {
+    pub fn delete(&mut self, key: &Value) -> Lovm2Result<()> {
         match self {
             Value::Dict(dict) => {
-                dict.remove(&key);
+                dict.remove(key);
             }
             Value::List(list) => {
                 let key = key.as_integer_inner()?;
