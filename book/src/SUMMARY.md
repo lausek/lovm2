@@ -1,6 +1,7 @@
 # Summary
 
 - [Introduction](./introduction.md)
+    - [Setup](./setup.md)
 - [Concepts](./concepts/introduction.md)
     - [Bytecode](./concepts/bytecode.md)
     - [Modules](./concepts/modules.md)

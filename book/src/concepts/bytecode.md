@@ -1,6 +1,6 @@
 # Bytecode
 
-`lovm2` is centered around the value stack. This is where the actual computation happens, parameters are passed to functions. There are instructions that put values on top of the stack like `Pushc`, `Pushl`, and `Pushg`. Some just take a value off and store it somewhere like `Movel`, `Moveg`. Almost all other instructions will take a given amount of values from it and leave a return value in place.
+`lovm2` is centered around the value stack. This is where the actual computation happens, parameters are passed to functions and data is shared with interrupts. There are instructions that put values on top of the stack like `Pushc`, `Pushl`, and `Pushg`. Some just take a value off and store it somewhere like `Movel`, `Moveg`. Almost all other instructions will take a given amount of values from it and leave a return value in place.
 
 For example, the term `1 + (2 * 3)` will be compiled to this sequence:
 
