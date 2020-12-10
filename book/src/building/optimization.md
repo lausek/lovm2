@@ -7,7 +7,6 @@ The rudimentary bytecode optimizer is enabled by default. It acts upon the gener
 Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the `CodeObject` overall therefore reducing its size.
 
 ```
-
 ```
 
 ## Logical short-curcuit

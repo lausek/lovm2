@@ -12,4 +12,6 @@
 
 ## Complex Types
 
-`List`, `Dict`
+`List`, `Dict` support the `len`, `get` and `set` methods.
+
+## Conversion
