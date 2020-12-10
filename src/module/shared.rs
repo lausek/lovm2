@@ -70,6 +70,8 @@ where
     })
 }
 
+// TODO: as the `Library` is always valid for this structure, it should be fine to
+// call `into_raw` on the loaded symbol and then use the function pointer afterwards.
 /// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
 pub struct SharedObjectSlot(Rc<Library>, String);
 

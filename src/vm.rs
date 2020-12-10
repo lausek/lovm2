@@ -57,6 +57,7 @@ pub struct Vm {
     pub ctx: Context,
 
     import_hook: Option<Rc<ImportHookFn>>,
+    // TODO: make this an array once const_in_array_repeat_expressions was stabilized
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: Vec<Option<Rc<InterruptFn>>>,
     /// function to call if a module is about to be loaded
