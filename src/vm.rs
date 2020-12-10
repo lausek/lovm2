@@ -278,21 +278,21 @@ impl Vm {
                 Instruction::Get => {
                     let key = self.ctx.pop_value()?;
                     let obj = self.ctx.pop_value()?;
-                    let val = obj.get(key)?;
+                    let val = obj.get(&key)?;
                     self.ctx.push_value(val.deref().unwrap());
                 }
                 Instruction::Getr => {
                     let key = self.ctx.pop_value()?;
                     let mut obj = self.ctx.pop_value()?;
 
-                    if let Err(e) = obj.get(key.clone()) {
+                    if let Err(e) = obj.get(&key) {
                         if Lovm2ErrorTy::KeyNotFound != e.ty {
                             return Err(e);
                         }
-                        obj.set(key.clone(), box_value(Value::Nil))?;
+                        obj.set(&key, box_value(Value::Nil))?;
                     }
 
-                    let val = obj.get(key)?;
+                    let val = obj.get(&key)?;
                     self.ctx.push_value(val);
                 }
                 Instruction::Set => {
@@ -436,7 +436,7 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     let mut slice = vec![];
 
     for idx in start_idx..end_idx {
-        slice.push(target.get(Value::from(idx))?);
+        slice.push(target.get(&Value::from(idx))?);
     }
 
     Ok(box_value(Value::List(slice)))

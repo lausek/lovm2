@@ -49,7 +49,7 @@ fn deserialize_module() {
     vm.run().unwrap();
 
     let n = vm.context_mut().value_of(&lv2_var!(n)).unwrap();
-    assert_eq!(Value::Int(10), n);
+    assert_eq!(Value::Int(10), *n);
 }
 
 #[test]

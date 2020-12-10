@@ -81,7 +81,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn get(&self, key: Value) -> Lovm2Result<Value> {
+    pub fn get(&self, key: &Value) -> Lovm2Result<Value> {
         match self {
             Value::Dict(dict) => match dict.get(&key) {
                 Some(val) => Ok(val.clone()),
@@ -111,14 +111,14 @@ impl Value {
         }
     }
 
-    pub fn set(&mut self, key: Value, mut val: Value) -> Lovm2Result<()> {
+    pub fn set(&mut self, key: &Value, mut val: Value) -> Lovm2Result<()> {
         if !val.is_ref() {
             val = box_value(val);
         }
 
         match self {
             Value::Dict(dict) => {
-                dict.insert(key, val);
+                dict.insert(key.clone(), val);
                 Ok(())
             }
             Value::List(list) => {
