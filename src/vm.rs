@@ -8,7 +8,6 @@ use lovm2_error::*;
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
-use crate::gen::Expr;
 use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
@@ -116,24 +115,6 @@ impl Vm {
 
     pub fn context_mut(&mut self) -> &mut Context {
         &mut self.ctx
-    }
-
-    pub fn evaluate_expr(&mut self, expr: &Expr) -> Lovm2Result<Value> {
-        match expr {
-            Expr::Access(_) => todo!(),
-            Expr::Call(_) => todo!(),
-            Expr::Cast(_) => todo!(),
-            Expr::DynamicValue(_) => todo!(),
-            Expr::Operation1(_, _) => todo!(),
-            Expr::Operation2(_, _, _) => todo!(),
-
-            Expr::Slice(_) => todo!(),
-            Expr::Value { val, .. } => Ok(val.clone()),
-            Expr::Variable(var) => match self.ctx.globals.get(&var) {
-                Some(val) => Ok(val.clone()),
-                _ => Err((Lovm2ErrorTy::LookupFailed, var).into()),
-            },
-        }
     }
 
     fn load_and_import_filter(
@@ -360,8 +341,7 @@ impl Vm {
                 }
                 Instruction::Load => {
                     let name = self.ctx.pop_value()?;
-                    // TODO: use to_string() here
-                    let name = format!("{}", name);
+                    let name = name.as_str_inner()?;
                     // path to the modules source code
                     let relative_to = if let Some(mname) = co.module() {
                         self.ctx

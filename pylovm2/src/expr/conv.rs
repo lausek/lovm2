@@ -4,7 +4,7 @@ use pyo3::types::{PyDict, PyList, PyTuple};
 
 use lovm2::prelude::*;
 
-use super::{Lovm2Access, Lovm2Expr, Lovm2Value};
+use crate::lv2::*;
 use crate::value::Value;
 use crate::Expr;
 
@@ -69,24 +69,24 @@ pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::var::Variable> {
     }
 }
 
-pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
+pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
     let ty = any.get_type().name();
     match ty.as_ref() {
         "str" => {
             let data = any.str()?.to_string();
-            Ok(Lovm2Value::Str(data))
+            Ok(Lovm2ValueRaw::Str(data))
         }
         "bool" => {
             let data = any.extract::<bool>()?;
-            Ok(Lovm2Value::Bool(data))
+            Ok(Lovm2ValueRaw::Bool(data))
         }
         "int" => {
             let data = any.extract::<i64>()?;
-            Ok(Lovm2Value::Int(data))
+            Ok(Lovm2ValueRaw::Int(data))
         }
         "float" => {
             let data = any.extract::<f64>()?;
-            Ok(Lovm2Value::Float(data))
+            Ok(Lovm2ValueRaw::Float(data))
         }
         "list" => {
             let mut ls = vec![];
@@ -94,7 +94,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
                 let item = item?;
                 ls.push(any_to_value(item)?);
             }
-            Ok(Lovm2Value::List(ls).into())
+            Ok(Lovm2ValueRaw::List(ls).into())
         }
         "dict" => {
             use std::collections::HashMap;
@@ -104,9 +104,9 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2Value> {
                 let (key, value) = (any_to_value(key)?, any_to_value(value)?);
                 map.insert(key, value);
             }
-            Ok(Lovm2Value::Dict(map).into())
+            Ok(Lovm2ValueRaw::Dict(map).into())
         }
-        "NoneType" => Ok(Lovm2Value::Nil),
+        "NoneType" => Ok(Lovm2ValueRaw::Nil),
         "Expr" => {
             let data = any.extract::<Expr>()?;
             match data.inner {

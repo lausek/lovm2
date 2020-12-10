@@ -5,9 +5,9 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
+use crate::err_to_exception;
 use crate::expr::any_to_ruvalue;
 use crate::lv2::*;
-use crate::vm::create_exception;
 
 pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
     match val {
@@ -149,7 +149,7 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
         self.inner
             .borrow_mut()
             .set(&key, val)
-            .map_err(create_exception)
+            .map_err(err_to_exception)
     }
 }
 

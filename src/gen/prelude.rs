@@ -1,5 +1,3 @@
-// TODO: don't import *
-
 pub use super::hir::assign::{Access, Assign};
 pub use super::hir::block::Block;
 pub use super::hir::branch::Branch;

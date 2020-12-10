@@ -2,6 +2,8 @@
 
 use super::*;
 
+use crate::context::Context;
+
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {
         pub fn $method<T>(expr: T) -> Expr
@@ -112,9 +114,23 @@ impl Expr {
         }
     }
 
-    pub fn eval_const(&self) -> Self {
-        // TODO: check if expression is const and evaluate it
-        unimplemented!()
+    pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
+        match self {
+            Expr::Access(_) => todo!(),
+            Expr::Call(_) => todo!(),
+            Expr::Cast(_) => todo!(),
+            Expr::DynamicValue(_) => todo!(),
+            Expr::Operation1(_, _) => todo!(),
+            Expr::Operation2(_, _, _) => todo!(),
+
+            Expr::Slice(_) => todo!(),
+            Expr::Value { val, .. } => Ok(val.clone()),
+            Expr::Variable(var) => ctx
+                .globals
+                .get(&var)
+                .cloned()
+                .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into()),
+        }
     }
 
     pub fn dict() -> Self {
@@ -213,7 +229,6 @@ impl From<Variable> for Expr {
 }
 
 impl HirLowering for Expr {
-    // TODO: add short-circuit for and (can be implemented via branching), or
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         match self {
             Expr::Access(access) => {
