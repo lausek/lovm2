@@ -246,17 +246,13 @@ impl Vm {
             match inx {
                 Instruction::Pushl(lidx) => {
                     let variable = &co.idents[*lidx as usize];
-                    match self.ctx.frame_mut()?.value_of(variable) {
-                        Some(local) => self.ctx.push_value(local),
-                        _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
-                    }
+                    let local = self.ctx.frame_mut()?.value_of(variable).map(Value::clone)?;
+                    self.ctx.push_value(local);
                 }
                 Instruction::Pushg(gidx) => {
                     let variable = &co.idents[*gidx as usize];
-                    match self.ctx.value_of(variable) {
-                        Some(global) => self.ctx.push_value(global),
-                        _ => return Err((Lovm2ErrorTy::LookupFailed, variable).into()),
-                    }
+                    let global = self.ctx.value_of(variable).map(Value::clone)?;
+                    self.ctx.push_value(global);
                 }
                 Instruction::Pushc(cidx) => {
                     let value = &co.consts[*cidx as usize];
@@ -275,10 +271,10 @@ impl Vm {
                 Instruction::Discard => {
                     self.ctx.pop_value()?;
                 }
-                Instruction::Dup => match self.ctx.stack_mut().last().cloned() {
-                    Some(last) => self.ctx.push_value(last),
-                    _ => return Err(Lovm2ErrorTy::ValueStackEmpty.into()),
-                },
+                Instruction::Dup => {
+                    let last = self.ctx.last_value_mut().map(|v| v.clone())?;
+                    self.ctx.push_value(last);
+                }
                 Instruction::Get => {
                     let key = self.ctx.pop_value()?;
                     let obj = self.ctx.pop_value()?;

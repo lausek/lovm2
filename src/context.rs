@@ -83,7 +83,9 @@ impl Context {
             .ok_or_else(|| Lovm2ErrorTy::ValueStackEmpty.into())
     }
 
-    pub fn value_of(&self, var: &Variable) -> Option<Value> {
-        self.globals.get(var).cloned()
+    pub fn value_of(&self, var: &Variable) -> Lovm2Result<&Value> {
+        self.globals
+            .get(var)
+            .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into())
     }
 }
