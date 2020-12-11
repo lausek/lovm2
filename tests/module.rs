@@ -13,11 +13,9 @@ const DESERIALIZE_PATH: &str = "/tmp/assign-global.lovm2c";
 fn serialize_module() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main_hir = Hir::new();
-    main_hir.push(Assign::local(lv2_var!(msg), "hello world"));
-    main_hir.push(lv2_call!(print, msg));
-
-    builder.entry().hir(main_hir);
+    let main_hir = builder.entry();
+    main_hir.step(Assign::local(&lv2_var!(msg), "hello world"));
+    main_hir.step(lv2_call!(print, msg));
 
     let module = builder.build().unwrap();
 
@@ -29,11 +27,11 @@ fn serialize_module() {
 #[test]
 fn deserialize_module() {
     let mut builder = ModuleBuilder::new();
+    let n = &lv2_var!(n);
 
-    let mut main_hir = Hir::new();
-    main_hir.push(Assign::global(lv2_var!(n), 10));
+    let main_hir = builder.entry();
+    main_hir.step(Assign::global(n, 10));
 
-    builder.entry().hir(main_hir);
     builder
         .build()
         .unwrap()
@@ -48,7 +46,7 @@ fn deserialize_module() {
     vm.load_and_import_all(module).unwrap();
     vm.run().unwrap();
 
-    let n = vm.context_mut().value_of(&lv2_var!(n)).unwrap();
+    let n = vm.context_mut().value_of(n).unwrap();
     assert_eq!(Value::Int(10), *n);
 }
 
@@ -61,9 +59,8 @@ fn global_uses() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency(PRELOADED.into());
 
-    let mut main_hir = Hir::new();
-    main_hir.push(Assign::global(lv2_var!(n), 10));
-    builder.entry().hir(main_hir);
+    let main_hir = builder.entry();
+    main_hir.step(Assign::global(&lv2_var!(n), 10));
 
     let module = builder.build().unwrap();
 

@@ -6,3 +6,4 @@ pub mod hir;
 pub mod lir;
 pub mod module;
 pub mod value;
+pub mod vm;

@@ -228,6 +228,12 @@ impl From<Variable> for Expr {
     }
 }
 
+impl From<&Variable> for Expr {
+    fn from(v: &Variable) -> Expr {
+        Expr::Variable(v.clone())
+    }
+}
+
 impl HirLowering for Expr {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         match self {

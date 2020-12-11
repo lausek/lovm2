@@ -71,7 +71,7 @@ impl ModuleBuilder {
             match &mut co_builder.inner {
                 ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
                     if let Some(hir) = hir.take() {
-                        builder.add(key).hir(hir);
+                        *builder.add(key) = hir;
                     } else {
                         return Err(PyRuntimeError::new_err("hir was already built"));
                     }
@@ -137,7 +137,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::local(any_to_ident(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::local(&any_to_ident(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
@@ -146,7 +146,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::global(any_to_ident(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::global(&any_to_ident(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }
@@ -155,7 +155,7 @@ impl BlockBuilder {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).push(Assign::set(any_to_access(n)?, any_to_expr(expr)?));
+            (*self.inner).push(Assign::set(&any_to_access(n)?, any_to_expr(expr)?));
         }
         Ok(())
     }

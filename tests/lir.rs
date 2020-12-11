@@ -6,20 +6,18 @@ use lovm2::vm::Vm;
 #[test]
 fn merge_not_jump_false() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
+    let n = &lv2_var!(n);
 
-    hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
+    hir.step(Assign::local(n, Value::Int(0)));
 
-    let mut branch = Branch::new();
+    let branch = hir.branch();
     branch
-        .add_condition(Expr::not(Expr::eq(lv2_var!(n), Value::Int(2))))
-        .push(Return::value(Value::Int(1)));
+        .add_condition(Expr::not(Expr::eq(n, Value::Int(2))))
+        .step(Return::value(Value::Int(1)));
     branch
         .default_condition()
-        .push(Return::value(Value::Int(2)));
-    hir.push(branch);
-
-    builder.entry().hir(hir);
+        .step(Return::value(Value::Int(2)));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -40,18 +38,15 @@ fn merge_not_jump_false() {
 #[test]
 fn merge_constant_jump() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
-    let mut branch = Branch::new();
+    let branch = hir.branch();
     branch
         .add_condition(Expr::not(Value::Bool(false)))
-        .push(Return::value(Value::Int(1)));
+        .step(Return::value(Value::Int(1)));
     branch
         .default_condition()
-        .push(Return::value(Value::Int(2)));
-    hir.push(branch);
-
-    builder.entry().hir(hir);
+        .step(Return::value(Value::Int(2)));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -77,15 +72,14 @@ fn merge_constant_jump() {
 #[test]
 fn short_circuit_and() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
+    let n = &lv2_var!(n);
 
-    hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
-    hir.push(Return::value(Expr::and(
-        Expr::eq(lv2_var!(n), Value::Int(1)),
-        Expr::div(Value::Int(1), lv2_var!(n)),
+    hir.step(Assign::local(n, Value::Int(0)));
+    hir.step(Return::value(Expr::and(
+        Expr::eq(n, Value::Int(1)),
+        Expr::div(Value::Int(1), n),
     )));
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -100,15 +94,14 @@ fn short_circuit_and() {
 #[test]
 fn short_circuit_or() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
+    let n = &lv2_var!(n);
 
-    hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
-    hir.push(Return::value(Expr::or(
-        Expr::eq(lv2_var!(n), Value::Int(0)),
-        Expr::div(Value::Int(1), lv2_var!(n)),
+    hir.step(Assign::local(n, Value::Int(0)));
+    hir.step(Return::value(Expr::or(
+        Expr::eq(n, Value::Int(0)),
+        Expr::div(Value::Int(1), n),
     )));
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -123,14 +116,12 @@ fn short_circuit_or() {
 #[test]
 fn compute_constants() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
-    hir.push(Return::value(Expr::rem(
+    hir.step(Return::value(Expr::rem(
         Expr::mul(Expr::add(Expr::sub(6, 1), 2), Expr::div(4, 2)),
         5,
     )));
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -155,31 +146,25 @@ fn compute_constants() {
 #[test]
 fn dead_code_elimination_else_branche() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
+    let (n, y) = &lv2_var!(n, y);
 
-    hir.push(Assign::local(lv2_var!(n), 3));
+    hir.step(Assign::local(n, 3));
 
-    let mut branch = Branch::new();
-
+    let branch = hir.branch();
     branch
-        .add_condition(Expr::eq(Expr::rem(lv2_var!(n), 2), 0))
-        .push(Assign::local(lv2_var!(y), 0));
+        .add_condition(Expr::eq(Expr::rem(n, 2), 0))
+        .step(Assign::local(y, 0));
 
     // this condition will always be met
     branch
         .add_condition(Expr::not(false))
-        .push(Assign::local(lv2_var!(y), 1));
+        .step(Assign::local(y, 1));
 
     // this code will never be reached
-    branch
-        .default_condition()
-        .push(Assign::local(lv2_var!(y), 7));
+    branch.default_condition().step(Assign::local(y, 7));
 
-    hir.push(branch);
-
-    hir.push(Return::value(lv2_var!(y)));
-
-    builder.entry().hir(hir);
+    hir.step(Return::value(y));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -198,11 +183,9 @@ fn dead_code_elimination_else_branche() {
 #[test]
 fn compile_options() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
-    hir.push(Return::value(Expr::add(Expr::mul(3, 2), 2)));
-
-    builder.entry().hir(hir);
+    hir.step(Return::value(Expr::add(Expr::mul(3, 2), 2)));
 
     let module = builder.clone().build().unwrap();
     let module_noop = builder
