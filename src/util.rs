@@ -81,4 +81,11 @@ macro_rules! lv2_var {
     ($name:ident) => {
         Variable::from(stringify!($name))
     };
+    ($name1:ident, $name2:ident $(, $other:ident)*) => {
+        (
+            Variable::from(stringify!($name1)),
+            Variable::from(stringify!($name2))
+            $(, Variable::from(stringify!($other)) )*
+        )
+    };
 }

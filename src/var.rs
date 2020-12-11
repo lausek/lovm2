@@ -27,6 +27,12 @@ impl From<String> for Variable {
     }
 }
 
+impl From<&Self> for Variable {
+    fn from(name: &Self) -> Self {
+        name.clone()
+    }
+}
+
 impl AsRef<str> for Variable {
     fn as_ref(&self) -> &str {
         self.0.as_ref()

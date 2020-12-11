@@ -13,30 +13,29 @@ use self::bisect::bisect;
 use self::legacy::*;
 
 fn fibonacci(c: &mut Criterion) {
-    let mut trivial_return = Branch::new();
-    trivial_return
-        .add_condition(Expr::or(Expr::eq(lv2_var!(n), 0), Expr::eq(lv2_var!(n), 1)))
-        .push(Return::value(lv2_var!(n)));
-
-    let mut computation_loop = Repeat::until(Expr::eq(lv2_var!(n), 0));
-    computation_loop.push(Assign::local(lv2_var!(h), lv2_var!(r)));
-    computation_loop.push(Assign::local(
-        lv2_var!(r),
-        Expr::add(lv2_var!(l), lv2_var!(r)),
-    ));
-    computation_loop.push(Assign::local(lv2_var!(l), lv2_var!(h)));
-    computation_loop.push(Assign::local(lv2_var!(n), Expr::sub(lv2_var!(n), 1)));
-
-    let mut fib_hir = Hir::with_args(vec![lv2_var!(n)]);
-    fib_hir.push(trivial_return);
-    fib_hir.push(Assign::local(lv2_var!(l), 0));
-    fib_hir.push(Assign::local(lv2_var!(r), 1));
-    fib_hir.push(Assign::local(lv2_var!(n), Expr::sub(lv2_var!(n), 1)));
-    fib_hir.push(computation_loop);
-    fib_hir.push(Return::value(lv2_var!(r)));
-
     let mut module = ModuleBuilder::new();
-    module.add("fib").hir(fib_hir);
+
+    let (h, l, n, r) = &lv2_var!(h, l, n, r);
+    let fib_hir = module.add_with_args("fib", vec![n.clone()]);
+
+    fib_hir
+        .branch()
+        .add_condition(Expr::or(Expr::eq(n, 0), Expr::eq(n, 1)))
+        .step(Return::value(n));
+
+    fib_hir
+        .step(Assign::local(l, 0))
+        .step(Assign::local(r, 1))
+        .step(Assign::local(n, Expr::sub(n, 1)));
+
+    fib_hir
+        .repeat_until(Expr::eq(n, 0))
+        .step(Assign::local(h, r))
+        .step(Assign::local(r, Expr::add(l, r)))
+        .step(Assign::local(l, h))
+        .step(Assign::local(n, Expr::sub(n, 1)));
+
+    fib_hir.step(Return::value(r));
 
     c.bench_function("fib compile", |b| {
         b.iter(|| {

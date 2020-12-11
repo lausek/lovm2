@@ -28,13 +28,12 @@ impl Repeat {
             condition: RepeatKind::Endless,
         }
     }
+}
 
-    pub fn push<T>(&mut self, hir: T) -> &mut Self
-    where
-        T: Into<HirElement>,
-    {
-        self.block.push(hir.into());
-        self
+impl HasBlock for Repeat {
+    #[inline]
+    fn block_mut(&mut self) -> &mut Block {
+        &mut self.block
     }
 }
 

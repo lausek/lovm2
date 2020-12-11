@@ -17,38 +17,40 @@ pub struct Assign {
 }
 
 impl Assign {
-    pub fn local<U, T>(var: U, expr: T) -> Self
+    pub fn local<U, T>(var: &U, expr: T) -> Self
     where
-        U: Into<Variable>,
+        U: Into<Variable> + Clone,
         T: Into<Expr>,
     {
+        let var: Variable = var.clone().into();
         Self {
             expr: expr.into(),
-            access: var.into().into(),
+            access: var.into(),
             ty: AssignType::StaticLocal,
         }
     }
 
-    pub fn global<U, T>(var: U, expr: T) -> Self
+    pub fn global<U, T>(var: &U, expr: T) -> Self
     where
-        U: Into<Variable>,
+        U: Into<Variable> + Clone,
         T: Into<Expr>,
     {
+        let var: Variable = var.clone().into();
         Self {
             expr: expr.into(),
-            access: var.into().into(),
+            access: var.into(),
             ty: AssignType::StaticGlobal,
         }
     }
 
-    pub fn set<U, T>(access: U, expr: T) -> Self
+    pub fn set<U, T>(access: &U, expr: T) -> Self
     where
-        U: Into<Access>,
+        U: Into<Access> + Clone,
         T: Into<Expr>,
     {
         Self {
             expr: expr.into(),
-            access: access.into(),
+            access: access.clone().into(),
             ty: AssignType::Dynamic,
         }
     }

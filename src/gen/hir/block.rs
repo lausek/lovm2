@@ -10,23 +10,15 @@ impl Block {
         Self(vec![])
     }
 
-    pub fn from(&mut self, block: Block) {
-        self.0 = block.0;
+    pub fn extend(&mut self, block: Block) {
+        self.0.extend(block.0);
     }
 
     pub fn last_mut(&mut self) -> Option<&mut HirElement> {
         self.0.last_mut()
     }
 
-    pub fn with<T>(mut self, hir: T) -> Self
-    where
-        T: Into<HirElement>,
-    {
-        self.0.push(hir.into());
-        self
-    }
-
-    pub fn push<T>(&mut self, hir: T)
+    pub fn step<T>(&mut self, hir: T)
     where
         T: Into<HirElement>,
     {
@@ -34,19 +26,23 @@ impl Block {
     }
 
     pub fn branch(&mut self) -> &mut Branch {
-        self.push(Branch::new());
+        self.step(Branch::new());
         match self.last_mut().unwrap() {
             HirElement::Branch(ref mut r) => r,
             _ => unreachable!(),
         }
     }
 
-    pub fn repeat(&mut self, condition: Option<Expr>) -> &mut Repeat {
-        if let Some(condition) = condition {
-            self.push(Repeat::until(condition));
-        } else {
-            self.push(Repeat::endless());
+    pub fn repeat(&mut self) -> &mut Repeat {
+        self.step(Repeat::endless());
+        match self.last_mut().unwrap() {
+            HirElement::Repeat(ref mut r) => r,
+            _ => unreachable!(),
         }
+    }
+
+    pub fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
+        self.step(Repeat::until(condition));
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
