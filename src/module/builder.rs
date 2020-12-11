@@ -6,7 +6,6 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement};
-
 use crate::var::Variable;
 
 use super::*;
@@ -100,27 +99,5 @@ impl ModuleBuilder {
             self.hirs.insert(name.clone(), Hir::new());
         }
         self.hirs.get_mut(&name).unwrap()
-    }
-}
-
-#[derive(Clone)]
-pub struct ModuleBuilderSlot {
-    hir: Option<Hir>,
-}
-
-impl ModuleBuilderSlot {
-    pub fn new() -> Self {
-        Self { hir: None }
-    }
-
-    pub fn hir(&mut self, hir: Hir) {
-        self.hir = Some(hir);
-    }
-
-    pub fn complete(self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
-        match self.hir {
-            Some(hir) => hir.build(ru),
-            None => Err("no hir for slot".into()),
-        }
     }
 }
