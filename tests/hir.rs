@@ -46,24 +46,26 @@ macro_rules! define_test {
 
 #[test]
 fn assign_local() {
+    let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), 4);
+            Assign::local(&n, 4);
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(4), frame.value_of(&lv2_var!(n)).unwrap());
+            assert_eq!(Value::Int(4), frame.value_of(&n).unwrap());
         })
     }
 }
 
 #[test]
 fn assign_local_add() {
+    let n = &lv2_var!(n);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), 2);
-            Assign::local(lv2_var!(n), Expr::add(lv2_var!(n), 2));
+            Assign::local(n, 2);
+            Assign::local(n, Expr::add(n, 2));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -75,9 +77,10 @@ fn assign_local_add() {
 
 #[test]
 fn rem_lowering() {
+    let rest = &lv2_var!(rest);
     define_test! {
         main {
-            Assign::local(lv2_var!(rest), Expr::rem(1, 2));
+            Assign::local(rest, Expr::rem(1, 2));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -89,67 +92,71 @@ fn rem_lowering() {
 
 #[test]
 fn easy_loop() {
+    let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), 0);
-            Repeat::until(Expr::eq(lv2_var!(n), 10))
+            Assign::local(&n, 0);
+            Repeat::until(Expr::eq(&n, 10))
                 .push(lv2_call!(print, n))
-                .push(Assign::local(lv2_var!(n), Expr::add(lv2_var!(n), 1)));
+                .push(Assign::local(&n, Expr::add(&n, 1)));
             }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(10), frame.value_of(&lv2_var!(n)).unwrap());
+            assert_eq!(Value::Int(10), frame.value_of(&n).unwrap());
         })
     }
 }
 
 #[test]
 fn explicit_break() {
+    let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), 0);
+            Assign::local(&n, 0);
             Repeat::endless()
-                .push(Assign::local(lv2_var!(n), Expr::add(lv2_var!(n), 1)))
+                .push(Assign::local(&n, Expr::add(&n, 1)))
                 .push(Break::new());
             }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(1), frame.value_of(&lv2_var!(n)).unwrap());
+            assert_eq!(Value::Int(1), frame.value_of(&n).unwrap());
         })
     }
 }
 
 #[test]
 fn try_getting() {
+    let (dict, dat0, list, lat0) = lv2_var!(dict, dat0, list, lat0);
     define_test! {
         main {
-            Assign::local(lv2_var!(dict), lv2_dict!(0 => 6, 1 => 7));
-            Assign::local(lv2_var!(dat0), lv2_access!(dict, 1));
-            Assign::local(lv2_var!(list), lv2_list!("a", 10, 20., true));
-            Assign::local(lv2_var!(lat0), lv2_access!(list, 1));
+            Assign::local(&dict, lv2_dict!(0 => 6, 1 => 7));
+            Assign::local(&dat0, lv2_access!(dict, 1));
+            Assign::local(&list, lv2_list!("a", 10, 20., true));
+            Assign::local(&lat0, lv2_access!(list, 1));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(7), frame.value_of(&lv2_var!(dat0)).unwrap());
-            assert_eq!(Value::Int(10), frame.value_of(&lv2_var!(lat0)).unwrap());
+            assert_eq!(Value::Int(7), frame.value_of(&dat0).unwrap());
+            assert_eq!(Value::Int(10), frame.value_of(&lat0).unwrap());
         })
     }
 }
 
 #[test]
 fn try_setting() {
+    let list = lv2_var!(list);
     define_test! {
         main {
-            Assign::local(lv2_var!(list), lv2_list!("a", 10, 20., true));
-            Assign::set(lv2_access!(list, 1), 7);
+            Assign::local(&list, lv2_list!("a", 10, 20., true));
+            Assign::set(&lv2_access!(list, 1), 7);
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            let list = &frame.value_of(&lv2_var!(list)).unwrap();
+            let list = &frame.value_of(&list).unwrap();
             assert_eq!(Value::Int(7), list.get(Value::Int(1)).unwrap().deref().unwrap());
         })
     }
@@ -157,32 +164,34 @@ fn try_setting() {
 
 #[test]
 fn try_retrieving_len() {
+    let (dict, ls, lendict, lenls) = lv2_var!(dict, ls, lendict, lenls);
     define_test! {
         main {
-            Assign::local(lv2_var!(dict), lv2_dict!(0 => 6, 1 => 7));
-            Assign::local(lv2_var!(ls), lv2_list!(1, 2, 3));
-            Assign::local(lv2_var!(lendict), lv2_call!(len, dict));
-            Assign::local(lv2_var!(lenls), lv2_call!(len, ls));
+            Assign::local(&dict, lv2_dict!(0 => 6, 1 => 7));
+            Assign::local(&ls, lv2_list!(1, 2, 3));
+            Assign::local(&lendict, lv2_call!(len, dict));
+            Assign::local(&lenls, lv2_call!(len, ls));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(2), frame.value_of(&lv2_var!(lendict)).unwrap());
-            assert_eq!(Value::Int(3), frame.value_of(&lv2_var!(lenls)).unwrap());
+            assert_eq!(Value::Int(2), frame.value_of(&lendict).unwrap());
+            assert_eq!(Value::Int(3), frame.value_of(&lenls).unwrap());
         })
     }
 }
 
 #[test]
 fn try_casting() {
+    let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), Cast::to_integer(5.));
+            Assign::local(&n, Cast::to_integer(5.));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(5), frame.value_of(&lv2_var!(n)).unwrap());
+            assert_eq!(Value::Int(5), frame.value_of(&n).unwrap());
         })
     }
 }
@@ -191,23 +200,24 @@ fn try_casting() {
 fn true_branching() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
+    let n = lv2_var!(n);
 
-    hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
+    hir.push(Assign::local(&n, Value::Int(0)));
 
     let mut branch = Branch::new();
     branch
         .add_condition(Expr::not(Value::Bool(false)))
-        .push(Assign::local(lv2_var!(n), Value::Int(2)));
+        .push(Assign::local(&n, Value::Int(2)));
     branch
         .default_condition()
-        .push(Assign::local(lv2_var!(n), Value::Int(1)));
+        .push(Assign::local(&n, Value::Int(1)));
     hir.push(branch);
 
     hir.push(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
+    run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(2), frame.value_of(&n).unwrap());
     });
 }
 
@@ -215,32 +225,20 @@ fn true_branching() {
 fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
+    let (result, n) = &lv2_var!(result, n);
 
-    hir.push(Assign::local(lv2_var!(n), Value::Int(5)));
+    hir.push(Assign::local(n, Value::Int(5)));
 
     let mut branch = Branch::new();
     branch
-        .add_condition(Expr::eq(
-            Expr::rem(lv2_var!(n), Value::Int(3)),
-            Value::Int(0),
-        ))
-        .push(Assign::local(
-            lv2_var!(result),
-            Value::Str("fizz".to_string()),
-        ));
+        .add_condition(Expr::eq(Expr::rem(n, Value::Int(3)), Value::Int(0)))
+        .push(Assign::local(result, Value::Str("fizz".to_string())));
     branch
-        .add_condition(Expr::eq(
-            Expr::rem(lv2_var!(n), Value::Int(5)),
-            Value::Int(0),
-        ))
-        .push(Assign::local(
-            lv2_var!(result),
-            Value::Str("buzz".to_string()),
-        ));
-    branch.default_condition().push(Assign::local(
-        lv2_var!(result),
-        Value::Str("none".to_string()),
-    ));
+        .add_condition(Expr::eq(Expr::rem(n, Value::Int(5)), Value::Int(0)))
+        .push(Assign::local(result, Value::Str("buzz".to_string())));
+    branch
+        .default_condition()
+        .push(Assign::local(result, Value::Str("none".to_string())));
     hir.push(branch);
 
     hir.push(Interrupt::new(10));
@@ -248,7 +246,7 @@ fn multiple_branches() {
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
-            Value::Str("buzz".to_string()),
+            Value::from("buzz"),
             frame.value_of(&lv2_var!(result)).unwrap()
         );
     });
@@ -257,34 +255,36 @@ fn multiple_branches() {
 #[test]
 fn taking_parameters() {
     let mut builder = ModuleBuilder::new();
+    let (a, b) = lv2_var!(a, b);
 
-    let called = builder.add_with_args("called", vec![lv2_var!(a), lv2_var!(b)]);
+    let called = builder.add_with_args("called", vec![a.clone(), b.clone()]);
     called.push(Interrupt::new(10));
 
     let main = builder.entry();
     main.push(Call::new("called").arg(2).arg(7));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
+    run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), frame.value_of(&lv2_var!(a)).unwrap());
-        assert_eq!(Value::Int(7), frame.value_of(&lv2_var!(b)).unwrap());
+        assert_eq!(Value::Int(2), frame.value_of(&a).unwrap());
+        assert_eq!(Value::Int(7), frame.value_of(&b).unwrap());
     });
 }
 
 #[test]
 fn return_values() {
     let mut builder = ModuleBuilder::new();
+    let n = lv2_var!(n);
 
     let returner = builder.add("returner");
     returner.push(Return::value(10));
 
     let main = builder.entry();
-    main.push(Assign::local(lv2_var!(n), Call::new("returner")));
+    main.push(Assign::local(&n, Call::new("returner")));
     main.push(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
+    run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(10), frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(10), frame.value_of(&n).unwrap());
     });
 }
 
@@ -308,30 +308,19 @@ fn cast_to_string() {
     let mut builder = ModuleBuilder::new();
 
     let main = builder.entry();
-    main.push(Assign::local(lv2_var!(a), Cast::to_str(10)));
-    main.push(Assign::local(lv2_var!(b), Cast::to_str(10.1)));
-    main.push(Assign::local(lv2_var!(c), Cast::to_str("10")));
-    main.push(Assign::local(lv2_var!(d), Cast::to_str(true)));
+    let (a, b, c, d) = lv2_var!(a, b, c, d);
+    main.push(Assign::local(&a, Cast::to_str(10)));
+    main.push(Assign::local(&b, Cast::to_str(10.1)));
+    main.push(Assign::local(&c, Cast::to_str("10")));
+    main.push(Assign::local(&d, Cast::to_str(true)));
     main.push(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
+    run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            Value::Str("10".to_string()),
-            frame.value_of(&lv2_var!(a)).unwrap()
-        );
-        assert_eq!(
-            Value::Str("10.1".to_string()),
-            frame.value_of(&lv2_var!(b)).unwrap()
-        );
-        assert_eq!(
-            Value::Str("10".to_string()),
-            frame.value_of(&lv2_var!(c)).unwrap()
-        );
-        assert_eq!(
-            Value::Str("true".to_string()),
-            frame.value_of(&lv2_var!(d)).unwrap()
-        );
+        assert_eq!(Value::from("10"), frame.value_of(&a).unwrap());
+        assert_eq!(Value::from("10.1"), frame.value_of(&b).unwrap());
+        assert_eq!(Value::from("10"), frame.value_of(&c).unwrap());
+        assert_eq!(Value::from("true"), frame.value_of(&d).unwrap());
     });
 }
 
@@ -340,20 +329,21 @@ fn folding_expr() {
     let mut builder = ModuleBuilder::new();
 
     let main = builder.entry();
+    let (a, n) = lv2_var!(a, n);
 
     main.push(Assign::global(
-        lv2_var!(a),
+        &a,
         Expr::from_opn(Operator2::Div, vec![8.into(), 4.into()]),
     ));
     main.push(Assign::global(
-        lv2_var!(n),
+        &n,
         Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
     ));
     main.push(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
-        let a = ctx.value_of(&lv2_var!(a)).unwrap();
-        let n = ctx.value_of(&lv2_var!(n)).unwrap();
+    run_module_test(builder.build().unwrap(), move |ctx| {
+        let a = ctx.value_of(&a).unwrap();
+        let n = ctx.value_of(&n).unwrap();
         assert_eq!(Value::Int(2), a);
         assert_eq!(Value::Int(1), n);
     });
@@ -361,62 +351,64 @@ fn folding_expr() {
 
 #[test]
 fn get_field_from_dict() {
+    let (x, y, z, d1, d2, g) = lv2_var!(x, y, z, d1, d2, g);
     define_test! {
         main {
-            Assign::local(lv2_var!(d1), lv2_dict!("x" => 37));
-            Assign::local(lv2_var!(d2), lv2_dict!("x" => lv2_dict!("y" => 42)));
-            Assign::global(lv2_var!(g), lv2_dict!("x" => 67));
-            Assign::local(lv2_var!(x), lv2_access!(d1, "x"));
-            Assign::local(lv2_var!(y), lv2_access!(d2, "x", "y"));
-            Assign::local(lv2_var!(z), lv2_access!(g, "x"));
+            Assign::local(&d1, lv2_dict!("x" => 37));
+            Assign::local(&d2, lv2_dict!("x" => lv2_dict!("y" => 42)));
+            Assign::global(&g, lv2_dict!("x" => 67));
+            Assign::local(&x, lv2_access!(d1, "x"));
+            Assign::local(&y, lv2_access!(d2, "x", "y"));
+            Assign::local(&z, lv2_access!(g, "x"));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(37), frame.value_of(&lv2_var!(x)).unwrap());
-            assert_eq!(Value::Int(42), frame.value_of(&lv2_var!(y)).unwrap());
-            assert_eq!(Value::Int(67), frame.value_of(&lv2_var!(z)).unwrap());
+            assert_eq!(Value::Int(37), frame.value_of(&x).unwrap());
+            assert_eq!(Value::Int(42), frame.value_of(&y).unwrap());
+            assert_eq!(Value::Int(67), frame.value_of(&z).unwrap());
         })
     }
 }
 
 #[test]
 fn set_field_on_dict() {
+    let (d1, d2, g) = lv2_var!(d1, d2, g);
     define_test! {
         main {
-            Assign::local(lv2_var!(d1), lv2_dict!());
-            Assign::local(lv2_var!(d2), lv2_dict!("x" => lv2_dict!()));
-            Assign::global(lv2_var!(g), lv2_dict!());
-            Assign::set(lv2_access!(d1, "x"), 37);
-            Assign::set(lv2_access!(d2, "x", "y"), 42);
-            Assign::set(lv2_access!(g, "x"), 67);
+            Assign::local(&d1, lv2_dict!());
+            Assign::local(&d2, lv2_dict!("x" => lv2_dict!()));
+            Assign::global(&g, lv2_dict!());
+            Assign::set(&lv2_access!(d1, "x"), 37);
+            Assign::set(&lv2_access!(d2, "x", "y"), 42);
+            Assign::set(&lv2_access!(g, "x"), 67);
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(
                 Value::Int(37),
-                frame.value_of(&lv2_var!(d1)).unwrap()
-                    .get(Value::Str("x".to_string())).unwrap()
+                frame.value_of(&d1).unwrap()
+                    .get(Value::from("x")).unwrap()
                     .deref().unwrap()
             );
             assert!(
-                !frame.value_of(&lv2_var!(d2)).unwrap()
-                    .get(Value::Str("x".to_string())).unwrap()
+                !frame.value_of(&d2).unwrap()
+                    .get(Value::from("x")).unwrap()
                     .deref().unwrap()
                     .is_ref()
             );
             assert_eq!(
                 Value::Int(42),
-                frame.value_of(&lv2_var!(d2)).unwrap()
-                    .get(Value::Str("x".to_string())).unwrap()
-                    .get(Value::Str("y".to_string())).unwrap()
+                frame.value_of(&d2).unwrap()
+                    .get(Value::from("x")).unwrap()
+                    .get(Value::from("y")).unwrap()
                     .deref().unwrap()
             );
             assert_eq!(
                 Value::Int(67),
-                ctx.value_of(&lv2_var!(g)).unwrap()
-                    .get(Value::Str("x".to_string())).unwrap()
+                ctx.value_of(&g).unwrap()
+                    .get(Value::from("x")).unwrap()
                     .deref().unwrap()
             );
         })
@@ -459,61 +451,64 @@ fn call_into_vm() {
 
 #[test]
 fn comparison() {
+    let (lt, le1, le2, gt, ge1, ge2) = lv2_var!(lt, le1, le2, gt, ge1, ge2);
     define_test! {
         main {
-            Assign::local(lv2_var!(lt), Expr::lt(2, 3));
-            Assign::local(lv2_var!(le1), Expr::le(2, 3));
-            Assign::local(lv2_var!(le2), Expr::le(2, 2));
-            Assign::local(lv2_var!(gt), Expr::gt(3, 2));
-            Assign::local(lv2_var!(ge1), Expr::ge(3, 2));
-            Assign::local(lv2_var!(ge2), Expr::ge(3, 3));
+            Assign::local(&lt, Expr::lt(2, 3));
+            Assign::local(&le1, Expr::le(2, 3));
+            Assign::local(&le2, Expr::le(2, 2));
+            Assign::local(&gt, Expr::gt(3, 2));
+            Assign::local(&ge1, Expr::ge(3, 2));
+            Assign::local(&ge2, Expr::ge(3, 3));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Bool(true), frame.value_of(&lv2_var!(lt)).unwrap());
-            assert_eq!(Value::Bool(true), frame.value_of(&lv2_var!(le1)).unwrap());
-            assert_eq!(Value::Bool(true), frame.value_of(&lv2_var!(le2)).unwrap());
-            assert_eq!(Value::Bool(true), frame.value_of(&lv2_var!(gt)).unwrap());
-            assert_eq!(Value::Bool(true), frame.value_of(&lv2_var!(ge1)).unwrap());
-            assert_eq!(Value::Bool(true), frame.value_of(&lv2_var!(ge2)).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&lt).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&le1).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&le2).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&gt).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&ge1).unwrap());
+            assert_eq!(Value::Bool(true), frame.value_of(&ge2).unwrap());
         })
     }
 }
 
 #[test]
 fn raise_to_power() {
+    let (a, b) = lv2_var!(a, b);
     define_test! {
         main {
-            Assign::local(lv2_var!(a), Expr::pow(2, 3));
-            Assign::local(lv2_var!(b), Expr::pow(3., 3.));
+            Assign::local(&a, Expr::pow(2, 3));
+            Assign::local(&b, Expr::pow(3., 3.));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(8), frame.value_of(&lv2_var!(a)).unwrap());
-            assert_eq!(Value::Float(27.), frame.value_of(&lv2_var!(b)).unwrap());
+            assert_eq!(Value::Int(8), frame.value_of(&a).unwrap());
+            assert_eq!(Value::Float(27.), frame.value_of(&b).unwrap());
         })
     }
 }
 
 #[test]
 fn initialize_objects() {
+    let (n, ae, ag, be, bg) = lv2_var!(n, ae, ag, be, bg);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), 2);
-            Assign::local(lv2_var!(ae), lv2_list!(1, 2, 3));
-            Assign::local(lv2_var!(ag), lv2_list!(1, lv2_var!(n), 3));
-            Assign::local(lv2_var!(be), lv2_dict!(1 => 2, 2 => 2, 4 => 4));
-            Assign::local(lv2_var!(bg), lv2_dict!(1 => 2, lv2_var!(n) => lv2_var!(n), 4 => 4));
+            Assign::local(&n, 2);
+            Assign::local(&ae, lv2_list!(1, 2, 3));
+            Assign::local(&ag, lv2_list!(1, &n, 3));
+            Assign::local(&be, lv2_dict!(1 => 2, 2 => 2, 4 => 4));
+            Assign::local(&bg, lv2_dict!(1 => 2, &n => &n, 4 => 4));
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            let ae = frame.value_of(&lv2_var!(ae)).unwrap();
-            let ag = frame.value_of(&lv2_var!(ag)).unwrap();
-            let be = frame.value_of(&lv2_var!(be)).unwrap();
-            let bg = frame.value_of(&lv2_var!(bg)).unwrap();
+            let ae = frame.value_of(&ae).unwrap();
+            let ag = frame.value_of(&ag).unwrap();
+            let be = frame.value_of(&be).unwrap();
+            let bg = frame.value_of(&bg).unwrap();
             assert_eq!(ae, ag);
             assert_eq!(be, bg);
         })
@@ -522,35 +517,37 @@ fn initialize_objects() {
 
 #[test]
 fn store_without_reference() {
+    let (n, x, y) = lv2_var!(n, x, y);
     define_test! {
         main {
-            Assign::local(lv2_var!(n), 2);
-            Assign::local(lv2_var!(x), Expr::from(5).boxed());
-            Assign::local(lv2_var!(y), lv2_var!(x));
-            Assign::set(lv2_var!(y), 7);
+            Assign::local(&n, 2);
+            Assign::local(&x, Expr::from(5).boxed());
+            Assign::local(&y, &x);
+            Assign::set(&y, 7);
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(2), frame.value_of(&lv2_var!(n)).unwrap());
-            assert_eq!(Value::Int(7), frame.value_of(&lv2_var!(y)).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(2), frame.value_of(&n).unwrap());
+            assert_eq!(Value::Int(7), frame.value_of(&y).unwrap().deref().unwrap());
         })
     }
 }
 
 #[test]
 fn create_slice() {
+    let (ls, s) = lv2_var!(ls, s);
     define_test! {
         main {
-            Assign::local(lv2_var!(ls), lv2_list!(1, 2, 3, 4, 5));
-            Assign::local(lv2_var!(s), Slice::new(lv2_var!(ls)).start(1).end(4));
-            Assign::set(lv2_access!(s, 1), 9);
+            Assign::local(&ls, lv2_list!(1, 2, 3, 4, 5));
+            Assign::local(&s, Slice::new(&ls).start(1).end(4));
+            Assign::set(&lv2_access!(s, 1), 9);
         }
 
-        #ensure (|ctx: &mut Context| {
+        #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            let ls = frame.value_of(&lv2_var!(ls)).unwrap();
-            let s = frame.value_of(&lv2_var!(s)).unwrap();
+            let ls = frame.value_of(&ls).unwrap();
+            let s = frame.value_of(&s).unwrap();
             assert_eq!(
                 Value::Int(9),
                 s.get(Value::Int(1)).unwrap().deref().unwrap()

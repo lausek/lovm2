@@ -10,20 +10,12 @@ impl Block {
         Self(vec![])
     }
 
-    pub fn from(&mut self, block: Block) {
-        self.0 = block.0;
+    pub fn extend(&mut self, block: Block) {
+        self.0.extend(block.0);
     }
 
     pub fn last_mut(&mut self) -> Option<&mut HirElement> {
         self.0.last_mut()
-    }
-
-    pub fn with<T>(mut self, hir: T) -> Self
-    where
-        T: Into<HirElement>,
-    {
-        self.0.push(hir.into());
-        self
     }
 
     pub fn push<T>(&mut self, hir: T)

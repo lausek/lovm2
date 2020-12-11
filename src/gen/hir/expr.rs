@@ -212,6 +212,12 @@ impl From<Variable> for Expr {
     }
 }
 
+impl From<&Variable> for Expr {
+    fn from(v: &Variable) -> Expr {
+        Expr::Variable(v.clone())
+    }
+}
+
 impl HirLowering for Expr {
     // TODO: add short-circuit for and (can be implemented via branching), or
     fn lower(self, runtime: &mut HirLoweringRuntime) {

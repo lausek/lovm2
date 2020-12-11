@@ -45,8 +45,9 @@ fn load_hook_none() {
 fn load_custom_module() {
     let mut builder = ModuleBuilder::named("main");
     let hir = builder.entry();
+    let n = &lv2_var!(n);
     hir.push(Include::load("extern"));
-    hir.push(Assign::local(lv2_var!(n), Call::new("calc")));
+    hir.push(Assign::local(n, Call::new("calc")));
     hir.push(Interrupt::new(10));
 
     let module = builder.build().unwrap();
