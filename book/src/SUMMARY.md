@@ -11,7 +11,6 @@
     - [Assignment](./building/assign.md)
     - [Branching](./building/branch.md)
     - [Repeating](./building/repeat.md)
-    - [Functions](./building/functions.md)
     - [Optimization](./building/optimization.md)
 - [Virtual Machine](./vm/introduction.md)
     - [Context](./vm/context.md)
