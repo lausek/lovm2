@@ -30,8 +30,8 @@ fn run_module_test(
 fn load_hook_none() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
-    hir.push(Include::load("notfound"));
-    hir.push(Interrupt::new(10));
+    hir.step(Include::load("notfound"));
+    hir.step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 
@@ -46,9 +46,9 @@ fn load_custom_module() {
     let mut builder = ModuleBuilder::named("main");
     let hir = builder.entry();
     let n = &lv2_var!(n);
-    hir.push(Include::load("extern"));
-    hir.push(Assign::local(n, Call::new("calc")));
-    hir.push(Interrupt::new(10));
+    hir.step(Include::load("extern"));
+    hir.step(Assign::local(n, Call::new("calc")));
+    hir.step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 
@@ -57,7 +57,7 @@ fn load_custom_module() {
         let mut builder = ModuleBuilder::named("extern");
 
         let hir = builder.add("calc");
-        hir.push(Return::value(Expr::add(1, 1)));
+        hir.step(Return::value(Expr::add(1, 1)));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -75,8 +75,8 @@ fn load_avoid_sigabrt() {
 
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
-    hir.push(Include::load("io"));
-    hir.push(Interrupt::new(10));
+    hir.step(Include::load("io"));
+    hir.step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 
@@ -94,9 +94,9 @@ fn avoid_double_import() {
     let mut builder = ModuleBuilder::named("main");
 
     let main_hir = builder.entry();
-    main_hir.push(Include::load("abc"));
-    main_hir.push(Include::load("abc"));
-    main_hir.push(Interrupt::new(10));
+    main_hir.step(Include::load("abc"));
+    main_hir.step(Include::load("abc"));
+    main_hir.step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 

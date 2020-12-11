@@ -35,9 +35,9 @@ macro_rules! define_test {
         $(
             let hir = builder.add(stringify!($fname));
             $(
-                hir.push($inx);
+                hir.step($inx);
             )*
-            hir.push(Interrupt::new(10));
+            hir.step(Interrupt::new(10));
         )*
 
         run_module_test(builder.build().unwrap(), $ensure);
@@ -97,8 +97,8 @@ fn easy_loop() {
         main {
             Assign::local(&n, 0);
             Repeat::until(Expr::eq(&n, 10))
-                .push(lv2_call!(print, n))
-                .push(Assign::local(&n, Expr::add(&n, 1)));
+                .step(lv2_call!(print, n))
+                .step(Assign::local(&n, Expr::add(&n, 1)));
             }
 
         #ensure (move |ctx: &mut Context| {
@@ -115,8 +115,8 @@ fn explicit_break() {
         main {
             Assign::local(&n, 0);
             Repeat::endless()
-                .push(Assign::local(&n, Expr::add(&n, 1)))
-                .push(Break::new());
+                .step(Assign::local(&n, Expr::add(&n, 1)))
+                .step(Break::new());
             }
 
         #ensure (move |ctx: &mut Context| {
@@ -202,17 +202,17 @@ fn true_branching() {
     let hir = builder.entry();
     let n = lv2_var!(n);
 
-    hir.push(Assign::local(&n, Value::Int(0)));
+    hir.step(Assign::local(&n, Value::Int(0)));
 
     let branch = hir.branch();
     branch
         .add_condition(Expr::not(Value::Bool(false)))
-        .push(Assign::local(&n, Value::Int(2)));
+        .step(Assign::local(&n, Value::Int(2)));
     branch
         .default_condition()
-        .push(Assign::local(&n, Value::Int(1)));
+        .step(Assign::local(&n, Value::Int(1)));
 
-    hir.push(Interrupt::new(10));
+    hir.step(Interrupt::new(10));
 
     run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -226,20 +226,20 @@ fn multiple_branches() {
     let hir = builder.entry();
     let (result, n) = &lv2_var!(result, n);
 
-    hir.push(Assign::local(n, Value::Int(5)));
+    hir.step(Assign::local(n, Value::Int(5)));
 
     let branch = hir.branch();
     branch
         .add_condition(Expr::eq(Expr::rem(n, Value::Int(3)), Value::Int(0)))
-        .push(Assign::local(result, Value::Str("fizz".to_string())));
+        .step(Assign::local(result, Value::Str("fizz".to_string())));
     branch
         .add_condition(Expr::eq(Expr::rem(n, Value::Int(5)), Value::Int(0)))
-        .push(Assign::local(result, Value::Str("buzz".to_string())));
+        .step(Assign::local(result, Value::Str("buzz".to_string())));
     branch
         .default_condition()
-        .push(Assign::local(result, Value::Str("none".to_string())));
+        .step(Assign::local(result, Value::Str("none".to_string())));
 
-    hir.push(Interrupt::new(10));
+    hir.step(Interrupt::new(10));
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -255,11 +255,11 @@ fn taking_parameters() {
     let mut builder = ModuleBuilder::new();
     let (a, b) = lv2_var!(a, b);
 
-    let called = builder.add_with_args("called", vec![a.clone(), b.clone()]);
-    called.push(Interrupt::new(10));
+    builder
+        .add_with_args("called", vec![a.clone(), b.clone()])
+        .step(Interrupt::new(10));
 
-    let main = builder.entry();
-    main.push(Call::new("called").arg(2).arg(7));
+    builder.entry().step(lv2_call!(called, 2, 7));
 
     run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -273,12 +273,12 @@ fn return_values() {
     let mut builder = ModuleBuilder::new();
     let n = lv2_var!(n);
 
-    let returner = builder.add("returner");
-    returner.push(Return::value(10));
+    builder.add("returner").step(Return::value(10));
 
-    let main = builder.entry();
-    main.push(Assign::local(&n, Call::new("returner")));
-    main.push(Interrupt::new(10));
+    builder
+        .entry()
+        .step(Assign::local(&n, Call::new("returner")))
+        .step(Interrupt::new(10));
 
     run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -292,9 +292,10 @@ fn drop_call_values() {
 
     let _ = builder.add("returner");
 
-    let main = builder.entry();
-    main.push(Call::new("returner"));
-    main.push(Interrupt::new(10));
+    builder
+        .entry()
+        .step(Call::new("returner"))
+        .step(Interrupt::new(10));
 
     run_module_test(builder.build().unwrap(), |ctx| {
         assert!(ctx.vstack.is_empty());
@@ -307,11 +308,11 @@ fn cast_to_string() {
 
     let main = builder.entry();
     let (a, b, c, d) = lv2_var!(a, b, c, d);
-    main.push(Assign::local(&a, Cast::to_str(10)));
-    main.push(Assign::local(&b, Cast::to_str(10.1)));
-    main.push(Assign::local(&c, Cast::to_str("10")));
-    main.push(Assign::local(&d, Cast::to_str(true)));
-    main.push(Interrupt::new(10));
+    main.step(Assign::local(&a, Cast::to_str(10)));
+    main.step(Assign::local(&b, Cast::to_str(10.1)));
+    main.step(Assign::local(&c, Cast::to_str("10")));
+    main.step(Assign::local(&d, Cast::to_str(true)));
+    main.step(Interrupt::new(10));
 
     run_module_test(builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -329,15 +330,15 @@ fn folding_expr() {
     let main = builder.entry();
     let (a, n) = lv2_var!(a, n);
 
-    main.push(Assign::global(
+    main.step(Assign::global(
         &a,
         Expr::from_opn(Operator2::Div, vec![8.into(), 4.into()]),
-    ));
-    main.push(Assign::global(
+    ))
+    .step(Assign::global(
         &n,
         Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
-    ));
-    main.push(Interrupt::new(10));
+    ))
+    .step(Interrupt::new(10));
 
     run_module_test(builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
@@ -425,8 +426,9 @@ fn is_constant() {
 fn call_into_vm() {
     let mut builder = ModuleBuilder::new();
 
-    let main = builder.add_with_args("call_me", vec![lv2_var!(n)]);
-    main.push(Interrupt::new(10));
+    builder
+        .add_with_args("call_me", vec![lv2_var!(n)])
+        .step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 

@@ -22,14 +22,14 @@
 //!     let mut main_hir = module.entry();
 //!
 //!     // set the local variable n to 10
-//!     main_hir.push(Assign::local(&lv2_var!(n), 10));
+//!     main_hir.step(Assign::local(&lv2_var!(n), 10));
 //!
 //!     // `print` is a builtin function. the `lv2_var!` macro
 //!     // ensures that the given identifier is not confused
 //!     // with a string.
-//!     main_hir.push(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
+//!     main_hir.step(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
 //!     // ... this is equivalent to the developer-friendly version:
-//!     main_hir.push(lv2_call!(print, n, "Hello World"));
+//!     main_hir.step(lv2_call!(print, n, "Hello World"));
 //!
 //!     // consumes the `ModuleBuilder` and transforms
 //!     // it into a `Module`
