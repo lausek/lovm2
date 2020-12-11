@@ -14,33 +14,31 @@
 //! use lovm2::prelude::*;
 //! use lovm2::vm::Vm;
 //!
-//! fn main() {
-//!     let mut module = ModuleBuilder::new();
+//! let mut module = ModuleBuilder::new();
 //!
-//!     // a module needs a code object called `main`
-//!     // if you want to make it runnable
-//!     let mut main_hir = module.entry();
+//! // a module needs a code object called `main`
+//! // if you want to make it runnable
+//! let mut main_hir = module.entry();
 //!
-//!     // set the local variable n to 10
-//!     main_hir.step(Assign::local(&lv2_var!(n), 10));
+//! // set the local variable n to 10
+//! main_hir.step(Assign::local(&lv2_var!(n), 10));
 //!
-//!     // `print` is a builtin function. the `lv2_var!` macro
-//!     // ensures that the given identifier is not confused
-//!     // with a string.
-//!     main_hir.step(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
-//!     // ... this is equivalent to the developer-friendly version:
-//!     main_hir.step(lv2_call!(print, n, "Hello World"));
+//! // `print` is a builtin function. the `lv2_var!` macro
+//! // ensures that the given identifier is not confused
+//! // with a string.
+//! main_hir.step(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
+//! // ... this is equivalent to the developer-friendly version:
+//! main_hir.step(lv2_call!(print, n, "Hello World"));
 //!
-//!     // consumes the `ModuleBuilder` and transforms
-//!     // it into a `Module`
-//!     let module = module.build().unwrap();
-//!     println!("{}", module);
+//! // consumes the `ModuleBuilder` and transforms
+//! // it into a `Module`
+//! let module = module.build().unwrap();
+//! println!("{}", module);
 //!
-//!     // load the module and run it
-//!     let mut vm = Vm::with_std();
-//!     vm.load_and_import_all(module).expect("load error");
-//!     vm.run().expect("run error");
-//! }
+//! // load the module and run it
+//! let mut vm = Vm::with_std();
+//! vm.load_and_import_all(module).expect("load error");
+//! vm.run().expect("run error");
 //! ```
 
 #![allow(clippy::new_without_default)]

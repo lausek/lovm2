@@ -76,6 +76,7 @@ impl HasBlock for Hir {
 pub trait HasBlock {
     fn block_mut(&mut self) -> &mut Block;
 
+    #[inline]
     fn step<T>(&mut self, element: T) -> &mut Self
     where
         T: Into<HirElement>,
@@ -84,14 +85,17 @@ pub trait HasBlock {
         self
     }
 
+    #[inline]
     fn branch(&mut self) -> &mut Branch {
         self.block_mut().branch()
     }
 
+    #[inline]
     fn repeat(&mut self) -> &mut Repeat {
         self.block_mut().repeat()
     }
 
+    #[inline]
     fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
         self.block_mut().repeat_until(condition)
     }
