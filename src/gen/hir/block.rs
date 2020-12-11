@@ -18,7 +18,7 @@ impl Block {
         self.0.last_mut()
     }
 
-    pub fn push<T>(&mut self, hir: T)
+    pub fn step<T>(&mut self, hir: T)
     where
         T: Into<HirElement>,
     {
@@ -26,7 +26,7 @@ impl Block {
     }
 
     pub fn branch(&mut self) -> &mut Branch {
-        self.push(Branch::new());
+        self.step(Branch::new());
         match self.last_mut().unwrap() {
             HirElement::Branch(ref mut r) => r,
             _ => unreachable!(),
@@ -34,7 +34,7 @@ impl Block {
     }
 
     pub fn repeat(&mut self) -> &mut Repeat {
-        self.push(Repeat::endless());
+        self.step(Repeat::endless());
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
@@ -42,7 +42,7 @@ impl Block {
     }
 
     pub fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
-        self.push(Repeat::until(condition));
+        self.step(Repeat::until(condition));
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),

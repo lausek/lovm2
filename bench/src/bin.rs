@@ -18,22 +18,24 @@ fn fibonacci(c: &mut Criterion) {
     let (h, l, n, r) = &lv2_var!(h, l, n, r);
     let fib_hir = module.add_with_args("fib", vec![n.clone()]);
 
-    let trivial_return = fib_hir.branch();
-    trivial_return
+    fib_hir
+        .branch()
         .add_condition(Expr::or(Expr::eq(n, 0), Expr::eq(n, 1)))
-        .push(Return::value(n));
+        .step(Return::value(n));
 
-    fib_hir.push(Assign::local(l, 0));
-    fib_hir.push(Assign::local(r, 1));
-    fib_hir.push(Assign::local(n, Expr::sub(n, 1)));
+    fib_hir
+        .step(Assign::local(l, 0))
+        .step(Assign::local(r, 1))
+        .step(Assign::local(n, Expr::sub(n, 1)));
 
-    let computation_loop = fib_hir.repeat_until(Expr::eq(n, 0));
-    computation_loop.push(Assign::local(h, r));
-    computation_loop.push(Assign::local(r, Expr::add(l, r)));
-    computation_loop.push(Assign::local(l, h));
-    computation_loop.push(Assign::local(n, Expr::sub(n, 1)));
+    fib_hir
+        .repeat_until(Expr::eq(n, 0))
+        .step(Assign::local(h, r))
+        .step(Assign::local(r, Expr::add(l, r)))
+        .step(Assign::local(l, h))
+        .step(Assign::local(n, Expr::sub(n, 1)));
 
-    fib_hir.push(Return::value(r));
+    fib_hir.step(Return::value(r));
 
     c.bench_function("fib compile", |b| {
         b.iter(|| {

@@ -7,11 +7,11 @@ fn loading() -> ModuleBuilder {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.push(Assign::local(n, 0));
+    hir.step(Assign::local(n, 0));
 
-    let repeat = hir.repeat_until(Expr::eq(n, 10));
-    repeat.push(lv2_call!(print, n));
-    repeat.push(Assign::local(n, Expr::add(n, 1)));
+    hir.repeat_until(Expr::eq(n, 10))
+        .step(lv2_call!(print, n))
+        .step(Assign::local(n, Expr::add(n, 1)));
 
     builder
 }

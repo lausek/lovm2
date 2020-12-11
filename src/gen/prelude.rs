@@ -12,7 +12,7 @@ pub use super::hir::interrupt::Interrupt;
 pub use super::hir::r#return::Return;
 pub use super::hir::repeat::{Break, Continue, Repeat};
 pub use super::hir::slice::Slice;
-pub use super::{CompileOptions, Hir};
+pub use super::{CompileOptions, HasBlock, Hir};
 
 pub use crate::module::{ModuleBuilder, ModuleMeta};
 pub use crate::value::Value;
