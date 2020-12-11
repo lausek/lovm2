@@ -97,8 +97,8 @@ impl Context {
                 dirs::home_dir().unwrap().to_str().unwrap()
             )],
 
-            lstack: vec![],
-            vstack: vec![],
+            lstack: Vec::with_capacity(1000),
+            vstack: Vec::with_capacity(1000),
         }
     }
 
