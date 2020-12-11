@@ -204,14 +204,13 @@ fn true_branching() {
 
     hir.push(Assign::local(&n, Value::Int(0)));
 
-    let mut branch = Branch::new();
+    let branch = hir.branch();
     branch
         .add_condition(Expr::not(Value::Bool(false)))
         .push(Assign::local(&n, Value::Int(2)));
     branch
         .default_condition()
         .push(Assign::local(&n, Value::Int(1)));
-    hir.push(branch);
 
     hir.push(Interrupt::new(10));
 
@@ -229,7 +228,7 @@ fn multiple_branches() {
 
     hir.push(Assign::local(n, Value::Int(5)));
 
-    let mut branch = Branch::new();
+    let branch = hir.branch();
     branch
         .add_condition(Expr::eq(Expr::rem(n, Value::Int(3)), Value::Int(0)))
         .push(Assign::local(result, Value::Str("fizz".to_string())));
@@ -239,7 +238,6 @@ fn multiple_branches() {
     branch
         .default_condition()
         .push(Assign::local(result, Value::Str("none".to_string())));
-    hir.push(branch);
 
     hir.push(Interrupt::new(10));
 

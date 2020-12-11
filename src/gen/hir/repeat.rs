@@ -29,6 +29,10 @@ impl Repeat {
         }
     }
 
+    pub fn branch(&mut self) -> &mut Branch {
+        self.block.branch()
+    }
+
     pub fn push<T>(&mut self, hir: T) -> &mut Self
     where
         T: Into<HirElement>,

@@ -35,6 +35,8 @@ pub use self::r#return::Return;
 pub use self::repeat::{Break, Continue, Repeat};
 pub use self::slice::Slice;
 
+// TODO: create `IsBlock` trait that automatically adds `branch`, `repeat` ... to the type
+
 #[derive(Clone)]
 pub struct Hir {
     pub args: Vec<Variable>,
@@ -70,5 +72,17 @@ impl Hir {
         T: Into<HirElement>,
     {
         self.code.push(element.into());
+    }
+
+    pub fn branch(&mut self) -> &mut Branch {
+        self.code.branch()
+    }
+
+    pub fn repeat(&mut self) -> &mut Repeat {
+        self.code.repeat()
+    }
+
+    pub fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
+        self.code.repeat_until(condition)
     }
 }

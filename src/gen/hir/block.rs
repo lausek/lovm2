@@ -33,12 +33,16 @@ impl Block {
         }
     }
 
-    pub fn repeat(&mut self, condition: Option<Expr>) -> &mut Repeat {
-        if let Some(condition) = condition {
-            self.push(Repeat::until(condition));
-        } else {
-            self.push(Repeat::endless());
+    pub fn repeat(&mut self) -> &mut Repeat {
+        self.push(Repeat::endless());
+        match self.last_mut().unwrap() {
+            HirElement::Repeat(ref mut r) => r,
+            _ => unreachable!(),
         }
+    }
+
+    pub fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
+        self.push(Repeat::until(condition));
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),

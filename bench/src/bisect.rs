@@ -34,98 +34,81 @@ def bisect(coeffs, startx):
         prev = current
 */
 
-fn calc_hir() -> Hir {
-    let mut computation_loop = Repeat::until(Expr::not(Expr::le(0, lv2_var!(factor))));
-    let delta = Expr::mul(
-        lv2_access!(coeffs, lv2_var!(i)),
-        Expr::pow(lv2_var!(x), lv2_var!(factor)),
-    );
-    computation_loop.push(Assign::local(
-        lv2_var!(sigma),
-        Expr::add(lv2_var!(sigma), delta),
-    ));
-    computation_loop.push(Assign::local(lv2_var!(i), Expr::add(lv2_var!(i), 1)));
-    computation_loop.push(Assign::local(
-        lv2_var!(factor),
-        Expr::sub(lv2_var!(factor), 1),
-    ));
+fn calc_hir(module: &mut ModuleBuilder) {
+    let (coeffs, x, factor, i, sigma) = &lv2_var!(coeffs, x, factor, i, sigma);
+    let hir = module.add_with_args("calc", vec![coeffs.clone(), x.clone()]);
 
-    let mut hir = Hir::with_args(vec![lv2_var!(coeffs), lv2_var!(x)]);
-    hir.push(Assign::local(lv2_var!(sigma), 0));
-    hir.push(Assign::local(lv2_var!(i), 0));
-    hir.push(Assign::local(
-        lv2_var!(factor),
-        Expr::sub(Call::new("len").arg(lv2_var!(coeffs)), 1),
-    ));
-    hir.push(computation_loop);
-    hir.push(Return::value(lv2_var!(sigma)));
-    hir
+    hir.push(Assign::local(sigma, 0));
+    hir.push(Assign::local(i, 0));
+    hir.push(Assign::local(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
+
+    let computation_loop = hir.repeat_until(Expr::not(Expr::le(0, factor)));
+    let delta = Expr::mul(lv2_access!(coeffs, i), Expr::pow(x, factor));
+    computation_loop.push(Assign::local(sigma, Expr::add(sigma, delta)));
+    computation_loop.push(Assign::local(i, Expr::add(i, 1)));
+    computation_loop.push(Assign::local(factor, Expr::sub(factor, 1)));
+
+    hir.push(Return::value(sigma));
 }
 
-fn derive_hir() -> Hir {
-    let mut computation_loop = Repeat::until(Expr::not(Expr::lt(0, lv2_var!(factor))));
-    let val = Expr::mul(lv2_access!(coeffs, lv2_var!(i)), lv2_var!(factor));
-    computation_loop.push(Assign::set(lv2_access!(d, lv2_var!(i)), val));
-    computation_loop.push(Assign::local(lv2_var!(i), Expr::add(lv2_var!(i), 1)));
-    computation_loop.push(Assign::local(
-        lv2_var!(factor),
-        Expr::sub(lv2_var!(factor), 1),
-    ));
+fn derive_hir(module: &mut ModuleBuilder) {
+    let (coeffs, i, factor, d) = &lv2_var!(coeffs, i, factor, d);
+    let hir = module.add_with_args("derive", vec![coeffs.clone()]);
 
-    let mut hir = Hir::with_args(vec![lv2_var!(coeffs)]);
-    hir.push(Assign::local(lv2_var!(d), lv2_list!()));
-    hir.push(Assign::local(lv2_var!(i), 0));
-    hir.push(Assign::local(
-        lv2_var!(factor),
-        Expr::sub(Call::new("len").arg(lv2_var!(coeffs)), 1),
+    hir.push(Assign::local(d, lv2_list!()));
+    hir.push(Assign::local(i, 0));
+    hir.push(Assign::local(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
+
+    let computation_loop = hir.repeat_until(Expr::not(Expr::lt(0, factor)));
+    computation_loop.push(Assign::set(
+        &lv2_access!(d, i),
+        Expr::mul(lv2_access!(coeffs, i), factor),
     ));
-    hir.push(computation_loop);
-    hir.push(Return::value(lv2_var!(d)));
-    hir
+    computation_loop.push(Assign::local(i, Expr::add(i, 1)));
+    computation_loop.push(Assign::local(factor, Expr::sub(factor, 1)));
+
+    hir.push(Return::value(d));
+}
+
+pub fn bisect_hir(module: &mut ModuleBuilder) {
+    let (prev, x, d1, d2, coeffs, dcoeffs, startx) =
+        &lv2_var!(prev, x, d1, d2, coeffs, dcoeffs, startx);
+    let hir = module.add_with_args("bisect", vec![coeffs.clone(), startx.clone()]);
+
+    // function setup
+    hir.push(Assign::local(x, Cast::to_float(startx)));
+    hir.push(Assign::local(dcoeffs, lv2_call!(derive, coeffs)));
+    hir.push(Assign::local(prev, Value::Nil));
+
+    let computation_loop = hir.repeat();
+    computation_loop.push(Assign::local(d2, lv2_call!(calc, dcoeffs, x)));
+    let patch_divisor = computation_loop.branch();
+    patch_divisor
+        .add_condition(Expr::eq(d2, 0.))
+        .push(Assign::local(d2, 0.001));
+    computation_loop.push(Assign::local(d1, lv2_call!(calc, coeffs, x)));
+    computation_loop.push(Assign::local(x, Expr::sub(x, Expr::div(d1, d2))));
+    let exit_condition = computation_loop.branch();
+    exit_condition
+        .add_condition(Expr::eq(prev, x))
+        .push(Break::new());
+    computation_loop.push(Assign::local(prev, x));
+
+    hir.push(Return::value(x));
 }
 
 pub fn bisect(c: &mut Criterion) {
-    let mut exit_condition = Branch::new();
-    exit_condition
-        .add_condition(Expr::eq(lv2_var!(prev), lv2_var!(x)))
-        .push(Break::new());
-
-    let mut patch_divisor = Branch::new();
-    patch_divisor
-        .add_condition(Expr::eq(lv2_var!(d2), 0.))
-        .push(Assign::local(lv2_var!(d2), 0.001));
-
-    let mut computation_loop = Repeat::endless();
-    computation_loop.push(Assign::local(
-        lv2_var!(d2),
-        Call::new("calc").arg(lv2_var!(dcoeffs)).arg(lv2_var!(x)),
-    ));
-    computation_loop.push(patch_divisor);
-    computation_loop.push(Assign::local(
-        lv2_var!(d1),
-        Call::new("calc").arg(lv2_var!(coeffs)).arg(lv2_var!(x)),
-    ));
-    computation_loop.push(Assign::local(
-        lv2_var!(x),
-        Expr::sub(lv2_var!(x), Expr::div(lv2_var!(d1), lv2_var!(d2))),
-    ));
-    computation_loop.push(exit_condition);
-    computation_loop.push(Assign::local(lv2_var!(prev), lv2_var!(x)));
-
-    let mut bisect_hir = Hir::with_args(vec![lv2_var!(coeffs), lv2_var!(startx)]);
-    bisect_hir.push(Assign::local(lv2_var!(x), Cast::to_float(lv2_var!(startx))));
-    bisect_hir.push(Assign::local(
-        lv2_var!(dcoeffs),
-        Call::new("derive").arg(lv2_var!(coeffs)),
-    ));
-    bisect_hir.push(Assign::local(lv2_var!(prev), Value::Nil));
-    bisect_hir.push(computation_loop);
-    bisect_hir.push(Return::value(lv2_var!(x)));
-
     let mut module = ModuleBuilder::new();
+
+    calc_hir(&mut module);
+    derive_hir(&mut module);
+    bisect_hir(&mut module);
+
+    /*
     module.add("calc").hir(calc_hir());
     module.add("derive").hir(derive_hir());
-    module.add("bisect").hir(bisect_hir);
+    module.add("bisect").hir(bisect_hir());
+    */
 
     c.bench_function("bisect compile", |b| {
         b.iter(|| {

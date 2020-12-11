@@ -9,10 +9,9 @@ fn loading() -> ModuleBuilder {
 
     hir.push(Assign::local(n, 0));
 
-    let mut repeat = Repeat::until(Expr::eq(n, 10));
+    let repeat = hir.repeat_until(Expr::eq(n, 10));
     repeat.push(lv2_call!(print, n));
     repeat.push(Assign::local(n, Expr::add(n, 1)));
-    hir.push(repeat);
 
     builder
 }

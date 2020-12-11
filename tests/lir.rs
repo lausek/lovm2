@@ -11,14 +11,13 @@ fn merge_not_jump_false() {
 
     hir.push(Assign::local(n, Value::Int(0)));
 
-    let mut branch = Branch::new();
+    let branch = hir.branch();
     branch
         .add_condition(Expr::not(Expr::eq(n, Value::Int(2))))
         .push(Return::value(Value::Int(1)));
     branch
         .default_condition()
         .push(Return::value(Value::Int(2)));
-    hir.push(branch);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -41,14 +40,13 @@ fn merge_constant_jump() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
 
-    let mut branch = Branch::new();
+    let branch = hir.branch();
     branch
         .add_condition(Expr::not(Value::Bool(false)))
         .push(Return::value(Value::Int(1)));
     branch
         .default_condition()
         .push(Return::value(Value::Int(2)));
-    hir.push(branch);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -153,8 +151,7 @@ fn dead_code_elimination_else_branche() {
 
     hir.push(Assign::local(n, 3));
 
-    let mut branch = Branch::new();
-
+    let branch = hir.branch();
     branch
         .add_condition(Expr::eq(Expr::rem(n, 2), 0))
         .push(Assign::local(y, 0));
@@ -166,8 +163,6 @@ fn dead_code_elimination_else_branche() {
 
     // this code will never be reached
     branch.default_condition().push(Assign::local(y, 7));
-
-    hir.push(branch);
 
     hir.push(Return::value(y));
 
