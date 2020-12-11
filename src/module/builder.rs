@@ -14,14 +14,14 @@ use super::*;
 #[derive(Clone)]
 pub struct ModuleBuilder {
     meta: ModuleMeta,
-    pub slots: HashMap<Variable, ModuleBuilderSlot>,
+    pub hirs: HashMap<Variable, Hir>,
 }
 
 impl ModuleBuilder {
     pub fn new() -> Self {
         Self {
             meta: ModuleMeta::default(),
-            slots: HashMap::new(),
+            hirs: HashMap::new(),
         }
     }
 
@@ -38,7 +38,7 @@ impl ModuleBuilder {
     {
         Self {
             meta: meta.into(),
-            slots: HashMap::new(),
+            hirs: HashMap::new(),
         }
     }
 
@@ -48,18 +48,20 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add<T>(&mut self, name: T) -> &mut ModuleBuilderSlot
+    pub fn add<T>(&mut self, name: T) -> &mut Hir
+    where
+        T: Into<Variable>,
+    {
+        self.add_with_args(name, vec![])
+    }
+
+    pub fn add_with_args<T>(&mut self, name: T, args: Vec<Variable>) -> &mut Hir
     where
         T: Into<Variable>,
     {
         let name: Variable = name.into();
-
-        if BUILTIN_FUNCTIONS.contains(&name.as_ref()) {
-            panic!("shadowing builtin function `{}` is not allowed", name);
-        }
-
-        self.slots.insert(name.clone(), ModuleBuilderSlot::new());
-        self.slots.get_mut(&name).unwrap()
+        self.hirs.insert(name.clone(), Hir::with_args(args));
+        self.hirs.get_mut(&name).unwrap()
     }
 
     pub fn build(self) -> Lovm2CompileResult<Module> {
@@ -71,14 +73,14 @@ impl ModuleBuilder {
 
         // main entry point must be at start (offset 0)
         let main_key = Variable::from(ENTRY_POINT);
-        if let Some(co_builder) = self.slots.remove(&main_key) {
+        if let Some(hir) = self.hirs.remove(&main_key) {
             ru.emit(LirElement::entry(main_key));
-            co_builder.complete(&mut ru)?;
+            hir.build(&mut ru)?;
         }
 
-        for (key, co_builder) in self.slots.into_iter() {
+        for (key, hir) in self.hirs.into_iter() {
             ru.emit(LirElement::entry(key));
-            co_builder.complete(&mut ru)?;
+            hir.build(&mut ru)?;
         }
 
         let mut module: Module = ru.complete()?.into();
@@ -92,12 +94,12 @@ impl ModuleBuilder {
         Ok(module)
     }
 
-    pub fn entry(&mut self) -> &mut ModuleBuilderSlot {
+    pub fn entry(&mut self) -> &mut Hir {
         let name = Variable::from(ENTRY_POINT);
-        if !self.slots.contains_key(&name) {
-            self.slots.insert(name.clone(), ModuleBuilderSlot::new());
+        if !self.hirs.contains_key(&name) {
+            self.hirs.insert(name.clone(), Hir::new());
         }
-        self.slots.get_mut(&name).unwrap()
+        self.hirs.get_mut(&name).unwrap()
     }
 }
 

@@ -28,42 +28,38 @@ fn run_module_test(
 
 #[test]
 fn load_hook_none() {
-    let mut vm = Vm::with_std();
-    vm.context_mut().set_load_hook(|_name| Ok(None));
-
-    let mut hir = Hir::new();
+    let mut builder = ModuleBuilder::new();
+    let hir = builder.entry();
     hir.push(Include::load("notfound"));
     hir.push(Interrupt::new(10));
 
-    let mut builder = ModuleBuilder::new();
-    builder.entry().hir(hir);
-
     let module = builder.build().unwrap();
+
+    let mut vm = Vm::with_std();
+    vm.context_mut().set_load_hook(|_name| Ok(None));
 
     assert!(run_module_test(vm, module, |_| ()).is_err());
 }
 
 #[test]
 fn load_custom_module() {
-    let mut vm = Vm::with_std();
-    vm.context_mut().set_load_hook(|_name| {
-        let mut hir = Hir::new();
-        hir.push(Return::value(Expr::add(1, 1)));
-
-        let mut builder = ModuleBuilder::named("extern");
-        builder.add("calc").hir(hir);
-        Ok(Some(builder.build().unwrap().into()))
-    });
-
-    let mut hir = Hir::new();
+    let mut builder = ModuleBuilder::named("main");
+    let hir = builder.entry();
     hir.push(Include::load("extern"));
     hir.push(Assign::local(lv2_var!(n), Call::new("calc")));
     hir.push(Interrupt::new(10));
 
-    let mut builder = ModuleBuilder::named("main");
-    builder.entry().hir(hir);
-
     let module = builder.build().unwrap();
+
+    let mut vm = Vm::with_std();
+    vm.context_mut().set_load_hook(|_name| {
+        let mut builder = ModuleBuilder::named("extern");
+
+        let hir = builder.add("calc");
+        hir.push(Return::value(Expr::add(1, 1)));
+
+        Ok(Some(builder.build().unwrap().into()))
+    });
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -76,12 +72,11 @@ fn load_custom_module() {
 fn load_avoid_sigabrt() {
     use std::path::Path;
 
-    let mut hir = Hir::new();
+    let mut builder = ModuleBuilder::new();
+    let hir = builder.entry();
     hir.push(Include::load("io"));
     hir.push(Interrupt::new(10));
 
-    let mut builder = ModuleBuilder::new();
-    builder.entry().hir(hir);
     let module = builder.build().unwrap();
 
     let this_dir = Path::new(file!()).parent().unwrap().canonicalize().unwrap();
@@ -97,19 +92,17 @@ fn load_avoid_sigabrt() {
 fn avoid_double_import() {
     let mut builder = ModuleBuilder::named("main");
 
-    let mut main_hir = Hir::new();
+    let main_hir = builder.entry();
     main_hir.push(Include::load("abc"));
     main_hir.push(Include::load("abc"));
     main_hir.push(Interrupt::new(10));
-
-    builder.entry().hir(main_hir);
 
     let module = builder.build().unwrap();
 
     let mut vm = Vm::with_std();
     vm.context_mut().set_load_hook(|_name| {
         let mut builder = ModuleBuilder::named("abc");
-        builder.add("add").hir(Hir::new());
+        builder.add("add");
         let module = builder.build().unwrap();
         Ok(Some(module.into()))
     });

@@ -6,7 +6,7 @@ use lovm2::vm::Vm;
 #[test]
 fn merge_not_jump_false() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
 
@@ -18,8 +18,6 @@ fn merge_not_jump_false() {
         .default_condition()
         .push(Return::value(Value::Int(2)));
     hir.push(branch);
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -40,7 +38,7 @@ fn merge_not_jump_false() {
 #[test]
 fn merge_constant_jump() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     let mut branch = Branch::new();
     branch
@@ -50,8 +48,6 @@ fn merge_constant_jump() {
         .default_condition()
         .push(Return::value(Value::Int(2)));
     hir.push(branch);
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -77,15 +73,13 @@ fn merge_constant_jump() {
 #[test]
 fn short_circuit_and() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
     hir.push(Return::value(Expr::and(
         Expr::eq(lv2_var!(n), Value::Int(1)),
         Expr::div(Value::Int(1), lv2_var!(n)),
     )));
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -100,15 +94,13 @@ fn short_circuit_and() {
 #[test]
 fn short_circuit_or() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
     hir.push(Return::value(Expr::or(
         Expr::eq(lv2_var!(n), Value::Int(0)),
         Expr::div(Value::Int(1), lv2_var!(n)),
     )));
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -123,14 +115,12 @@ fn short_circuit_or() {
 #[test]
 fn compute_constants() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Return::value(Expr::rem(
         Expr::mul(Expr::add(Expr::sub(6, 1), 2), Expr::div(4, 2)),
         5,
     )));
-
-    builder.entry().hir(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -155,7 +145,7 @@ fn compute_constants() {
 #[test]
 fn dead_code_elimination_else_branche() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Assign::local(lv2_var!(n), 3));
 
@@ -179,8 +169,6 @@ fn dead_code_elimination_else_branche() {
 
     hir.push(Return::value(lv2_var!(y)));
 
-    builder.entry().hir(hir);
-
     let module = builder.build().unwrap();
     println!("{}", module);
 
@@ -198,11 +186,9 @@ fn dead_code_elimination_else_branche() {
 #[test]
 fn compile_options() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Return::value(Expr::add(Expr::mul(3, 2), 2)));
-
-    builder.entry().hir(hir);
 
     let module = builder.clone().build().unwrap();
     let module_noop = builder

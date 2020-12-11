@@ -33,15 +33,11 @@ macro_rules! define_test {
         let mut builder = ModuleBuilder::new();
 
         $(
-            let hir = {
-                let mut hir = Hir::new();
-                $(
-                    hir.code.push($inx);
-                )*
-                    hir.code.push(Interrupt::new(10));
-                hir
-            };
-            builder.add(stringify!($fname)).hir(hir);
+            let hir = builder.add(stringify!($fname));
+            $(
+                hir.push($inx);
+            )*
+            hir.push(Interrupt::new(10));
         )*
 
         run_module_test(builder.build().unwrap(), $ensure);
@@ -194,7 +190,7 @@ fn try_casting() {
 #[test]
 fn true_branching() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(0)));
 
@@ -209,8 +205,6 @@ fn true_branching() {
 
     hir.push(Interrupt::new(10));
 
-    builder.entry().hir(hir);
-
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), frame.value_of(&lv2_var!(n)).unwrap());
@@ -220,7 +214,7 @@ fn true_branching() {
 #[test]
 fn multiple_branches() {
     let mut builder = ModuleBuilder::new();
-    let mut hir = Hir::new();
+    let hir = builder.entry();
 
     hir.push(Assign::local(lv2_var!(n), Value::Int(5)));
 
@@ -251,8 +245,6 @@ fn multiple_branches() {
 
     hir.push(Interrupt::new(10));
 
-    builder.entry().hir(hir);
-
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
@@ -266,14 +258,11 @@ fn multiple_branches() {
 fn taking_parameters() {
     let mut builder = ModuleBuilder::new();
 
-    let mut called = Hir::with_args(vec![lv2_var!(a), lv2_var!(b)]);
+    let called = builder.add_with_args("called", vec![lv2_var!(a), lv2_var!(b)]);
     called.push(Interrupt::new(10));
 
-    let mut main = Hir::new();
+    let main = builder.entry();
     main.push(Call::new("called").arg(2).arg(7));
-
-    builder.add("called").hir(called);
-    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -286,15 +275,12 @@ fn taking_parameters() {
 fn return_values() {
     let mut builder = ModuleBuilder::new();
 
-    let mut returner = Hir::new();
+    let returner = builder.add("returner");
     returner.push(Return::value(10));
 
-    let mut main = Hir::new();
+    let main = builder.entry();
     main.push(Assign::local(lv2_var!(n), Call::new("returner")));
     main.push(Interrupt::new(10));
-
-    builder.add("returner").hir(returner);
-    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -306,14 +292,11 @@ fn return_values() {
 fn drop_call_values() {
     let mut builder = ModuleBuilder::new();
 
-    let returner = Hir::new();
+    let _ = builder.add("returner");
 
-    let mut main = Hir::new();
+    let main = builder.entry();
     main.push(Call::new("returner"));
     main.push(Interrupt::new(10));
-
-    builder.add("returner").hir(returner);
-    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         assert!(ctx.vstack.is_empty());
@@ -324,14 +307,12 @@ fn drop_call_values() {
 fn cast_to_string() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main = Hir::new();
+    let main = builder.entry();
     main.push(Assign::local(lv2_var!(a), Cast::to_str(10)));
     main.push(Assign::local(lv2_var!(b), Cast::to_str(10.1)));
     main.push(Assign::local(lv2_var!(c), Cast::to_str("10")));
     main.push(Assign::local(lv2_var!(d), Cast::to_str(true)));
     main.push(Interrupt::new(10));
-
-    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -358,7 +339,7 @@ fn cast_to_string() {
 fn folding_expr() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main = Hir::new();
+    let main = builder.entry();
 
     main.push(Assign::global(
         lv2_var!(a),
@@ -369,8 +350,6 @@ fn folding_expr() {
         Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
     ));
     main.push(Interrupt::new(10));
-
-    builder.entry().hir(main);
 
     run_module_test(builder.build().unwrap(), |ctx| {
         let a = ctx.value_of(&lv2_var!(a)).unwrap();
@@ -456,9 +435,8 @@ fn is_constant() {
 fn call_into_vm() {
     let mut builder = ModuleBuilder::new();
 
-    let mut main = Hir::with_args(vec![lv2_var!(n)]);
+    let main = builder.add_with_args("call_me", vec![lv2_var!(n)]);
     main.push(Interrupt::new(10));
-    builder.add("call_me").hir(main);
 
     let module = builder.build().unwrap();
 
