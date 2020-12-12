@@ -26,7 +26,7 @@ class TestVm(Test):
         self.assertTrue(out['called'])
 
     def test_raise_exception(self, internals):
-        internals.mod.add('ret').pyfn(lambda: 1/0)
+        internals.mod.add_pyfn('ret', lambda: 1/0)
         internals.vm.load(internals.mod.build())
         with pytest.raises(ZeroDivisionError):
             internals.vm.call('ret')
@@ -35,7 +35,7 @@ class TestVm(Test):
         def load_hook(name):
             raise Exception()
 
-        main_hir = internals.mod.add(pylovm2.ENTRY_POINT).code()
+        main_hir = internals.mod.entry()
         main_hir.load(pylovm2.Expr.val('std'))
 
         internals.vm.set_load_hook(load_hook)
@@ -46,7 +46,7 @@ class TestVm(Test):
             assert False
 
     def test_unknown_use(self, internals):
-        main_hir = internals.mod.add(pylovm2.ENTRY_POINT).code()
+        main_hir = internals.mod.entry()
         main_hir.load(pylovm2.Expr.val('unkown_module'))
 
         internals.vm.load(internals.mod.build())

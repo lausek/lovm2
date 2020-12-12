@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyList, PyTuple};
 
 use lovm2::gen;
 use lovm2::module::ModuleMeta;
@@ -17,7 +17,7 @@ use super::{slot::ModuleBuilderSlotInner, Module, ModuleBuilderSlot};
 #[pyclass(unsendable)]
 pub struct ModuleBuilder {
     name: String,
-    slots: HashMap<String, Py<ModuleBuilderSlot>>,
+    slots: HashMap<String, ModuleBuilderSlot>,
     uses: Vec<String>,
 }
 
@@ -41,10 +41,22 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add(&mut self, py: Python, name: String) -> Py<ModuleBuilderSlot> {
-        let inst = Py::new(py, ModuleBuilderSlot::new()).unwrap();
-        self.slots.insert(name.clone(), inst);
-        self.slots.get(&name).unwrap().clone_ref(py)
+    pub fn add(&mut self, py: Python, name: String, args: Option<&PyList>) -> Py<BlockBuilder> {
+        let slot = if let Some(args) = args {
+            ModuleBuilderSlot::with_args(args)
+        } else {
+            ModuleBuilderSlot::new()
+        };
+
+        self.slots.insert(name.clone(), slot);
+        let block = self.slots.get_mut(&name).unwrap().code().unwrap();
+
+        Py::new(py, block).unwrap()
+    }
+
+    pub fn add_pyfn(&mut self, name: String, pyfn: PyObject) -> PyResult<()> {
+        self.slots.insert(name, ModuleBuilderSlot::pyfn(pyfn));
+        Ok(())
     }
 
     pub fn add_dependency(&mut self, name: String) {
@@ -53,20 +65,14 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add_slot(&mut self, py: Python, name: String, slot: ModuleBuilderSlot) -> PyResult<()> {
-        let inst = Py::new(py, slot).unwrap();
-        self.slots.insert(name.clone(), inst);
-        Ok(())
-    }
-
     // TODO: can we avoid duplicating the code here?
-    pub fn build(&mut self, py: Python, module_location: Option<String>) -> PyResult<Module> {
+    pub fn build(&mut self, module_location: Option<String>) -> PyResult<Module> {
         let meta = ModuleMeta::new(self.name.clone(), module_location, self.uses.clone());
         let mut builder = Lovm2ModuleBuilder::with_meta(meta);
         let mut slots = Lovm2Slots::new();
 
         for (key, co_builder) in self.slots.drain() {
-            let mut co_builder: PyRefMut<ModuleBuilderSlot> = co_builder.as_ref(py).borrow_mut();
+            let mut co_builder: ModuleBuilderSlot = co_builder;
 
             match &mut co_builder.inner {
                 ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
@@ -93,13 +99,14 @@ impl ModuleBuilder {
         Ok(Module::from(module))
     }
 
-    pub fn entry(&mut self, py: Python) -> Py<ModuleBuilderSlot> {
+    pub fn entry(&mut self, py: Python) -> Py<BlockBuilder> {
         let name = lovm2::module::ENTRY_POINT.to_string();
         if !self.slots.contains_key(&name) {
-            let inst = Py::new(py, ModuleBuilderSlot::new()).unwrap();
-            self.slots.insert(name.clone(), inst);
+            self.add(py, name, None)
+        } else {
+            let block = self.slots.get_mut(&name).unwrap().code().unwrap();
+            Py::new(py, block).unwrap()
         }
-        self.slots.get(&name).unwrap().clone_ref(py)
     }
 }
 

@@ -12,36 +12,30 @@ pub(super) enum ModuleBuilderSlotInner {
     PyFn(Option<PyObject>),
 }
 
-#[pyclass(unsendable)]
 #[derive(Clone)]
-pub struct ModuleBuilderSlot {
+pub(super) struct ModuleBuilderSlot {
     pub(super) inner: ModuleBuilderSlotInner,
 }
 
-#[pymethods]
 impl ModuleBuilderSlot {
-    #[new]
     pub fn new() -> Self {
         Self {
             inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::Hir::new())),
         }
     }
 
-    pub fn args(&mut self, args: &PyList) -> PyResult<()> {
-        if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
-            use lovm2::var::Variable;
+    pub fn with_args(args: &PyList) -> Self {
+        use lovm2::var::Variable;
 
-            let mut vars = vec![];
-            for arg in args.iter() {
-                let name = arg.str()?.to_string();
-                vars.push(Variable::from(name));
-            }
-
-            hir.replace(gen::Hir::with_args(vars));
-        } else {
-            unimplemented!()
+        let mut vars = vec![];
+        for arg in args.iter() {
+            let name = arg.str().unwrap().to_string();
+            vars.push(Variable::from(name));
         }
-        Ok(())
+
+        Self {
+            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::Hir::with_args(vars))),
+        }
     }
 
     pub fn code(&mut self) -> PyResult<BlockBuilder> {
@@ -54,8 +48,9 @@ impl ModuleBuilderSlot {
         }
     }
 
-    pub fn pyfn(&mut self, pyfn: PyObject) -> PyResult<()> {
-        self.inner = ModuleBuilderSlotInner::PyFn(Some(pyfn));
-        Ok(())
+    pub fn pyfn(pyfn: PyObject) -> Self {
+        Self {
+            inner: ModuleBuilderSlotInner::PyFn(Some(pyfn)),
+        }
     }
 }
