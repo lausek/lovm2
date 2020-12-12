@@ -70,29 +70,32 @@ where
     })
 }
 
-// TODO: as the `Library` is always valid for this structure, it should be fine to
+// as the `Library` is always valid for this structure, it should be fine to
 // call `into_raw` on the loaded symbol and then use the function pointer afterwards.
 /// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
-pub struct SharedObjectSlot(Rc<Library>, String);
+pub struct SharedObjectSlot(
+    Rc<Library>,
+    #[cfg(unix)] ::libloading::os::unix::Symbol<ExternFunction>,
+    #[cfg(windows)] ::libloading::os::windows::Symbol<ExternFunction>,
+);
 
 impl SharedObjectSlot {
-    pub fn new(lib: Rc<Library>, name: String) -> Self {
-        Self(lib, name)
-    }
-}
-
-impl CallProtocol for SharedObjectSlot {
-    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+    pub fn new(lib: Rc<Library>, name: String) -> Lovm2Result<Self> {
         unsafe {
-            let (lib, name) = (&self.0, &self.1);
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
             match lookup {
-                Ok(symbol) => symbol(vm),
+                Ok(symbol) => Ok(Self(lib.clone(), symbol.into_raw())),
                 Err(_) => {
                     Err(format!("symbol `{}` cannot be loaded from shared object", name).into())
                 }
             }
         }
+    }
+}
+
+impl CallProtocol for SharedObjectSlot {
+    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+        unsafe { self.1(vm) }
     }
 }
 
