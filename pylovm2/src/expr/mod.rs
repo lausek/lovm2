@@ -7,10 +7,7 @@ use lovm2::prelude::{Cast, Operator2};
 use lovm2::var;
 
 pub use self::conv::*;
-
-pub(self) type Lovm2Access = lovm2::gen::Access;
-pub(self) type Lovm2Expr = lovm2::gen::Expr;
-pub(self) type Lovm2Value = lovm2::value::Value;
+use crate::lv2::*;
 
 macro_rules! auto_wrapper {
     ($method_name:ident, $($arg:expr),*) => {

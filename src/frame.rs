@@ -5,6 +5,8 @@
 
 use std::collections::HashMap;
 
+use lovm2_error::*;
+
 use crate::value::Value;
 use crate::var::Variable;
 
@@ -24,7 +26,9 @@ impl Frame {
         }
     }
 
-    pub fn value_of(&self, var: &Variable) -> Option<Value> {
-        self.locals.get(var).cloned()
+    pub fn value_of(&self, var: &Variable) -> Lovm2Result<&Value> {
+        self.locals
+            .get(var)
+            .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into())
     }
 }

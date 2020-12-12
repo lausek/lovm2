@@ -13,10 +13,12 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::code::{CallProtocol, CallableRef, CodeObject, ExternFunction};
-use crate::context::Context;
+use crate::code::{CallProtocol, CallableRef, CodeObject};
 use crate::module::{Module, Slots};
 use crate::var::Variable;
+use crate::vm::Vm;
+
+use super::ExternFunction;
 
 /// name of the unmangled function name to call when initializing module slots
 pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
@@ -68,6 +70,8 @@ where
     })
 }
 
+// TODO: as the `Library` is always valid for this structure, it should be fine to
+// call `into_raw` on the loaded symbol and then use the function pointer afterwards.
 /// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
 pub struct SharedObjectSlot(Rc<Library>, String);
 
@@ -78,12 +82,12 @@ impl SharedObjectSlot {
 }
 
 impl CallProtocol for SharedObjectSlot {
-    fn run(&self, ctx: &mut Context) -> Lovm2Result<()> {
+    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
         unsafe {
             let (lib, name) = (&self.0, &self.1);
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
             match lookup {
-                Ok(symbol) => symbol(ctx),
+                Ok(symbol) => symbol(vm),
                 Err(_) => {
                     Err(format!("symbol `{}` cannot be loaded from shared object", name).into())
                 }
