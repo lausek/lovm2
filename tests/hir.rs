@@ -1,28 +1,11 @@
 #![allow(unused_parens)]
 
 use lovm2::context::Context;
-use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
 
-fn run_module_test(module: Module, testfn: impl Fn(&mut Context) + 'static) {
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
-
-    let mut vm = Vm::with_std();
-    let called_ref = called.clone();
-    vm.set_interrupt(10, move |vm| {
-        called_ref.set(true);
-        testfn(&mut vm.ctx);
-        Ok(())
-    });
-
-    println!("{}", module);
-    vm.load_and_import_all(module).unwrap();
-    vm.run().unwrap();
-
-    assert!(called.get());
-}
+use test_utils::*;
 
 #[macro_export]
 macro_rules! define_test {
@@ -40,7 +23,7 @@ macro_rules! define_test {
             hir.step(Interrupt::new(10));
         )*
 
-        run_module_test(builder.build().unwrap(), $ensure);
+        run_module_test(Vm::with_std(), builder.build().unwrap(), $ensure).unwrap();
     }};
 }
 
@@ -214,10 +197,11 @@ fn true_branching() {
 
     hir.step(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), move |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
-    });
+    })
+    .unwrap();
 }
 
 #[test]
@@ -241,13 +225,14 @@ fn multiple_branches() {
 
     hir.step(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
             Value::from("buzz"),
             *frame.value_of(&lv2_var!(result)).unwrap()
         );
-    });
+    })
+    .unwrap();
 }
 
 #[test]
@@ -261,11 +246,12 @@ fn taking_parameters() {
 
     builder.entry().step(lv2_call!(called, 2, 7));
 
-    run_module_test(builder.build().unwrap(), move |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&a).unwrap());
         assert_eq!(Value::Int(7), *frame.value_of(&b).unwrap());
-    });
+    })
+    .unwrap();
 }
 
 #[test]
@@ -280,10 +266,11 @@ fn return_values() {
         .step(Assign::local(&n, Call::new("returner")))
         .step(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), move |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(10), *frame.value_of(&n).unwrap());
-    });
+    })
+    .unwrap();
 }
 
 #[test]
@@ -297,9 +284,10 @@ fn drop_call_values() {
         .step(Call::new("returner"))
         .step(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
         assert!(ctx.vstack.is_empty());
-    });
+    })
+    .unwrap();
 }
 
 #[test]
@@ -314,13 +302,14 @@ fn cast_to_string() {
     main.step(Assign::local(&d, Cast::to_str(true)));
     main.step(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), move |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::from("10"), *frame.value_of(&a).unwrap());
         assert_eq!(Value::from("10.1"), *frame.value_of(&b).unwrap());
         assert_eq!(Value::from("10"), *frame.value_of(&c).unwrap());
         assert_eq!(Value::from("true"), *frame.value_of(&d).unwrap());
-    });
+    })
+    .unwrap();
 }
 
 #[test]
@@ -340,12 +329,13 @@ fn folding_expr() {
     ))
     .step(Interrupt::new(10));
 
-    run_module_test(builder.build().unwrap(), move |ctx| {
+    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
         let n = ctx.value_of(&n).unwrap();
         assert_eq!(Value::Int(2), *a);
         assert_eq!(Value::Int(1), *n);
-    });
+    })
+    .unwrap();
 }
 
 #[test]

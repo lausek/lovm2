@@ -1,29 +1,7 @@
-use lovm2::context::Context;
-use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::vm::Vm;
 
-fn run_module_test(
-    mut vm: Vm,
-    module: Module,
-    testfn: impl Fn(&mut Context) + 'static,
-) -> Lovm2Result<()> {
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
-
-    let called_ref = called.clone();
-    vm.set_interrupt(10, move |vm| {
-        called_ref.set(true);
-        testfn(&mut vm.ctx);
-        Ok(())
-    });
-
-    vm.load_and_import_all(module).unwrap();
-    vm.run()?;
-
-    assert!(called.get());
-
-    Ok(())
-}
+use test_utils::*;
 
 #[test]
 fn load_avoid_sigabrt() {
