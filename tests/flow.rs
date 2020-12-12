@@ -39,7 +39,7 @@ fn store_global() {
 
     assert_eq!(
         Value::Int(42),
-        vm.context_mut().value_of(&lv2_var!(globaln)).unwrap()
+        *vm.context_mut().value_of(&lv2_var!(globaln)).unwrap()
     );
 }
 
@@ -77,19 +77,19 @@ fn calculation() {
 
     assert_eq!(
         Value::Int(5),
-        vm.context_mut().value_of(&lv2_var!(result_add)).unwrap()
+        *vm.context_mut().value_of(&lv2_var!(result_add)).unwrap()
     );
     assert_eq!(
         Value::Int(1),
-        vm.context_mut().value_of(&lv2_var!(result_sub)).unwrap()
+        *vm.context_mut().value_of(&lv2_var!(result_sub)).unwrap()
     );
     assert_eq!(
         Value::Int(6),
-        vm.context_mut().value_of(&lv2_var!(result_mul)).unwrap()
+        *vm.context_mut().value_of(&lv2_var!(result_mul)).unwrap()
     );
     assert_eq!(
         Value::Int(1),
-        vm.context_mut().value_of(&lv2_var!(result_div)).unwrap()
+        *vm.context_mut().value_of(&lv2_var!(result_div)).unwrap()
     );
 }
 
@@ -131,6 +131,6 @@ fn jumping() {
 
     assert_eq!(
         Value::Str("aaaaaaaaaa".to_string()),
-        vm.context_mut().value_of(&lv2_var!(output)).unwrap()
+        *vm.context_mut().value_of(&lv2_var!(output)).unwrap()
     );
 }

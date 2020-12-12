@@ -16,25 +16,6 @@ impl Context {
 
 #[pymethods]
 impl Context {
-    pub fn add_load_path(&mut self, path: String) -> PyResult<()> {
-        unsafe {
-            if !(*self.inner).load_paths.contains(&path) {
-                (*self.inner).load_paths.push(path);
-            }
-        }
-        Ok(())
-    }
-
-    pub fn clear_load_path(&mut self) {
-        unsafe {
-            (*self.inner).load_paths.clear();
-        }
-    }
-
-    pub fn load_path(&self) -> PyResult<Vec<String>> {
-        unsafe { Ok((*self.inner).load_paths.clone()) }
-    }
-
     pub fn frame(&mut self, py: Python) -> PyResult<PyObject> {
         unsafe {
             match (*self.inner).frame_mut() {

@@ -6,7 +6,10 @@ mod module;
 mod value;
 mod vm;
 
+use pyo3::exceptions::*;
 use pyo3::prelude::*;
+
+use lovm2::prelude::*;
 
 use self::expr::Expr;
 use self::module::{Module, ModuleBuilder, ModuleBuilderSlot};
@@ -22,4 +25,26 @@ fn pylovm2(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<Vm>()?;
 
     Ok(())
+}
+
+pub(crate) fn err_to_exception(e: Lovm2Error) -> PyErr {
+    let msg = e.to_string();
+    match &e.ty {
+        Lovm2ErrorTy::Custom(ty) => match ty.as_ref() {
+            "AssertionError" => PyAssertionError::new_err(msg),
+            "Exception" => PyException::new_err(msg),
+            "FileNotFoundError" => PyFileNotFoundError::new_err(msg),
+            "ImportError" => PyImportError::new_err(msg),
+            "ZeroDivisionError" => PyZeroDivisionError::new_err(msg),
+            _ => PyException::new_err(msg),
+        },
+        Lovm2ErrorTy::ModuleNotFound => PyImportError::new_err(msg),
+        _ => PyException::new_err(msg),
+    }
+}
+
+pub(crate) fn exception_to_err(e: &PyErr, py: Python) -> Lovm2Error {
+    let ty = e.ptype(py).name().to_string();
+    let msg = e.pvalue(py).to_string();
+    (ty, msg).into()
 }

@@ -5,9 +5,9 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
+use crate::err_to_exception;
 use crate::expr::any_to_ruvalue;
 use crate::lv2::*;
-use crate::vm::create_exception;
 
 pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
     match val {
@@ -112,7 +112,7 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
     fn __delitem__(&mut self, key: &PyAny) -> PyResult<()> {
         let key = any_to_ruvalue(key)?;
         let key = key.inner.borrow();
-        self.inner.borrow_mut().delete(key.clone()).unwrap();
+        self.inner.borrow_mut().delete(&key).unwrap();
         Ok(())
     }
 
@@ -122,7 +122,7 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
         let key = any_to_ruvalue(key)?;
         let key = key.inner.borrow();
         // TODO: avoid clone here
-        match self.inner.borrow().get(key.clone()) {
+        match self.inner.borrow().get(&key) {
             Ok(val) => {
                 let val = lovm2::value::box_value(val);
                 Ok(Value::from_struct(val).to_py(py))
@@ -145,11 +145,11 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
 
     fn __setitem__(&mut self, key: &PyAny, val: &PyAny) -> PyResult<()> {
         let (key, val) = (any_to_ruvalue(key)?, any_to_ruvalue(val)?);
-        let (key, val) = (key.inner.borrow().clone(), val.inner.borrow().clone());
+        let (key, val) = (key.inner.borrow(), val.inner.borrow().clone());
         self.inner
             .borrow_mut()
-            .set(key, val)
-            .map_err(create_exception)
+            .set(&key, val)
+            .map_err(err_to_exception)
     }
 }
 

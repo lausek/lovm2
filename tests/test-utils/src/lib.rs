@@ -11,9 +11,9 @@ pub fn run_module_test(
     let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
     let called_ref = called.clone();
-    vm.context_mut().set_interrupt(10, move |ctx| {
+    vm.set_interrupt(10, move |vm| {
         called_ref.set(true);
-        testfn(ctx);
+        testfn(&mut vm.ctx);
         Ok(())
     });
 

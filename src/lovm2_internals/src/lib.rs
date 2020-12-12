@@ -28,7 +28,7 @@ pub fn lovm2_builtin(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         impl CallProtocol for #struct_name {
-            fn run(&self, ctx: &mut Context) -> lovm2_error::Lovm2Result<()> {
+            fn run(&self, vm: &mut Vm) -> lovm2_error::Lovm2Result<()> {
                 #block
             }
         }
