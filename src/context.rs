@@ -11,6 +11,9 @@ use crate::module::Module;
 use crate::value::Value;
 use crate::var::Variable;
 
+pub const DEFAULT_LSTACK_SIZE: usize = 256;
+pub const DEFAULT_VSTACK_SIZE: usize = 256;
+
 /// the state of the virtual machine
 ///
 /// this contains all necessary runtime data and gets shared with objects that
@@ -36,8 +39,8 @@ impl Context {
             modules: HashMap::new(),
             globals: HashMap::new(),
             scope: HashMap::new(),
-            lstack: vec![],
-            vstack: vec![],
+            lstack: Vec::with_capacity(DEFAULT_LSTACK_SIZE),
+            vstack: Vec::with_capacity(DEFAULT_VSTACK_SIZE),
         }
     }
 
