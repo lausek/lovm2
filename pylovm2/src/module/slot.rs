@@ -3,8 +3,10 @@ use pyo3::types::PyList;
 
 use lovm2::gen;
 
-use super::builder::*;
+use crate::err_to_exception;
 use crate::lv2::*;
+
+use super::builder::*;
 
 #[derive(Clone)]
 pub(super) enum ModuleBuilderSlotInner {
@@ -44,7 +46,7 @@ impl ModuleBuilderSlot {
             let inner = &mut hir.code as *mut Lovm2Block;
             Ok(BlockBuilder { inner })
         } else {
-            unimplemented!()
+            Err(err_to_exception(format!("hir not loaded").into()))
         }
     }
 
