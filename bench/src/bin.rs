@@ -37,12 +37,7 @@ fn fibonacci(c: &mut Criterion) {
 
     fib_hir.step(Return::value(r));
 
-    c.bench_function("fib compile", |b| {
-        b.iter(|| {
-            let module = module.clone();
-            module.build().unwrap()
-        })
-    });
+    c.bench_function("fib compile", |b| b.iter(|| module.build().unwrap()));
 
     let module = module.build().unwrap();
 

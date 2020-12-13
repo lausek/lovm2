@@ -17,7 +17,7 @@ fn loading() -> ModuleBuilder {
 }
 
 fn main() {
-    let builder = loading();
+    let mut builder = loading();
 
     match builder.build() {
         Ok(result) => {

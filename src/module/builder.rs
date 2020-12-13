@@ -63,22 +63,26 @@ impl ModuleBuilder {
         self.hirs.get_mut(&name).unwrap()
     }
 
-    pub fn build(self) -> Lovm2CompileResult<Module> {
+    pub fn build(&mut self) -> Lovm2CompileResult<Module> {
         self.build_with_options(CompileOptions::default())
     }
 
-    pub fn build_with_options(mut self, options: CompileOptions) -> Lovm2CompileResult<Module> {
-        let mut ru = HirLoweringRuntime::new(self.meta, options);
+    pub fn build_with_options(&mut self, options: CompileOptions) -> Lovm2CompileResult<Module> {
+        // this needs a mutable reference to `self` because hir may gets a return
+        // instruction appended. maybe this could be done somewhere else?
+
+        let mut ru = HirLoweringRuntime::new(self.meta.clone(), options);
 
         // main entry point must be at start (offset 0)
-        let main_key = Variable::from(ENTRY_POINT);
-        if let Some(hir) = self.hirs.remove(&main_key) {
-            ru.emit(LirElement::entry(main_key));
+        let entry_key = Variable::from(ENTRY_POINT);
+
+        if let Some((key, hir)) = self.hirs.iter_mut().find(|(k, _)| **k == entry_key) {
+            ru.emit(LirElement::entry(key.clone()));
             hir.build(&mut ru)?;
         }
 
-        for (key, hir) in self.hirs.into_iter() {
-            ru.emit(LirElement::entry(key));
+        for (key, hir) in self.hirs.iter_mut().filter(|(k, _)| **k != entry_key) {
+            ru.emit(LirElement::entry(key.clone()));
             hir.build(&mut ru)?;
         }
 
