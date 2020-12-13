@@ -47,10 +47,10 @@ impl HirLoweringRuntime {
     }
 
     pub fn add_hir(&mut self, hir: Hir) -> Lovm2CompileResult<()> {
-        let hir_elements = hir.code.into_iter();
-
         // before lowering a code object function, reset locals
         self.locals.clear();
+
+        let hir_elements = hir.code.into_iter();
 
         self.add_prelude(hir.args)?;
 

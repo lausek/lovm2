@@ -55,14 +55,15 @@ impl Hir {
         hir
     }
 
-    pub fn build(mut self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
+    pub fn build(&mut self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
         // automatically add a `return nil` if not present already
         match self.code.last_mut() {
             Some(HirElement::Return(_)) => {}
             _ => self.code.step(Return::nil()),
         }
 
-        ru.add_hir(self)
+        // TODO: avoid clone here. needs change of `HirLoweringRuntime`
+        ru.add_hir(self.clone())
     }
 }
 

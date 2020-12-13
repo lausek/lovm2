@@ -52,8 +52,7 @@ main_hir.step(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
 // ... this is equivalent to the developer-friendly version:
 main_hir.step(lv2_call!(print, n, "Hello World"));
 
-// consumes the `ModuleBuilder` and transforms
-// it into a `Module`
+// creates a `Module` from the `ModuleBuilder`
 let module = module.build().unwrap();
 println!("{}", module);
 

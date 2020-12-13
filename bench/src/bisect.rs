@@ -104,12 +104,7 @@ pub fn bisect(c: &mut Criterion) {
     derive_hir(&mut module);
     bisect_hir(&mut module);
 
-    c.bench_function("bisect compile", |b| {
-        b.iter(|| {
-            let module = module.clone();
-            module.build().unwrap()
-        })
-    });
+    c.bench_function("bisect compile", |b| b.iter(|| module.build().unwrap()));
 
     let module = module.build().unwrap();
 
