@@ -9,21 +9,14 @@ use crate::lv2::*;
 use super::builder::*;
 
 #[derive(Clone)]
-pub(super) enum ModuleBuilderSlotInner {
-    Lovm2Hir(Option<gen::Hir>),
-    PyFn(Option<PyObject>),
-}
-
-#[derive(Clone)]
-pub(super) struct ModuleBuilderSlot {
-    pub(super) inner: ModuleBuilderSlotInner,
+pub(super) enum ModuleBuilderSlot {
+    Lovm2Hir(gen::Hir),
+    PyFn(PyObject),
 }
 
 impl ModuleBuilderSlot {
     pub fn new() -> Self {
-        Self {
-            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::Hir::new())),
-        }
+        Self::Lovm2Hir(gen::Hir::new())
     }
 
     pub fn with_args(args: &PyList) -> Self {
@@ -35,24 +28,19 @@ impl ModuleBuilderSlot {
             vars.push(Variable::from(name));
         }
 
-        Self {
-            inner: ModuleBuilderSlotInner::Lovm2Hir(Some(gen::Hir::with_args(vars))),
-        }
-    }
-
-    pub fn code(&mut self) -> PyResult<BlockBuilder> {
-        if let ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) = self.inner {
-            let hir = hir.as_mut().unwrap();
-            let inner = &mut hir.code as *mut Lovm2Block;
-            Ok(BlockBuilder { inner })
-        } else {
-            Err(err_to_exception(format!("hir not loaded").into()))
-        }
+        Self::Lovm2Hir(gen::Hir::with_args(vars))
     }
 
     pub fn pyfn(pyfn: PyObject) -> Self {
-        Self {
-            inner: ModuleBuilderSlotInner::PyFn(Some(pyfn)),
+        Self::PyFn(pyfn)
+    }
+
+    pub fn code(&mut self) -> PyResult<BlockBuilder> {
+        if let Self::Lovm2Hir(ref mut hir) = self {
+            let inner = &mut hir.code as *mut Lovm2Block;
+            Ok(BlockBuilder { inner })
+        } else {
+            Err(err_to_exception(format!("slot is not a hir").into()))
         }
     }
 }

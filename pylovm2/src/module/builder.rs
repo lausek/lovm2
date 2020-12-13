@@ -12,7 +12,7 @@ use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
 use crate::lv2::*;
 
-use super::{slot::ModuleBuilderSlotInner, Module, ModuleBuilderSlot};
+use super::{Module, ModuleBuilderSlot};
 
 #[pyclass(unsendable)]
 pub struct ModuleBuilder {
@@ -74,16 +74,12 @@ impl ModuleBuilder {
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: ModuleBuilderSlot = co_builder;
 
-            match &mut co_builder.inner {
-                ModuleBuilderSlotInner::Lovm2Hir(ref mut hir) => {
-                    if let Some(hir) = hir.take() {
-                        *builder.add(key) = hir;
-                    } else {
-                        return Err(PyRuntimeError::new_err("hir was already built"));
-                    }
+            match &mut co_builder {
+                ModuleBuilderSlot::Lovm2Hir(ref mut hir) => {
+                    *builder.add(key) = hir.clone();
                 }
-                ModuleBuilderSlotInner::PyFn(ref mut pyfn) => {
-                    let func = CodeObject::from(pyfn.take().unwrap());
+                ModuleBuilderSlot::PyFn(ref mut pyfn) => {
+                    let func = CodeObject::from(pyfn.clone());
                     slots.insert(key, Rc::new(func));
                 }
             }
