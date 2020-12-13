@@ -8,9 +8,11 @@ let main_hir = builder.entry();
 // ...
 
 let equal_check = main_hir.branch();
+
 equal_check
-    .add_condition()
+    .add_condition(expr)
     .step(...);
+
 equal_check
     .default_condition()
     .step(...);
