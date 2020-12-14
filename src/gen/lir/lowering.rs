@@ -179,8 +179,13 @@ impl LirLoweringRuntime {
             LirElement::Get => self.code.push(Instruction::Get),
             LirElement::Getr => self.code.push(Instruction::Getr),
             LirElement::Interrupt(n) => self.code.push(Instruction::Interrupt(n)),
-            LirElement::Load => self.code.push(Instruction::Load),
-            LirElement::Import => self.code.push(Instruction::Import),
+            LirElement::Import { namespaced } => {
+                if namespaced {
+                    self.code.push(Instruction::NImport);
+                } else {
+                    self.code.push(Instruction::Import);
+                }
+            }
             LirElement::Ret => self.code.push(Instruction::Ret),
             LirElement::Set => self.code.push(Instruction::Set),
             LirElement::Slice => self.code.push(Instruction::Slice),

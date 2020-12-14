@@ -37,6 +37,9 @@ pub enum LirElement {
         ident: Variable,
         scope: Scope,
     },
+    Import {
+        namespaced: bool,
+    },
 
     Box,
     Discard,
@@ -44,8 +47,6 @@ pub enum LirElement {
     Get,
     Getr,
     Interrupt(u16),
-    Load,
-    Import,
     Ret,
     Set,
     Slice,

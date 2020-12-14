@@ -198,7 +198,7 @@ impl BlockBuilder {
     pub fn load(&mut self, name: &Expr) -> PyResult<()> {
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).step(Include::load(name.inner.clone()));
+            (*self.inner).step(Include::import(name.inner.clone()));
         }
         Ok(())
     }

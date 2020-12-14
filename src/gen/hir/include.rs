@@ -6,27 +6,27 @@ use super::*;
 #[derive(Clone)]
 pub struct Include {
     name: Expr,
-    import: bool,
+    namespaced: bool,
 }
 
 impl Include {
-    pub fn load<T>(name: T) -> Self
-    where
-        T: Into<Expr>,
-    {
-        Self {
-            name: name.into(),
-            import: false,
-        }
-    }
-
     pub fn import<T>(name: T) -> Self
     where
         T: Into<Expr>,
     {
         Self {
             name: name.into(),
-            import: true,
+            namespaced: true,
+        }
+    }
+
+    pub fn import_global<T>(name: T) -> Self
+    where
+        T: Into<Expr>,
+    {
+        Self {
+            name: name.into(),
+            namespaced: false,
         }
     }
 }
@@ -35,10 +35,8 @@ impl HirLowering for Include {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.name.lower(runtime);
 
-        let elem = if self.import {
-            LirElement::Import
-        } else {
-            LirElement::Load
+        let elem = LirElement::Import {
+            namespaced: self.namespaced,
         };
         runtime.emit(elem);
     }

@@ -43,7 +43,7 @@ fn deserialize_module() {
     let module = Module::load_from_file(DESERIALIZE_PATH).unwrap();
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
     let n = vm.context_mut().value_of(n).unwrap();
@@ -76,7 +76,7 @@ fn global_uses() {
         Ok(Some(CodeObject::new().into()))
     });
 
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
     assert!(called.get());

@@ -37,7 +37,7 @@
 //!
 //! // load the module and run it
 //! let mut vm = Vm::with_std();
-//! vm.load_and_import_all(module).expect("load error");
+//! vm.add_main_module(module).expect("load error");
 //! vm.run().expect("run error");
 //! ```
 

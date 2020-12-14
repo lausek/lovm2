@@ -88,7 +88,7 @@ impl Vm {
 
     pub fn with_std() -> Self {
         let mut vm = Self::new();
-        vm.load_and_import_all(create_standard_module()).unwrap();
+        vm.add_module(create_standard_module(), false).unwrap();
         vm
     }
 
@@ -126,6 +126,7 @@ impl Vm {
     fn load_and_import_filter(
         &mut self,
         module: Module,
+        // TODO: remove this
         filter: impl Fn(&Variable) -> bool,
         importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
     ) -> Lovm2Result<()> {
@@ -133,7 +134,7 @@ impl Vm {
             // load static dependencies of module
             for used_module in module.uses() {
                 // static dependencies are imported
-                self.load_and_import_by_name(used_module, module.location().cloned(), true)?;
+                self.add_module_by_name(used_module, module.location().cloned(), true)?;
             }
 
             let module = Rc::new(module);
@@ -168,11 +169,11 @@ impl Vm {
 
     /// lookup a module name in `load_paths` and add it to the context.
     /// `relative_to` is expected to be an absolute path to importing module
-    pub fn load_and_import_by_name(
+    pub fn add_module_by_name(
         &mut self,
         name: &str,
         relative_to: Option<String>,
-        import: bool,
+        namespaced: bool,
     ) -> Lovm2Result<()> {
         if self.ctx.modules.get(name).is_some() {
             return Ok(());
@@ -205,23 +206,30 @@ impl Vm {
             module = Some(Module::load_from_file(path)?);
         }
 
+        self.add_module(module.unwrap(), namespaced)
+    }
+
+    /// add the module and all of its slots to `scope`
+    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
+    where
+        T: Into<Module>,
+    {
         // if `import` was set, all function names should be patched with the import_hook
-        let import_hook = if import {
+        let import_hook = if namespaced {
             self.import_hook.clone()
         } else {
             None
         };
 
-        self.load_and_import_filter(module.unwrap(), filter_entry_reimport, import_hook)
+        self.load_and_import_filter(module.into(), filter_entry_reimport, import_hook)
     }
 
     /// add the module and all of its slots to `scope`
-    pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
+    pub fn add_main_module<T>(&mut self, module: T) -> Lovm2Result<()>
     where
         T: Into<Module>,
     {
-        let import_hook = self.import_hook.clone();
-        self.load_and_import_filter(module.into(), |_| false, import_hook)
+        self.load_and_import_filter(module.into(), |_| false, self.import_hook.clone())
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
@@ -364,9 +372,10 @@ impl Vm {
                 Instruction::Cast(tid) => {
                     self.ctx.last_value_mut()?.cast_inplace(*tid)?;
                 }
-                Instruction::Load | Instruction::Import => {
+                Instruction::Import | Instruction::NImport => {
                     let name = self.ctx.pop_value()?;
                     let name = name.as_str_inner()?;
+                    let namespaced = *inx == Instruction::NImport;
                     // path to the modules source code
                     let relative_to = if let Some(mname) = co.module() {
                         self.ctx
@@ -378,8 +387,7 @@ impl Vm {
                         None
                     };
 
-                    let import = *inx == Instruction::Import;
-                    self.load_and_import_by_name(name.as_ref(), relative_to, import)?;
+                    self.add_module_by_name(name.as_ref(), relative_to, namespaced)?;
                 }
                 Instruction::Box => {
                     let value = self.ctx.pop_value()?;

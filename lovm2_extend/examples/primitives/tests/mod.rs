@@ -25,7 +25,7 @@ fn create_caller(modder: fn(&mut Hir)) -> Vm {
     println!("{}", module);
 
     let mut vm = create_vm();
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
     vm

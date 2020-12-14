@@ -17,7 +17,7 @@ fn run_module_test(
         Ok(())
     });
 
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run()?;
 
     assert!(called.get());
@@ -29,7 +29,7 @@ fn run_module_test(
 fn load_hook_none() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
-    hir.step(Include::load("notfound"));
+    hir.step(Include::import("notfound"));
     hir.step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
@@ -45,7 +45,7 @@ fn load_custom_module() {
     let mut builder = ModuleBuilder::named("main");
     let hir = builder.entry();
     let n = &lv2_var!(n);
-    hir.step(Include::load("extern"));
+    hir.step(Include::import("extern"));
     hir.step(Assign::local(n, Call::new("calc")));
     hir.step(Interrupt::new(10));
 

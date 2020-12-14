@@ -112,7 +112,7 @@ pub fn bisect(c: &mut Criterion) {
     //assert_eq!(317, module.to_bytes().unwrap().len());
 
     let mut vm = create_vm();
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
 
     // f(x)=2x^3 + 2x^2 - x
     c.bench_function("bisect f", |b| {

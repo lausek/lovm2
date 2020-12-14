@@ -81,7 +81,7 @@ impl Vm {
             .take()
             .expect("given module was already loaded");
         self.inner
-            .load_and_import_all(module)
+            .add_main_module(module)
             .map_err(err_to_exception)
     }
 

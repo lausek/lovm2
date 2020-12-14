@@ -433,7 +433,7 @@ fn call_into_vm() {
         called_ref.set(true);
         Ok(())
     });
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.call("call_me", &[Value::Int(10)]).unwrap();
 
     assert!(called.get());
