@@ -24,18 +24,9 @@ pub struct ModuleBuilder {
 #[pymethods]
 impl ModuleBuilder {
     #[new]
-    pub fn new() -> Self {
+    pub fn new(name: Option<String>) -> Self {
         Self {
-            name: "<unknown>".to_string(),
-            slots: HashMap::new(),
-            uses: vec![],
-        }
-    }
-
-    #[classmethod]
-    pub fn named(_this: &PyAny, name: String) -> Self {
-        Self {
-            name,
+            name: name.unwrap_or("<unknown>".to_string()),
             slots: HashMap::new(),
             uses: vec![],
         }

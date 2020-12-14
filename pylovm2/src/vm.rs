@@ -75,14 +75,22 @@ impl Vm {
         Ok(Context::new(self.inner.context_mut()))
     }
 
-    pub fn load(&mut self, module: &mut Module) -> PyResult<()> {
+    pub fn add_module(&mut self, module: &mut Module) -> PyResult<()> {
         let module = module
             .inner
             .take()
             .expect("given module was already loaded");
         self.inner
-            .add_main_module(module)
+            .add_module(module, true)
             .map_err(err_to_exception)
+    }
+
+    pub fn add_main_module(&mut self, module: &mut Module) -> PyResult<()> {
+        let module = module
+            .inner
+            .take()
+            .expect("given module was already loaded");
+        self.inner.add_main_module(module).map_err(err_to_exception)
     }
 
     pub fn run(&mut self) -> PyResult<()> {

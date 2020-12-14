@@ -34,7 +34,7 @@ print(module)
 
 # create vm, load and run module
 vm = Vm.with_std()
-vm.load(module)
+vm.add_module(module)
 vm.run()
 ```
 

@@ -70,6 +70,8 @@ impl LirLoweringRuntime {
             self.emit(lir_element)?;
         }
 
+        self.postprocess();
+
         let mut co = CodeObject::new();
 
         co.name = self.meta.name;
@@ -93,7 +95,6 @@ impl LirLoweringRuntime {
             LirElement::Cast { tyid } => self.code.push(Instruction::Cast(tyid)),
             LirElement::Entry { ident } => {
                 let iidx = self.index_ident(&ident);
-                // TODO: is this correct?
                 let off = self.code.len();
                 self.entries.push((iidx, off));
             }
@@ -192,6 +193,25 @@ impl LirLoweringRuntime {
         }
 
         Ok(())
+    }
+
+    fn postprocess(&mut self) {
+        for inx in self.code.iter_mut() {
+            match inx {
+                Instruction::Call(argn, iidx) => {
+                    // if the calls target name was declared inside the current module
+                    if self
+                        .entries
+                        .iter()
+                        .find(|(idx, _)| *idx == *iidx as usize)
+                        .is_some()
+                    {
+                        *inx = Instruction::LCall(*argn, *iidx);
+                    }
+                }
+                _ => {}
+            }
+        }
     }
 
     fn index_const(&mut self, val: &Value) -> usize {

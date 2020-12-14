@@ -414,7 +414,7 @@ fn is_constant() {
 
 #[test]
 fn call_into_vm() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = ModuleBuilder::named("main");
 
     builder
         .add_with_args("call_me", vec![lv2_var!(n)])
@@ -433,7 +433,7 @@ fn call_into_vm() {
         called_ref.set(true);
         Ok(())
     });
-    vm.add_main_module(module).unwrap();
+    vm.add_module(module, false).unwrap();
     vm.call("call_me", &[Value::Int(10)]).unwrap();
 
     assert!(called.get());

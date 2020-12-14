@@ -154,5 +154,5 @@ class TestBuilding(Test):
     def test_pynative_function(self, internals):
         internals.mod.add_pyfn('powr', lambda x: int(x) ** 2)
         result = internals.mod.build()
-        internals.vm.load(result)
-        self.assertEqual(4, int(internals.vm.call('powr', 2)))
+        internals.vm.add_module(result)
+        self.assertEqual(4, int(internals.vm.call('main.powr', 2)))

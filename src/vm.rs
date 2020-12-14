@@ -143,8 +143,6 @@ impl Vm {
                     continue;
                 }
 
-                let is_entry_point = key.as_ref() == crate::prelude::ENTRY_POINT;
-
                 let key = if let Some(ref importer) = importer {
                     importer(module.name().as_ref(), key.as_ref()).into()
                 } else {
@@ -154,10 +152,6 @@ impl Vm {
                 // this overwrites the slot with the new function. maybe not so good
                 if self.ctx.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                }
-
-                if is_entry_point {
-                    self.ctx.entry = Some(co.clone());
                 }
             }
 
@@ -229,20 +223,26 @@ impl Vm {
     where
         T: Into<Module>,
     {
-        self.load_and_import_filter(module.into(), |_| false, self.import_hook.clone())
+        let module = module.into();
+        let co = module
+            .slots
+            .get(&crate::prelude::ENTRY_POINT.into())
+            .unwrap();
+        self.ctx.entry = Some(co.clone());
+        self.add_module(module, true)
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
-    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<()> {
+    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<Value> {
         self.ctx.push_frame(0);
         co.run(self)?;
         self.ctx.pop_frame();
 
-        Ok(())
+        self.ctx.pop_value()
     }
 
     /// start the execution at `ENTRY_POINT`
-    pub fn run(&mut self) -> Lovm2Result<()> {
+    pub fn run(&mut self) -> Lovm2Result<Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
         } else {
@@ -361,6 +361,16 @@ impl Vm {
                     let other_co = self.ctx.lookup_code_object(func)?;
                     self.ctx.push_frame(*argn);
                     other_co.run(self)?;
+                    self.ctx.pop_frame();
+                }
+                Instruction::LCall(argn, gidx) => {
+                    let (_, off) = co
+                        .entries
+                        .iter()
+                        .find(|(iidx, _)| *iidx == *gidx as usize)
+                        .unwrap_or_else(|| todo!());
+                    self.ctx.push_frame(*argn);
+                    self.run_bytecode(co, *off)?;
                     self.ctx.pop_frame();
                 }
                 Instruction::Ret => break,

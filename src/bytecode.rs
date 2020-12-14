@@ -68,6 +68,8 @@ pub enum Instruction {
 
     /// call function with `argn`, `global index`
     Call(u8, u16),
+    /// call a function in the same module
+    LCall(u8, u16),
     /// return early from a code object
     Ret,
 

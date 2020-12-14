@@ -43,11 +43,13 @@ fn load_hook_none() {
 #[test]
 fn load_custom_module() {
     let mut builder = ModuleBuilder::named("main");
-    let hir = builder.entry();
     let n = &lv2_var!(n);
-    hir.step(Include::import("extern"));
-    hir.step(Assign::local(n, Call::new("calc")));
-    hir.step(Interrupt::new(10));
+
+    builder
+        .entry()
+        .step(Include::import("extern"))
+        .step(Assign::local(n, Call::new("extern.calc")))
+        .step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 
@@ -56,8 +58,37 @@ fn load_custom_module() {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
 
-        let hir = builder.add("calc");
-        hir.step(Return::value(Expr::add(1, 1)));
+        builder.add("calc").step(Return::value(Expr::add(1, 1)));
+
+        Ok(Some(builder.build().unwrap().into()))
+    });
+
+    run_module_test(vm, module, |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(2), *frame.value_of(&lv2_var!(n)).unwrap());
+    })
+    .unwrap();
+}
+
+#[test]
+fn import_global_scope() {
+    let mut builder = ModuleBuilder::named("main");
+    let n = &lv2_var!(n);
+
+    builder
+        .entry()
+        .step(Include::import_global("extern"))
+        .step(Assign::local(n, Call::new("calc")))
+        .step(Interrupt::new(10));
+
+    let module = builder.build().unwrap();
+
+    let mut vm = Vm::with_std();
+    vm.set_load_hook(|req| {
+        assert_eq!("extern", req.module);
+        let mut builder = ModuleBuilder::named("extern");
+
+        builder.add("calc").step(Return::value(Expr::add(1, 1)));
 
         Ok(Some(builder.build().unwrap().into()))
     });

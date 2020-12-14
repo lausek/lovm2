@@ -16,10 +16,10 @@ fn pushing_constant() {
         }
     };
 
-    vm.run_object(&co).unwrap();
+    let result = vm.run_object(&co).unwrap();
 
-    assert_eq!(1, vm.context_mut().stack_mut().len());
-    assert_eq!(Value::Int(2), vm.context_mut().pop_value().unwrap());
+    assert!(vm.context_mut().stack_mut().is_empty());
+    assert_eq!(Value::Int(2), result);
 }
 
 #[test]
@@ -32,6 +32,7 @@ fn store_global() {
         {
             Pushc 0;
             Moveg 0;
+            Pushc 0;
         }
     };
 
@@ -70,6 +71,8 @@ fn calculation() {
             Pushc 0;
             Div;
             Moveg 3;
+
+            Pushc 0;
         }
     };
 
@@ -124,6 +127,8 @@ fn jumping() {
             Jt 17;
 
             Jmp 4;
+
+            Pushc 0;
         }
     };
 
