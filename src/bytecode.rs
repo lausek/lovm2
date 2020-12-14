@@ -78,6 +78,9 @@ pub enum Instruction {
     Cast(u16),
     /// take top of stack as name of module to load
     Load,
+    /// take top of stack as name of module to import. function name will be padded using the
+    /// import hook
+    Import,
     /// turn the value on stack into a referenceable value.
     /// lists and dicts are boxed deeply
     Box,

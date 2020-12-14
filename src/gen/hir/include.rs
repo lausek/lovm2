@@ -6,6 +6,7 @@ use super::*;
 #[derive(Clone)]
 pub struct Include {
     name: Expr,
+    import: bool,
 }
 
 impl Include {
@@ -13,13 +14,32 @@ impl Include {
     where
         T: Into<Expr>,
     {
-        Self { name: name.into() }
+        Self {
+            name: name.into(),
+            import: false,
+        }
+    }
+
+    pub fn import<T>(name: T) -> Self
+    where
+        T: Into<Expr>,
+    {
+        Self {
+            name: name.into(),
+            import: true,
+        }
     }
 }
 
 impl HirLowering for Include {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.name.lower(runtime);
-        runtime.emit(LirElement::Load);
+
+        let elem = if self.import {
+            LirElement::Import
+        } else {
+            LirElement::Load
+        };
+        runtime.emit(elem);
     }
 }

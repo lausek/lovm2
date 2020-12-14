@@ -57,7 +57,7 @@ fn global_uses() {
     const PRELOADED: &str = "preloaded";
 
     let mut builder = ModuleBuilder::new();
-    builder.add_dependency(PRELOADED.into());
+    builder.add_dependency(PRELOADED);
 
     let main_hir = builder.entry();
     main_hir.step(Assign::global(&lv2_var!(n), 10));

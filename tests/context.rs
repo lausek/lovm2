@@ -27,10 +27,11 @@ fn load_avoid_sigabrt() {
 fn avoid_double_import() {
     let mut builder = ModuleBuilder::named("main");
 
-    let main_hir = builder.entry();
-    main_hir.step(Include::load("abc"));
-    main_hir.step(Include::load("abc"));
-    main_hir.step(Interrupt::new(10));
+    builder
+        .entry()
+        .step(Include::load("abc"))
+        .step(Include::load("abc"))
+        .step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
 
@@ -41,5 +42,6 @@ fn avoid_double_import() {
         let module = builder.build().unwrap();
         Ok(Some(module.into()))
     });
-    assert!(run_module_test(vm, module, |_ctx| ()).is_ok());
+
+    run_module_test(vm, module, |_ctx| ()).unwrap();
 }

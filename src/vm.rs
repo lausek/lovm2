@@ -37,6 +37,11 @@ pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
 pub type ImportHookFn = dyn Fn(&str, &str) -> String;
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
 
+pub struct LoadRequest {
+    pub module: String,
+    pub relative_to: Option<String>,
+}
+
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
         let second = $vm.ctx.pop_value()?;
@@ -71,7 +76,7 @@ impl Vm {
         Self {
             ctx: Context::new(),
 
-            import_hook: None,
+            import_hook: Some(Rc::new(default_load_hook)),
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![format!(
@@ -127,7 +132,8 @@ impl Vm {
         if self.ctx.modules.get(module.name()).is_none() {
             // load static dependencies of module
             for used_module in module.uses() {
-                self.load_and_import_by_name(used_module, module.location().cloned())?;
+                // static dependencies are imported
+                self.load_and_import_by_name(used_module, module.location().cloned(), true)?;
             }
 
             let module = Rc::new(module);
@@ -136,9 +142,20 @@ impl Vm {
                     continue;
                 }
 
+                let is_entry_point = key.as_ref() == crate::prelude::ENTRY_POINT;
+
+                let key = if let Some(ref importer) = importer {
+                    importer(module.name().as_ref(), key.as_ref()).into()
+                } else {
+                    key.clone()
+                };
+
+                // this overwrites the slot with the new function. maybe not so good
                 if self.ctx.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                } else if key.as_ref() == crate::prelude::ENTRY_POINT {
+                }
+
+                if is_entry_point {
                     self.ctx.entry = Some(co.clone());
                 }
             }
@@ -155,6 +172,7 @@ impl Vm {
         &mut self,
         name: &str,
         relative_to: Option<String>,
+        import: bool,
     ) -> Lovm2Result<()> {
         if self.ctx.modules.get(name).is_some() {
             return Ok(());
@@ -187,7 +205,12 @@ impl Vm {
             module = Some(Module::load_from_file(path)?);
         }
 
-        let import_hook = self.import_hook.as_ref().cloned();
+        // if `import` was set, all function names should be patched with the import_hook
+        let import_hook = if import {
+            self.import_hook.clone()
+        } else {
+            None
+        };
 
         self.load_and_import_filter(module.unwrap(), filter_entry_reimport, import_hook)
     }
@@ -197,7 +220,8 @@ impl Vm {
     where
         T: Into<Module>,
     {
-        self.load_and_import_filter(module.into(), |_| false, None)
+        let import_hook = self.import_hook.clone();
+        self.load_and_import_filter(module.into(), |_| false, import_hook)
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
@@ -340,7 +364,7 @@ impl Vm {
                 Instruction::Cast(tid) => {
                     self.ctx.last_value_mut()?.cast_inplace(*tid)?;
                 }
-                Instruction::Load => {
+                Instruction::Load | Instruction::Import => {
                     let name = self.ctx.pop_value()?;
                     let name = name.as_str_inner()?;
                     // path to the modules source code
@@ -353,7 +377,9 @@ impl Vm {
                     } else {
                         None
                     };
-                    self.load_and_import_by_name(name.as_ref(), relative_to)?;
+
+                    let import = *inx == Instruction::Import;
+                    self.load_and_import_by_name(name.as_ref(), relative_to, import)?;
                 }
                 Instruction::Box => {
                     let value = self.ctx.pop_value()?;
@@ -459,7 +485,7 @@ pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
     }
 }
 
-pub struct LoadRequest {
-    pub module: String,
-    pub relative_to: Option<String>,
+#[inline]
+fn default_load_hook(module: &str, name: &str) -> String {
+    format!("{}.{}", module, name)
 }

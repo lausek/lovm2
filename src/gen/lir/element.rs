@@ -45,6 +45,7 @@ pub enum LirElement {
     Getr,
     Interrupt(u16),
     Load,
+    Import,
     Ret,
     Set,
     Slice,

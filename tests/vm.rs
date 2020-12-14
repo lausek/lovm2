@@ -52,7 +52,8 @@ fn load_custom_module() {
     let module = builder.build().unwrap();
 
     let mut vm = Vm::with_std();
-    vm.set_load_hook(|_name| {
+    vm.set_load_hook(|req| {
+        assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
 
         let hir = builder.add("calc");
@@ -64,6 +65,44 @@ fn load_custom_module() {
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&lv2_var!(n)).unwrap());
+    })
+    .unwrap();
+}
+
+#[test]
+fn import_vice_versa() {
+    const PASSED_VALUE: Value = Value::Int(72);
+    let (n, result) = &lv2_var!(n, result);
+
+    let mut builder = ModuleBuilder::named("main");
+    builder
+        .entry()
+        .step(Include::import("extern"))
+        .step(Call::new("extern.callextern"))
+        .step(Interrupt::new(10));
+
+    builder
+        .add_with_args("callmain", vec![n.clone()])
+        .step(Assign::global(result, n))
+        .step(Return::value(2));
+
+    let module = builder.build().unwrap();
+
+    let mut vm = Vm::with_std();
+    vm.set_load_hook(|req| {
+        assert_eq!("extern", req.module);
+        let mut builder = ModuleBuilder::named("extern");
+
+        builder
+            .add("callextern")
+            .step(Include::import("main"))
+            .step(Call::new("main.callmain").arg(PASSED_VALUE));
+
+        Ok(Some(builder.build().unwrap().into()))
+    });
+
+    run_module_test(vm, module, |ctx| {
+        assert_eq!(PASSED_VALUE, *ctx.value_of(&lv2_var!(result)).unwrap());
     })
     .unwrap();
 }
