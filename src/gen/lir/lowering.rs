@@ -157,28 +157,28 @@ impl LirLoweringRuntime {
             }
             LirElement::PushConstant { value } => {
                 let cidx = self.index_const(&value) as u16;
-                self.code.push(Instruction::Pushc(cidx));
+                self.code.push(Instruction::CPush(cidx));
             }
             LirElement::PushDynamic { ident, scope } => {
                 let iidx = self.index_ident(&ident) as u16;
                 match scope {
-                    Scope::Global => self.code.push(Instruction::Pushg(iidx)),
-                    Scope::Local => self.code.push(Instruction::Pushl(iidx)),
+                    Scope::Global => self.code.push(Instruction::GPush(iidx)),
+                    Scope::Local => self.code.push(Instruction::LPush(iidx)),
                 }
             }
             LirElement::StoreDynamic { ident, scope } => {
                 let iidx = self.index_ident(&ident) as u16;
                 match scope {
-                    Scope::Global => self.code.push(Instruction::Moveg(iidx)),
-                    Scope::Local => self.code.push(Instruction::Movel(iidx)),
+                    Scope::Global => self.code.push(Instruction::GMove(iidx)),
+                    Scope::Local => self.code.push(Instruction::LMove(iidx)),
                 }
             }
 
             LirElement::Box => self.code.push(Instruction::Box),
-            LirElement::Discard => self.code.push(Instruction::Discard),
+            LirElement::Drop => self.code.push(Instruction::Drop),
             LirElement::Duplicate => self.code.push(Instruction::Dup),
             LirElement::Get => self.code.push(Instruction::Get),
-            LirElement::Getr => self.code.push(Instruction::Getr),
+            LirElement::RGet => self.code.push(Instruction::RGet),
             LirElement::Interrupt(n) => self.code.push(Instruction::Interrupt(n)),
             LirElement::Import { namespaced } => {
                 if namespaced {

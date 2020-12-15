@@ -23,16 +23,16 @@ pub enum LirElement {
     Label(Label),
     // Add, Sub, Mul, Div, Pow, Rem, And, Or, Not, Eq, Ne, Ge, Gt, Le, Lt
     Operation(Operator),
-    // Pushc(u16)
+    // CPush(u16)
     PushConstant {
         value: Value,
     },
-    // Pushl(u16), Pushg(u16),
+    // LPush(u16), GPush(u16),
     PushDynamic {
         ident: Variable,
         scope: Scope,
     },
-    // Movel(u16), Moveg(u16)
+    // LMove(u16), GMove(u16)
     StoreDynamic {
         ident: Variable,
         scope: Scope,
@@ -42,10 +42,10 @@ pub enum LirElement {
     },
 
     Box,
-    Discard,
+    Drop,
     Duplicate,
     Get,
-    Getr,
+    RGet,
     Interrupt(u16),
     Ret,
     Set,
@@ -108,7 +108,7 @@ impl std::fmt::Display for LirElement {
             Self::Jump { condition, label } => write!(f, "\tJump({:?}, {})", condition, label),
             Self::Label(label) => write!(f, "{}:", label),
             Self::Operation(operator) => write!(f, "\t{:?}", operator),
-            Self::PushConstant { value } => write!(f, "\tPushc({})", value),
+            Self::PushConstant { value } => write!(f, "\tCPush({})", value),
             Self::PushDynamic { ident, scope } => write!(f, "\tPush({:?}, {})", scope, ident),
             Self::StoreDynamic { ident, scope } => write!(f, "\tStore({:?}, {})", scope, ident),
             Self::Interrupt(n) => write!(f, "\tInterrupt({})", n),

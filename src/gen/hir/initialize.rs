@@ -83,7 +83,7 @@ impl HirLowering for Initialize {
         for (key, expr) in self.slots.into_iter() {
             runtime.emit(LirElement::Duplicate);
             key.lower(runtime);
-            runtime.emit(LirElement::Getr);
+            runtime.emit(LirElement::RGet);
             expr.lower(runtime);
             runtime.emit(LirElement::Set);
         }

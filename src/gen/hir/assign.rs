@@ -117,12 +117,12 @@ impl Assign {
         // push key onto stack
         if let Some(key) = key_it.next() {
             key.lower(runtime);
-            runtime.emit(LirElement::Getr);
+            runtime.emit(LirElement::RGet);
 
             while key_it.peek().is_some() {
                 let key = key_it.next().unwrap();
                 key.lower(runtime);
-                runtime.emit(LirElement::Getr);
+                runtime.emit(LirElement::RGet);
             }
         }
 

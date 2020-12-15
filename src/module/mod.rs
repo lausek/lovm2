@@ -148,13 +148,13 @@ impl std::fmt::Display for Module {
                 write!(f, "\t{: >4}. {:<16}", off, format!("{:?}", inx))?;
 
                 match inx {
-                    Pushl(idx) | Pushg(idx) | Movel(idx) | Moveg(idx) => {
+                    LPush(idx) | GPush(idx) | LMove(idx) | GMove(idx) => {
                         write!(f, "{}", self.code_object.idents[*idx as usize])?;
                     }
                     Call(_, idx) => {
                         write!(f, "{}", self.code_object.idents[*idx as usize])?;
                     }
-                    Pushc(idx) => {
+                    CPush(idx) => {
                         write!(f, "{}", self.code_object.consts[*idx as usize])?;
                     }
                     _ => {}
