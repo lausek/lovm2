@@ -179,3 +179,38 @@ fn main_has_no_entry_point() {
     let e = vm.add_main_module(module).err().unwrap();
     assert!(matches!(e, Lovm2Error { ty: Lovm2ErrorTy::NoEntryPoint, .. }));
 }
+
+#[test]
+fn main_import_as_global() {
+    let mut module = ModuleBuilder::named("main");
+    module.add("main");
+    module.add("myfunc");
+    let module = module.build().unwrap();
+
+    let mut vm = Vm::new();
+    vm.add_main_module(module).unwrap();
+
+    assert!(vm.call("myfunc", &[]).is_ok());
+    assert!(vm.call("main.myfunc", &[]).is_ok());
+}
+
+#[test]
+fn namespaced_imports() {
+    let mut a = ModuleBuilder::named("a");
+    a.add("ina");
+    let a = a.build().unwrap();
+
+    let mut b = ModuleBuilder::named("b");
+    b.add("inb");
+    let b = b.build().unwrap();
+
+    let mut vm = Vm::new();
+
+    vm.add_module(a, true).unwrap();
+    vm.add_module(b, false).unwrap();
+
+    assert!(vm.call("a.ina", &[]).is_ok());
+    assert!(vm.call("ina", &[]).is_err());
+    assert!(vm.call("b.inb", &[]).is_ok());
+    assert!(vm.call("inb", &[]).is_ok());
+}

@@ -61,7 +61,7 @@ macro_rules! value_compare {
 pub struct Vm {
     pub ctx: Context,
 
-    import_hook: Option<Rc<ImportHookFn>>,
+    import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
     /// interrupt table. these functions can be triggered using the `Interrupt` instruction
     pub interrupts: Vec<Option<Rc<InterruptFn>>>,
@@ -76,7 +76,7 @@ impl Vm {
         Self {
             ctx: Context::new(),
 
-            import_hook: Some(Rc::new(default_import_hook)),
+            import_hook: Rc::new(default_import_hook),
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![format!(
@@ -123,6 +123,14 @@ impl Vm {
         &mut self.ctx
     }
 
+    pub fn add_function(&mut self, key: Variable, co: Rc<dyn CallProtocol>) -> Lovm2Result<()> {
+        // this overwrites the slot with the new function. maybe not so good
+        if self.ctx.scope.insert(key.clone(), co).is_some() {
+            return Err((Lovm2ErrorTy::ImportConflict, key).into());
+        }
+        Ok(())
+    }
+
     /// add the module and all of its slots to `scope`
     pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
     where
@@ -140,20 +148,14 @@ impl Vm {
             let module = Rc::new(module);
             for (key, co) in module.slots().iter() {
                 // if `import` was set, all function names should be patched with the import_hook
-                let key = if let Some(ref importer) = self.import_hook {
-                    let pass_module = if namespaced {
-                        Some(module.name().as_ref())
-                    } else {
-                        None
-                    };
-                    importer(pass_module, key.as_ref()).into()
-                } else {
-                    key.clone()
-                };
+                let nfunc: Variable =
+                    (self.import_hook)(Some(module.name().as_ref()), key.as_ref()).into();
+                self.add_function(nfunc, co.clone())?;
 
-                // this overwrites the slot with the new function. maybe not so good
-                if self.ctx.scope.insert(key.clone(), co.clone()).is_some() {
-                    return Err((Lovm2ErrorTy::ImportConflict, key).into());
+                // add unnamespaced function as well
+                if !namespaced {
+                    let func: Variable = (self.import_hook)(None, key.as_ref()).into();
+                    self.add_function(func, co.clone())?;
                 }
             }
 
@@ -213,7 +215,7 @@ impl Vm {
         let module = module.into();
         if let Some(co) = module.slots.get(&crate::prelude::ENTRY_POINT.into()) {
             self.ctx.entry = Some(co.clone());
-            self.add_module(module, true)
+            self.add_module(module, false)
         } else {
             Err(Lovm2ErrorTy::NoEntryPoint.into())
         }
@@ -409,7 +411,7 @@ impl Vm {
     where
         T: Fn(Option<&str>, &str) -> String + 'static,
     {
-        self.import_hook = Some(Rc::new(hook));
+        self.import_hook = Rc::new(hook);
     }
 
     /// register a new callback function that is used for resolving dependencies at runtime
