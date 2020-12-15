@@ -141,9 +141,10 @@ pub fn lovm2_module(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #[no_mangle]
         pub extern fn #lovm2_initializer(lib: Rc<Library>, slots: &mut HashMap<Variable, CallableRef>) {
             #(
+                let slot = SharedObjectSlot::new(lib.clone(), #names.to_string()).expect("name not found");
                 slots.insert(
                     Variable::from(#names),
-                    Rc::new(SharedObjectSlot::new(lib.clone(), #names.to_string()))
+                    Rc::new(slot)
                 );
             )*
         }
