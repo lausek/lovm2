@@ -154,15 +154,17 @@ fn custom_naming_scheme() {
 
     vm.set_import_hook(|module, name| {
         let key = lovm2::util::to_lower_camel_case(name);
-        match module {
+        let key = match module {
             // use dash as module name separator
             Some(module) => format!("{}-{}", module, key),
             _ => key,
-        }
+        };
+        println!("{}", key);
+        key
     });
 
-    vm.add_module(ex, true).unwrap();
     vm.add_module(module, false).unwrap();
+    vm.add_module(ex, true).unwrap();
 
     vm.call("callMain", &[]).unwrap();
     vm.call("extern-call", &[]).unwrap();

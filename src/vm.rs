@@ -123,13 +123,13 @@ impl Vm {
         &mut self.ctx
     }
 
-    fn load_and_import_filter(
-        &mut self,
-        module: Module,
-        // TODO: remove this
-        filter: impl Fn(&Variable) -> bool,
-        importer: Option<Rc<dyn Fn(Option<&str>, &str) -> String>>,
-    ) -> Lovm2Result<()> {
+    /// add the module and all of its slots to `scope`
+    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
+    where
+        T: Into<Module>,
+    {
+        let module = module.into();
+
         if self.ctx.modules.get(module.name()).is_none() {
             // load static dependencies of module
             for used_module in module.uses() {
@@ -139,12 +139,14 @@ impl Vm {
 
             let module = Rc::new(module);
             for (key, co) in module.slots().iter() {
-                if filter(key) {
-                    continue;
-                }
-
-                let key = if let Some(ref importer) = importer {
-                    importer(Some(module.name().as_ref()), key.as_ref()).into()
+                // if `import` was set, all function names should be patched with the import_hook
+                let key = if let Some(ref importer) = self.import_hook {
+                    let pass_module = if namespaced {
+                        Some(module.name().as_ref())
+                    } else {
+                        None
+                    };
+                    importer(pass_module, key.as_ref()).into()
                 } else {
                     key.clone()
                 };
@@ -201,21 +203,6 @@ impl Vm {
         }
 
         self.add_module(module.unwrap(), namespaced)
-    }
-
-    /// add the module and all of its slots to `scope`
-    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
-    where
-        T: Into<Module>,
-    {
-        // if `import` was set, all function names should be patched with the import_hook
-        let import_hook = if namespaced {
-            self.import_hook.clone()
-        } else {
-            None
-        };
-
-        self.load_and_import_filter(module.into(), filter_entry_reimport, import_hook)
     }
 
     /// add the module and all of its slots to `scope`
@@ -465,10 +452,6 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     }
 
     Ok(box_value(Value::List(slice)))
-}
-
-fn filter_entry_reimport(name: &Variable) -> bool {
-    name.as_ref() == crate::prelude::ENTRY_POINT
 }
 
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
