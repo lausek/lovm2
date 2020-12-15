@@ -197,19 +197,11 @@ impl LirLoweringRuntime {
 
     fn postprocess(&mut self) {
         for inx in self.code.iter_mut() {
-            match inx {
-                Instruction::Call(argn, iidx) => {
-                    // if the calls target name was declared inside the current module
-                    if self
-                        .entries
-                        .iter()
-                        .find(|(idx, _)| *idx == *iidx as usize)
-                        .is_some()
-                    {
-                        *inx = Instruction::LCall(*argn, *iidx);
-                    }
+            if let Instruction::Call(argn, iidx) = inx {
+                // if the calls target name was declared inside the current module
+                if self.entries.iter().any(|(idx, _)| *idx == *iidx as usize) {
+                    *inx = Instruction::LCall(*argn, *iidx);
                 }
-                _ => {}
             }
         }
     }

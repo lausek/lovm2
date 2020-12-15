@@ -1,5 +1,7 @@
 use std::path::Path;
 
+pub const DEFAULT_MODULE_NAME: &str = "_unknown_";
+
 #[derive(Clone, Debug)]
 pub struct ModuleMeta {
     pub(crate) loc: Option<String>,
@@ -42,7 +44,7 @@ impl std::default::Default for ModuleMeta {
     fn default() -> Self {
         Self {
             loc: None,
-            name: String::new(),
+            name: DEFAULT_MODULE_NAME.to_string(),
             uses: vec![],
         }
     }
