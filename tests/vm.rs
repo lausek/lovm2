@@ -1,6 +1,7 @@
 use lovm2::context::Context;
 use lovm2::module::Module;
 use lovm2::prelude::*;
+use lovm2::value::Value;
 use lovm2::vm::Vm;
 
 fn run_module_test(
@@ -136,4 +137,34 @@ fn import_vice_versa() {
         assert_eq!(PASSED_VALUE, *ctx.value_of(&lv2_var!(result)).unwrap());
     })
     .unwrap();
+}
+
+#[test]
+fn custom_naming_scheme() {
+    let mut module = ModuleBuilder::named("main");
+    module.add("call_main");
+    let module = module.build().unwrap();
+
+    let mut ex = ModuleBuilder::named("extern");
+    ex.add("call_extern");
+    ex.add("call");
+    let ex = ex.build().unwrap();
+
+    let mut vm = Vm::with_std();
+
+    vm.set_import_hook(|module, name| {
+        let key = lovm2::util::to_lower_camel_case(name);
+        match module {
+            // use dash as module name separator
+            Some(module) => format!("{}-{}", module, key),
+            _ => key,
+        }
+    });
+
+    vm.add_module(ex, true).unwrap();
+    vm.add_module(module, false).unwrap();
+
+    vm.call("callMain", &[]).unwrap();
+    vm.call("extern-call", &[]).unwrap();
+    vm.call("extern-callExtern", &[]).unwrap();
 }

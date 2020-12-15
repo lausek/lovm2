@@ -34,7 +34,7 @@ use crate::var::Variable;
 ///
 
 pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
-pub type ImportHookFn = dyn Fn(&str, &str) -> String;
+pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> String;
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
 
 pub struct LoadRequest {
@@ -76,7 +76,7 @@ impl Vm {
         Self {
             ctx: Context::new(),
 
-            import_hook: Some(Rc::new(default_load_hook)),
+            import_hook: Some(Rc::new(default_import_hook)),
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![format!(
@@ -128,7 +128,7 @@ impl Vm {
         module: Module,
         // TODO: remove this
         filter: impl Fn(&Variable) -> bool,
-        importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
+        importer: Option<Rc<dyn Fn(Option<&str>, &str) -> String>>,
     ) -> Lovm2Result<()> {
         if self.ctx.modules.get(module.name()).is_none() {
             // load static dependencies of module
@@ -144,7 +144,7 @@ impl Vm {
                 }
 
                 let key = if let Some(ref importer) = importer {
-                    importer(module.name().as_ref(), key.as_ref()).into()
+                    importer(Some(module.name().as_ref()), key.as_ref()).into()
                 } else {
                     key.clone()
                 };
@@ -420,7 +420,7 @@ impl Vm {
 
     pub fn set_import_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&str, &str) -> String + 'static,
+        T: Fn(Option<&str>, &str) -> String + 'static,
     {
         self.import_hook = Some(Rc::new(hook));
     }
@@ -504,6 +504,9 @@ pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
 }
 
 #[inline]
-fn default_load_hook(module: &str, name: &str) -> String {
-    format!("{}.{}", module, name)
+fn default_import_hook(module: Option<&str>, name: &str) -> String {
+    match module {
+        Some(module) => format!("{}.{}", module, name),
+        _ => name.to_string(),
+    }
 }
