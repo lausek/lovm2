@@ -15,22 +15,18 @@ from pylovm2 import Expr, ModuleBuilder, Vm
 module = ModuleBuilder()
 
 # add the main entry point
-main_hir = module.entry().code()
+main_hir = module.entry()
 main_hir.assign('n', 2)
 # call the module local function `add` with the value of `n`
 main_hir.call('print', 'got result:', Expr.call('add', Expr.var('n'), 1), '\n')
 main_hir.call('print', 'got result from pyfn:', Expr.call('pyadd', Expr.var('n'), 1), '\n')
 
 # add new entry with arguments `a` and `b`
-# note: no direct usage of `.code()`
-add_hir = module.add('add')
-add_hir.args(['a', 'b'])
-# use block builder from now on
-add_hir = add_hir.code()
+add_hir = module.add('add', ['a', 'b'])
 add_hir.ret(Expr.add(Expr.var('a'), Expr.var('b')))
 
 # add a python function to the module
-module.add('pyadd').pyfn(lambda a, b: a.to_py() + b.to_py())
+module.add_pyfn('pyadd', lambda a, b: a.to_py() + b.to_py())
 
 # build the module and print it
 module = module.build()
@@ -38,7 +34,7 @@ print(module)
 
 # create vm, load and run module
 vm = Vm.with_std()
-vm.load(module)
+vm.add_module(module)
 vm.run()
 ```
 

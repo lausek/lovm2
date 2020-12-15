@@ -2,11 +2,11 @@ use lovm2_extend::prelude::*;
 
 #[lovm2_module]
 mod shared {
-    // popl 0
-    // popl 1
+    // lmove 0
+    // lmove 1
     // ------- start this function
-    // pushl 0
-    // pushl 1
+    // lpush 0
+    // lpush 1
     // add
     // ------- end this function
     // ret

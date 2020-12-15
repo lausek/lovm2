@@ -18,7 +18,7 @@ pub fn run_module_test(
     });
 
     println!("{}", module);
-    vm.load_and_import_all(module)?;
+    vm.add_main_module(module)?;
     vm.run()?;
 
     assert!(called.get());

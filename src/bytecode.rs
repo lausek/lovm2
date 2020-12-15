@@ -5,24 +5,24 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Instruction {
     /// push local variable
-    Pushl(u16),
+    LPush(u16),
     /// push global variable
-    Pushg(u16),
+    GPush(u16),
     /// push constant
-    Pushc(u16),
+    CPush(u16),
     /// store into local variable
-    Movel(u16),
+    LMove(u16),
     /// store into global variable
-    Moveg(u16),
+    GMove(u16),
     /// drops the value on top of stack
-    Discard,
+    Drop,
     /// duplicates top of stack
     Dup,
 
     /// get(obj, key): get key from object and push it
     Get,
-    /// getr(obj, key): get key from object by reference and push it
-    Getr,
+    /// rget(obj, key): get key from object by reference and push it
+    RGet,
     /// set(ref, val): write value into a value reference
     Set,
 
@@ -68,6 +68,8 @@ pub enum Instruction {
 
     /// call function with `argn`, `global index`
     Call(u8, u16),
+    /// call a function in the same module
+    LCall(u8, u16),
     /// return early from a code object
     Ret,
 
@@ -76,8 +78,12 @@ pub enum Instruction {
 
     /// convert top of stack into type. see `Value::type_id`
     Cast(u16),
-    /// take top of stack as name of module to load
-    Load,
+    /// take top of stack as name of module to load and import functions names without passing
+    /// import hook
+    Import,
+    /// take top of stack as name of module to import. function name will be padded using the
+    /// import hook
+    NImport,
     /// turn the value on stack into a referenceable value.
     /// lists and dicts are boxed deeply
     Box,

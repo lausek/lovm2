@@ -43,7 +43,7 @@ fn deserialize_module() {
     let module = Module::load_from_file(DESERIALIZE_PATH).unwrap();
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
     let n = vm.context_mut().value_of(n).unwrap();
@@ -57,7 +57,7 @@ fn global_uses() {
     const PRELOADED: &str = "preloaded";
 
     let mut builder = ModuleBuilder::new();
-    builder.add_dependency(PRELOADED.into());
+    builder.add_dependency(PRELOADED);
 
     let main_hir = builder.entry();
     main_hir.step(Assign::global(&lv2_var!(n), 10));
@@ -76,7 +76,7 @@ fn global_uses() {
         Ok(Some(CodeObject::new().into()))
     });
 
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
     assert!(called.get());

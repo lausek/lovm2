@@ -119,9 +119,7 @@ class TestBuilding(Test):
         main_hir.assign('doubled', Expr.call('double', 5))
         main_hir.interrupt(10)
 
-        double_hir = internals.mod.add('double')
-        double_hir.args(['n'])
-        double_hir = double_hir.code()
+        double_hir = internals.mod.add('double', ['n'])
         double_hir.ret(Expr.mul(Expr.var('n'), 2))
 
         def validate(ctx):
@@ -154,7 +152,7 @@ class TestBuilding(Test):
         self.run_module_test(result, validate)
 
     def test_pynative_function(self, internals):
-        internals.mod.add('powr').pyfn(lambda x: int(x) ** 2)
+        internals.mod.add_pyfn('powr', lambda x: int(x) ** 2)
         result = internals.mod.build()
-        internals.vm.load(result)
-        self.assertEqual(4, int(internals.vm.call('powr', 2)))
+        internals.vm.add_module(result)
+        self.assertEqual(4, int(internals.vm.call('main.powr', 2)))

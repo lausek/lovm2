@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
+// TODO: implement compare for Variable and String, &str
 /// a thin wrapper around an identifier name.
 ///
 /// lovm2 needs a clear distinction between strings and variables. variables cannot be pushed onto

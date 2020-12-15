@@ -41,7 +41,7 @@ class Test:
     
         vm = pylovm2.Vm()
         vm.add_interrupt(10, callback)
-        vm.load(module)
+        vm.add_main_module(module)
         vm.run()
     
         self.assertTrue(out['called'])
@@ -49,8 +49,8 @@ class Test:
 class Internals:
     def __init__(self):
         self.vm = pylovm2.Vm()
-        self.mod = pylovm2.ModuleBuilder()
-        self.main = self.mod.add(pylovm2.ENTRY_POINT).code()
+        self.mod = pylovm2.ModuleBuilder("main")
+        self.main = self.mod.add(pylovm2.ENTRY_POINT)
 
 @pytest.fixture
 def internals():

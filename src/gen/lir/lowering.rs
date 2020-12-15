@@ -70,6 +70,8 @@ impl LirLoweringRuntime {
             self.emit(lir_element)?;
         }
 
+        self.postprocess();
+
         let mut co = CodeObject::new();
 
         co.name = self.meta.name;
@@ -93,7 +95,6 @@ impl LirLoweringRuntime {
             LirElement::Cast { tyid } => self.code.push(Instruction::Cast(tyid)),
             LirElement::Entry { ident } => {
                 let iidx = self.index_ident(&ident);
-                // TODO: is this correct?
                 let off = self.code.len();
                 self.entries.push((iidx, off));
             }
@@ -156,36 +157,53 @@ impl LirLoweringRuntime {
             }
             LirElement::PushConstant { value } => {
                 let cidx = self.index_const(&value) as u16;
-                self.code.push(Instruction::Pushc(cidx));
+                self.code.push(Instruction::CPush(cidx));
             }
             LirElement::PushDynamic { ident, scope } => {
                 let iidx = self.index_ident(&ident) as u16;
                 match scope {
-                    Scope::Global => self.code.push(Instruction::Pushg(iidx)),
-                    Scope::Local => self.code.push(Instruction::Pushl(iidx)),
+                    Scope::Global => self.code.push(Instruction::GPush(iidx)),
+                    Scope::Local => self.code.push(Instruction::LPush(iidx)),
                 }
             }
             LirElement::StoreDynamic { ident, scope } => {
                 let iidx = self.index_ident(&ident) as u16;
                 match scope {
-                    Scope::Global => self.code.push(Instruction::Moveg(iidx)),
-                    Scope::Local => self.code.push(Instruction::Movel(iidx)),
+                    Scope::Global => self.code.push(Instruction::GMove(iidx)),
+                    Scope::Local => self.code.push(Instruction::LMove(iidx)),
                 }
             }
 
             LirElement::Box => self.code.push(Instruction::Box),
-            LirElement::Discard => self.code.push(Instruction::Discard),
+            LirElement::Drop => self.code.push(Instruction::Drop),
             LirElement::Duplicate => self.code.push(Instruction::Dup),
             LirElement::Get => self.code.push(Instruction::Get),
-            LirElement::Getr => self.code.push(Instruction::Getr),
+            LirElement::RGet => self.code.push(Instruction::RGet),
             LirElement::Interrupt(n) => self.code.push(Instruction::Interrupt(n)),
-            LirElement::Load => self.code.push(Instruction::Load),
+            LirElement::Import { namespaced } => {
+                if namespaced {
+                    self.code.push(Instruction::NImport);
+                } else {
+                    self.code.push(Instruction::Import);
+                }
+            }
             LirElement::Ret => self.code.push(Instruction::Ret),
             LirElement::Set => self.code.push(Instruction::Set),
             LirElement::Slice => self.code.push(Instruction::Slice),
         }
 
         Ok(())
+    }
+
+    fn postprocess(&mut self) {
+        for inx in self.code.iter_mut() {
+            if let Instruction::Call(argn, iidx) = inx {
+                // if the calls target name was declared inside the current module
+                if self.entries.iter().any(|(idx, _)| *idx == *iidx as usize) {
+                    *inx = Instruction::LCall(*argn, *iidx);
+                }
+            }
+        }
     }
 
     fn index_const(&mut self, val: &Value) -> usize {

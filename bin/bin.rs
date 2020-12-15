@@ -17,14 +17,14 @@ fn loading() -> ModuleBuilder {
 }
 
 fn main() {
-    let builder = loading();
+    let mut builder = loading();
 
     match builder.build() {
         Ok(result) => {
             println!("{}", result);
 
             let mut vm = Vm::with_std();
-            vm.load_and_import_all(result).unwrap();
+            vm.add_main_module(result).unwrap();
 
             if let Err(err) = vm.run() {
                 println!("{}", err);

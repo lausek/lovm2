@@ -53,7 +53,7 @@ pub fn ackermann(c: &mut Criterion) {
     const PERSISTANCE_HACK: &str = "/tmp/ack.lovm2c";
     module.store_to_file(PERSISTANCE_HACK).unwrap();
     if let Ok(module) = Module::load_from_file(PERSISTANCE_HACK) {
-        vm.load_and_import_all(module).unwrap();
+        vm.add_main_module(module).unwrap();
 
         c.bench_function("ack", |b| {
             b.iter(|| {

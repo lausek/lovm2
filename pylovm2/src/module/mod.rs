@@ -5,7 +5,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
 pub use self::builder::ModuleBuilder;
-pub use self::slot::ModuleBuilderSlot;
+use self::slot::ModuleBuilderSlot;
 
 use crate::lv2::*;
 

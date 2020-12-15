@@ -12,14 +12,14 @@ fn pushing_constant() {
         consts { 2 }
 
         {
-            Pushc 0;
+            CPush 0;
         }
     };
 
-    vm.run_object(&co).unwrap();
+    let result = vm.run_object(&co).unwrap();
 
-    assert_eq!(1, vm.context_mut().stack_mut().len());
-    assert_eq!(Value::Int(2), vm.context_mut().pop_value().unwrap());
+    assert!(vm.context_mut().stack_mut().is_empty());
+    assert_eq!(Value::Int(2), result);
 }
 
 #[test]
@@ -30,8 +30,9 @@ fn store_global() {
         idents { globaln }
 
         {
-            Pushc 0;
-            Moveg 0;
+            CPush 0;
+            GMove 0;
+            CPush 0;
         }
     };
 
@@ -51,25 +52,27 @@ fn calculation() {
         idents { result_add, result_sub, result_mul, result_div }
 
         {
-            Pushc 1;
-            Pushc 0;
+            CPush 1;
+            CPush 0;
             Add;
-            Moveg 0;
+            GMove 0;
 
-            Pushc 1;
-            Pushc 0;
+            CPush 1;
+            CPush 0;
             Sub;
-            Moveg 1;
+            GMove 1;
 
-            Pushc 1;
-            Pushc 0;
+            CPush 1;
+            CPush 0;
             Mul;
-            Moveg 2;
+            GMove 2;
 
-            Pushc 1;
-            Pushc 0;
+            CPush 1;
+            CPush 0;
             Div;
-            Moveg 3;
+
+            GMove 3;
+            CPush 0;
         }
     };
 
@@ -101,29 +104,31 @@ fn jumping() {
         idents { i, output }
 
         {
-            Pushc 1;
-            Movel 0;
+            CPush 1;
+            LMove 0;
 
-            Pushc 3;
-            Moveg 1;
+            CPush 3;
+            GMove 1;
 
-            Pushl 0;
-            Pushc 1;
+            LPush 0;
+            CPush 1;
             Add;
 
-            Pushg 1;
-            Pushc 3;
+            GPush 1;
+            CPush 3;
             Add;
-            Moveg 1;
+            GMove 1;
 
             Dup;
-            Movel 0;
+            LMove 0;
 
-            Pushc 2;
+            CPush 2;
             Eq;
             Jt 17;
 
             Jmp 4;
+
+            CPush 0;
         }
     };
 
