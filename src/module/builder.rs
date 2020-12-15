@@ -41,7 +41,11 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add_dependency(&mut self, name: String) {
+    pub fn add_dependency<T>(&mut self, name: T)
+    where
+        T: ToString,
+    {
+        let name = name.to_string();
         if !self.meta.uses.contains(&name) {
             self.meta.uses.push(name);
         }

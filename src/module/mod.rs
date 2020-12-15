@@ -21,7 +21,7 @@ use crate::var::Variable;
 use crate::vm::Vm;
 
 pub use self::builder::ModuleBuilder;
-pub use self::meta::ModuleMeta;
+pub use self::meta::{ModuleMeta, DEFAULT_MODULE_NAME};
 pub use self::slots::Slots;
 pub use self::standard::{create_standard_module, BUILTIN_FUNCTIONS};
 

@@ -9,7 +9,7 @@ cargo test
 
 # assure that benchmark code compiles
 pushd bench
-cargo build
+cargo build --benches
 popd
 
 # build python bindings and run tests

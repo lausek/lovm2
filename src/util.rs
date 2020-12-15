@@ -89,3 +89,26 @@ macro_rules! lv2_var {
         )
     };
 }
+
+pub fn to_lower_camel_case(name: &str) -> String {
+    let mut buffer = String::with_capacity(name.len());
+    let mut needs_caps = false;
+
+    for c in name.chars() {
+        match c {
+            '_' if buffer.is_empty() => buffer.push(c),
+            '_' => needs_caps = true,
+            _ => {
+                let c = if needs_caps {
+                    c.to_ascii_uppercase()
+                } else {
+                    c.to_ascii_lowercase()
+                };
+                buffer.push(c);
+                needs_caps = false;
+            }
+        }
+    }
+
+    buffer
+}

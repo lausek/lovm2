@@ -6,7 +6,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyList, PyTuple};
 
 use lovm2::gen;
-use lovm2::module::ModuleMeta;
+use lovm2::module::{ModuleMeta, DEFAULT_MODULE_NAME};
 
 use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
@@ -24,18 +24,9 @@ pub struct ModuleBuilder {
 #[pymethods]
 impl ModuleBuilder {
     #[new]
-    pub fn new() -> Self {
+    pub fn new(name: Option<String>) -> Self {
         Self {
-            name: "<unknown>".to_string(),
-            slots: HashMap::new(),
-            uses: vec![],
-        }
-    }
-
-    #[classmethod]
-    pub fn named(_this: &PyAny, name: String) -> Self {
-        Self {
-            name,
+            name: name.unwrap_or(DEFAULT_MODULE_NAME.to_string()),
             slots: HashMap::new(),
             uses: vec![],
         }
@@ -198,7 +189,7 @@ impl BlockBuilder {
     pub fn load(&mut self, name: &Expr) -> PyResult<()> {
         use lovm2::prelude::*;
         unsafe {
-            (*self.inner).step(Include::load(name.inner.clone()));
+            (*self.inner).step(Include::import(name.inner.clone()));
         }
         Ok(())
     }

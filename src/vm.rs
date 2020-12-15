@@ -34,8 +34,13 @@ use crate::var::Variable;
 ///
 
 pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
-pub type ImportHookFn = dyn Fn(&str, &str) -> String;
+pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> String;
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
+
+pub struct LoadRequest {
+    pub module: String,
+    pub relative_to: Option<String>,
+}
 
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
@@ -71,7 +76,7 @@ impl Vm {
         Self {
             ctx: Context::new(),
 
-            import_hook: None,
+            import_hook: Some(Rc::new(default_import_hook)),
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![format!(
@@ -83,7 +88,7 @@ impl Vm {
 
     pub fn with_std() -> Self {
         let mut vm = Self::new();
-        vm.load_and_import_all(create_standard_module()).unwrap();
+        vm.add_module(create_standard_module(), false).unwrap();
         vm
     }
 
@@ -118,28 +123,37 @@ impl Vm {
         &mut self.ctx
     }
 
-    fn load_and_import_filter(
-        &mut self,
-        module: Module,
-        filter: impl Fn(&Variable) -> bool,
-        importer: Option<Rc<dyn Fn(&str, &str) -> String>>,
-    ) -> Lovm2Result<()> {
+    /// add the module and all of its slots to `scope`
+    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
+    where
+        T: Into<Module>,
+    {
+        let module = module.into();
+
         if self.ctx.modules.get(module.name()).is_none() {
             // load static dependencies of module
             for used_module in module.uses() {
-                self.load_and_import_by_name(used_module, module.location().cloned())?;
+                // static dependencies are imported
+                self.add_module_by_name(used_module, module.location().cloned(), true)?;
             }
 
             let module = Rc::new(module);
             for (key, co) in module.slots().iter() {
-                if filter(key) {
-                    continue;
-                }
+                // if `import` was set, all function names should be patched with the import_hook
+                let key = if let Some(ref importer) = self.import_hook {
+                    let pass_module = if namespaced {
+                        Some(module.name().as_ref())
+                    } else {
+                        None
+                    };
+                    importer(pass_module, key.as_ref()).into()
+                } else {
+                    key.clone()
+                };
 
+                // this overwrites the slot with the new function. maybe not so good
                 if self.ctx.scope.insert(key.clone(), co.clone()).is_some() {
                     return Err((Lovm2ErrorTy::ImportConflict, key).into());
-                } else if key.as_ref() == crate::prelude::ENTRY_POINT {
-                    self.ctx.entry = Some(co.clone());
                 }
             }
 
@@ -151,10 +165,11 @@ impl Vm {
 
     /// lookup a module name in `load_paths` and add it to the context.
     /// `relative_to` is expected to be an absolute path to importing module
-    pub fn load_and_import_by_name(
+    pub fn add_module_by_name(
         &mut self,
         name: &str,
         relative_to: Option<String>,
+        namespaced: bool,
     ) -> Lovm2Result<()> {
         if self.ctx.modules.get(name).is_some() {
             return Ok(());
@@ -187,30 +202,34 @@ impl Vm {
             module = Some(Module::load_from_file(path)?);
         }
 
-        let import_hook = self.import_hook.as_ref().cloned();
-
-        self.load_and_import_filter(module.unwrap(), filter_entry_reimport, import_hook)
+        self.add_module(module.unwrap(), namespaced)
     }
 
     /// add the module and all of its slots to `scope`
-    pub fn load_and_import_all<T>(&mut self, module: T) -> Lovm2Result<()>
+    pub fn add_main_module<T>(&mut self, module: T) -> Lovm2Result<()>
     where
         T: Into<Module>,
     {
-        self.load_and_import_filter(module.into(), |_| false, None)
+        let module = module.into();
+        if let Some(co) = module.slots.get(&crate::prelude::ENTRY_POINT.into()) {
+            self.ctx.entry = Some(co.clone());
+            self.add_module(module, true)
+        } else {
+            Err(Lovm2ErrorTy::NoEntryPoint.into())
+        }
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
-    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<()> {
+    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<Value> {
         self.ctx.push_frame(0);
         co.run(self)?;
         self.ctx.pop_frame();
 
-        Ok(())
+        self.ctx.pop_value()
     }
 
     /// start the execution at `ENTRY_POINT`
-    pub fn run(&mut self) -> Lovm2Result<()> {
+    pub fn run(&mut self) -> Lovm2Result<Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
         } else {
@@ -331,6 +350,16 @@ impl Vm {
                     other_co.run(self)?;
                     self.ctx.pop_frame();
                 }
+                Instruction::LCall(argn, gidx) => {
+                    let (_, off) = co
+                        .entries
+                        .iter()
+                        .find(|(iidx, _)| *iidx == *gidx as usize)
+                        .unwrap_or_else(|| todo!());
+                    self.ctx.push_frame(*argn);
+                    self.run_bytecode(co, *off)?;
+                    self.ctx.pop_frame();
+                }
                 Instruction::Ret => break,
                 Instruction::Interrupt(n) => {
                     if let Some(func) = &self.interrupts[*n as usize] {
@@ -340,9 +369,10 @@ impl Vm {
                 Instruction::Cast(tid) => {
                     self.ctx.last_value_mut()?.cast_inplace(*tid)?;
                 }
-                Instruction::Load => {
+                Instruction::Import | Instruction::NImport => {
                     let name = self.ctx.pop_value()?;
                     let name = name.as_str_inner()?;
+                    let namespaced = *inx == Instruction::NImport;
                     // path to the modules source code
                     let relative_to = if let Some(mname) = co.module() {
                         self.ctx
@@ -353,7 +383,8 @@ impl Vm {
                     } else {
                         None
                     };
-                    self.load_and_import_by_name(name.as_ref(), relative_to)?;
+
+                    self.add_module_by_name(name.as_ref(), relative_to, namespaced)?;
                 }
                 Instruction::Box => {
                     let value = self.ctx.pop_value()?;
@@ -376,7 +407,7 @@ impl Vm {
 
     pub fn set_import_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&str, &str) -> String + 'static,
+        T: Fn(Option<&str>, &str) -> String + 'static,
     {
         self.import_hook = Some(Rc::new(hook));
     }
@@ -423,10 +454,6 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     Ok(box_value(Value::List(slice)))
 }
 
-fn filter_entry_reimport(name: &Variable) -> bool {
-    name.as_ref() == crate::prelude::ENTRY_POINT
-}
-
 fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
     for path in load_paths.iter() {
@@ -459,7 +486,10 @@ pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
     }
 }
 
-pub struct LoadRequest {
-    pub module: String,
-    pub relative_to: Option<String>,
+#[inline]
+fn default_import_hook(module: Option<&str>, name: &str) -> String {
+    match module {
+        Some(module) => format!("{}.{}", module, name),
+        _ => name.to_string(),
+    }
 }

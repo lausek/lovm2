@@ -20,16 +20,16 @@ class TestVm(Test):
             out['called'] = True
 
         vm.add_interrupt(10, callback)
-        vm.load(internals.mod.build())
+        vm.add_main_module(internals.mod.build())
         vm.run()
 
         self.assertTrue(out['called'])
 
     def test_raise_exception(self, internals):
         internals.mod.add_pyfn('ret', lambda: 1/0)
-        internals.vm.load(internals.mod.build())
+        internals.vm.add_module(internals.mod.build())
         with pytest.raises(ZeroDivisionError):
-            internals.vm.call('ret')
+            internals.vm.call('main.ret')
 
     def test_load_hook_exception(self, internals):
         def load_hook(name):
@@ -39,7 +39,7 @@ class TestVm(Test):
         main_hir.load(pylovm2.Expr.val('std'))
 
         internals.vm.set_load_hook(load_hook)
-        internals.vm.load(internals.mod.build())
+        internals.vm.add_main_module(internals.mod.build())
 
         with pytest.raises(Exception):
             internals.vm.run()
@@ -49,7 +49,7 @@ class TestVm(Test):
         main_hir = internals.mod.entry()
         main_hir.load(pylovm2.Expr.val('unkown_module'))
 
-        internals.vm.load(internals.mod.build())
+        internals.vm.add_main_module(internals.mod.build())
 
         with pytest.raises(Exception):
             internals.vm.run()

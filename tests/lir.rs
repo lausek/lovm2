@@ -29,15 +29,15 @@ fn merge_not_jump_false() {
         .any(|c| matches!(c, Instruction::Not)));
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
-    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+    vm.add_main_module(module).unwrap();
+    let result = vm.run().unwrap();
 
     assert_eq!(Value::Int(1), result.clone());
 }
 
 #[test]
 fn merge_constant_jump() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = ModuleBuilder::named("main");
     let hir = builder.entry();
 
     let branch = hir.branch();
@@ -63,8 +63,8 @@ fn merge_constant_jump() {
     assert_eq!(2, module.code_object.code.len());
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
-    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+    vm.add_main_module(module).unwrap();
+    let result = vm.run().unwrap();
 
     assert_eq!(Value::Int(1), result.clone());
 }
@@ -85,8 +85,8 @@ fn short_circuit_and() {
     println!("{}", module);
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
-    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+    vm.add_main_module(module).unwrap();
+    let result = vm.run().unwrap();
 
     assert_eq!(Value::Bool(false), result.clone());
 }
@@ -107,8 +107,8 @@ fn short_circuit_or() {
     println!("{}", module);
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
-    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+    vm.add_main_module(module).unwrap();
+    let result = vm.run().unwrap();
 
     assert_eq!(Value::Bool(true), result.clone());
 }
@@ -137,8 +137,8 @@ fn compute_constants() {
     assert!(module.code_object.consts.contains(&expected));
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
-    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+    vm.add_main_module(module).unwrap();
+    let result = vm.run().unwrap();
 
     assert_eq!(expected, result.clone());
 }
@@ -174,8 +174,8 @@ fn dead_code_elimination_else_branche() {
     assert!(!module.code_object.consts.contains(&Value::Int(7)));
 
     let mut vm = Vm::with_std();
-    vm.load_and_import_all(module).unwrap();
-    let result = vm.call(ENTRY_POINT, &[]).unwrap();
+    vm.add_main_module(module).unwrap();
+    let result = vm.run().unwrap();
 
     assert_eq!(Value::Int(1), result.clone());
 }

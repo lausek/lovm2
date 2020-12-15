@@ -16,16 +16,16 @@ fn create_vm() -> Vm {
 
 fn create_caller(modder: fn(&mut Hir)) -> Vm {
     let mut builder = ModuleBuilder::new();
-    builder.add_dependency("primitives".to_string());
 
     let hir = builder.entry();
+    hir.step(Include::import_global("primitives"));
     modder(hir);
 
     let module = builder.build().unwrap();
     println!("{}", module);
 
     let mut vm = create_vm();
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
     vm

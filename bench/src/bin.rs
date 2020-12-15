@@ -45,7 +45,7 @@ fn fibonacci(c: &mut Criterion) {
     //assert_eq!(94, module.to_bytes().unwrap().len());
 
     let mut vm = create_vm();
-    vm.load_and_import_all(module).unwrap();
+    vm.add_main_module(module).unwrap();
 
     c.bench_function("fib 0", |b| {
         b.iter(|| {
