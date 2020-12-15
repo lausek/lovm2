@@ -211,12 +211,12 @@ impl Vm {
         T: Into<Module>,
     {
         let module = module.into();
-        let co = module
-            .slots
-            .get(&crate::prelude::ENTRY_POINT.into())
-            .unwrap();
-        self.ctx.entry = Some(co.clone());
-        self.add_module(module, true)
+        if let Some(co) = module.slots.get(&crate::prelude::ENTRY_POINT.into()) {
+            self.ctx.entry = Some(co.clone());
+            self.add_module(module, true)
+        } else {
+            Err(Lovm2ErrorTy::NoEntryPoint.into())
+        }
     }
 
     /// a wrapper for `run_bytecode` that handles pushing and popping stack frames

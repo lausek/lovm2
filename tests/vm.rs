@@ -170,3 +170,12 @@ fn custom_naming_scheme() {
     vm.call("extern-call", &[]).unwrap();
     vm.call("extern-callExtern", &[]).unwrap();
 }
+
+#[test]
+fn main_has_no_entry_point() {
+    let module = ModuleBuilder::named("main").build().unwrap();
+    let mut vm = Vm::new();
+
+    let e = vm.add_main_module(module).err().unwrap();
+    assert!(matches!(e, Lovm2Error { ty: Lovm2ErrorTy::NoEntryPoint, .. }));
+}
