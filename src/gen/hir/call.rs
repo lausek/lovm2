@@ -62,7 +62,7 @@ impl HirLowering for Call {
         // if that value isn't needed e.g. for assignments, we
         // need to get rid of it.
         if !self.keep_value {
-            runtime.emit(LirElement::Discard);
+            runtime.emit(LirElement::Drop);
         }
     }
 }

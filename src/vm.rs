@@ -226,31 +226,31 @@ impl Vm {
         let mut ip = offset;
         while let Some(inx) = co.code.get(ip) {
             match inx {
-                Instruction::Pushl(lidx) => {
+                Instruction::LPush(lidx) => {
                     let variable = &co.idents[*lidx as usize];
                     let local = self.ctx.frame_mut()?.value_of(variable).map(Value::clone)?;
                     self.ctx.push_value(local);
                 }
-                Instruction::Pushg(gidx) => {
+                Instruction::GPush(gidx) => {
                     let variable = &co.idents[*gidx as usize];
                     let global = self.ctx.value_of(variable).map(Value::clone)?;
                     self.ctx.push_value(global);
                 }
-                Instruction::Pushc(cidx) => {
+                Instruction::CPush(cidx) => {
                     let value = &co.consts[*cidx as usize];
                     self.ctx.push_value(value.clone());
                 }
-                Instruction::Movel(lidx) => {
+                Instruction::LMove(lidx) => {
                     let variable = &co.idents[*lidx as usize];
                     let value = self.ctx.pop_value()?;
                     self.ctx.frame_mut()?.locals.insert(variable.clone(), value);
                 }
-                Instruction::Moveg(gidx) => {
+                Instruction::GMove(gidx) => {
                     let variable = &co.idents[*gidx as usize];
                     let value = self.ctx.pop_value()?;
                     self.ctx.globals.insert(variable.clone(), value);
                 }
-                Instruction::Discard => {
+                Instruction::Drop => {
                     self.ctx.pop_value()?;
                 }
                 Instruction::Dup => {
@@ -263,7 +263,7 @@ impl Vm {
                     let val = obj.get(&key)?;
                     self.ctx.push_value(val.deref().unwrap());
                 }
-                Instruction::Getr => {
+                Instruction::RGet => {
                     let key = self.ctx.pop_value()?;
                     let mut obj = self.ctx.pop_value()?;
 

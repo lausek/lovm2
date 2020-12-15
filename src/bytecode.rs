@@ -5,24 +5,24 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Instruction {
     /// push local variable
-    Pushl(u16),
+    LPush(u16),
     /// push global variable
-    Pushg(u16),
+    GPush(u16),
     /// push constant
-    Pushc(u16),
+    CPush(u16),
     /// store into local variable
-    Movel(u16),
+    LMove(u16),
     /// store into global variable
-    Moveg(u16),
+    GMove(u16),
     /// drops the value on top of stack
-    Discard,
+    Drop,
     /// duplicates top of stack
     Dup,
 
     /// get(obj, key): get key from object and push it
     Get,
-    /// getr(obj, key): get key from object by reference and push it
-    Getr,
+    /// rget(obj, key): get key from object by reference and push it
+    RGet,
     /// set(ref, val): write value into a value reference
     Set,
 
