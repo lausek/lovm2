@@ -1,15 +1,9 @@
 use super::*;
 use syn::{punctuated::Punctuated, token::Comma, FnArg};
 
-struct FunctionArg {
-    name: Ident,
-    ty: Type,
-}
-
 pub struct FunctionArgs {
     vm: Option<Ident>,
     simple: Vec<FunctionArg>,
-    // TODO: handles
 }
 
 impl FunctionArgs {
@@ -30,16 +24,35 @@ impl FunctionArgs {
                         return Err(format!("pattern {:?} not allowed", 2));
                     };
 
-                    if let syn::Type::Reference(_) = ty {
-                        if vm.is_some() {
-                            return Err(format!("vm reference declared twice."));
+                    match ty {
+                        syn::Type::Reference(syn::TypeReference {
+                            box elem,
+                            mutability,
+                            ..
+                        }) => match elem {
+                            syn::Type::Path(tp) => {
+                                let ty_name = tp.path.get_ident().unwrap();
+                                if "Vm" == ty_name.to_string() {
+                                    if vm.is_some() {
+                                        return Err(format!("vm reference declared twice."));
+                                    }
+                                    vm = Some(name);
+                                } else {
+                                    simple.push(FunctionArg {
+                                        name,
+                                        ty_name: ty_name.clone(),
+                                        is_ref: true,
+                                        is_mut: mutability.is_some(),
+                                    })
+                                }
+                            }
+                            _ => {}
+                        },
+                        syn::Type::Path(tp) => {
+                            let ty_name = tp.path.get_ident().unwrap().clone();
+                            simple.push(FunctionArg::new(name, ty_name));
                         }
-                        vm = Some(name);
-                    } else {
-                        simple.push(FunctionArg {
-                            name,
-                            ty: ty.clone(),
-                        });
+                        _ => return Err(format!("this type is not allowed in argument position")),
                     }
                 }
                 _ => return Err(format!("{:?} not allowed as argument", 1)),
@@ -49,9 +62,29 @@ impl FunctionArgs {
     }
 
     pub fn generate(&self) -> impl quote::ToTokens {
+        let mut stackops = vec![];
+
         // call convention requires reverse popping
-        let names = self.simple.iter().map(|a| &a.name).rev();
-        let tys = self.simple.iter().map(|a| &a.ty).rev();
+        for arg in self.simple.iter().rev() {
+            let FunctionArg {
+                name,
+                ty_name,
+                is_ref,
+                is_mut,
+            } = arg;
+
+            let code = if *is_ref {
+                quote! {
+                    let #name = vm.ctx.pop_value()?.as_any_ref()?;
+                    let mut #name = (*#name).borrow_mut();
+                    let #name = (*#name).0.downcast_mut::<#ty_name>()
+                                .ok_or_else(|| (Lovm2ErrorTy::OperationNotSupported, "downcast"))?;
+                }
+            } else {
+                quote! { let #name: #ty_name = vm.ctx.pop_value()?.into(); }
+            };
+            stackops.push(code);
+        }
 
         let vm = if let Some(name) = &self.vm {
             quote! { let #name: &mut Vm = vm; }
@@ -60,10 +93,27 @@ impl FunctionArgs {
         };
 
         quote! {
-            #(
-                let #names: #tys = vm.ctx.pop_value()?.into();
-            )*
+            use std::borrow::BorrowMut;
+            #( #stackops )*
             #vm
+        }
+    }
+}
+
+struct FunctionArg {
+    name: Ident,
+    ty_name: Ident,
+    is_ref: bool,
+    is_mut: bool,
+}
+
+impl FunctionArg {
+    pub fn new(name: Ident, ty_name: Ident) -> Self {
+        Self {
+            name,
+            ty_name,
+            is_ref: false,
+            is_mut: false,
         }
     }
 }

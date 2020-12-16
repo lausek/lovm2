@@ -81,7 +81,8 @@ pub struct SharedObjectSlot(
 
 impl SharedObjectSlot {
     pub fn new<T>(lib: Rc<Library>, name: T) -> Lovm2Result<Self>
-        where T: AsRef<str>
+    where
+        T: AsRef<str>,
     {
         let name = name.as_ref();
         unsafe {

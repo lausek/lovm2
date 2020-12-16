@@ -13,3 +13,9 @@ pub const VALUE_STACK_EMPTY: u8 = 8;
 pub struct Lovm2CError {
     pub ty: u8,
 }
+
+impl From<u8> for Lovm2CError {
+    fn from(ty: u8) -> Self {
+        Self { ty }
+    }
+}

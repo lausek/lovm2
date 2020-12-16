@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
+pub type AnyRef = Rc<RefCell<Handle>>;
 pub type ValueRef = Rc<RefCell<Value>>;
 
 /// wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
@@ -52,9 +53,19 @@ pub enum Value {
     #[serde(serialize_with = "serialize_ruvalue_ref")]
     #[serde(deserialize_with = "deserialize_ruvalue_ref")]
     Ref(Option<ValueRef>),
+    #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
+    Any(AnyRef),
 }
 
 impl Value {
+    pub fn create_any<T>(from: T) -> Self
+    where
+        T: std::any::Any,
+    {
+        Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
+    }
+
     pub fn deref(&self) -> Option<Value> {
         match self {
             Value::Ref(Some(r)) => Some(r.borrow().clone()),
@@ -182,6 +193,7 @@ impl std::fmt::Display for Value {
             ),
             Value::Ref(Some(r)) => write!(f, "Ref({})", r.borrow()),
             Value::Ref(None) => write!(f, "Ref(None)"),
+            Value::Any(_) => write!(f, "Handle"),
         }
     }
 }
@@ -275,6 +287,16 @@ impl std::fmt::Debug for Value {
             Value::List(ls) => write!(f, "List({:?})", ls),
             Value::Ref(Some(r)) => write!(f, "Ref({:?})", r.borrow()),
             Value::Ref(None) => write!(f, "Ref(None)"),
+            Value::Any(_) => write!(f, "Handle"),
         }
+    }
+}
+
+pub struct Handle(pub Box<dyn std::any::Any>);
+
+impl PartialEq for Handle {
+    fn eq(&self, other: &Self) -> bool {
+        // TODO: try value compare
+        self.0.type_id() == other.0.type_id()
     }
 }

@@ -5,7 +5,7 @@ pub mod data;
 pub mod op;
 pub mod opi;
 
-pub use self::data::{box_value, Value, ValueRef};
+pub use self::data::{box_value, AnyRef, Value, ValueRef};
 
 #[inline]
 fn not_supported<T>() -> lovm2_error::Lovm2Result<T> {

@@ -59,3 +59,19 @@ pub fn lovm2_function(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     function.generate_rust_function().into_token_stream().into()
 }
+
+#[proc_macro_attribute]
+pub fn lovm2_object(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let item_fn = &syn::parse::<syn::ItemStruct>(item).unwrap();
+    let name = &item_fn.ident;
+    let result = quote! {
+        #item_fn
+
+        impl Into<Value> for #name {
+            fn into(self) -> Value {
+                Value::create_any(self)
+            }
+        }
+    };
+    result.into()
+}

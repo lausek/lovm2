@@ -69,20 +69,15 @@ impl Function {
 pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<&syn::Type> {
     match ty {
         syn::Type::Path(ty_path) => {
-            if let Some(ident) = ty_path.path.get_ident() {
-                let ident_name = ident.to_string();
-                match ident_name.as_ref() {
-                    "bool" | "f64" | "i64" | "String" | "Vm" => return Ok(ty),
-                    _ => {}
-                }
+            if let Some(_ident) = ty_path.path.get_ident() {
+                return Ok(ty);
             }
         }
         syn::Type::Reference(ref_type) => {
-            //assert!(ref_type.mutability.is_some());
             accept_type(&ref_type.elem)?;
             return Ok(ty);
         }
         _ => {}
     }
-    Err(format!("unexpected type"))
+    Err(format!("unexpected type {:?}", ty))
 }

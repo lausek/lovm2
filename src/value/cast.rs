@@ -56,6 +56,20 @@ impl Value {
         self.as_str_inner().map(Value::Str)
     }
 
+    pub fn as_any_inner(&self) -> Lovm2Result<AnyRef> {
+        match self {
+            Value::Any(r) => Ok(r.clone()),
+            _ => not_supported(),
+        }
+    }
+
+    pub fn as_any_ref(&self) -> Lovm2Result<AnyRef> {
+        match self {
+            Value::Any(ar) => Ok(ar.clone()),
+            _ => not_supported(),
+        }
+    }
+
     pub fn as_bool_inner(&self) -> Lovm2Result<bool> {
         match self {
             Value::Bool(b) => Ok(*b),
@@ -68,6 +82,7 @@ impl Value {
             // TODO: compare with 0
             Value::Float(_) |
             Value::Ref(_) => Ok(false),
+            _ => unimplemented!(),
         }
     }
 

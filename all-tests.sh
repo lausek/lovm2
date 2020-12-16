@@ -27,3 +27,8 @@ popd
 pushd lovm2_extend/examples/so_module
 cargo build
 popd
+
+pushd lovm2_extend/examples/custom-objects
+cargo build
+cargo test
+popd
