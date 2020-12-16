@@ -78,8 +78,8 @@ pub enum Instruction {
 
     /// convert top of stack into type. see `Value::type_id`
     Cast(u16),
-    /// take top of stack as name of module to load and import functions names without passing
-    /// import hook
+    /// take top of stack as name of module to load and import functions without module prefix as
+    /// well
     Import,
     /// take top of stack as name of module to import. function name will be padded using the
     /// import hook
