@@ -1,18 +1,6 @@
 # Expressions
 
-The `Expr` represents any computation that leads to a new value on the stack. Expressions can be nested arbitrarily. For example, the formula `f(2) * (1 + 2)` gets transformed into something like this:
-
-```
-Value(1)
-        \
-         -- Operation(+)
-        /               \
-Value(2)                 -- Operation(*)
-                        / 
-              Call(f, 2)
-```
-
-Note that `lovm2` does not care about operator priorities so its your parsers duty to correctly handle them.
+The `Expr` represents any computation that leads to a new value on the stack. Expressions can be nested arbitrarily.
 
 To give you an overview of what an expression could look like, here is the stripped down version of its actual implementation.
 
@@ -37,4 +25,27 @@ pub enum Expr {
     // special variant for creating lists and dicts
     DynamicValue,
 }
+```
+
+## Example
+
+We want to transform the formula `(1 + 2) * f(2)` to `lovm2` bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that `lovm2` does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your ast should look something like this:
+
+```
+Value(1)
+        \
+         -- Operation(+)
+        /               \
+Value(2)                 -- Operation(*)
+                        / 
+              Call(f, 2)
+```
+
+And here is the compiletime representation of said formula. As you can see, every operation has an equivalent static method on `Expr`.
+
+```
+let formula = Expr::mul(
+    Expr::add(1, 2),
+    Call::new("f").arg(2),
+);
 ```

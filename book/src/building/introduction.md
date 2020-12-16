@@ -21,6 +21,12 @@ println!("{}", module);
 #}
 ```
 
+The main generation functionality is exposed via `Block` and every structure that contains it like `Branch`, `Repeat` and functions. You can use these methods on all of them:
+
+- `step(..)` append a new statement to the block.
+- `branch(..)` create a new branch at the current position. This returns a `BranchBuilder`.
+- `repeat(..)` and `repeat_until(..)` which return a mutable reference to a new block. The first variant is an endless loop, while the latter supports breaking once a condition is met.
+
 ## Functions
 
 The whole `ModuleBuilder` is centered around the creation of `Hir`. As we already found out in the [Concepts](../concepts/bytecode.md) chapter, a `Hir` is conceptually equal to a function. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.
