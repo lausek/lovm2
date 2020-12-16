@@ -23,3 +23,7 @@ pushd lovm2_extend/examples/primitives
 cargo build
 cargo test
 popd
+
+pushd lovm2_extend/examples/so_module
+cargo build
+popd

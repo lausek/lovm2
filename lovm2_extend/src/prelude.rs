@@ -7,7 +7,7 @@ pub use lovm2::module::shared::SharedObjectSlot;
 pub use lovm2::value::Value;
 pub use lovm2::var::Variable;
 pub use lovm2::vm::Vm;
+pub use lovm2_error::{Lovm2ErrorTy, Lovm2Result};
+pub use lovm2_module::*;
 
 pub use crate::*;
-pub use lovm2_error::{Lovm2ErrorTy, Lovm2Result};
-pub use lovm2_module::lovm2_module;

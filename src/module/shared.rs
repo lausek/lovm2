@@ -80,7 +80,10 @@ pub struct SharedObjectSlot(
 );
 
 impl SharedObjectSlot {
-    pub fn new(lib: Rc<Library>, name: String) -> Lovm2Result<Self> {
+    pub fn new<T>(lib: Rc<Library>, name: T) -> Lovm2Result<Self>
+        where T: AsRef<str>
+    {
+        let name = name.as_ref();
         unsafe {
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
             match lookup {

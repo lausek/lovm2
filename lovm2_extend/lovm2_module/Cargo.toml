@@ -9,6 +9,7 @@ name = "lovm2_module"
 proc-macro = true
 
 [dependencies]
+lazy_static = "1.4.0"
 lovm2 = { path = "../../" }
 lovm2_error = { path = "../../src/lovm2_error" }
 quote = "1.0.7"
