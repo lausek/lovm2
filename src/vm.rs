@@ -268,12 +268,12 @@ impl Vm {
                 Instruction::LMove(lidx) => {
                     let variable = &co.idents[*lidx as usize];
                     let value = self.ctx.pop_value()?;
-                    self.ctx.frame_mut()?.locals.insert(variable.clone(), value);
+                    self.ctx.frame_mut()?.set_local(variable, value);
                 }
                 Instruction::GMove(gidx) => {
                     let variable = &co.idents[*gidx as usize];
                     let value = self.ctx.pop_value()?;
-                    self.ctx.globals.insert(variable.clone(), value);
+                    self.ctx.set_global(variable, value);
                 }
                 Instruction::Drop => {
                     self.ctx.pop_value()?;

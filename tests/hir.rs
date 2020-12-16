@@ -53,7 +53,7 @@ fn assign_local_add() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(4), *frame.value_of(&lv2_var!(n)).unwrap());
+            assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
         })
     }
 }
@@ -68,7 +68,7 @@ fn rem_lowering() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(1), *frame.value_of(&lv2_var!(rest)).unwrap());
+            assert_eq!(Value::Int(1), *frame.value_of("rest").unwrap());
         })
     }
 }
@@ -227,10 +227,7 @@ fn multiple_branches() {
 
     run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            Value::from("buzz"),
-            *frame.value_of(&lv2_var!(result)).unwrap()
-        );
+        assert_eq!(Value::from("buzz"), *frame.value_of("result").unwrap());
     })
     .unwrap();
 }
@@ -429,7 +426,7 @@ fn call_into_vm() {
     let mut vm = Vm::with_std();
     vm.set_interrupt(10, move |vm| {
         let frame = vm.ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(10), *frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
         called_ref.set(true);
         Ok(())
     });

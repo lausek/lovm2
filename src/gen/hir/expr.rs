@@ -125,11 +125,7 @@ impl Expr {
 
             Expr::Slice(_) => todo!(),
             Expr::Value { val, .. } => Ok(val.clone()),
-            Expr::Variable(var) => ctx
-                .globals
-                .get(&var)
-                .cloned()
-                .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into()),
+            Expr::Variable(var) => ctx.value_of(&var).cloned(),
         }
     }
 

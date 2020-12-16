@@ -1,6 +1,5 @@
 use lovm2::bytecode::Instruction;
 use lovm2::define_code;
-use lovm2::gen::prelude::*;
 use lovm2::value::Value;
 use lovm2::var::Variable;
 use lovm2::vm::Vm;
@@ -40,7 +39,7 @@ fn store_global() {
 
     assert_eq!(
         Value::Int(42),
-        *vm.context_mut().value_of(&lv2_var!(globaln)).unwrap()
+        *vm.context_mut().value_of("globaln").unwrap()
     );
 }
 
@@ -80,19 +79,19 @@ fn calculation() {
 
     assert_eq!(
         Value::Int(5),
-        *vm.context_mut().value_of(&lv2_var!(result_add)).unwrap()
+        *vm.context_mut().value_of("result_add").unwrap()
     );
     assert_eq!(
         Value::Int(1),
-        *vm.context_mut().value_of(&lv2_var!(result_sub)).unwrap()
+        *vm.context_mut().value_of("result_sub").unwrap()
     );
     assert_eq!(
         Value::Int(6),
-        *vm.context_mut().value_of(&lv2_var!(result_mul)).unwrap()
+        *vm.context_mut().value_of("result_mul").unwrap()
     );
     assert_eq!(
         Value::Int(1),
-        *vm.context_mut().value_of(&lv2_var!(result_div)).unwrap()
+        *vm.context_mut().value_of("result_div").unwrap()
     );
 }
 
@@ -136,6 +135,6 @@ fn jumping() {
 
     assert_eq!(
         Value::Str("aaaaaaaaaa".to_string()),
-        *vm.context_mut().value_of(&lv2_var!(output)).unwrap()
+        *vm.context_mut().value_of("output").unwrap()
     );
 }

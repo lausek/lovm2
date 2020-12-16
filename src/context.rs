@@ -20,7 +20,7 @@ pub const DEFAULT_VSTACK_SIZE: usize = 256;
 pub struct Context {
     pub entry: Option<Rc<dyn CallProtocol>>,
     /// global variables that can be altered from every object
-    pub globals: HashMap<Variable, Value>,
+    globals: HashMap<String, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CallableRef>,
     /// call stack that contains local variables
@@ -58,6 +58,13 @@ impl Context {
             .ok_or_else(|| Lovm2ErrorTy::FrameStackEmpty.into())
     }
 
+    pub fn set_global<T>(&mut self, var: T, val: Value)
+    where
+        T: AsRef<str>,
+    {
+        self.globals.insert(var.as_ref().to_string(), val);
+    }
+
     pub fn push_frame(&mut self, argn: u8) {
         self.lstack.push(Frame::new(argn));
     }
@@ -82,9 +89,12 @@ impl Context {
             .ok_or_else(|| Lovm2ErrorTy::ValueStackEmpty.into())
     }
 
-    pub fn value_of(&self, var: &Variable) -> Lovm2Result<&Value> {
+    pub fn value_of<T>(&self, var: T) -> Lovm2Result<&Value>
+    where
+        T: AsRef<str>,
+    {
         self.globals
-            .get(var)
+            .get(var.as_ref())
             .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into())
     }
 }

@@ -2,12 +2,11 @@
 
 use serde::{Deserialize, Serialize};
 
-// TODO: implement compare for Variable and String, &str
 /// a thin wrapper around an identifier name.
 ///
 /// lovm2 needs a clear distinction between strings and variables. variables cannot be pushed onto
 /// stack.
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, Hash, Deserialize, Serialize)]
 pub struct Variable(String);
 
 impl Variable {
@@ -37,6 +36,15 @@ impl From<&Self> for Variable {
 impl AsRef<str> for Variable {
     fn as_ref(&self) -> &str {
         self.0.as_ref()
+    }
+}
+
+impl<T> PartialEq<T> for Variable
+where
+    T: AsRef<str>,
+{
+    fn eq(&self, other: &T) -> bool {
+        self.0 == other.as_ref()
     }
 }
 

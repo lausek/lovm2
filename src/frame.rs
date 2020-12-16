@@ -8,14 +8,13 @@ use std::collections::HashMap;
 use lovm2_error::*;
 
 use crate::value::Value;
-use crate::var::Variable;
 
 /// a stack frame used in `Context.lstack`
 pub struct Frame {
     /// amount of parameters passed to the frame
     pub argn: u8,
     /// locals defined
-    pub locals: HashMap<Variable, Value>,
+    locals: HashMap<String, Value>,
 }
 
 impl Frame {
@@ -26,9 +25,19 @@ impl Frame {
         }
     }
 
-    pub fn value_of(&self, var: &Variable) -> Lovm2Result<&Value> {
+    pub fn set_local<T>(&mut self, var: T, value: Value)
+    where
+        T: AsRef<str>,
+    {
+        self.locals.insert(var.as_ref().to_string(), value);
+    }
+
+    pub fn value_of<T>(&self, var: T) -> Lovm2Result<&Value>
+    where
+        T: AsRef<str>,
+    {
         self.locals
-            .get(var)
+            .get(var.as_ref())
             .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into())
     }
 }

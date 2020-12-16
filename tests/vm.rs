@@ -66,7 +66,7 @@ fn load_custom_module() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -96,7 +96,7 @@ fn import_global_scope() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -134,7 +134,7 @@ fn import_vice_versa() {
     });
 
     run_module_test(vm, module, |ctx| {
-        assert_eq!(PASSED_VALUE, *ctx.value_of(&lv2_var!(result)).unwrap());
+        assert_eq!(PASSED_VALUE, *ctx.value_of("result").unwrap());
     })
     .unwrap();
 }
