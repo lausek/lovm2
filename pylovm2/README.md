@@ -43,8 +43,8 @@ vm.run()
 **NOTE:** manylinux wheels are required for distribution
 
 ``` bash
-sudo docker build -t pylovm2-build .
-sudo docker run -it -v $(pwd):/io pylovm2-build
+docker build -t pylovm2-build .
+docker run -it -v $(pwd):/io pylovm2-build
 
 # ... or use `maturin build`
 $ maturin publish

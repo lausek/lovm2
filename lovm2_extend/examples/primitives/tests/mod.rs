@@ -37,7 +37,7 @@ fn native_add() {
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(native_add, 1, 2)));
     });
 
-    let n = vm.context_mut().globals.get(&lv2_var!(n)).unwrap();
+    let n = vm.context_mut().value_of("n").unwrap();
     assert_eq!(Value::Int(3), *n);
 }
 
@@ -48,7 +48,7 @@ fn native_negate() {
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(negate, b)));
     });
 
-    let n = vm.context_mut().globals.get(&lv2_var!(n)).unwrap();
+    let n = vm.context_mut().value_of("n").unwrap();
     assert_eq!(Value::Bool(true), *n);
 }
 
@@ -60,7 +60,7 @@ fn native_to_string() {
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(to_string, f, ext)));
     });
 
-    let n = vm.context_mut().globals.get(&lv2_var!(n)).unwrap();
+    let n = vm.context_mut().value_of("n").unwrap();
     assert_eq!(Value::from("5.so"), *n);
 }
 
@@ -70,7 +70,7 @@ fn native_only_create() {
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(enden_der_wurst)));
     });
 
-    let n = vm.context_mut().globals.get(&lv2_var!(n)).unwrap();
+    let n = vm.context_mut().value_of("n").unwrap();
     assert_eq!(Value::from(2), *n);
 }
 
@@ -88,6 +88,6 @@ fn native_use_context() {
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(use_context)));
     });
 
-    let n = vm.context_mut().globals.get(&lv2_var!(n)).unwrap();
+    let n = vm.context_mut().value_of("n").unwrap();
     assert_eq!(Value::from(2), *n);
 }
