@@ -1,5 +1,6 @@
 //! runs modules and maintains program state
 
+use std::collections::HashMap;
 use std::ops::*;
 use std::rc::Rc;
 
@@ -60,6 +61,8 @@ macro_rules! value_compare {
 
 pub struct Vm {
     pub ctx: Context,
+    /// list of loaded modules: `Module` or `SharedObjectModule`
+    pub modules: HashMap<String, Rc<Module>>,
 
     import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
@@ -75,6 +78,7 @@ impl Vm {
     pub fn new() -> Self {
         Self {
             ctx: Context::new(),
+            modules: HashMap::new(),
 
             import_hook: Rc::new(default_import_hook),
             interrupts: vec![None; 256],
@@ -138,7 +142,7 @@ impl Vm {
     {
         let module = module.into();
 
-        if self.ctx.modules.get(module.name()).is_none() {
+        if self.modules.get(module.name()).is_none() {
             // load static dependencies of module
             for used_module in module.uses() {
                 // static dependencies are imported
@@ -159,7 +163,7 @@ impl Vm {
                 }
             }
 
-            self.ctx.modules.insert(module.name().to_string(), module);
+            self.modules.insert(module.name().to_string(), module);
         }
 
         Ok(())
@@ -173,7 +177,7 @@ impl Vm {
         relative_to: Option<String>,
         namespaced: bool,
     ) -> Lovm2Result<()> {
-        if self.ctx.modules.get(name).is_some() {
+        if self.modules.get(name).is_some() {
             return Ok(());
         }
 
@@ -377,8 +381,7 @@ impl Vm {
                     let namespaced = *inx == Instruction::NImport;
                     // path to the modules source code
                     let relative_to = if let Some(mname) = co.module() {
-                        self.ctx
-                            .modules
+                        self.modules
                             .get(&mname)
                             .and_then(|module| module.location())
                             .map(String::to_string)

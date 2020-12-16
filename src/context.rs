@@ -7,7 +7,6 @@ use lovm2_error::*;
 
 use crate::code::{CallProtocol, CallableRef};
 use crate::frame::Frame;
-use crate::module::Module;
 use crate::value::Value;
 use crate::var::Variable;
 
@@ -20,8 +19,6 @@ pub const DEFAULT_VSTACK_SIZE: usize = 256;
 /// implement `CallProtocol` as well as interrupts.
 pub struct Context {
     pub entry: Option<Rc<dyn CallProtocol>>,
-    /// list of loaded modules: `Module` or `SharedObjectModule`
-    pub modules: HashMap<String, Rc<Module>>,
     /// global variables that can be altered from every object
     pub globals: HashMap<Variable, Value>,
     /// entries in this map can directly be called from lovm2 bytecode
@@ -36,7 +33,6 @@ impl Context {
     pub fn new() -> Self {
         Self {
             entry: None,
-            modules: HashMap::new(),
             globals: HashMap::new(),
             scope: HashMap::new(),
             lstack: Vec::with_capacity(DEFAULT_LSTACK_SIZE),
