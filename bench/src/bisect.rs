@@ -99,6 +99,7 @@ pub fn bisect_hir(module: &mut ModuleBuilder) {
 
 pub fn bisect(c: &mut Criterion) {
     let mut module = ModuleBuilder::new();
+    module.entry();
 
     calc_hir(&mut module);
     derive_hir(&mut module);

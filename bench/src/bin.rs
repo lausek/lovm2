@@ -14,6 +14,7 @@ use self::legacy::*;
 
 fn fibonacci(c: &mut Criterion) {
     let mut module = ModuleBuilder::new();
+    module.entry();
 
     let (h, l, n, r) = &lv2_var!(h, l, n, r);
     let fib_hir = module.add_with_args("fib", vec![n.clone()]);
