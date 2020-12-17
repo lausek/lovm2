@@ -16,7 +16,7 @@ pub fn box_value(value: Value) -> Value {
         Value::Dict(d) => {
             let mut hm = HashMap::new();
             for (key, val) in d.into_iter() {
-                if let Value::Ref(_) = val {
+                if val.is_ref() {
                     hm.insert(key, val);
                 } else {
                     hm.insert(key, box_value(val));
@@ -27,7 +27,7 @@ pub fn box_value(value: Value) -> Value {
         Value::List(l) => Value::List(
             l.into_iter()
                 .map(|val| {
-                    if let Value::Ref(_) = val {
+                    if val.is_ref() {
                         val
                     } else {
                         box_value(val)
