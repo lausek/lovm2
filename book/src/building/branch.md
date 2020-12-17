@@ -18,20 +18,35 @@ equal_check
     .step(...);
 ```
 
-## LIR Layout
+## Example
+
+Let's implement a function that returns *1* if the given value is equal to 2 and *0* otherwise.
+
+``` rust,no_run
+let main = builder.add_with_args("is_2", vec![n.clone()]);
+let branch = main.branch();
+
+branch
+    .add_condition(Expr::eq(n, 2))
+    .step(Return::value(1));
+
+branch
+    .default_condition()
+    .step(Return::value(0));
+```
 
 ``` lir
 is_2:
-	Store(Local, n)
-branch_0_start:
-cond_0_start:
-	Push(Local, n)
+	StoreLocal(n)
+.branch_0_start:
+.cond_0_start:
+	PushLocal(n)
 	CPush(2)
 	Operator2(Equal)
-	Jump(Some(false), cond_0_end)
+	JumpIfFalse(.cond_0_end)
 	CPush(1)
 	Ret
-cond_0_end:
+.cond_0_end:
 	CPush(0)
 	Ret
 ```

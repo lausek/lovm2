@@ -2665,7 +2665,7 @@ hljs.registerLanguage("lir", (() => {
             keywords: {
                 $pattern: e.UNDERSCORE_IDENT_RE,
                 literal: "nil",
-                keyword: "Push CPush Store Operator1 Operator2 Jump Ret",
+                keyword: "Call Cast JumpIfTrue JumpIfFalse Jump Operator1 Operator2 CPush PushLocal PushGlobal StoreLocal StoreGlobal Interrupt Box Drop Duplicate Get RGet Ret Set Slice",
                 built_in: ""
             },
             contains: o.concat([e.C_NUMBER_MODE, e.APOS_STRING_MODE, e.QUOTE_STRING_MODE, {
@@ -2674,6 +2674,17 @@ hljs.registerLanguage("lir", (() => {
                 end: a,
                 contains: [n],
                 relevance: 5
+            }, {
+                className: "class",
+                begin: /\./,
+                contains: [e.inherit(e.UNDERSCORE_TITLE_MODE, {
+                    endsParent: !0
+                })],
+                illegal: "\\S"
+            }, {
+                className: "function",
+                begin: /\\s/,
+                end: /:/,
             }])
         }
     }

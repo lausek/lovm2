@@ -18,7 +18,7 @@ main:
 
 Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the `CodeObject` overall therefore reducing its size. Bytecode sequences like will be tranformed like this:
 
-``` lir
+``` bytecode
 CPush(0)
 CPush(1)   =>   CPush(2)
 Add
@@ -34,7 +34,7 @@ All languages should not evaluate the second operand of a `Or` or `And` operatio
 
 The optimizer will merge instruction sequences like this:
 
-``` lir
+``` bytecode
 ...
 Not   =>   Jt
 Jt
