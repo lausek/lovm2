@@ -20,10 +20,10 @@ pub enum Expr {
     Cast,
     // attribute read on a list or dict
     Access,
-    // create a mutable subpart of a list
-    Slice,
     // special variant for creating lists and dicts
     DynamicValue,
+    // create a mutable subpart of a list
+    Slice,
 }
 ```
 
@@ -41,7 +41,7 @@ Value(2)                 -- Operation(*)
               Call(f, 2)
 ```
 
-And here is the compiletime representation of said formula. As you can see, every operation has an equivalent static method on `Expr`.
+And here is the compiletime representation of said formula. As you can see, every operation has an equivalent static method on `Expr`. Also note that calling a function has its own construct. This is due to calls being allowed in statement position as well.
 
 ```
 let formula = Expr::mul(
@@ -49,3 +49,9 @@ let formula = Expr::mul(
     Call::new("f").arg(2),
 );
 ```
+
+## Resolvement of Variables
+
+While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.
+
+`Expr` variants relying on this functionality are `Variable` and `Access`. As such, their macro helper functions `lv2_var!` and `lv2_access!` follow the same rules.

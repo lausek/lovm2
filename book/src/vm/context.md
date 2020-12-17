@@ -4,8 +4,6 @@ The context stores the programs state.
 
 ``` rust,no_run
 pub struct Context {
-    /// loaded modules
-    pub modules: HashMap<String, Rc<Module>>,
     /// the module that will be run first
     pub entry: Option<Rc<dyn CallProtocol>>,
     /// available functions

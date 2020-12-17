@@ -8,7 +8,7 @@ use lovm2::prelude::*;
 #fn main() {
 let mut builder = ModuleBuilder::new();
 
-// creates the entry point `Hir` and returns a mutable reference.
+// creates the entry point `HIR` and returns a mutable reference.
 // this is actually a shortcut for builder.add(ENTRY_POINT)
 let main_hir = builder.entry();
 
@@ -29,7 +29,7 @@ The main generation functionality is exposed via `Block` and every structure tha
 
 ## Functions
 
-The whole `ModuleBuilder` is centered around the creation of `Hir`. As we already found out in the [Concepts](../concepts/bytecode.md) chapter, a `Hir` is conceptually equal to a function. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.
+The whole `ModuleBuilder` is centered around the creation of `HIR`. As we already found out in the [Concepts](../concepts/bytecode.md) chapter, a `HIR` is conceptually equal to a function. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.
 
 As you can see in this example listing, you should not need to create such data manually as there is functionality for adding it to the builder directly.
 

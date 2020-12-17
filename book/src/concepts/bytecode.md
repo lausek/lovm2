@@ -4,7 +4,7 @@
 
 For example, the term `1 + (2 * 3)` will be compiled to this sequence:
 
-``` lir
+``` bytecode
  instruction    | stack
 ----------------------------
  CPush          | [1]
@@ -14,18 +14,18 @@ For example, the term `1 + (2 * 3)` will be compiled to this sequence:
  Add            | [7]
 ```
 
-You do not need to micromanage the bytecode itself. There are common language constructs with which you can built pretty much everything. These constructs are composed on a function level as `Hir` so every new function gets its own **h**igh-level **i**ntermediate **r**epresentation. Below you can see the transformation process of a function into a runnable `CodeObject`.
+You do not need to micromanage the bytecode itself. There are common language constructs with which you can built pretty much everything. These constructs are composed on a function level as `HIR` so every new function gets its own **h**igh-level **i**ntermediate **r**epresentation. Below you can see the transformation process of a function into a runnable `CodeObject`.
 
 ```
-Hir -> Lir -> CodeObject
+HIR -> LIR -> CodeObject
 ```
 
 `CodeObject`'s on their own are already valid programs, but - as usual in every language - functions can be bundled together in some sort of collection - called `Module`.
 
 ```
-Hir -> Lir -> CodeObject
+HIR -> LIR -> CodeObject
                          \
-Hir -> Lir -> CodeObject  --> Module
+HIR -> LIR -> CodeObject  --> Module
                          /
-Hir -> Lir -> CodeObject
+HIR -> LIR -> CodeObject
 ```

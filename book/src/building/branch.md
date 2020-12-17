@@ -17,3 +17,21 @@ equal_check
     .default_condition()
     .step(...);
 ```
+
+## LIR Layout
+
+``` lir
+is_2:
+	Store(Local, n)
+branch_0_start:
+cond_0_start:
+	Push(Local, n)
+	CPush(2)
+	Operator2(Equal)
+	Jump(Some(false), cond_0_end)
+	CPush(1)
+	Ret
+cond_0_end:
+	CPush(0)
+	Ret
+```

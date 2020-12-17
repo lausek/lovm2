@@ -1,10 +1,10 @@
 # Optimization
 
-The rudimentary bytecode optimizer is enabled by default. It acts upon the generated `Lir`.
+The rudimentary bytecode optimizer is enabled by default. It acts upon the generated `LIR`.
 
 ## Dead Code elimination
 
-After lowering the `Lir`, the optimizer will eliminate code that is not reachable.
+After lowering the `LIR`, the optimizer will eliminate code that is not reachable.
 
 ``` lir
 main:               

@@ -2612,6 +2612,39 @@ hljs.registerLanguage("lua", (() => {
         }
     }
 })());
+hljs.registerLanguage("bytecode", (() => {
+    "use strict";
+    return e => {
+        const t = "\\[=*\\[",
+            a = "\\]=*\\]",
+            n = {
+                begin: t,
+                end: a,
+                contains: ["self"]
+            },
+            o = [e.COMMENT("--(?!\\[=*\\[)", "$"), e.COMMENT("--\\[=*\\[", a, {
+                contains: [n],
+                relevance: 10
+            })];
+        return {
+            name: "bytecode",
+            case_insensitive: true,
+            keywords: {
+                $pattern: e.UNDERSCORE_IDENT_RE,
+                literal: "nil",
+                keyword: "LPush GPush CPush LMove GMove Drop Dup Get RGet Set Add Sub Mul Div Pow Rem And Or Not Eq Ne Ge Gt Le Lt Jmp Jt Jf Call LCall Ret Interrupt Cast Import NImport Box Slice",
+                built_in: ""
+            },
+            contains: o.concat([e.C_NUMBER_MODE, e.APOS_STRING_MODE, e.QUOTE_STRING_MODE, {
+                className: "string",
+                begin: t,
+                end: a,
+                contains: [n],
+                relevance: 5
+            }])
+        }
+    }
+})());
 hljs.registerLanguage("lir", (() => {
     "use strict";
     return e => {
@@ -2627,27 +2660,15 @@ hljs.registerLanguage("lir", (() => {
                 relevance: 10
             })];
         return {
-            name: "Lir",
+            name: "lir",
             case_insensitive: true,
             keywords: {
                 $pattern: e.UNDERSCORE_IDENT_RE,
                 literal: "nil",
-                keyword: "LPush GPush CPush LMove GMove Drop Dup Get RGet Set Add Sub Mul Div Pow Rem And Or Not Eq Ne Ge Gt Le Lt Jmp Jt Jf Call LCall Ret Interrupt Cast Import NImport Box Slice",
+                keyword: "Push CPush Store Operator1 Operator2 Jump Ret",
                 built_in: ""
             },
-            contains: o.concat([{
-                className: "function",
-                beginKeywords: "function",
-                end: "\\)",
-                contains: [e.inherit(e.TITLE_MODE, {
-                    begin: "([_a-zA-Z]\\w*\\.)*([_a-zA-Z]\\w*:)?[_a-zA-Z]\\w*"
-                }), {
-                    className: "params",
-                    begin: "\\(",
-                    endsWithParent: !0,
-                    contains: o
-                }].concat(o)
-            }, e.C_NUMBER_MODE, e.APOS_STRING_MODE, e.QUOTE_STRING_MODE, {
+            contains: o.concat([e.C_NUMBER_MODE, e.APOS_STRING_MODE, e.QUOTE_STRING_MODE, {
                 className: "string",
                 begin: t,
                 end: a,
