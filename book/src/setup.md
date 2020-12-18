@@ -16,4 +16,4 @@
 
 2. Run `cargo update` on your terminal
 
-3. Import the useful `lovm2` modules into scope using `use lovm2::prelude::*;`
+3. Import the useful `lovm2` components into scope using `use lovm2::prelude::*;`
