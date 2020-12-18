@@ -1,10 +1,11 @@
-//! representation and operations for lovm2 values
+//! Representation and operations for lovm2 values
 
-pub mod cast;
-pub mod data;
-pub mod op;
-pub mod opi;
+mod cast;
+mod data;
+mod op;
+mod opi;
 
+pub use self::cast::*;
 pub use self::data::{box_value, AnyRef, Value, ValueRef};
 
 #[inline]

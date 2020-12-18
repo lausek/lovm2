@@ -1,4 +1,4 @@
-//! runs modules and maintains program state
+//! Runs modules and maintains program state
 
 use std::collections::HashMap;
 use std::ops::*;
@@ -13,9 +13,9 @@ use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value};
 use crate::var::Variable;
 
-/// virtual machine for executing [modules](crate::module::Module)
+/// Virtual machine for executing [modules](crate::module::Module)
 ///
-/// call convention is pascal style. if you have a function like `f(a, b, c)` it will be translated
+/// Call convention is pascal style. If you have a function like `f(a, b, c)` it will be translated
 /// to
 ///
 /// ``` ignore
@@ -25,7 +25,7 @@ use crate::var::Variable;
 /// call f, 3
 /// ```
 ///
-/// and the function has to do the popping in reverse
+/// ... and the function has to do the popping in reverse
 ///
 /// ``` ignore
 /// pop c

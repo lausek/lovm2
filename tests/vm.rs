@@ -153,7 +153,7 @@ fn custom_naming_scheme() {
     let mut vm = Vm::with_std();
 
     vm.set_import_hook(|module, name| {
-        let key = lovm2::util::to_lower_camel_case(name);
+        let key = to_lower_camel_case(name);
         let key = match module {
             // use dash as module name separator
             Some(module) => format!("{}-{}", module, key),

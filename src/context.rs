@@ -1,4 +1,4 @@
-//! vm state
+//! VM state
 
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -13,19 +13,19 @@ use crate::var::Variable;
 pub const DEFAULT_LSTACK_SIZE: usize = 256;
 pub const DEFAULT_VSTACK_SIZE: usize = 256;
 
-/// the state of the virtual machine
+/// The state of the virtual machine
 ///
-/// this contains all necessary runtime data and gets shared with objects that
+/// This contains all necessary runtime data and gets shared with objects that
 /// implement `CallProtocol` as well as interrupts.
 pub struct Context {
     pub entry: Option<Rc<dyn CallProtocol>>,
-    /// global variables that can be altered from every object
+    /// Global variables that can be altered from every object
     globals: HashMap<String, Value>,
-    /// entries in this map can directly be called from lovm2 bytecode
+    /// Entries in this map can directly be called from lovm2 bytecode
     pub scope: HashMap<Variable, CallableRef>,
-    /// call stack that contains local variables
+    /// Call stack that contains local variables
     pub lstack: Vec<Frame>,
-    /// value stack. this is shared across `CallProtocol` functionality
+    /// Value stack. This is shared across `CallProtocol` functionality
     pub vstack: Vec<Value>,
 }
 

@@ -1,4 +1,4 @@
-//! instructions for storing data
+//! Instructions for storing data
 
 use super::*;
 

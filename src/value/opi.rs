@@ -1,4 +1,4 @@
-//! implementation of primitive inplace operations on `Value`
+//! Implementation of primitive inplace operations on `Value`
 
 use lovm2_error::*;
 

@@ -1,4 +1,4 @@
-//! trigger a vm interrupt
+//! Trigger a VM interrupt
 
 use super::*;
 

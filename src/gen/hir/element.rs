@@ -1,4 +1,4 @@
-//! sum type for every Hir element
+//! Sum type for every Hir element
 
 use super::*;
 

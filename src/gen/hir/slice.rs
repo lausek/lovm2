@@ -1,4 +1,4 @@
-//! create a new `List` containing references to values on the target `List`
+//! Create a new `List` containing references to values on the target `List`
 
 use super::*;
 

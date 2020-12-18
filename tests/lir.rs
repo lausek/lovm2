@@ -1,7 +1,7 @@
-use lovm2::bytecode::Instruction;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
+use lovm2::Instruction;
 
 #[test]
 fn merge_not_jump_false() {

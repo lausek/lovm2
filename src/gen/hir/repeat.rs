@@ -1,4 +1,4 @@
-//! runs a `Block` forever or until a condition is met
+//! Runs a `Block` forever or until a condition is met
 
 use super::*;
 

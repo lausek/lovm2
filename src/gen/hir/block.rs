@@ -1,4 +1,4 @@
-//! general collection for program statements
+//! General collection for program statements
 
 use super::*;
 

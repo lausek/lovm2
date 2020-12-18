@@ -1,4 +1,4 @@
-//! runnable bytecode objects
+//! Runnable bytecode objects
 
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -10,15 +10,15 @@ use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::Vm;
 
-/// generic object implementing the `CallProtocol`
+/// Generic object implementing the `CallProtocol`
 pub type CallableRef = Rc<dyn CallProtocol>;
 
-/// generalization for runnable objects
+/// Generalization for runnable objects
 /// - lovm2 bytecode ([CodeObject])
-/// - statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
-/// - dynamically linked functions ([SharedObjectSlot](crate::module::shared::SharedObjectSlot))
+/// - Statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
+/// - Dynamically linked functions ([SharedObjectSlot](crate::module::shared::SharedObjectSlot))
 ///
-/// functions implementing this protocol can support variadic arguments by looking at
+/// Functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
 pub trait CallProtocol: std::fmt::Debug {
     fn module(&self) -> Option<String> {
@@ -30,9 +30,9 @@ pub trait CallProtocol: std::fmt::Debug {
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
 ///
-/// the `entries` attribute is a vector of name-offset pairs where the first component is an
-/// index into `idents`. this information is essential for the [run_bytecode] function used by
-/// [CodeObjectFunction]. it shouldn't be necessary to manually alter `entries`. by default,
+/// The `entries` attribute is a vector of name-offset pairs where the first component is an
+/// index into `idents`. This information is essential for the [run_bytecode](Vm::run_bytecode) function used by
+/// [CodeObjectFunction]. It shouldn't be necessary to manually alter `entries`. By default,
 /// the subprogram named [ENTRY_POINT](crate::module::ENTRY_POINT) will be at offset 0:
 ///
 /// ``` ignored
@@ -44,8 +44,8 @@ pub trait CallProtocol: std::fmt::Debug {
 ///     ret
 /// ```
 ///
-/// values will be returned over the value stack. every code object has
-/// to return some value on termination. if no value is produced, `Nil` is implicitly returned.
+/// Values will be returned over the value stack. Every code object has
+/// to return some value on termination. If no value is produced, `Nil` is implicitly returned.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CodeObject {
     pub name: String,

@@ -1,8 +1,8 @@
-//! generic protocol for module like objects
+//! Generic protocol for module like objects
 //!
-//! a `Module` can be created from a `CodeObject` or by loading a lovm2 compatible shared object
-//! library.  it maintains an internal map of callable objects, meaning that everything
-//! implementing the `CallProtocol` can be added and executed from inside the vm. on load, all
+//! A `Module` can be created from a `CodeObject` or by loading a lovm2 compatible shared object
+//! library. It maintains an internal map of callable objects, meaning that everything
+//! implementing the `CallProtocol` can be added and executed from inside the vm. On load, all
 //! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
 pub mod builder;

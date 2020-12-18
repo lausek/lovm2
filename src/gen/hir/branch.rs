@@ -1,4 +1,4 @@
-//! conditional execution
+//! Conditional execution
 
 use super::*;
 

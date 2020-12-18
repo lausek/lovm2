@@ -1,6 +1,6 @@
 #[test]
 fn to_lower_camel_case() {
-    use lovm2::util::to_lower_camel_case;
+    use lovm2::prelude::*;
 
     let tlcc = to_lower_camel_case;
 

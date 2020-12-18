@@ -1,7 +1,7 @@
-//! implementation of shared objects as lovm2 modules
+//! Implementation of shared objects as lovm2 modules
 //!
-//! shared objects must be specifically compiled for lovm2 and export a function named
-//! after `EXTERN_LOVM2_INITIALIZER`. it is responsible for registering the exported
+//! Shared objects must be specifically compiled for lovm2 and export a function named
+//! after `EXTERN_LOVM2_INITIALIZER`. It is responsible for registering the exported
 //! functions in the given `HashMap`.
 //!
 //! See [lovm2_extend](/lovm2_extend) for helper utilities and examples.

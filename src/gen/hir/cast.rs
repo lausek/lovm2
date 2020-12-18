@@ -1,8 +1,8 @@
-//! do type conversion on a lowered `Expr` at runtime
+//! Do type conversion on a lowered `Expr` at runtime
 
 use super::*;
 
-use crate::value::cast::{RUVALUE_BOOL_TY, RUVALUE_FLOAT_TY, RUVALUE_INT_TY, RUVALUE_STR_TY};
+use crate::value::{RUVALUE_BOOL_TY, RUVALUE_FLOAT_TY, RUVALUE_INT_TY, RUVALUE_STR_TY};
 
 #[derive(Clone, Debug)]
 pub struct Cast {

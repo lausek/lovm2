@@ -1,4 +1,4 @@
-//! native implementation of lovm2s builtin functions
+//! Native implementation of lovm2's builtin functions
 
 use std::rc::Rc;
 

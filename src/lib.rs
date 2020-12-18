@@ -47,17 +47,21 @@
 
 extern crate lovm2_internals;
 
-pub mod bytecode;
 pub mod code;
 pub mod context;
-pub mod frame;
 pub mod gen;
 pub mod module;
 pub mod prelude;
-pub mod util;
 pub mod value;
-pub mod var;
 pub mod vm;
 
-/// used for generating wrappers of statically linked functions to be called from lovm2
+pub(crate) mod bytecode;
+pub(crate) mod frame;
+pub(crate) mod util;
+pub(crate) mod var;
+
+pub use crate::bytecode::Instruction;
+pub use crate::var::Variable;
+
+/// Used for generating wrappers of statically linked functions to be called from lovm2
 pub use lovm2_internals::lovm2_builtin;

@@ -1,6 +1,6 @@
-//! stores local function values
+//! Stores local function values
 //!
-//! each frame contains the amount of arguments passed to the `CodeObject` on stack. make
+//! Each frame contains the amount of arguments passed to the `CodeObject` on stack. Make
 //! sure to pop exactly `argn` values from stack and leave one value as return.
 
 use std::collections::HashMap;
@@ -9,7 +9,7 @@ use lovm2_error::*;
 
 use crate::value::Value;
 
-/// a stack frame used in `Context.lstack`
+/// A stack frame used in `Context.lstack`
 pub struct Frame {
     /// amount of parameters passed to the frame
     pub argn: u8,

@@ -1,4 +1,4 @@
-//! shared lowering state
+//! Shared lowering state
 
 use std::cell::RefCell;
 use std::rc::Rc;

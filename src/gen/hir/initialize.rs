@@ -1,4 +1,4 @@
-//! initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
+//! Initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
 
 use std::collections::HashMap;
 

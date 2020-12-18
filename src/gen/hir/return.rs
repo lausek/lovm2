@@ -1,6 +1,6 @@
-//! return value from a `CodeObject`
+//! Return value from a `CodeObject`
 //!
-//! every `CodeObject` implicitly returns `Nil` if no return value was given
+//! Every `CodeObject` implicitly returns `Nil` if no return value was given.
 
 use super::*;
 

@@ -1,4 +1,4 @@
-//! representation of values
+//! Representation of values
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::cell::RefCell;
@@ -10,7 +10,7 @@ use lovm2_error::*;
 pub type AnyRef = Rc<RefCell<Handle>>;
 pub type ValueRef = Rc<RefCell<Value>>;
 
-/// wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
+/// Wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
 pub fn box_value(value: Value) -> Value {
     let outer = match value {
         Value::Dict(d) => {
@@ -26,13 +26,7 @@ pub fn box_value(value: Value) -> Value {
         }
         Value::List(l) => Value::List(
             l.into_iter()
-                .map(|val| {
-                    if val.is_ref() {
-                        val
-                    } else {
-                        box_value(val)
-                    }
-                })
+                .map(|val| if val.is_ref() { val } else { box_value(val) })
                 .collect::<Vec<_>>(),
         ),
         value => value,
@@ -40,7 +34,7 @@ pub fn box_value(value: Value) -> Value {
     Value::Ref(Some(Rc::new(RefCell::new(outer))))
 }
 
-/// runtime representation of values
+/// Runtime representation of values
 #[derive(Clone, PartialEq, Deserialize, Serialize)]
 pub enum Value {
     Nil,

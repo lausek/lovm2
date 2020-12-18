@@ -1,10 +1,10 @@
-//! wrapper type for identifiers
+//! Wrapper type for identifiers
 
 use serde::{Deserialize, Serialize};
 
-/// a thin wrapper around an identifier name.
+/// A thin wrapper around an identifier name.
 ///
-/// lovm2 needs a clear distinction between strings and variables. variables cannot be pushed onto
+/// lovm2 needs a clear distinction between strings and variables. Variables cannot be pushed onto
 /// stack.
 #[derive(Clone, Debug, Eq, Hash, Deserialize, Serialize)]
 pub struct Variable(String);

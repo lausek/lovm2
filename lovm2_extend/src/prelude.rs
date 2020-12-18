@@ -5,8 +5,9 @@ pub use std::rc::Rc;
 pub use lovm2::code::CallableRef;
 pub use lovm2::module::shared::SharedObjectSlot;
 pub use lovm2::value::Value;
-pub use lovm2::var::Variable;
 pub use lovm2::vm::Vm;
+pub use lovm2::Variable;
+
 pub use lovm2_error::{Lovm2ErrorTy, Lovm2Result};
 pub use lovm2_module::*;
 

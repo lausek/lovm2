@@ -1,18 +1,18 @@
-//! highlevel intermediate representation
+//! Highlevel Intermediate Representation
 
-pub mod assign;
-pub mod block;
-pub mod branch;
-pub mod call;
-pub mod cast;
-pub mod element;
-pub mod expr;
-pub mod include;
-pub mod initialize;
-pub mod interrupt;
-pub mod repeat;
-pub mod r#return;
-pub mod slice;
+mod assign;
+mod block;
+mod branch;
+mod call;
+mod cast;
+mod element;
+mod expr;
+mod include;
+mod initialize;
+mod interrupt;
+mod repeat;
+mod r#return;
+mod slice;
 
 use lovm2_error::*;
 

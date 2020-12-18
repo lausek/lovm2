@@ -1,7 +1,6 @@
-//! definition of the bytecode
-
 use serde::{Deserialize, Serialize};
 
+/// Definition of the bytecode
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Instruction {
     /// push local variable

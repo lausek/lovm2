@@ -1,4 +1,4 @@
-//! execute a `CodeObject` by name using the given arguments
+//! Execute a `CodeObject` by name using the given arguments
 
 use super::*;
 

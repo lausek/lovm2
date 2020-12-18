@@ -1,4 +1,4 @@
-//! implementation of primitive operations on `Value` e.g. Add, Sub
+//! Implementation of primitive operations on `Value` e.g. Add, Sub
 
 use std::cmp::Ordering;
 

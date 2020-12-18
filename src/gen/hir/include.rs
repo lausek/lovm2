@@ -1,8 +1,8 @@
-//! loads a module by name into the vm
+//! Loads a module by name into the VM
 
 use super::*;
 
-/// loads a module by name into the vm
+/// Loads a module by name into the VM
 #[derive(Clone)]
 pub struct Include {
     name: Expr,

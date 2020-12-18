@@ -1,10 +1,21 @@
-//! conversion of values
+//! Conversion of values
 
 use lovm2_error::*;
 
 use super::*;
 
 pub type CastResult = Lovm2Result<Value>;
+
+#[repr(u16)]
+pub enum ValueType {
+    Nil = 0,
+    Bool = 1,
+    Int = 2,
+    Float = 3,
+    Str = 4,
+    Dict = 5,
+    List = 6,
+}
 
 pub const RUVALUE_NIL_TY: u16 = 0;
 pub const RUVALUE_BOOL_TY: u16 = 1;

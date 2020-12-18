@@ -1,4 +1,4 @@
-//! expressions and operations that produce `Values`
+//! Expressions and operations that produce `Values`
 
 use super::*;
 

@@ -1,5 +1,7 @@
-pub mod element;
-pub mod lowering;
+//! Lowlevel Intermediate Representation
+
+mod element;
+mod lowering;
 
 use super::*;
 
