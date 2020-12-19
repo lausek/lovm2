@@ -10,18 +10,6 @@ pub struct Function {
 impl Function {
     pub fn from(item_fn: ItemFn) -> GenResult<Self> {
         let args = FunctionArgs::from(item_fn.sig.inputs)?;
-        /*
-        let mut args = vec![];
-
-        for item in item_fn.sig.inputs.into_iter() {
-            match item {
-                syn::FnArg::Typed(pty) => {
-                    args.push(FunctionArg::from(pty)?);
-                }
-                _ => Err(format!("{:?} not allowed as argument", 1)),
-            }
-        }
-        */
 
         Ok(Self {
             name: item_fn.sig.ident,
