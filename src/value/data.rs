@@ -141,6 +141,16 @@ impl Value {
     }
 }
 
+impl Value {
+    pub fn dict() -> Self {
+        Self::Dict(HashMap::new())
+    }
+
+    pub fn list() -> Self {
+        Self::List(vec![])
+    }
+}
+
 impl std::cmp::Eq for Value {}
 
 impl std::hash::Hash for Value {

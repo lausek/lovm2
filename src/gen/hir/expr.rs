@@ -133,16 +133,15 @@ impl Expr {
     }
 
     pub fn dict() -> Self {
-        use std::collections::HashMap;
         Expr::Value {
-            val: Value::Dict(HashMap::new()),
+            val: Value::dict(),
             boxed: false,
         }
     }
 
     pub fn list() -> Self {
         Expr::Value {
-            val: Value::List(vec![]),
+            val: Value::list(),
             boxed: false,
         }
     }

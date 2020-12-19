@@ -1,7 +1,5 @@
 //! Initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
 
-use std::collections::HashMap;
-
 use super::*;
 
 /// Initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
@@ -25,11 +23,11 @@ impl Initialize {
     }
 
     pub fn dict() -> Self {
-        Self::new(Value::Dict(HashMap::new()).into())
+        Self::new(Value::dict().into())
     }
 
     pub fn list() -> Self {
-        Self::new(Value::List(vec![]).into())
+        Self::new(Value::list().into())
     }
 
     pub fn add<T>(&mut self, val: T)
