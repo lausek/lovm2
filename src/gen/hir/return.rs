@@ -4,6 +4,7 @@
 
 use super::*;
 
+/// Return value from a `CodeObject`
 #[derive(Clone)]
 pub struct Return {
     expr: Expr,

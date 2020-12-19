@@ -31,11 +31,11 @@ impl Jumpable for HirLoweringBranch {
     }
 
     fn end(&self) -> Label {
-        Label::Custom(format!("branch_{}_end", self.id))
+        Label::from(format!("branch_{}_end", self.id))
     }
 
     fn start(&self) -> Label {
-        Label::Custom(format!("branch_{}_start", self.id))
+        Label::from(format!("branch_{}_start", self.id))
     }
 }
 
@@ -51,10 +51,10 @@ impl Jumpable for HirLoweringCondition {
     }
 
     fn end(&self) -> Label {
-        Label::Custom(format!("cond_{}_end", self.id))
+        Label::from(format!("cond_{}_end", self.id))
     }
 
     fn start(&self) -> Label {
-        Label::Custom(format!("cond_{}_start", self.id))
+        Label::from(format!("cond_{}_start", self.id))
     }
 }

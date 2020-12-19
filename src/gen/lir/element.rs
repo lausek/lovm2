@@ -1,8 +1,11 @@
+//! Sum type for every LIR element
+
 use crate::value::{Value, ValueType};
 use crate::var::Variable;
 
 use super::{Label, Operator, Scope};
 
+/// Sum type for every LIR element
 #[derive(Clone, Debug)]
 pub enum LirElement {
     Call {

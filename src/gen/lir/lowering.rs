@@ -1,3 +1,5 @@
+//! Information for the process of lowering LIR to bytecode
+
 use std::collections::HashMap;
 
 use lovm2_error::*;
@@ -34,12 +36,13 @@ enum Offset {
     Unresolved(Vec<usize>),
 }
 
+/// Information for the process of lowering LIR to bytecode
 pub struct LirLoweringRuntime {
     meta: ModuleMeta,
-    pub entries: Vec<(usize, usize)>,
-    pub consts: Vec<Value>,
-    pub idents: Vec<Variable>,
-    pub code: Vec<Instruction>,
+    entries: Vec<(usize, usize)>,
+    consts: Vec<Value>,
+    idents: Vec<Variable>,
+    code: Vec<Instruction>,
 
     offsets: HashMap<Label, Offset>,
 }

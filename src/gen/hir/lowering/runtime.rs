@@ -11,6 +11,7 @@ use crate::var::Variable;
 
 use super::*;
 
+/// Information for the process of lowering HIR to LIR
 pub struct HirLoweringRuntime {
     code: Vec<LirElement>,
     counter: LabelCounterRef,
@@ -50,7 +51,7 @@ impl HirLoweringRuntime {
         // before lowering a code object function, reset locals
         self.locals.clear();
 
-        let hir_elements = hir.code.into_iter();
+        let hir_elements = hir.block.into_iter();
 
         self.add_prelude(hir.args)?;
 

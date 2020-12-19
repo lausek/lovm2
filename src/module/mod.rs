@@ -25,7 +25,8 @@ pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
 pub use self::slots::Slots;
 pub use self::standard::create_standard_module;
 
-/// Name of the [CodeObject] entry that is used as a programs starting point inside [Vm::run]
+/// Name of the [CodeObject] entry that is used as a programs starting point inside
+/// [Vm::run](crate::vm::Vm::run)
 pub const ENTRY_POINT: &str = "main";
 
 /// Main runtime representation for loadable modules.

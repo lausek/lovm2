@@ -2,6 +2,7 @@
 
 use super::*;
 
+/// Execute a `CodeObject` by name using the given arguments
 #[derive(Clone, Debug)]
 pub struct Call {
     name: Variable,

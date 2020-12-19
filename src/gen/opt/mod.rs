@@ -1,3 +1,5 @@
+//! Optimization on LIR
+
 pub(crate) mod standard;
 pub(crate) mod valid;
 
@@ -6,6 +8,7 @@ use super::*;
 pub use self::standard::StandardOptimizer;
 pub(self) use self::valid::ValidPath;
 
+/// General functions of an optimizer
 pub trait Optimizer {
     fn postprocess(&mut self, _: &mut Vec<LirElement>) {}
 
@@ -16,6 +19,7 @@ pub trait Optimizer {
     }
 }
 
+/// Does no optimization at all
 pub struct NoOptimizer;
 
 impl Optimizer for NoOptimizer {}

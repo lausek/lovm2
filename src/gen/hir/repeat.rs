@@ -8,9 +8,10 @@ pub enum RepeatKind {
     Endless,
 }
 
+/// Runs a [Block] forever or until a condition is met
 #[derive(Clone)]
 pub struct Repeat {
-    pub block: Block,
+    block: Block,
     condition: RepeatKind,
 }
 
@@ -70,6 +71,7 @@ impl HirLowering for Repeat {
     }
 }
 
+/// Highlevel `break` statement
 #[derive(Clone)]
 pub struct Break {}
 
@@ -86,6 +88,7 @@ impl Break {
     }
 }
 
+/// Highlevel `continue` statement
 #[derive(Clone)]
 pub struct Continue {}
 

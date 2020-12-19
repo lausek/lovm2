@@ -2,6 +2,7 @@
 
 use super::*;
 
+/// Trigger a VM interrupt
 #[derive(Clone)]
 pub struct Interrupt {
     n: u16,

@@ -28,6 +28,7 @@ macro_rules! auto_implement {
     };
 }
 
+/// Expressions and operations that produce `Values`
 #[derive(Clone, Debug)]
 pub enum Expr {
     Access(Access),
@@ -41,6 +42,7 @@ pub enum Expr {
     Variable(Variable),
 }
 
+/// Operator with two operands
 #[derive(Clone, Debug, PartialEq)]
 pub enum Operator2 {
     Add,
@@ -60,6 +62,7 @@ pub enum Operator2 {
     LessThan,
 }
 
+/// Operator with one operand
 #[derive(Clone, Debug, PartialEq)]
 pub enum Operator1 {
     Not,

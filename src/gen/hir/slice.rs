@@ -2,6 +2,7 @@
 
 use super::*;
 
+/// Create a new `List` containing references to values on the target `List`
 #[derive(Clone, Debug)]
 pub struct Slice {
     target: Box<Expr>,

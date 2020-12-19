@@ -4,6 +4,7 @@ use super::*;
 
 use crate::value::ValueType;
 
+/// Do type conversion on a lowered `Expr` at runtime
 #[derive(Clone, Debug)]
 pub struct Cast {
     ty: ValueType,

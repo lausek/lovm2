@@ -12,10 +12,10 @@ impl Jumpable for HirLoweringRepeat {
     }
 
     fn end(&self) -> Label {
-        Label::Custom(format!("rep_{}_end", self.id))
+        Label::from(format!("rep_{}_end", self.id))
     }
 
     fn start(&self) -> Label {
-        Label::Custom(format!("rep_{}_start", self.id))
+        Label::from(format!("rep_{}_start", self.id))
     }
 }

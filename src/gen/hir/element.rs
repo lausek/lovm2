@@ -1,7 +1,8 @@
-//! Sum type for every Hir element
+//! Sum type for every HIR element
 
 use super::*;
 
+/// Sum type for every HIR element
 #[derive(Clone)]
 pub enum HirElement {
     Assign(Assign),

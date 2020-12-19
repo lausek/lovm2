@@ -2,10 +2,11 @@
 
 use super::*;
 
+/// Conditional execution
 #[derive(Clone)]
 pub struct Branch {
-    pub branches: Vec<(Expr, Block)>,
-    pub default: Option<Block>,
+    branches: Vec<(Expr, Block)>,
+    default: Option<Block>,
 }
 
 impl Branch {
@@ -16,7 +17,7 @@ impl Branch {
         }
     }
 
-    /// expects a condition that evaluates to boolean `true`
+    /// Expects a condition that evaluates to boolean `true`
     pub fn add_condition(&mut self, condition: Expr) -> &mut Block {
         self.branches.push((condition, Block::new()));
         let (_, block) = self.branches.last_mut().unwrap();

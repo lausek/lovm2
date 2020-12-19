@@ -1,5 +1,7 @@
 //! Highlevel Intermediate Representation
 
+mod lowering;
+
 mod assign;
 mod block;
 mod branch;
@@ -31,35 +33,40 @@ pub use self::expr::{Expr, Operator1, Operator2};
 pub use self::include::Include;
 pub use self::initialize::Initialize;
 pub use self::interrupt::Interrupt;
+pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 pub use self::r#return::Return;
 pub use self::repeat::{Break, Continue, Repeat};
 pub use self::slice::Slice;
 
+/// Highlevel representation of a function
 #[derive(Clone)]
 pub struct Hir {
-    pub args: Vec<Variable>,
-    pub code: Block,
+    args: Vec<Variable>,
+    block: Block,
 }
 
 impl Hir {
+    /// Create a new function
     pub fn new() -> Self {
         Self {
             args: vec![],
-            code: Block::new(),
+            block: Block::new(),
         }
     }
 
+    /// Create a new function with arguments
     pub fn with_args(args: Vec<Variable>) -> Self {
         let mut hir = Self::new();
         hir.args = args;
         hir
     }
 
+    /// Add a HIR to the lowering runtime
     pub fn build(&mut self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
         // automatically add a `return nil` if not present already
-        match self.code.last_mut() {
+        match self.block.last_mut() {
             Some(HirElement::Return(_)) => {}
-            _ => self.code.step(Return::nil()),
+            _ => self.block.step(Return::nil()),
         }
 
         // TODO: avoid clone here. needs change of `HirLoweringRuntime`
@@ -70,10 +77,11 @@ impl Hir {
 impl HasBlock for Hir {
     #[inline]
     fn block_mut(&mut self) -> &mut Block {
-        &mut self.code
+        &mut self.block
     }
 }
 
+/// Supplying functionality for all structures containing a [Block]
 pub trait HasBlock {
     fn block_mut(&mut self) -> &mut Block;
 

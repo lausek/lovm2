@@ -4,8 +4,7 @@ use lovm2_error::*;
 
 use super::*;
 
-pub type CastResult = Lovm2Result<Value>;
-
+/// Type of a value as integer
 #[derive(Clone, Debug)]
 #[repr(u16)]
 pub enum ValueType {
@@ -19,7 +18,7 @@ pub enum ValueType {
 }
 
 impl Value {
-    pub fn cast(self, ty: ValueType) -> CastResult {
+    pub fn cast(self, ty: ValueType) -> Lovm2Result<Value> {
         match ty {
             ValueType::Bool => self.as_bool(),
             ValueType::Int => self.as_integer(),
@@ -40,23 +39,23 @@ impl Value {
         Ok(())
     }
 
-    pub fn as_bool(&self) -> CastResult {
+    pub fn as_bool(&self) -> Lovm2Result<Value> {
         self.as_bool_inner().map(Value::Bool)
     }
 
-    pub fn as_float(&self) -> CastResult {
+    pub fn as_float(&self) -> Lovm2Result<Value> {
         self.as_float_inner().map(Value::Float)
     }
 
-    pub fn as_integer(&self) -> CastResult {
+    pub fn as_integer(&self) -> Lovm2Result<Value> {
         self.as_integer_inner().map(Value::Int)
     }
 
-    pub fn as_integer_round(&self) -> CastResult {
+    pub fn as_integer_round(&self) -> Lovm2Result<Value> {
         self.as_integer_round_inner().map(Value::Int)
     }
 
-    pub fn as_str(&self) -> CastResult {
+    pub fn as_str(&self) -> Lovm2Result<Value> {
         self.as_str_inner().map(Value::Str)
     }
 
@@ -152,7 +151,7 @@ impl ValueType {
             4 => Ok(ValueType::Str),
             5 => Ok(ValueType::Dict),
             6 => Ok(ValueType::List),
-            _ => Err(format!("not a valid type").into()),
+            _ => Err("not a valid type".to_string().into()),
         }
     }
 }

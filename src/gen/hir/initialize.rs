@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 use super::*;
 
+/// Initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
 #[derive(Clone, Debug)]
 pub struct Initialize {
     base: Value,

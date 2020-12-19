@@ -2,20 +2,22 @@
 
 mod branch;
 mod repeat;
-pub mod runtime;
+mod runtime;
 
 use super::*;
 
-pub(super) use self::branch::HirLoweringBranch;
-pub(super) use self::repeat::HirLoweringRepeat;
-pub(crate) use self::runtime::HirLoweringRuntime;
+pub(crate) use self::branch::HirLoweringBranch;
+pub use self::repeat::HirLoweringRepeat;
+pub use self::runtime::HirLoweringRuntime;
 
 pub(crate) type LabelCounterRef = std::rc::Rc<std::cell::RefCell<LabelCounter>>;
 
+/// Structures supporting transformation into LIR
 pub trait HirLowering {
     fn lower(self, runtime: &mut HirLoweringRuntime);
 }
 
+/// Structures supporting custom jump targets
 pub trait Jumpable {
     fn new(_: LabelCounterRef) -> Self;
 
@@ -47,7 +49,7 @@ impl LabelCounter {
     pub fn create_new_label(&mut self) -> Label {
         let id = self.other;
         self.other += 1;
-        Label::Custom(format!("_{}", id))
+        Label::from(format!("_{}", id))
     }
 
     pub fn create_repeat_id(&mut self) -> usize {

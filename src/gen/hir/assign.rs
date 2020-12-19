@@ -9,6 +9,7 @@ pub enum AssignType {
     Dynamic,
 }
 
+/// Storing data in various locations
 #[derive(Clone)]
 pub struct Assign {
     expr: Expr,
@@ -17,6 +18,7 @@ pub struct Assign {
 }
 
 impl Assign {
+    /// Assign data to a local variable
     pub fn local<U, T>(var: &U, expr: T) -> Self
     where
         U: Into<Variable> + Clone,
@@ -30,6 +32,7 @@ impl Assign {
         }
     }
 
+    /// Assign data to a global variable
     pub fn global<U, T>(var: &U, expr: T) -> Self
     where
         U: Into<Variable> + Clone,
@@ -43,6 +46,7 @@ impl Assign {
         }
     }
 
+    /// Store data in a reference
     pub fn set<U, T>(access: &U, expr: T) -> Self
     where
         U: Into<Access> + Clone,
@@ -56,6 +60,7 @@ impl Assign {
     }
 }
 
+/// Consecutive read on a `List` or `Dict`
 #[derive(Clone, Debug)]
 pub struct Access {
     pub keys: Vec<Expr>,

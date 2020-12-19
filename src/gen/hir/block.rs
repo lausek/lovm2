@@ -2,6 +2,7 @@
 
 use super::*;
 
+/// List of statements forming a code block
 #[derive(Clone)]
 pub struct Block(Vec<HirElement>);
 
