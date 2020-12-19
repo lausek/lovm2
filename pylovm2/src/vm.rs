@@ -59,7 +59,7 @@ impl Vm {
         let mut ruargs = vec![];
         for arg in args.iter() {
             let arg = any_to_expr(arg)?;
-            match arg.eval(&self.inner.ctx) {
+            match arg.eval(&self.inner.context_mut()) {
                 Ok(val) => ruargs.push(val),
                 Err(e) => return Err(err_to_exception(e)),
             }
@@ -113,7 +113,7 @@ impl Vm {
             let guard = Python::acquire_gil();
             let py = guard.python();
 
-            let context_ref = &mut vm.ctx as *mut Lovm2Context;
+            let context_ref = vm.context_mut() as *mut Lovm2Context;
             let ctx = Py::new(py, Context::new(context_ref)).unwrap();
             let args = PyTuple::new(py, vec![ctx]);
 

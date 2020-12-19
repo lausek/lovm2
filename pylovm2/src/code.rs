@@ -26,10 +26,10 @@ impl code::CallProtocol for CodeObject {
                 let guard = Python::acquire_gil();
                 let py = guard.python();
 
-                let frame = vm.ctx.frame_mut()?;
+                let frame = vm.context_mut().frame_mut()?;
                 let mut args = vec![];
                 for _ in 0..frame.argn {
-                    let val = vm.ctx.pop_value()?;
+                    let val = vm.context_mut().pop_value()?;
                     let obj: PyObject = Value::from_struct(val).into_py(py);
                     args.insert(0, obj);
                 }
@@ -42,7 +42,7 @@ impl code::CallProtocol for CodeObject {
                 let res = any_to_value(res.as_ref(py))
                     .map_err(|_| "error in ruvalue conversion".to_string())?;
 
-                vm.ctx.push_value(res.clone());
+                vm.context_mut().push_value(res.clone());
 
                 Ok(())
             }

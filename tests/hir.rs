@@ -411,6 +411,7 @@ fn is_constant() {
 #[test]
 fn call_into_vm() {
     let mut builder = ModuleBuilder::named("main");
+    builder.entry().step(lv2_call!(call_me, 10));
 
     builder
         .add_with_args("call_me", vec![lv2_var!(n)])
@@ -419,20 +420,11 @@ fn call_into_vm() {
     let module = builder.build().unwrap();
 
     // ensure that the interrupt has been called
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
-    let called_ref = called.clone();
-
-    let mut vm = Vm::with_std();
-    vm.set_interrupt(10, move |vm| {
-        let frame = vm.ctx.frame_mut().unwrap();
+    run_module_test(Vm::with_std(), module, |ctx| {
+        let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
-        called_ref.set(true);
-        Ok(())
-    });
-    vm.add_module(module, false).unwrap();
-    vm.call("call_me", &[Value::Int(10)]).unwrap();
-
-    assert!(called.get());
+    })
+    .unwrap();
 }
 
 #[test]

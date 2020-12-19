@@ -37,7 +37,7 @@ fn assert_this(b: bool) {
 
 #[lovm2_function]
 fn use_context(context: &mut Vm) -> i64 {
-    assert!(context.ctx.frame_mut().is_ok());
+    assert!(context.context_mut().frame_mut().is_ok());
     2
 }
 

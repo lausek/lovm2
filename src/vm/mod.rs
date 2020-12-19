@@ -70,16 +70,16 @@ macro_rules! value_compare {
 
 /// VM structure containing hooks and loaded modules
 pub struct Vm {
-    pub ctx: Context,
+    ctx: Context,
     /// List of loaded modules: `Module` or `SharedObjectModule`
-    pub modules: HashMap<String, Rc<Module>>,
+    modules: HashMap<String, Rc<Module>>,
 
     import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
     /// Interrupt table. These functions can be triggered using the `Interrupt` instruction
-    pub interrupts: Vec<Option<Rc<InterruptFn>>>,
+    interrupts: Vec<Option<Rc<InterruptFn>>>,
     /// Function to call if a module is about to be loaded
-    pub load_hook: Option<Rc<LoadHookFn>>,
+    load_hook: Option<Rc<LoadHookFn>>,
     /// List of directories for module lookup
     pub load_paths: Vec<String>,
 }
@@ -258,8 +258,8 @@ impl Vm {
 
     /// implementation of lovm2 bytecode behavior
     ///
-    /// *Note:* This function does not push a stack frame and could therefore mess up local variables
-    /// if not handled correctly. See `Vm.run_object`
+    /// **Note:** This function does not push a stack frame and could therefore mess up local variables
+    /// if not handled correctly. See [Vm::run_object]
     pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
         let mut ip = offset;
         while let Some(inx) = co.code.get(ip) {

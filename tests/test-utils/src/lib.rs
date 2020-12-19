@@ -12,7 +12,7 @@ pub fn run_module_test(
     let called_ref = called.clone();
     vm.set_interrupt(10, move |vm| {
         called_ref.set(true);
-        testfn(&mut vm.ctx);
+        testfn(vm.context_mut());
         Ok(())
     });
 

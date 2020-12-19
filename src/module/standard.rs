@@ -15,17 +15,17 @@ fn input(vm: &mut Vm) -> Lovm2Result<()> {
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
 
-    vm.ctx.push_value(Value::Str(input));
+    vm.context_mut().push_value(Value::Str(input));
 
     Ok(())
 }
 
 #[lovm2_builtin]
 fn len(vm: &mut Vm) -> Lovm2Result<()> {
-    let target = vm.ctx.pop_value()?;
+    let target = vm.context_mut().pop_value()?;
 
     let val = target.len()?;
-    vm.ctx.push_value(Value::Int(val as i64));
+    vm.context_mut().push_value(Value::Int(val as i64));
 
     Ok(())
 }
@@ -34,9 +34,9 @@ fn len(vm: &mut Vm) -> Lovm2Result<()> {
 fn print(vm: &mut Vm) -> Lovm2Result<()> {
     use std::io::Write;
 
-    let argn = vm.ctx.frame_mut().unwrap().argn;
+    let argn = vm.context_mut().frame_mut().unwrap().argn;
     let mut args: Vec<String> = (0..argn)
-        .map(|_| vm.ctx.pop_value().unwrap())
+        .map(|_| vm.context_mut().pop_value().unwrap())
         .map(|x| format!("{}", x))
         .collect();
 
@@ -44,7 +44,7 @@ fn print(vm: &mut Vm) -> Lovm2Result<()> {
 
     print!("{}", args.join(" "));
     std::io::stdout().flush().unwrap();
-    vm.ctx.push_value(Value::Nil);
+    vm.context_mut().push_value(Value::Nil);
 
     Ok(())
 }

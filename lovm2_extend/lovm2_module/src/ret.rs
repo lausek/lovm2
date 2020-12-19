@@ -33,7 +33,7 @@ impl FunctionRet {
                 let ident = format_ident!("_lv2_return_value");
                 quote! {
                     let val: Value = #ident.into();
-                    vm.ctx.push_value(val);
+                    vm.context_mut().push_value(val);
                     Ok(())
                 }
             }
@@ -42,16 +42,16 @@ impl FunctionRet {
                 quote! {
                     if let Some(val) = #ident {
                         let val: Value = val.into();
-                        vm.ctx.push_value(val);
+                        vm.context_mut().push_value(val);
                     } else {
-                        vm.ctx.push_value(Value::Nil);
+                        vm.context_mut().push_value(Value::Nil);
                     }
                     Ok(())
                 }
             }
             RetType::None => {
                 quote! {
-                    vm.ctx.push_value(Value::Nil);
+                    vm.context_mut().push_value(Value::Nil);
                     Ok(())
                 }
             }
