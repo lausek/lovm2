@@ -11,9 +11,9 @@ use crate::value::Value;
 
 /// A stack frame used in `Context.lstack`
 pub struct Frame {
-    /// amount of parameters passed to the frame
+    /// Amount of parameters passed to the frame
     pub argn: u8,
-    /// locals defined
+    /// Local variables
     locals: HashMap<String, Value>,
 }
 

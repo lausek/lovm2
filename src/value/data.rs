@@ -44,8 +44,8 @@ pub enum Value {
     Str(String),
     Dict(HashMap<Value, Value>),
     List(Vec<Value>),
-    #[serde(serialize_with = "serialize_ruvalue_ref")]
-    #[serde(deserialize_with = "deserialize_ruvalue_ref")]
+    #[serde(serialize_with = "serialize_value_ref")]
+    #[serde(deserialize_with = "deserialize_value_ref")]
     Ref(Option<ValueRef>),
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -255,14 +255,14 @@ impl Into<String> for Value {
     }
 }
 
-fn serialize_ruvalue_ref<S>(_: &Option<ValueRef>, s: S) -> Result<S::Ok, S::Error>
+fn serialize_value_ref<S>(_: &Option<ValueRef>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     s.serialize_none()
 }
 
-fn deserialize_ruvalue_ref<'de, D>(_: D) -> Result<Option<ValueRef>, D::Error>
+fn deserialize_value_ref<'de, D>(_: D) -> Result<Option<ValueRef>, D::Error>
 where
     D: Deserializer<'de>,
 {

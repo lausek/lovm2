@@ -1,11 +1,16 @@
 use std::path::Path;
 
+/// If a module was not assigned a name, take this instead
 pub const DEFAULT_MODULE_NAME: &str = "_unknown_";
 
+/// Meta information required on native and shared object modules
 #[derive(Clone, Debug)]
 pub struct ModuleMeta {
+    /// Location of the modules source
     pub(crate) loc: Option<String>,
+    /// Module name
     pub(crate) name: String,
+    /// Other required modules to be included on load
     pub(crate) uses: Vec<String>,
 }
 
@@ -14,6 +19,7 @@ impl ModuleMeta {
         Self { loc, name, uses }
     }
 
+    /// Overwrite the dependencies
     pub fn set_uses(&mut self, uses: Vec<String>) {
         self.uses = uses;
     }

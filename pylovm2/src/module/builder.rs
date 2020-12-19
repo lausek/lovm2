@@ -176,7 +176,7 @@ impl BlockBuilder {
 
     pub fn expr(&mut self, expr: &Expr) -> PyResult<()> {
         match &expr.inner {
-            gen::expr::Expr::Call(call) => unsafe {
+            gen::hir::Expr::Call(call) => unsafe {
                 (*self.inner).step(call.clone());
                 Ok(())
             },

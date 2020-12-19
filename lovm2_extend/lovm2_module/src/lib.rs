@@ -14,7 +14,7 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 use syn::{export::Span, Block, Ident, ItemFn, ReturnType, Type};
 
-use lovm2::module::shared::EXTERN_LOVM2_INITIALIZER;
+use lovm2::module::EXTERN_LOVM2_INITIALIZER;
 
 use self::args::*;
 use self::func::*;

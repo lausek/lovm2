@@ -16,7 +16,7 @@ pub type CallableRef = Rc<dyn CallProtocol>;
 /// Generalization for runnable objects
 /// - lovm2 bytecode ([CodeObject])
 /// - Statically linked functions (defined in `module::standard`, macro `lovm2_internals::lovm2_builtin`)
-/// - Dynamically linked functions ([SharedObjectSlot](crate::module::shared::SharedObjectSlot))
+/// - Dynamically linked functions ([SharedObjectSlot](crate::module::SharedObjectSlot))
 ///
 /// Functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
@@ -48,14 +48,21 @@ pub trait CallProtocol: std::fmt::Debug {
 /// to return some value on termination. If no value is produced, `Nil` is implicitly returned.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CodeObject {
+    /// Name of the object. This is used as the modules name when imported
     pub name: String,
     #[serde(skip_deserializing)]
     #[serde(skip_serializing)]
+    /// Location of objects origin
     pub loc: Option<String>,
+    /// Modules required for executing this object successfully
     pub uses: Vec<String>,
+    /// Entry points for the bytecode in the form Vec<(index_into_idents, bytecode_offset)>. These are the functions of the module
     pub entries: Vec<(usize, usize)>,
+    /// Necessary constants
     pub consts: Vec<Value>,
+    /// Necessary identifiers
     pub idents: Vec<Variable>,
+    /// Bytecode
     pub code: Vec<Instruction>,
 }
 
@@ -88,7 +95,7 @@ impl CodeObject {
         Self::default()
     }
 
-    /// tries to load the file as shared object first and tries regular deserialization if it failed
+    /// Tries to load the file as shared object first and falls back to regular deserialization if it failed
     pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
     where
         T: AsRef<std::path::Path>,
@@ -116,6 +123,7 @@ impl CodeObject {
         Ok(co)
     }
 
+    /// Return the objects representation as bytes
     pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
         use bincode::Options;
         bincode::options()
@@ -125,6 +133,7 @@ impl CodeObject {
     }
 
     // TODO: could lead to errors when two threads serialize to the same file
+    /// Write the object to a file at given path
     pub fn store_to_file<T>(&self, path: T) -> Lovm2Result<()>
     where
         T: AsRef<std::path::Path>,
@@ -137,7 +146,7 @@ impl CodeObject {
     }
 }
 
-/// implements `CallProtocol` to allow execution of bytecode from a certain offset.
+/// Function of a [CodeObject]. Implements [CallProtocol] to allow execution of bytecode from a certain offset.
 #[derive(Debug)]
 pub struct CodeObjectFunction {
     offset: usize,

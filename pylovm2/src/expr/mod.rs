@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
 use lovm2::prelude::{Cast, Operator2};
-use lovm2::var;
+use lovm2::Variable;
 
 pub use self::conv::*;
 use crate::lv2::*;
@@ -106,7 +106,7 @@ impl Expr {
     pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
         let name = arg.to_string();
         Ok(Self {
-            inner: Lovm2Expr::Variable(var::Variable::from(name)),
+            inner: Lovm2Expr::Variable(Variable::from(name)),
         })
     }
 }

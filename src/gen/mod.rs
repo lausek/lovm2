@@ -1,3 +1,5 @@
+//! Tools for generating bytecode
+
 pub mod hir;
 pub mod lir;
 pub mod lowering;

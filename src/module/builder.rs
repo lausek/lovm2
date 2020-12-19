@@ -10,13 +10,16 @@ use crate::var::Variable;
 
 use super::*;
 
+/// Representation of modules before lowering
 #[derive(Clone)]
 pub struct ModuleBuilder {
     meta: ModuleMeta,
+    /// Functions contained in the module
     pub hirs: HashMap<Variable, Hir>,
 }
 
 impl ModuleBuilder {
+    /// Create a builder
     pub fn new() -> Self {
         Self {
             meta: ModuleMeta::default(),
@@ -24,6 +27,7 @@ impl ModuleBuilder {
         }
     }
 
+    /// Create a builder with a name
     pub fn named<T>(name: T) -> Self
     where
         T: ToString,
@@ -31,6 +35,7 @@ impl ModuleBuilder {
         Self::with_meta(name.to_string())
     }
 
+    /// Create a builder with module meta information
     pub fn with_meta<T>(meta: T) -> Self
     where
         T: Into<ModuleMeta>,
@@ -41,6 +46,7 @@ impl ModuleBuilder {
         }
     }
 
+    /// Add a module dependency for inclusion on load
     pub fn add_dependency<T>(&mut self, name: T)
     where
         T: ToString,
@@ -51,6 +57,7 @@ impl ModuleBuilder {
         }
     }
 
+    /// Create a new function hir without arguments
     pub fn add<T>(&mut self, name: T) -> &mut Hir
     where
         T: Into<Variable>,
@@ -58,6 +65,7 @@ impl ModuleBuilder {
         self.add_with_args(name, vec![])
     }
 
+    /// Create a new function hir with arguments
     pub fn add_with_args<T>(&mut self, name: T, args: Vec<Variable>) -> &mut Hir
     where
         T: Into<Variable>,
@@ -67,10 +75,13 @@ impl ModuleBuilder {
         self.hirs.get_mut(&name).unwrap()
     }
 
+    /// Generate a module from the current data. This uses the default [CompileOptions] e.g.
+    /// optimization is enabled
     pub fn build(&mut self) -> Lovm2CompileResult<Module> {
         self.build_with_options(CompileOptions::default())
     }
 
+    /// Generate a module from the current data but use custom compile options
     pub fn build_with_options(&mut self, options: CompileOptions) -> Lovm2CompileResult<Module> {
         // this needs a mutable reference to `self` because hir may gets a return
         // instruction appended. maybe this could be done somewhere else?
@@ -101,6 +112,7 @@ impl ModuleBuilder {
         Ok(module)
     }
 
+    /// Create a new function handle with the [ENTRY_POINT] name
     pub fn entry(&mut self) -> &mut Hir {
         let name = Variable::from(ENTRY_POINT);
         if !self.hirs.contains_key(&name) {

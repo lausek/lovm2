@@ -2,14 +2,14 @@
 //!
 //! A `Module` can be created from a `CodeObject` or by loading a lovm2 compatible shared object
 //! library. It maintains an internal map of callable objects, meaning that everything
-//! implementing the `CallProtocol` can be added and executed from inside the vm. On load, all
+//! implementing the `CallProtocol` can be added and executed from inside the VM. On load, all
 //! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
-pub mod builder;
-pub mod meta;
-pub mod shared;
-pub mod slots;
-pub mod standard;
+mod builder;
+mod meta;
+mod shared;
+mod slots;
+mod standard;
 
 use std::rc::Rc;
 
@@ -18,25 +18,22 @@ use lovm2_error::*;
 use crate::code::CallProtocol;
 use crate::code::{CodeObject, CodeObjectFunction};
 use crate::var::Variable;
-use crate::vm::Vm;
 
 pub use self::builder::ModuleBuilder;
 pub use self::meta::{ModuleMeta, DEFAULT_MODULE_NAME};
+pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
 pub use self::slots::Slots;
-pub use self::standard::{create_standard_module, BUILTIN_FUNCTIONS};
+pub use self::standard::create_standard_module;
 
-/// name of the `CodeObject` entry that is used as a programs starting point inside `vm.run()`
+/// Name of the [CodeObject] entry that is used as a programs starting point inside [Vm::run]
 pub const ENTRY_POINT: &str = "main";
 
-/// definition for dynamically linked function
-pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
-
-/// main runtime representation for loadable modules.
+/// Main runtime representation for loadable modules.
 #[derive(Clone, Debug)]
 pub struct Module {
-    /// always required. shared object libraries will only fill the `name` and `loc` attribute
+    /// Always required. Shared object libraries will only fill the `name` and `loc` attribute
     pub code_object: Rc<CodeObject>,
-    /// contains `CallProtocol` entries that will be added to the context
+    /// Contains `CallProtocol` entries that will be added to the context
     pub slots: Slots,
 }
 

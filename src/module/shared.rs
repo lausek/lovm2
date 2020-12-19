@@ -18,10 +18,12 @@ use crate::module::{Module, Slots};
 use crate::var::Variable;
 use crate::vm::Vm;
 
-use super::ExternFunction;
-
-/// name of the unmangled function name to call when initializing module slots
+/// Name of the unmangled function name to call when initializing module slots
 pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
+
+/// Definition for dynamically linked function
+pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
+/// Function signature of the extern module initializer
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CallableRef>);
 
 fn load_slots(lib: Library) -> Lovm2Result<Slots> {
@@ -72,7 +74,7 @@ where
 
 // as the `Library` is always valid for this structure, it should be fine to
 // call `into_raw` on the loaded symbol and then use the function pointer afterwards.
-/// contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
+/// Contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`
 pub struct SharedObjectSlot(
     Rc<Library>,
     #[cfg(unix)] ::libloading::os::unix::Symbol<ExternFunction>,

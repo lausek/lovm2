@@ -34,10 +34,14 @@ use crate::var::Variable;
 /// ```
 ///
 
-pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
-pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> String;
+/// Function signature for module loading callback
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
+/// Function signature of interrupts
+pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
+/// Function signature for `Callable` importing
+pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> String;
 
+/// Structure containing relevant information for module resolvement
 pub struct LoadRequest {
     pub module: String,
     pub relative_to: Option<String>,
@@ -59,22 +63,24 @@ macro_rules! value_compare {
     }};
 }
 
+/// VM structure containing hooks and loaded modules
 pub struct Vm {
     pub ctx: Context,
-    /// list of loaded modules: `Module` or `SharedObjectModule`
+    /// List of loaded modules: `Module` or `SharedObjectModule`
     pub modules: HashMap<String, Rc<Module>>,
 
     import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
-    /// interrupt table. these functions can be triggered using the `Interrupt` instruction
+    /// Interrupt table. These functions can be triggered using the `Interrupt` instruction
     pub interrupts: Vec<Option<Rc<InterruptFn>>>,
-    /// function to call if a module is about to be loaded
+    /// Function to call if a module is about to be loaded
     pub load_hook: Option<Rc<LoadHookFn>>,
-    /// list of directories for module lookup
+    /// List of directories for module lookup
     pub load_paths: Vec<String>,
 }
 
 impl Vm {
+    /// Create a new instance
     pub fn new() -> Self {
         Self {
             ctx: Context::new(),
@@ -90,12 +96,14 @@ impl Vm {
         }
     }
 
+    /// Create a new instance with standard functions already imported
     pub fn with_std() -> Self {
         let mut vm = Self::new();
         vm.add_module(create_standard_module(), false).unwrap();
         vm
     }
 
+    /// Add a directory for module lookup
     pub fn add_load_path(&mut self, path: String) {
         self.load_paths.push(path);
     }
@@ -135,7 +143,7 @@ impl Vm {
         Ok(())
     }
 
-    /// add the module and all of its slots to `scope`
+    /// Add the module and all of its slots to `scope`
     pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
     where
         T: Into<Module>,
@@ -169,8 +177,8 @@ impl Vm {
         Ok(())
     }
 
-    /// lookup a module name in `load_paths` and add it to the context.
-    /// `relative_to` is expected to be an absolute path to importing module
+    /// Lookup a module name in `load_paths` and add it to the context.
+    /// `relative_to` is expected to be an absolute path to the imported module
     pub fn add_module_by_name(
         &mut self,
         name: &str,
@@ -211,7 +219,7 @@ impl Vm {
         self.add_module(module.unwrap(), namespaced)
     }
 
-    /// add the module and all of its slots to `scope`
+    /// Add the module and all of its slots to `scope`
     pub fn add_main_module<T>(&mut self, module: T) -> Lovm2Result<()>
     where
         T: Into<Module>,
@@ -225,7 +233,7 @@ impl Vm {
         }
     }
 
-    /// a wrapper for `run_bytecode` that handles pushing and popping stack frames
+    /// A wrapper for `run_bytecode` that handles pushing and popping stack frames
     pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<Value> {
         self.ctx.push_frame(0);
         co.run(self)?;
@@ -234,7 +242,7 @@ impl Vm {
         self.ctx.pop_value()
     }
 
-    /// start the execution at `ENTRY_POINT`
+    /// Start the execution at `ENTRY_POINT`
     pub fn run(&mut self) -> Lovm2Result<Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
@@ -245,8 +253,8 @@ impl Vm {
 
     /// implementation of lovm2 bytecode behavior
     ///
-    /// *Note:* this function does not push a stack frame and could therefore mess up local variables
-    /// if not handled correctly. see `Vm.run_object`
+    /// *Note:* This function does not push a stack frame and could therefore mess up local variables
+    /// if not handled correctly. See `Vm.run_object`
     pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
         let mut ip = offset;
         while let Some(inx) = co.code.get(ip) {
@@ -418,7 +426,7 @@ impl Vm {
         self.import_hook = Rc::new(hook);
     }
 
-    /// register a new callback function that is used for resolving dependencies at runtime
+    /// Register a new callback function that is used for resolving dependencies at runtime
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
         T: Fn(&LoadRequest) -> Lovm2Result<Option<Module>> + Sized + 'static,
@@ -426,7 +434,7 @@ impl Vm {
         self.load_hook = Some(Rc::new(hook));
     }
 
-    /// register a new callback function on interrupt `n`
+    /// Gegister a new callback function on interrupt `n`
     pub fn set_interrupt<T>(&mut self, n: u16, func: T)
     where
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
@@ -460,7 +468,9 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
     Ok(box_value(Value::List(slice)))
 }
 
-fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
+/// Search for a name inside the given directories. This strips the file extension
+/// and compares the file stem.
+pub fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
     for path in load_paths.iter() {
         if let Ok(dir) = read_dir(path) {
@@ -479,14 +489,16 @@ fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     Err((Lovm2ErrorTy::ModuleNotFound, name).into())
 }
 
+/// Takes a [LoadRequest] and calls [find_module] to search for possible candidates
+/// relative to the current module.
 pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
     if let Some(relative_to) = &req.relative_to {
-        let paths = &[std::path::Path::new(relative_to)
+        let path = std::path::Path::new(relative_to)
             .parent()
             .unwrap()
             .display()
-            .to_string()];
-        find_module(&req.module, paths)
+            .to_string();
+        find_module(&req.module, &[path])
     } else {
         Err((Lovm2ErrorTy::ModuleNotFound, &req.module).into())
     }

@@ -1,10 +1,11 @@
-//! `CodeObject` items of a lovm2 module
+//! Own type for maintaining callable functions inside a module
 
 use std::collections::HashMap;
 
 use crate::code::CallableRef;
 use crate::var::Variable;
 
+/// Own type for maintaining callable functions inside a module
 #[derive(Clone, Debug)]
 pub struct Slots(HashMap<Variable, CallableRef>);
 

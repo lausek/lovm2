@@ -1,16 +1,16 @@
 //! Transform Hir into actual bytecode
 
-pub mod branch;
-pub mod repeat;
+mod branch;
+mod repeat;
 pub mod runtime;
 
 use super::*;
 
-pub use self::branch::{HirLoweringBranch, HirLoweringCondition};
-pub use self::repeat::HirLoweringRepeat;
-pub use self::runtime::HirLoweringRuntime;
+pub(super) use self::branch::HirLoweringBranch;
+pub(super) use self::repeat::HirLoweringRepeat;
+pub(crate) use self::runtime::HirLoweringRuntime;
 
-pub type LabelCounterRef = std::rc::Rc<std::cell::RefCell<LabelCounter>>;
+pub(crate) type LabelCounterRef = std::rc::Rc<std::cell::RefCell<LabelCounter>>;
 
 pub trait HirLowering {
     fn lower(self, runtime: &mut HirLoweringRuntime);

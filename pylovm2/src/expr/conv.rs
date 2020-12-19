@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList, PyTuple};
 
 use lovm2::prelude::*;
+use lovm2::Variable;
 
 use crate::lv2::*;
 use crate::value::Value;
@@ -47,11 +48,11 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     }
 }
 
-pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::var::Variable> {
+pub fn any_to_ident(any: &PyAny) -> PyResult<Variable> {
     match any.get_type().name().as_ref() {
         "str" => {
             let name = any.str()?.to_string();
-            Ok(lovm2::var::Variable::from(name).into())
+            Ok(Variable::from(name).into())
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;

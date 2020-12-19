@@ -61,6 +61,7 @@ pub(crate) mod util;
 pub(crate) mod var;
 
 pub use crate::bytecode::Instruction;
+pub use crate::frame::Frame;
 pub use crate::var::Variable;
 
 /// Used for generating wrappers of statically linked functions to be called from lovm2

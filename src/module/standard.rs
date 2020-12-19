@@ -8,8 +8,6 @@ use crate::module::Module;
 use crate::value::Value;
 use crate::vm::Vm;
 
-pub const BUILTIN_FUNCTIONS: &[&str] = &["input", "len", "print"];
-
 #[lovm2_builtin]
 fn input(vm: &mut Vm) -> Lovm2Result<()> {
     use std::io::stdin;
@@ -51,7 +49,8 @@ fn print(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-/// create a `Module` of builtin functions. this gets automatically loaded on `Vm` creation.
+/// Create a [Module] of builtin functions. If [Vm::with_std] is used, this
+/// gets loaded automatically.
 pub fn create_standard_module() -> Module {
     let mut module: Module = CodeObject {
         name: "std".to_string(),

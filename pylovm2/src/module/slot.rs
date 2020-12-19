@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 
 use lovm2::gen;
+use lovm2::Variable;
 
 use crate::err_to_exception;
 use crate::lv2::*;
@@ -20,8 +21,6 @@ impl ModuleBuilderSlot {
     }
 
     pub fn with_args(args: &PyList) -> Self {
-        use lovm2::var::Variable;
-
         let mut vars = vec![];
         for arg in args.iter() {
             let name = arg.str().unwrap().to_string();
