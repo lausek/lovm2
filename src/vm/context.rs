@@ -6,9 +6,10 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::code::{CallProtocol, CallableRef};
-use crate::frame::Frame;
 use crate::value::Value;
 use crate::var::Variable;
+
+use super::*;
 
 pub const DEFAULT_LSTACK_SIZE: usize = 256;
 pub const DEFAULT_VSTACK_SIZE: usize = 256;

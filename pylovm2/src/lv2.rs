@@ -1,9 +1,9 @@
 pub(crate) type Lovm2Access = lovm2::gen::Access;
 pub(crate) type Lovm2Branch = lovm2::gen::Branch;
 pub(crate) type Lovm2Block = lovm2::gen::Block;
-pub(crate) type Lovm2Context = lovm2::context::Context;
+pub(crate) type Lovm2Context = lovm2::vm::Context;
 pub(crate) type Lovm2Expr = lovm2::gen::Expr;
-pub(crate) type Lovm2Frame = lovm2::Frame;
+pub(crate) type Lovm2Frame = lovm2::vm::Frame;
 pub(crate) type Lovm2Module = lovm2::module::Module;
 pub(crate) type Lovm2ModuleBuilder = lovm2::module::ModuleBuilder;
 pub(crate) type Lovm2Slots = lovm2::module::Slots;

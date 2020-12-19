@@ -1,8 +1,7 @@
-use lovm2::context::Context;
 use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::value::Value;
-use lovm2::vm::Vm;
+use lovm2::vm::{Context, Vm};
 
 fn run_module_test(
     mut vm: Vm,

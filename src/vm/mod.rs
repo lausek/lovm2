@@ -8,10 +8,15 @@ use lovm2_error::*;
 
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
-use crate::context::Context;
 use crate::module::{create_standard_module, Module};
 use crate::value::{box_value, Value, ValueType};
 use crate::var::Variable;
+
+mod context;
+mod frame;
+
+pub use self::context::Context;
+pub use self::frame::Frame;
 
 /// Virtual machine for executing [modules](crate::module::Module)
 ///

@@ -18,7 +18,7 @@
 //!
 //! // a module needs a code object called `main`
 //! // if you want to make it runnable
-//! let mut main_hir = module.entry();
+//! let main_hir = module.entry();
 //!
 //! // set the local variable n to 10
 //! main_hir.step(Assign::local(&lv2_var!(n), 10));
@@ -48,7 +48,6 @@
 extern crate lovm2_internals;
 
 pub mod code;
-pub mod context;
 pub mod gen;
 pub mod module;
 pub mod prelude;
@@ -56,12 +55,10 @@ pub mod value;
 pub mod vm;
 
 pub(crate) mod bytecode;
-pub(crate) mod frame;
 pub(crate) mod util;
 pub(crate) mod var;
 
 pub use crate::bytecode::Instruction;
-pub use crate::frame::Frame;
 pub use crate::var::Variable;
 
 /// Used for generating wrappers of statically linked functions to be called from lovm2

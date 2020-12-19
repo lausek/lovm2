@@ -2,7 +2,7 @@
 
 use super::*;
 
-use crate::context::Context;
+use crate::vm::Context;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {

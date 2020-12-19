@@ -27,8 +27,8 @@ lovm2 = "0.4.8"
 ### Source Code References
 
 - [Bytecode](https://github.com/lausek/lovm2/blob/master/src/bytecode.rs)
-- [Context](https://github.com/lausek/lovm2/blob/master/src/context.rs)
-- [Vm](https://github.com/lausek/lovm2/blob/master/src/vm.rs)
+- [Context](https://github.com/lausek/lovm2/blob/master/src/vm/context.rs)
+- [Vm](https://github.com/lausek/lovm2/blob/master/src/vm/mod.rs)
 
 ### Generating Bytecode
 
@@ -40,7 +40,7 @@ let mut module = ModuleBuilder::new();
 
 // a module needs a code object called `main`
 // if you want to make it runnable
-let mut main_hir = module.entry();
+let main_hir = module.entry();
 
 // set the local variable n to 10
 main_hir.step(Assign::local(&lv2_var!(n), 10));

@@ -1,9 +1,8 @@
 #![allow(unused_parens)]
 
-use lovm2::context::Context;
 use lovm2::prelude::*;
 use lovm2::value::Value;
-use lovm2::vm::Vm;
+use lovm2::vm::{Context, Vm};
 
 use test_utils::*;
 
