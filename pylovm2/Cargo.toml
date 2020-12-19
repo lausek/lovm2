@@ -1,6 +1,6 @@
 [package]
 name = "pylovm2"
-version = "0.4.7"
+version = "0.4.8"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
@@ -17,7 +17,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 shrinkwraprs = "0.3.0"
-lovm2 = { version = "0.4.7" }
+lovm2 = { version = "0.4.8" }
 #lovm2 = { git = "https://github.com/lausek/lovm2" }
 #lovm2 = { path = "../" }
 
