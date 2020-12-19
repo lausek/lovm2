@@ -10,7 +10,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
 use crate::context::Context;
 use crate::module::{create_standard_module, Module};
-use crate::value::{box_value, Value};
+use crate::value::{box_value, Value, ValueType};
 use crate::var::Variable;
 
 /// Virtual machine for executing [modules](crate::module::Module)
@@ -373,7 +373,8 @@ impl Vm {
                     }
                 }
                 Instruction::Cast(tid) => {
-                    self.ctx.last_value_mut()?.cast_inplace(*tid)?;
+                    let ty = ValueType::from_raw(*tid)?;
+                    self.ctx.last_value_mut()?.cast_inplace(ty)?;
                 }
                 Instruction::Import | Instruction::NImport => {
                     let name = self.ctx.pop_value()?;

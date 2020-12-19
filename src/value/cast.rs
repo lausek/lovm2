@@ -6,6 +6,7 @@ use super::*;
 
 pub type CastResult = Lovm2Result<Value>;
 
+#[derive(Clone, Debug)]
 #[repr(u16)]
 pub enum ValueType {
     Nil = 0,
@@ -17,31 +18,23 @@ pub enum ValueType {
     List = 6,
 }
 
-pub const RUVALUE_NIL_TY: u16 = 0;
-pub const RUVALUE_BOOL_TY: u16 = 1;
-pub const RUVALUE_INT_TY: u16 = 2;
-pub const RUVALUE_FLOAT_TY: u16 = 3;
-pub const RUVALUE_STR_TY: u16 = 4;
-pub const RUVALUE_DICT_TY: u16 = 5;
-pub const RUVALUE_LIST_TY: u16 = 6;
-
 impl Value {
-    pub fn cast(self, tid: u16) -> CastResult {
-        match tid {
-            RUVALUE_BOOL_TY => self.as_bool(),
-            RUVALUE_INT_TY => self.as_integer(),
-            RUVALUE_FLOAT_TY => self.as_float(),
-            RUVALUE_STR_TY => self.as_str(),
+    pub fn cast(self, ty: ValueType) -> CastResult {
+        match ty {
+            ValueType::Bool => self.as_bool(),
+            ValueType::Int => self.as_integer(),
+            ValueType::Float => self.as_float(),
+            ValueType::Str => self.as_str(),
             _ => not_supported(),
         }
     }
 
-    pub fn cast_inplace(&mut self, tid: u16) -> Lovm2Result<()> {
-        match tid {
-            RUVALUE_BOOL_TY => *self = self.as_bool()?,
-            RUVALUE_INT_TY => *self = self.as_integer()?,
-            RUVALUE_FLOAT_TY => *self = self.as_float()?,
-            RUVALUE_STR_TY => *self = self.as_str()?,
+    pub fn cast_inplace(&mut self, ty: ValueType) -> Lovm2Result<()> {
+        match ty {
+            ValueType::Bool => *self = self.as_bool()?,
+            ValueType::Int => *self = self.as_integer()?,
+            ValueType::Float => *self = self.as_float()?,
+            ValueType::Str => *self = self.as_str()?,
             _ => not_supported()?,
         }
         Ok(())
@@ -135,16 +128,31 @@ impl Value {
         Ok(format!("{}", self))
     }
 
-    pub fn type_id(&self) -> u16 {
+    pub fn type_id(&self) -> ValueType {
         match self {
-            Value::Nil => RUVALUE_BOOL_TY,
-            Value::Bool(_) => RUVALUE_BOOL_TY,
-            Value::Int(_) => RUVALUE_INT_TY,
-            Value::Float(_) => RUVALUE_FLOAT_TY,
-            Value::Str(_) => RUVALUE_STR_TY,
-            Value::Dict(_) => RUVALUE_DICT_TY,
-            Value::List(_) => RUVALUE_LIST_TY,
+            Value::Nil => ValueType::Nil,
+            Value::Bool(_) => ValueType::Bool,
+            Value::Int(_) => ValueType::Int,
+            Value::Float(_) => ValueType::Float,
+            Value::Str(_) => ValueType::Str,
+            Value::Dict(_) => ValueType::Dict,
+            Value::List(_) => ValueType::List,
             _ => panic!("TODO: ref does not have a type"),
+        }
+    }
+}
+
+impl ValueType {
+    pub fn from_raw(tid: u16) -> Lovm2Result<ValueType> {
+        match tid {
+            0 => Ok(ValueType::Nil),
+            1 => Ok(ValueType::Bool),
+            2 => Ok(ValueType::Int),
+            3 => Ok(ValueType::Float),
+            4 => Ok(ValueType::Str),
+            5 => Ok(ValueType::Dict),
+            6 => Ok(ValueType::List),
+            _ => Err(format!("not a valid type").into()),
         }
     }
 }

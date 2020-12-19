@@ -1,4 +1,4 @@
-use crate::value::Value;
+use crate::value::{Value, ValueType};
 use crate::var::Variable;
 
 use super::{Label, Operator, Scope};
@@ -10,7 +10,7 @@ pub enum LirElement {
         ident: Variable,
     },
     Cast {
-        tyid: u16,
+        tyid: ValueType,
     },
     Entry {
         ident: Variable,
@@ -57,7 +57,7 @@ impl LirElement {
         Self::Call { argn, ident }
     }
 
-    pub fn cast(tyid: u16) -> Self {
+    pub fn cast(tyid: ValueType) -> Self {
         Self::Cast { tyid }
     }
 
@@ -103,7 +103,7 @@ impl std::fmt::Display for LirElement {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Call { argn, ident } => write!(f, "\tCall({}, {})", argn, ident),
-            Self::Cast { tyid } => write!(f, "\tCast({})", tyid),
+            Self::Cast { tyid } => write!(f, "\tCast({:?})", tyid),
             Self::Entry { ident } => write!(f, "{}:", ident),
             Self::Jump { condition, label } => write!(f, "\tJump({:?}, {})", condition, label),
             Self::Label(label) => write!(f, "{}:", label),
