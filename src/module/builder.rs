@@ -15,7 +15,7 @@ use super::*;
 pub struct ModuleBuilder {
     meta: ModuleMeta,
     /// Functions contained in the module
-    pub hirs: HashMap<Variable, Hir>,
+    hirs: HashMap<Variable, Hir>,
 }
 
 impl ModuleBuilder {

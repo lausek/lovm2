@@ -7,7 +7,9 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
+/// Reference to a generic lovm2 object
 pub type AnyRef = Rc<RefCell<Handle>>;
+/// Reference to a lovm2 [Value]
 pub type ValueRef = Rc<RefCell<Value>>;
 
 /// Wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.

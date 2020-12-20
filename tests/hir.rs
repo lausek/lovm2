@@ -281,7 +281,7 @@ fn drop_call_values() {
         .step(Interrupt::new(10));
 
     run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
-        assert!(ctx.vstack.is_empty());
+        assert!(ctx.last_value_mut().is_err());
     })
     .unwrap();
 }
