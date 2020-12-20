@@ -20,12 +20,12 @@ You do not need to micromanage the bytecode itself. There are common language co
 HIR -> LIR -> CodeObject
 ```
 
-`CodeObject`'s on their own are already valid programs, but - as usual in every language - functions can be bundled together in some sort of collection - called `Module`.
+`CodeObject`'s on their own are already valid programs, but - as usual in every language - functions can be bundled together and exposed to the virtual machine in a collection called `Module`.
 
 ```
-HIR -> LIR -> CodeObject
-                         \
-HIR -> LIR -> CodeObject  --> Module
-                         /
-HIR -> LIR -> CodeObject
+HIR -> LIR 
+            \
+HIR -> LIR   --> CodeObject --> Module
+            /
+HIR -> LIR 
 ```

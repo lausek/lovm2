@@ -1,6 +1,6 @@
 # Optimization
 
-The rudimentary bytecode optimizer is enabled by default. It acts upon the generated `LIR`.
+The rudimentary bytecode optimizer is enabled by default. It acts upon the generated `LIR`. If you want to disable optimization at all use the method `build_with_options` and set the attribute `optimize` to false.
 
 ## Dead Code elimination
 
