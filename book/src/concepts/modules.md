@@ -5,3 +5,5 @@ While you are already familiar with the "lovm2 native" representation of executa
 And that's not all. As long as your structure implements the `CallProtocol` trait you are free to even implement native functions inside your own compiler.
 
 ## Shared Libraries
+
+You can use [lovm2_extend](..) to write your own modules in Rust.

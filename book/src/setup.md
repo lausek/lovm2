@@ -5,7 +5,7 @@
     - Add the latest crates.io version
     
     ``` toml
-    lovm2 = "0.4.6"
+    lovm2 = "0.4.8"
     ```
     
     - ... or - if you feel lucky - use the current master branch directly

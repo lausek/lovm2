@@ -24,8 +24,8 @@ println!("{}", module);
 The main generation functionality is exposed via `Block` and every structure that contains it like `Branch`, `Repeat` and functions. You can use these methods on all of them:
 
 - `step(..)` append a new statement to the block.
-- `branch(..)` create a new branch at the current position. This returns a `BranchBuilder`.
-- `repeat(..)` and `repeat_until(..)` which return a mutable reference to a new block. The first variant is an endless loop, while the latter supports breaking once a condition is met.
+- `branch()` create a new branch at the current position. This returns a `BranchBuilder`.
+- `repeat()` and `repeat_until(..)` which return a mutable reference to a new block. The first variant is an endless loop, while the latter supports breaking once a condition is met.
 
 ## Functions
 
@@ -54,7 +54,7 @@ Due to the convention that every function has to return a value, an implicit `Re
 There are a bunch of macros inside the prelude that trivialize creating more complicated `lovm2` constructs for developers.
 
 - `lv2_var!(ident, ...)` turns all the identifiers given into the special type `Variable` which is needed basically everywhere. If more than one ident is declared, this returns a tuple.
-- `lv2_dict!(... ident => expr)` creates an `Expr` that will dynamically initialize a dictionary with the key-values pairs specified.
-- `lv2_list!(... item)` creates an `Expr` that initializes a list dynamically.
+- `lv2_dict!(ident => expr, ...)` creates an `Expr` that will dynamically initialize a dictionary with the key-values pairs specified.
+- `lv2_list!(item, ...)` creates an `Expr` that initializes a list dynamically.
 - `lv2_call!(ident, ... args)` syntactic sugar for the `Call` element.
 - `lv2_access!(ident, ... keys)` syntactic sugar for the `Access` element.

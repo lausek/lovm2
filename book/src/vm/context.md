@@ -7,12 +7,12 @@ pub struct Context {
     /// the module that will be run first
     pub entry: Option<Rc<dyn CallProtocol>>,
     /// available functions
-    pub scope: HashMap<Variable, CallableRef>,
+    scope: HashMap<Variable, CallableRef>,
     /// global variables
-    pub globals: HashMap<Variable, Value>,
+    globals: HashMap<Variable, Value>,
     /// call stack with local variables
-    pub lstack: Vec<Frame>,
+    lstack: Vec<Frame>,
     /// value stack
-    pub vstack: Vec<Value>,
+    vstack: Vec<Value>,
 }
 ```

@@ -8,7 +8,7 @@
 
 `String`
 
-`Ref`
+`Ref` can wrap any other value and implement a shared mutable place as such.
 
 ## Complex Types
 

@@ -25,7 +25,7 @@ HIR -> LIR -> CodeObject
 ```
 HIR -> LIR 
             \
-HIR -> LIR   --> CodeObject --> Module
+HIR -> LIR    -> CodeObject -> Module
             /
 HIR -> LIR 
 ```
