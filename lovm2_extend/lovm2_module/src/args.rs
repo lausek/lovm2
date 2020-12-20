@@ -75,18 +75,17 @@ impl FunctionArgs {
 
             let code = if *is_ref {
                 // if a immutable reference was requested, drop mutability
-                let mutability_remap = if *is_mut {
-                    quote! {}
+                let downcast_method = if *is_mut {
+                    quote! { downcast_mut }
                 } else {
-                    quote! { let #name = &#name; }
+                    quote! { downcast_ref }
                 };
 
                 quote! {
                     let #name = vm.context_mut().pop_value()?.as_any_ref()?;
                     let mut #name = (*#name).borrow_mut();
-                    let #name = (*#name).0.downcast_mut::<#ty_name>()
+                    let #name = (*#name).0.#downcast_method::<#ty_name>()
                                 .ok_or_else(|| (Lovm2ErrorTy::OperationNotSupported, "downcast"))?;
-                    #mutability_remap
                 }
             } else {
                 quote! { let #name: #ty_name = vm.context_mut().pop_value()?.into(); }
