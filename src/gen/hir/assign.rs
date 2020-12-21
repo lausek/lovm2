@@ -4,9 +4,14 @@ use super::*;
 
 #[derive(Clone)]
 pub enum AssignType {
+    /// Assign a local variable
     StaticLocal,
+    /// Assign a global variable
     StaticGlobal,
+    /// Assign to a reference
     Dynamic,
+    /// Overwrite a variable with the scope resolved while lowering
+    Update,
 }
 
 /// Storing data in various locations
@@ -56,6 +61,32 @@ impl Assign {
             expr: expr.into(),
             access: access.clone().into(),
             ty: AssignType::Dynamic,
+        }
+    }
+
+    /// Increment a variable by one
+    pub fn increment<T>(var: &T) -> Self
+    where
+        T: Into<Variable> + Clone,
+    {
+        let var: Variable = var.clone().into();
+        Self {
+            expr: Expr::add(var.clone(), 1),
+            access: var.into(),
+            ty: AssignType::Update,
+        }
+    }
+
+    /// Decrement a variable by one
+    pub fn decrement<T>(var: &T) -> Self
+    where
+        T: Into<Variable> + Clone,
+    {
+        let var: Variable = var.clone().into();
+        Self {
+            expr: Expr::sub(var.clone(), 1),
+            access: var.into(),
+            ty: AssignType::Update,
         }
     }
 }
@@ -151,6 +182,17 @@ impl Assign {
             _ => unimplemented!(),
         }
     }
+
+    fn lower_update(self, runtime: &mut HirLoweringRuntime) {
+        self.expr.lower(runtime);
+
+        let var = self.access.target;
+        if runtime.has_local(&var) {
+            runtime.emit(LirElement::store(Scope::Local, var));
+        } else {
+            runtime.emit(LirElement::store(Scope::Global, var));
+        }
+    }
 }
 
 impl HirLowering for Assign {
@@ -158,6 +200,7 @@ impl HirLowering for Assign {
         match &self.ty {
             AssignType::StaticLocal | AssignType::StaticGlobal => self.lower_static(runtime),
             AssignType::Dynamic => self.lower_dynamic(runtime),
+            AssignType::Update => self.lower_update(runtime),
         }
     }
 }

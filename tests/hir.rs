@@ -58,6 +58,26 @@ fn assign_local_add() {
 }
 
 #[test]
+fn assign_incremet_decrement() {
+    let (a, b) = &lv2_var!(a, b);
+    define_test! {
+        main {
+            Assign::local(a, 0);
+            Assign::global(b, 1);
+            Assign::increment(a);
+            Assign::decrement(b);
+        }
+
+        #ensure (|ctx: &mut Context| {
+            assert_eq!(Value::Int(0), *ctx.value_of("b").unwrap());
+
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(Value::Int(1), *frame.value_of("a").unwrap());
+        })
+    }
+}
+
+#[test]
 fn rem_lowering() {
     let rest = &lv2_var!(rest);
     define_test! {
