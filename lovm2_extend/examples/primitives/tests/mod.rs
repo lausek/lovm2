@@ -2,17 +2,7 @@
 
 use lovm2::prelude::*;
 use lovm2::vm::Vm;
-
-fn create_vm() -> Vm {
-    let cargo_root = std::env::var("CARGO_MANIFEST_DIR").expect("no cargo manifest");
-    let build_dir = format!("{}/target/debug", cargo_root);
-    assert!(std::path::Path::new(&build_dir).exists());
-
-    let mut vm = Vm::with_std();
-    vm.add_load_path(build_dir);
-
-    vm
-}
+use lovm2_extend::*;
 
 fn create_caller(modder: fn(&mut Hir)) -> Vm {
     let mut builder = ModuleBuilder::new();
@@ -24,7 +14,7 @@ fn create_caller(modder: fn(&mut Hir)) -> Vm {
     let module = builder.build().unwrap();
     println!("{}", module);
 
-    let mut vm = create_vm();
+    let mut vm = create_test_vm();
     vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 

@@ -35,9 +35,10 @@ impl Function {
         let prelude = self.generate_prelude();
         let postlude = self.generate_postlude();
         let block = &self.block;
+        let output = &self.output.as_tokens();
 
         quote! {
-            let _lv2_return_value = {
+            let _lv2_return_value: #output = {
                 #prelude
                 { #block }
             };

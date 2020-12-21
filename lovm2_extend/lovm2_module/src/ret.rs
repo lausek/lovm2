@@ -27,11 +27,26 @@ impl FunctionRet {
         Ok(Self { ty })
     }
 
+    pub fn as_tokens(&self) -> impl quote::ToTokens {
+        match &self.ty {
+            RetType::None => quote! { () },
+            RetType::Ident(ty) | RetType::Maybe(ty) | RetType::Result(ty) => quote! { #ty },
+        }
+    }
+
     pub fn generate(&self) -> impl quote::ToTokens {
         match self.ty {
-            RetType::Ident(_) => {
+            RetType::Ident(_) | RetType::Result(_) => {
                 let ident = format_ident!("_lv2_return_value");
+
+                let raise_error = if let RetType::Result(_) = self.ty {
+                    quote! { let #ident = #ident?; }
+                } else {
+                    quote! {}
+                };
+
                 quote! {
+                    #raise_error
                     let val: Value = #ident.into();
                     vm.context_mut().push_value(val);
                     Ok(())
@@ -63,10 +78,11 @@ pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<RetType> {
     match ty {
         syn::Type::Path(ty_path) => {
             if let Some(segment) = ty_path.path.segments.first() {
-                let rt = if "Option" == segment.ident.to_string() {
-                    RetType::Maybe(ty.clone())
-                } else {
-                    RetType::Ident(ty.clone())
+                let ty = ty.clone();
+                let rt = match segment.ident.to_string().as_ref() {
+                    "Option" => RetType::Maybe(ty),
+                    "Lovm2Result" => RetType::Result(ty),
+                    _ => RetType::Ident(ty),
                 };
                 return Ok(rt);
             }
@@ -80,4 +96,5 @@ pub enum RetType {
     None,
     Ident(Type),
     Maybe(Type),
+    Result(Type),
 }
