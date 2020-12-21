@@ -42,12 +42,10 @@ fn load_slots(lib: Library) -> Lovm2Result<Slots> {
     }
 }
 
-pub fn load_from_file<T>(path: T) -> Lovm2Result<Module>
+pub fn load_library_from_file<T>(path: T) -> Lovm2Result<Library>
 where
     T: AsRef<Path>,
 {
-    let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
-
     // this fixes some segfault errors. https://github.com/nagisa/rust_libloading/issues/41
     // load and initialize library
     #[cfg(target_os = "linux")]
@@ -58,7 +56,14 @@ where
     #[cfg(not(target_os = "linux"))]
     let library = Library::new(path.as_ref());
 
-    let library = library.map_err(|e| Lovm2Error::from(format!("{}", e)))?;
+    library.map_err(|e| Lovm2Error::from(format!("{}", e)))
+}
+
+pub fn module_from_library<T>(path: T, lib: Library) -> Lovm2Result<Module>
+where
+    T: AsRef<Path>,
+{
+    let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
 
     let code_object = CodeObject {
         name: name.to_string(),
@@ -68,7 +73,7 @@ where
 
     Ok(Module {
         code_object: Rc::new(code_object),
-        slots: load_slots(library)?,
+        slots: load_slots(lib)?,
     })
 }
 

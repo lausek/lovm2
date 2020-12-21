@@ -482,7 +482,7 @@ pub fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
             for entry in dir {
                 if let Ok(entry) = entry {
                     let fname = entry.path();
-                    if fname.file_stem().unwrap() == name {
+                    if fname.file_stem().unwrap() == name && Module::is_loadable(&fname)? {
                         let abspath = std::fs::canonicalize(fname).unwrap();
                         let abspath = abspath.to_string_lossy();
                         return Ok(abspath.into_owned());

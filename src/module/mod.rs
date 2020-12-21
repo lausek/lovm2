@@ -16,7 +16,7 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::code::CallProtocol;
-use crate::code::{CodeObject, CodeObjectFunction};
+use crate::code::{CodeObject, CodeObjectFunction, LV2_MAGIC_NUMBER};
 use crate::var::Variable;
 
 pub use self::builder::ModuleBuilder;
@@ -39,13 +39,30 @@ pub struct Module {
 }
 
 impl Module {
+    pub fn is_loadable<T>(path: T) -> Lovm2Result<bool>
+    where
+        T: AsRef<std::path::Path>,
+    {
+        use std::fs::File;
+        use std::io::Read;
+
+        const ELF_MAGIC_NUMBER: &[u8] = &[0x7F, 'E' as u8, 'L' as u8, 'F' as u8];
+
+        let mut mark = [0; 4];
+        let mut file = File::open(path).unwrap();
+
+        file.read_exact(&mut mark).unwrap();
+
+        Ok(mark == LV2_MAGIC_NUMBER || mark == ELF_MAGIC_NUMBER)
+    }
+
     pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
     where
         T: AsRef<std::path::Path>,
     {
         // try loading module as shared object
-        if let Ok(so_module) = shared::load_from_file(&path) {
-            Ok(so_module)
+        if let Ok(lib) = shared::load_library_from_file(&path) {
+            Ok(shared::module_from_library(path, lib)?)
         } else {
             let co = CodeObject::load_from_file(path)?;
             Ok(co.into())

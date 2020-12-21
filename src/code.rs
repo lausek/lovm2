@@ -10,6 +10,8 @@ use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::Vm;
 
+pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, 'L' as u8, 'V' as u8, '2' as u8];
+
 /// Generic object implementing the `CallProtocol`
 pub type CallableRef = Rc<dyn CallProtocol>;
 
@@ -102,6 +104,8 @@ impl CodeObject {
     {
         use bincode::Options;
         use std::fs::File;
+        use std::io::Read;
+
         let name = path
             .as_ref()
             .file_stem()
@@ -110,13 +114,17 @@ impl CodeObject {
             .unwrap()
             .to_string();
         let loc = path.as_ref().to_str().unwrap().to_string();
-        let file = File::open(path).map_err(|e| e.to_string())?;
+        let mut file = File::open(path).map_err(|e| e.to_string())?;
+        let mut buffer = vec![];
+
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
+        file.read_to_end(&mut buffer).unwrap();
         let mut co: CodeObject = bincode::options()
             .with_varint_encoding()
-            .deserialize_from(file)
+            .deserialize(&buffer[4..])
             .map_err(|e| e.to_string())?;
+
         co.name = name;
         co.loc = Some(loc);
 
@@ -126,10 +134,17 @@ impl CodeObject {
     /// Return the objects representation as bytes
     pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
         use bincode::Options;
-        bincode::options()
+
+        let mut buffer = Vec::from(LV2_MAGIC_NUMBER);
+        let obj: Lovm2Result<Vec<u8>> = bincode::options()
             .with_varint_encoding()
             .serialize(self)
-            .map_err(|e| e.to_string().into())
+            .map_err(|e| e.to_string().into());
+        let obj = obj?;
+
+        buffer.extend(obj);
+
+        Ok(buffer)
     }
 
     // TODO: could lead to errors when two threads serialize to the same file
