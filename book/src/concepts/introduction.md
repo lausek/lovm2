@@ -5,6 +5,6 @@ This chapter aims to give you a brief overview of the internal workings. Even th
 The general steps of coming to a runnable program are roughly:
 
 - Create a new `ModuleBuilder` and populate it with functions aka. `HIR` data
-- Call `module_builder.build()` consuming the builder and returning a runnable `Module`
-- Load the module into an instance of a virtual machine `Vm` using `load_and_import_all`
+- Call `module_builder.build()` returning a runnable `Module` from the current state
+- Load the module into an instance of a virtual machine `Vm` using `add_main_module()`
 - Start the program by calling `run` on the virtual machine
