@@ -32,3 +32,8 @@ pushd lovm2_extend/examples/custom-objects
 cargo build
 cargo test
 popd
+
+pushd lovm2_std
+cargo build
+cargo test
+popd

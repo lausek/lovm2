@@ -17,8 +17,11 @@ impl FunctionArgs {
                     box pat, box ty, ..
                 }) => {
                     let ty = crate::func::accept_type(&ty)?;
+                    #[allow(unused_assignments)]
+                    let mut is_mut = false;
 
                     let name = if let syn::Pat::Ident(pat_ident) = pat {
+                        is_mut = pat_ident.mutability.is_some();
                         pat_ident.ident.clone()
                     } else {
                         return Err(format!("pattern {:?} not allowed", 2));
@@ -50,7 +53,12 @@ impl FunctionArgs {
                         },
                         syn::Type::Path(tp) => {
                             let ty_name = tp.path.get_ident().unwrap().clone();
-                            simple.push(FunctionArg::new(name, ty_name));
+                            simple.push(FunctionArg {
+                                name,
+                                ty_name,
+                                is_ref: false,
+                                is_mut,
+                            });
                         }
                         _ => return Err(format!("this type is not allowed in argument position")),
                     }
@@ -88,7 +96,12 @@ impl FunctionArgs {
                                 .ok_or_else(|| (Lovm2ErrorTy::OperationNotSupported, "downcast"))?;
                 }
             } else {
-                quote! { let #name: #ty_name = vm.context_mut().pop_value()?.into(); }
+                let mutability = if *is_mut {
+                    quote! { mut }
+                } else {
+                    quote! {}
+                };
+                quote! { let #mutability #name: #ty_name = vm.context_mut().pop_value()?.into(); }
             };
             stackops.push(code);
         }
@@ -112,15 +125,4 @@ struct FunctionArg {
     ty_name: Ident,
     is_ref: bool,
     is_mut: bool,
-}
-
-impl FunctionArg {
-    pub fn new(name: Ident, ty_name: Ident) -> Self {
-        Self {
-            name,
-            ty_name,
-            is_ref: false,
-            is_mut: false,
-        }
-    }
 }
