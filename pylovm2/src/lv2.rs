@@ -6,6 +6,7 @@ pub(crate) type Lovm2Expr = lovm2::gen::Expr;
 pub(crate) type Lovm2Frame = lovm2::vm::Frame;
 pub(crate) type Lovm2Module = lovm2::module::Module;
 pub(crate) type Lovm2ModuleBuilder = lovm2::module::ModuleBuilder;
+pub(crate) type Lovm2Ref = lovm2::value::Reference;
 pub(crate) type Lovm2Slots = lovm2::module::Slots;
 pub(crate) type Lovm2Value = lovm2::value::ValueRef;
 pub(crate) type Lovm2ValueRaw = lovm2::value::Value;

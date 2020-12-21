@@ -80,12 +80,15 @@ impl Value {
             Value::Str(s) => Ok(!s.is_empty()),
             Value::Dict(d) => Ok(!d.is_empty()),
             Value::List(ls) => Ok(!ls.is_empty()),
-            Value::Ref(Some(r)) => r.borrow().as_bool_inner(),
+            Value::Ref(r) => if let Ok(r) = r.borrow() {
+                r.as_bool_inner()
+            } else {
+                Ok(false)
+            }
             Value::Nil |
             // TODO: compare with 0
-            Value::Float(_) |
-            Value::Ref(_) => Ok(false),
-            _ => unimplemented!(),
+            Value::Float(_) => Ok(false),
+            _ => not_supported(),
         }
     }
 

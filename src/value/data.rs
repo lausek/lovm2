@@ -1,16 +1,16 @@
 //! Representation of values
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use lovm2_error::*;
+use super::*;
 
 /// Reference to a generic lovm2 object
 pub type AnyRef = Rc<RefCell<Handle>>;
 /// Reference to a lovm2 [Value]
-pub type ValueRef = Rc<RefCell<Value>>;
+pub type ValueRef = Reference;
 
 /// Wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
 pub fn box_value(value: Value) -> Value {
@@ -33,7 +33,7 @@ pub fn box_value(value: Value) -> Value {
         ),
         value => value,
     };
-    Value::Ref(Some(Rc::new(RefCell::new(outer))))
+    Value::Ref(Reference::from(outer))
 }
 
 /// Runtime representation of values
@@ -46,9 +46,7 @@ pub enum Value {
     Str(String),
     Dict(HashMap<Value, Value>),
     List(Vec<Value>),
-    #[serde(serialize_with = "serialize_value_ref")]
-    #[serde(deserialize_with = "deserialize_value_ref")]
-    Ref(Option<ValueRef>),
+    Ref(Reference),
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
     Any(AnyRef),
@@ -64,7 +62,7 @@ impl Value {
 
     pub fn deref(&self) -> Option<Value> {
         match self {
-            Value::Ref(Some(r)) => Some(r.borrow().clone()),
+            Value::Ref(r) => r.unref(),
             _ => None,
         }
     }
@@ -82,7 +80,7 @@ impl Value {
                 let key = key.as_integer_inner()?;
                 list.remove(key as usize);
             }
-            Value::Ref(Some(r)) => r.borrow_mut().delete(key)?,
+            Value::Ref(r) => r.borrow_mut()?.delete(key)?,
             _ => return Err((Lovm2ErrorTy::OperationNotSupported, "delete").into()),
         }
         Ok(())
@@ -104,7 +102,7 @@ impl Value {
                     unreachable!()
                 }
             }
-            Value::Ref(Some(r)) => r.borrow().get(key),
+            Value::Ref(r) => r.borrow()?.get(key),
             _ => Err((Lovm2ErrorTy::OperationNotSupported, "get").into()),
         }
     }
@@ -113,7 +111,7 @@ impl Value {
         match self {
             Value::Dict(dict) => Ok(dict.len()),
             Value::List(list) => Ok(list.len()),
-            Value::Ref(Some(r)) => r.borrow().len(),
+            Value::Ref(r) => r.borrow()?.len(),
             _ => Err((Lovm2ErrorTy::OperationNotSupported, "len").into()),
         }
     }
@@ -137,7 +135,7 @@ impl Value {
                 }
                 Ok(())
             }
-            Value::Ref(Some(r)) => r.borrow_mut().set(key, val),
+            Value::Ref(r) => r.borrow_mut()?.set(key, val),
             _ => Err((Lovm2ErrorTy::OperationNotSupported, "set").into()),
         }
     }
@@ -197,8 +195,7 @@ impl std::fmt::Display for Value {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            Value::Ref(Some(r)) => write!(f, "Ref({})", r.borrow()),
-            Value::Ref(None) => write!(f, "Ref(None)"),
+            Value::Ref(r) => write!(f, "{}", r),
             Value::Any(_) => write!(f, "Handle"),
         }
     }
@@ -267,20 +264,6 @@ impl Into<String> for Value {
     }
 }
 
-fn serialize_value_ref<S>(_: &Option<ValueRef>, s: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    s.serialize_none()
-}
-
-fn deserialize_value_ref<'de, D>(_: D) -> Result<Option<ValueRef>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Ok(None)
-}
-
 impl std::fmt::Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
@@ -291,8 +274,7 @@ impl std::fmt::Debug for Value {
             Value::Str(s) => write!(f, "Str({:?})", s),
             Value::Dict(m) => write!(f, "Dict({:?})", m),
             Value::List(ls) => write!(f, "List({:?})", ls),
-            Value::Ref(Some(r)) => write!(f, "Ref({:?})", r.borrow()),
-            Value::Ref(None) => write!(f, "Ref(None)"),
+            Value::Ref(r) => write!(f, "{:?}", r),
             Value::Any(_) => write!(f, "Handle"),
         }
     }
