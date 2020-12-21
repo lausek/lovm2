@@ -12,6 +12,8 @@ It is possible to store data in the global scope allowing values to live across 
 Assign::global(&lv2_var!(n), expr)
 ```
 
+`Assign::increment(n)` and `Assign::decrement(n)` are also quite handy for updating variable values.
+
 There is even a way of setting the values on lists and dictionaries. Under the hood, `Set` is actually expecting a `Ref` as the target location - which is retrieved by `Access` - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.
 
 ``` rust,no_run

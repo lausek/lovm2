@@ -27,6 +27,12 @@ pub enum Expr {
 }
 ```
 
+## Resolvement of Variables
+
+While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.
+
+`Expr` variants relying on this functionality are `Variable` and `Access`. As such, their macro helper functions `lv2_var!` and `lv2_access!` follow the same rules.
+
 ## Example
 
 We want to transform the formula `(1 + 2) * f(2)` to `lovm2` bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that `lovm2` does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your ast should look something like this:
@@ -43,15 +49,20 @@ Value(2)                 -- Operation(*)
 
 And here is the compiletime representation of said formula. As you can see, every operation has an equivalent static method on `Expr`. Also note that calling a function has its own construct. This is due to calls being allowed in statement position as well.
 
-```
+``` rust,no_run
 let formula = Expr::mul(
     Expr::add(1, 2),
     Call::new("f").arg(2),
 );
 ```
 
-## Resolvement of Variables
+The (unoptimized) `LIR` now looks like this:
 
-While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.
-
-`Expr` variants relying on this functionality are `Variable` and `Access`. As such, their macro helper functions `lv2_var!` and `lv2_access!` follow the same rules.
+``` lir
+CPush(1)
+CPush(2)
+Operator2(Add)
+CPush(2)
+Call(f, 1)
+Operator2(Mul)
+```
