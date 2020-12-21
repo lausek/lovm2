@@ -319,10 +319,10 @@ impl Vm {
                     let mut val = self.ctx.pop_value()?;
                     let target = self.ctx.pop_value()?;
 
-                    deref_total(&mut val);
+                    deref_total(&mut val)?;
 
                     match target {
-                        Value::Ref(Some(r)) => *r.borrow_mut() = val,
+                        Value::Ref(r) => *r.borrow_mut()? = val,
                         _ => return Err(format!("cannot use {:?} as set target", target).into()),
                     }
                 }
@@ -448,11 +448,11 @@ impl Vm {
     }
 }
 
-fn deref_total(val: &mut Value) {
-    while let Value::Ref(Some(r)) = val {
-        let r = r.borrow().clone();
-        *val = r;
+fn deref_total(val: &mut Value) -> Lovm2Result<()> {
+    while let Value::Ref(r) = val {
+        *val = r.unref().ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
     }
+    Ok(())
 }
 
 fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {

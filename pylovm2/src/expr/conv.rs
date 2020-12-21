@@ -125,7 +125,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
     }
 }
 
-pub fn any_to_ruvalue(any: &PyAny) -> PyResult<Value> {
+pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<Value> {
     let ty = any.get_type().name();
     match ty.as_ref() {
         "Value" => any.extract::<Value>(),
