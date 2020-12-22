@@ -39,11 +39,14 @@ impl Function {
         let block = &self.block;
         let output = &self.output.as_tokens();
 
+        let args = self.args.as_tokens();
+        let argscall = self.args.as_tokens_call_position();
+
         quote! {
-            let _lv2_return_value: #output = {
-                #prelude
-                { #block }
-            };
+            #[inline]
+            fn _lv2_wrapper(#args) -> #output #block
+            #prelude
+            let _lv2_return_value: #output = _lv2_wrapper(#argscall);
             #postlude
         }
     }
