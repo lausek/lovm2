@@ -1,5 +1,6 @@
-use super::*;
 use syn::{punctuated::Punctuated, token::Comma, FnArg};
+
+use super::*;
 
 pub struct FunctionArgs {
     vm: Option<Ident>,
@@ -120,9 +121,39 @@ impl FunctionArgs {
     }
 }
 
+impl std::fmt::Display for FunctionArgs {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut parts = vec![];
+
+        if let Some(vm) = &self.vm {
+            parts.push(format!("{}: &mut Vm", vm));
+        }
+
+        for arg in self.simple.iter() {
+            parts.push(format!("{}", arg));
+        }
+
+        write!(f, "{}", parts.join(", "))
+    }
+}
+
 struct FunctionArg {
     name: Ident,
     ty_name: Ident,
     is_ref: bool,
     is_mut: bool,
+}
+
+impl std::fmt::Display for FunctionArg {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.is_mut && self.is_ref {
+            write!(f, "{}: &mut {}", self.name, self.ty_name)
+        } else if self.is_ref {
+            write!(f, "{}: &{}", self.name, self.ty_name)
+        } else if self.is_mut {
+            write!(f, "mut {}: {}", self.name, self.ty_name)
+        } else {
+            write!(f, "{}: {}", self.name, self.ty_name)
+        }
+    }
 }
