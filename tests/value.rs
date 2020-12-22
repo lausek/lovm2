@@ -1,4 +1,4 @@
-use lovm2::value::Value;
+use lovm2::value::{box_value, Value};
 
 #[test]
 fn integer_casting() {
@@ -100,4 +100,22 @@ fn implicit_float_conversion_rem() {
     let mut c = Value::Int(1);
     c.rem_inplace(Value::Float(2.)).unwrap();
     assert_eq!(Value::Float(1.), c);
+}
+
+#[test]
+fn reference_equality() {
+    let a = Value::Int(0);
+    let b = Value::Ref(Value::Int(0).into());
+
+    let a2 = Value::Ref(Value::Float(1.).into());
+    let b2 = Value::Bool(true);
+
+    let ls = box_value(Value::List(vec![1.into(), 2.into(), 3.into()]));
+
+    let item_a = ls.get(&a).unwrap();
+    let item_b = ls.get(&b).unwrap();
+
+    assert!(a == b);
+    assert!(item_a == item_b);
+    assert!(a2 != b2);
 }

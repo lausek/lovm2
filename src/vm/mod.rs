@@ -450,7 +450,9 @@ impl Vm {
 
 fn deref_total(val: &mut Value) -> Lovm2Result<()> {
     while let Value::Ref(r) = val {
-        *val = r.unref().ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
+        *val = r
+            .unref()
+            .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
     }
     Ok(())
 }

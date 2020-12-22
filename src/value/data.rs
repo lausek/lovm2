@@ -37,7 +37,7 @@ pub fn box_value(value: Value) -> Value {
 }
 
 /// Runtime representation of values
-#[derive(Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum Value {
     Nil,
     Bool(bool),

@@ -101,7 +101,8 @@ impl Value {
             Value::Str(s) => s.parse::<f64>().map_err(|_| "not a float".into()),
             Value::Dict(_) => not_supported(),
             Value::List(_) => not_supported(),
-            _ => panic!("TODO: ref does not have a type"),
+            Value::Ref(r) => r.borrow()?.as_float_inner(),
+            _ => not_supported(),
         }
     }
 
@@ -114,7 +115,8 @@ impl Value {
             Value::Str(s) => s.parse::<i64>().map_err(|_| "not an integer".into()),
             Value::Dict(_) => not_supported(),
             Value::List(_) => not_supported(),
-            _ => panic!("TODO: ref does not have a type"),
+            Value::Ref(r) => r.borrow()?.as_integer_inner(),
+            _ => not_supported(),
         }
     }
 
@@ -130,8 +132,8 @@ impl Value {
         Ok(format!("{}", self))
     }
 
-    pub fn type_id(&self) -> ValueType {
-        match self {
+    pub fn type_id(&self) -> Lovm2Result<ValueType> {
+        let tid = match self {
             Value::Nil => ValueType::Nil,
             Value::Bool(_) => ValueType::Bool,
             Value::Int(_) => ValueType::Int,
@@ -139,8 +141,10 @@ impl Value {
             Value::Str(_) => ValueType::Str,
             Value::Dict(_) => ValueType::Dict,
             Value::List(_) => ValueType::List,
-            _ => panic!("TODO: ref does not have a type"),
-        }
+            Value::Ref(r) => r.unref_total()?.type_id()?,
+            _ => todo!(),
+        };
+        Ok(tid)
     }
 }
 

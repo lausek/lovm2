@@ -133,6 +133,23 @@ impl Value {
     }
 }
 
+impl std::cmp::PartialEq for Value {
+    fn eq(&self, rhs: &Value) -> bool {
+        match (self, rhs) {
+            (Nil, Nil) => true,
+            (Bool(a), Bool(b)) => a == b,
+            (Int(a), Int(b)) => a == b,
+            (Float(a), Float(b)) => a == b,
+            (Str(a), Str(b)) => a == b,
+            (Dict(a), Dict(b)) => a == b,
+            (List(a), List(b)) => a == b,
+            (Any(a), Any(b)) => a == b,
+            (Ref(r), other) | (other, Ref(r)) => r.eq(other),
+            _ => false,
+        }
+    }
+}
+
 impl std::cmp::PartialOrd for Value {
     fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
         match (self, other) {
