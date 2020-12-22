@@ -9,5 +9,6 @@ name = "lovm2_std_json"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+json = "0.12.4"
 lovm2 = { path = "../../" }
 lovm2_extend = { path = "../../lovm2_extend" }

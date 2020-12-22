@@ -5,7 +5,9 @@ use lovm2_extend::prelude::*;
 
 fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
     let mut builder = ModuleBuilder::new();
-    builder.entry().step(Include::import_global("liblovm2_std_collection"));
+    builder
+        .entry()
+        .step(Include::import_global("liblovm2_std_collection"));
     func(&mut builder);
     let module = builder.build().unwrap();
 
@@ -31,10 +33,10 @@ fn native_contains() {
 
     vm.call("init", &[]).unwrap();
 
-    let n = Expr::from(n).eval(vm.context_mut()).unwrap();
-    let s = Expr::from(s).eval(vm.context_mut()).unwrap();
-    let d = Expr::from(d).eval(vm.context_mut()).unwrap();
-    let ls = Expr::from(ls).eval(vm.context_mut()).unwrap();
+    let n = vm.context_mut().value_of(n).unwrap().clone();
+    let s = vm.context_mut().value_of(s).unwrap().clone();
+    let d = vm.context_mut().value_of(d).unwrap().clone();
+    let ls = vm.context_mut().value_of(ls).unwrap().clone();
 
     assert_eq!(
         Value::from(true),
