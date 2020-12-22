@@ -70,6 +70,35 @@ impl FunctionArgs {
         Ok(Self { vm, simple })
     }
 
+    pub fn as_tokens(&self) -> impl quote::ToTokens {
+        use crate::quote::ToTokens;
+        let mut parts = vec![];
+
+        if let Some(vm) = &self.vm {
+            parts.push(quote! { #vm: &mut Vm });
+        }
+
+        for arg in self.simple.iter() {
+            parts.push(arg.as_tokens().to_token_stream());
+        }
+
+        quote! { #( #parts, )* }
+    }
+
+    pub fn as_tokens_call_position(&self) -> impl quote::ToTokens {
+        let mut parts = vec![];
+
+        if let Some(vm) = &self.vm {
+            parts.push(vm);
+        }
+
+        for arg in self.simple.iter() {
+            parts.push(&arg.name);
+        }
+
+        quote! { #( #parts, )* }
+    }
+
     pub fn generate(&self) -> impl quote::ToTokens {
         let mut stackops = vec![];
 
@@ -110,7 +139,7 @@ impl FunctionArgs {
         let vm = if let Some(name) = &self.vm {
             quote! { let #name: &mut Vm = vm; }
         } else {
-            quote! { let _: &mut Vm = vm; }
+            quote! {}
         };
 
         quote! {
@@ -138,22 +167,31 @@ impl std::fmt::Display for FunctionArgs {
 }
 
 struct FunctionArg {
-    name: Ident,
+    pub(self) name: Ident,
     ty_name: Ident,
     is_ref: bool,
     is_mut: bool,
 }
 
+impl FunctionArg {
+    pub fn as_tokens(&self) -> impl quote::ToTokens {
+        let (name, ty) = (&self.name, &self.ty_name);
+
+        if self.is_mut && self.is_ref {
+            quote! { #name: &mut #ty }
+        } else if self.is_ref {
+            quote! { #name: &#ty }
+        } else if self.is_mut {
+            quote! { mut #name: #ty }
+        } else {
+            quote! { #name: #ty }
+        }
+    }
+}
+
 impl std::fmt::Display for FunctionArg {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        if self.is_mut && self.is_ref {
-            write!(f, "{}: &mut {}", self.name, self.ty_name)
-        } else if self.is_ref {
-            write!(f, "{}: &{}", self.name, self.ty_name)
-        } else if self.is_mut {
-            write!(f, "mut {}: {}", self.name, self.ty_name)
-        } else {
-            write!(f, "{}: {}", self.name, self.ty_name)
-        }
+        use crate::quote::ToTokens;
+        write!(f, "{}", self.as_tokens().to_token_stream())
     }
 }

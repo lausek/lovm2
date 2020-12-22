@@ -9,9 +9,7 @@ pub struct Object {
 impl Object {
     pub fn from(item: TokenStream) -> Self {
         let ty = syn::parse::<syn::ItemStruct>(item).unwrap();
-        Self {
-            ty,
-        }
+        Self { ty }
     }
 
     pub fn generate_rust_structure(&self) -> impl quote::ToTokens {

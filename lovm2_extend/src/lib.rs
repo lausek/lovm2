@@ -1,4 +1,4 @@
-//! `lovm2_extend` is a library for writing `lovm2` extensions using Rust. The output 
+//! `lovm2_extend` is a library for writing `lovm2` extensions using Rust. The output
 //! is a shared object that is directly loadable by the virtual machine.
 //!
 //! ## Setup
@@ -12,7 +12,7 @@
 //! crate-type = ["cdylib"]
 //! ```
 //!
-//! 3. Write your functions and use `cargo build --release` to produce 
+//! 3. Write your functions and use `cargo build --release` to produce
 //! a shared object inside `target/release/`
 //!
 //! ## Example
@@ -20,31 +20,31 @@
 //! ``` rust
 //! // Import all required types for writing a module
 //! use lovm2_extend::prelude::*;
-//! 
+//!
 //! // This attribute generates wrapper code for Rust structures
 //! #[lovm2_object]
 //! pub struct Session {
 //!     name: Option<String>,
 //! }
-//! 
+//!
 //! // Constructor for new values of `Session`
 //! #[lovm2_function]
 //! fn new() -> Session {
 //!     Session { name: None }
 //! }
-//! 
+//!
 //! // Returning `Option`s is allowed
 //! #[lovm2_function]
 //! fn get_name(session: &Session) -> Option<String> {
 //!     session.name.clone()
 //! }
-//! 
+//!
 //! // You can modify `Session`
 //! #[lovm2_function]
 //! fn set_name(session: &mut Session, name: String) {
 //!     session.name = Some(name);
 //! }
-//! 
+//!
 //! // Generate module bloat (required)
 //! lovm2_module_init!();
 //! ```
