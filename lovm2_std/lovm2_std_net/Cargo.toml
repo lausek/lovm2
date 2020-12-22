@@ -5,7 +5,8 @@ authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
 [lib]
-crate-type = ["cdylib"]
+name = "lovm2_std_net"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 lovm2 = { path = "../../" }
