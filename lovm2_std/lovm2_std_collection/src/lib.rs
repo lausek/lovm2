@@ -32,7 +32,7 @@ fn count(val: Value) -> Lovm2Result<i64> {
 }
 
 #[lovm2_function]
-fn deepclone(val: Value) -> Value {
+fn deep_clone(val: Value) -> Value {
     todo!()
 }
 

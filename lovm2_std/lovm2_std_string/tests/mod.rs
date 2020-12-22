@@ -5,7 +5,9 @@ use lovm2_extend::prelude::*;
 
 fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
     let mut builder = ModuleBuilder::new();
-    builder.add_dependency("liblovm2_std_string");
+    builder
+        .entry()
+        .step(Include::import_global("liblovm2_std_string"));
     func(&mut builder);
     let module = builder.build().unwrap();
 
@@ -18,40 +20,101 @@ fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
 
 #[test]
 fn native_join() {
-    let (joined, ls) = &lv2_var!(joined, ls);
+    let mut vm = run_module_test(|_| {});
 
-    let mut vm = run_module_test(|builder| {
-        builder
-            .entry()
-            .step(Assign::local(ls, lv2_list!("a", "b")))
-            .step(Assign::global(
-                joined,
-                Call::new("liblovm2_std_string.join").arg(ls).arg(" & "),
-            ));
-    });
-
-    let result = vm.context_mut().value_of(joined).unwrap();
-    assert_eq!(Value::from("a & b"), *result);
+    assert_eq!(
+        Value::from("a & b"),
+        vm.call("join", &[vec!["a", "b"].into(), " & ".into()])
+            .unwrap()
+    );
+    assert_eq!(
+        Value::from("a"),
+        vm.call("join", &[vec!["a"].into(), " & ".into()]).unwrap()
+    );
 }
 
 #[test]
 fn native_split() {
-    let (s, splitted, first, last) = &lv2_var!(s, splitted, first, last);
+    let mut vm = run_module_test(|_| {});
 
-    let mut vm = run_module_test(|builder| {
-        builder
-            .entry()
-            .step(Assign::local(s, "a;b;c"))
-            .step(Assign::global(
-                splitted,
-                Call::new("liblovm2_std_string.split").arg(s).arg(";"),
-            ))
-            .step(Assign::global(first, lv2_access!(splitted, 0)))
-            .step(Assign::global(last, lv2_access!(splitted, 2)));
-    });
+    assert_eq!(
+        Value::List(vec!["a".into(), "b".into(), "c".into()]),
+        vm.call("split", &["a;b;c".into(), ";".into()]).unwrap()
+    );
+    assert_eq!(
+        Value::List(vec!["a".into()]),
+        vm.call("split", &["a".into(), ";".into()]).unwrap()
+    );
+}
 
-    let result = vm.context_mut().value_of(first).unwrap();
-    assert_eq!(Value::from("a"), *result);
-    let result = vm.context_mut().value_of(last).unwrap();
-    assert_eq!(Value::from("c"), *result);
+#[test]
+fn native_index_of() {
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(
+        Value::Int(0),
+        vm.call("index_of", &["abc".into(), "a".into()]).unwrap()
+    );
+    assert_eq!(
+        Value::Int(2),
+        vm.call("index_of", &["abc".into(), "c".into()]).unwrap()
+    );
+    assert_eq!(
+        Value::Nil,
+        vm.call("index_of", &["abc".into(), "d".into()]).unwrap()
+    );
+}
+
+#[test]
+fn native_replace() {
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(
+        Value::from("abb"),
+        vm.call("replace", &["abc".into(), "c".into(), "b".into()])
+            .unwrap()
+    );
+    assert_eq!(
+        Value::from("abc"),
+        vm.call("replace", &["abc".into(), "d".into(), "b".into()])
+            .unwrap()
+    );
+    assert_eq!(
+        Value::from("bbb"),
+        vm.call("replace", &["aba".into(), "a".into(), "b".into()])
+            .unwrap()
+    );
+}
+
+#[test]
+fn native_to_upper() {
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(
+        Value::from("AA"),
+        vm.call("to_upper", &["aA".into()]).unwrap()
+    );
+}
+
+#[test]
+fn native_to_lower() {
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(
+        Value::from("aa"),
+        vm.call("to_lower", &["aA".into()]).unwrap()
+    );
+}
+
+#[test]
+fn native_trim() {
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(Value::from("a"), vm.call("trim", &[" a".into()]).unwrap());
+    assert_eq!(Value::from("a"), vm.call("trim", &["a ".into()]).unwrap());
+
+    assert_eq!(
+        Value::from("a"),
+        vm.call("trim", &["   a   ".into()]).unwrap()
+    );
 }

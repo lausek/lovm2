@@ -2,8 +2,8 @@ use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
-fn indexof(base: String, pat: String) -> Option<i64> {
-    todo!()
+fn index_of(base: String, pat: String) -> Option<i64> {
+    base.find(&pat).map(|i| i as i64)
 }
 
 #[lovm2_function]
@@ -28,7 +28,7 @@ fn join(base: Value, sep: String) -> Lovm2Result<String> {
 
 #[lovm2_function]
 fn replace(base: String, pat: String, repl: String) -> String {
-    todo!()
+    base.replace(&pat, &repl)
 }
 
 #[lovm2_function]
@@ -39,18 +39,18 @@ fn split(base: String, sep: String) -> Lovm2Result<Value> {
 }
 
 #[lovm2_function]
-fn tolower(base: String) -> String {
-    todo!()
+fn to_lower(base: String) -> String {
+    base.to_lowercase()
 }
 
 #[lovm2_function]
-fn toupper(base: String) -> String {
-    todo!()
+fn to_upper(base: String) -> String {
+    base.to_uppercase()
 }
 
 #[lovm2_function]
 fn trim(base: String) -> String {
-    todo!()
+    base.trim().to_string()
 }
 
 lovm2_module_init!();
