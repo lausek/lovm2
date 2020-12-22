@@ -17,7 +17,7 @@ fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
 }
 
 #[test]
-fn native_join() {
+fn native_contains() {
     let (ls, s, d, n, ls_has_n, s_has_n, d_has_n) =
         &lv2_var!(ls, s, d, n, ls_has_n, s_has_n, d_has_n);
 

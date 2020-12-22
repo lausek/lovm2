@@ -34,6 +34,13 @@ cargo test
 popd
 
 pushd lovm2_std
+for submodule in $(ls | grep lovm2); do
+    pushd $submodule
+    cargo build
+    cargo test
+    popd
+done
+
 cargo build
 cargo test
 popd

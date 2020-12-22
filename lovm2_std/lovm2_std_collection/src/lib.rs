@@ -1,4 +1,3 @@
-use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
@@ -20,7 +19,8 @@ fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
             Ok(found)
         }
         Value::Str(s) => {
-            Ok(false)
+            let needle = needle.as_str_inner()?;
+            Ok(s.contains(&needle))
         }
         _ => Err(Lovm2ErrorTy::OperationNotSupported.into()),
     }
