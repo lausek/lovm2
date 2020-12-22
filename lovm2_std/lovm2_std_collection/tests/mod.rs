@@ -5,7 +5,7 @@ use lovm2_extend::prelude::*;
 
 fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
     let mut builder = ModuleBuilder::new();
-    builder.add_dependency("liblovm2_std_collection");
+    builder.entry().step(Include::import_global("liblovm2_std_collection"));
     func(&mut builder);
     let module = builder.build().unwrap();
 
@@ -18,34 +18,68 @@ fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
 
 #[test]
 fn native_contains() {
-    let (ls, s, d, n, ls_has_n, s_has_n, d_has_n) =
-        &lv2_var!(ls, s, d, n, ls_has_n, s_has_n, d_has_n);
+    let (n, s, d, ls) = &lv2_var!(n, s, d, ls);
 
     let mut vm = run_module_test(|builder| {
         builder
-            .entry()
-            .step(Assign::local(n, 10))
-            .step(Assign::local(ls, lv2_list!("a", true, n)))
-            .step(Assign::local(s, "abc10d"))
-            .step(Assign::local(d, lv2_dict!(10 => 1, "b" => 2)))
-            .step(Assign::global(
-                ls_has_n,
-                Call::new("liblovm2_std_collection.contains").arg(ls).arg(n),
-            ))
-            .step(Assign::global(
-                s_has_n,
-                Call::new("liblovm2_std_collection.contains").arg(s).arg(n),
-            ))
-            .step(Assign::global(
-                d_has_n,
-                Call::new("liblovm2_std_collection.contains").arg(d).arg(n),
-            ));
+            .add("init")
+            .step(Assign::global(n, 10))
+            .step(Assign::global(s, "abc10d"))
+            .step(Assign::global(d, lv2_dict!(10 => 1, "b" => 2)))
+            .step(Assign::global(ls, lv2_list!("a", true, n)));
     });
 
-    let result = vm.context_mut().value_of(ls_has_n).unwrap();
-    assert_eq!(Value::from(true), *result);
-    let result = vm.context_mut().value_of(s_has_n).unwrap();
-    assert_eq!(Value::from(true), *result);
-    let result = vm.context_mut().value_of(d_has_n).unwrap();
-    assert_eq!(Value::from(true), *result);
+    vm.call("init", &[]).unwrap();
+
+    let n = Expr::from(n).eval(vm.context_mut()).unwrap();
+    let s = Expr::from(s).eval(vm.context_mut()).unwrap();
+    let d = Expr::from(d).eval(vm.context_mut()).unwrap();
+    let ls = Expr::from(ls).eval(vm.context_mut()).unwrap();
+
+    assert_eq!(
+        Value::from(true),
+        vm.call("contains", &[s.clone(), n.clone()]).unwrap()
+    );
+    assert_eq!(
+        Value::from(true),
+        vm.call("contains", &[d.clone(), n.clone()]).unwrap()
+    );
+    assert_eq!(
+        Value::from(true),
+        vm.call("contains", &[ls.clone(), n.clone()]).unwrap()
+    );
+    assert_eq!(
+        Value::from(false),
+        vm.call("contains", &[d.clone(), s.clone()]).unwrap()
+    );
+}
+
+#[test]
+fn native_count() {
+    assert!(false);
+}
+
+#[test]
+fn native_deep_clone() {
+    assert!(false);
+}
+
+#[test]
+fn native_delete() {
+    assert!(false);
+}
+
+#[test]
+fn native_get() {
+    assert!(false);
+}
+
+#[test]
+fn native_insert() {
+    assert!(false);
+}
+
+#[test]
+fn native_sort() {
+    assert!(false);
 }

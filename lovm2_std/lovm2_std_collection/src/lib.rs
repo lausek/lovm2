@@ -42,12 +42,12 @@ fn delete(collection: Value, key: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn get(collection: Value, key: Value) -> Lovm2Result<bool> {
+fn get(collection: Value, key: Value) -> Lovm2Result<Value> {
     todo!()
 }
 
 #[lovm2_function]
-fn insert(collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
+fn insert(collection: Value, key: Value, val: Value) -> bool {
     todo!()
 }
 
