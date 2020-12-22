@@ -74,6 +74,13 @@ impl FunctionRet {
     }
 }
 
+impl std::fmt::Display for FunctionRet {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use crate::quote::ToTokens;
+        write!(f, "{}", self.as_tokens().to_token_stream())
+    }
+}
+
 pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<RetType> {
     match ty {
         syn::Type::Path(ty_path) => {

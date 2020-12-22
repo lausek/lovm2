@@ -1,5 +1,6 @@
 use lovm2_extend::prelude::*;
 
+/// Use this to store a name
 #[lovm2_object]
 pub struct Session {
     name: Option<String>,

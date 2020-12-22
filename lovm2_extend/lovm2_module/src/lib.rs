@@ -6,6 +6,7 @@ extern crate quote;
 
 mod args;
 mod func;
+mod obj;
 mod ret;
 
 use lazy_static::lazy_static;
@@ -18,6 +19,7 @@ use lovm2::module::EXTERN_LOVM2_INITIALIZER;
 
 use self::args::*;
 use self::func::*;
+use self::obj::*;
 use self::ret::*;
 
 type GenResult<T> = Result<T, String>;
@@ -33,6 +35,7 @@ pub fn lovm2_module_init(_: TokenStream) -> TokenStream {
     let names = funcs.iter();
 
     let result = quote! {
+        #[doc(hidden)]
         #[no_mangle]
         pub extern fn #initfn(lib: Rc<Library>, slots: &mut HashMap<Variable, CallableRef>) {
             #(
@@ -62,16 +65,9 @@ pub fn lovm2_function(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn lovm2_object(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let item_fn = &syn::parse::<syn::ItemStruct>(item).unwrap();
-    let name = &item_fn.ident;
-    let result = quote! {
-        #item_fn
+    use crate::quote::ToTokens;
 
-        impl Into<Value> for #name {
-            fn into(self) -> Value {
-                Value::create_any(self)
-            }
-        }
-    };
-    result.into()
+    let obj = Object::from(item);
+
+    obj.generate_rust_structure().into_token_stream().into()
 }

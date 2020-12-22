@@ -22,7 +22,9 @@ impl Function {
     pub fn generate_rust_function(&self) -> impl quote::ToTokens {
         let ident = &self.name;
         let body = self.generate_body();
+        let docstring = format!("{}({}) -> {}", ident, self.args, self.output);
         let code = quote! {
+            #[doc = #docstring]
             #[no_mangle]
             pub extern fn #ident(vm: &mut Vm) -> lovm2_extend::prelude::Lovm2Result<()> {
                 #body
