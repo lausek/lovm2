@@ -37,9 +37,13 @@ impl Reference {
     }
 
     pub fn unref_total(&self) -> Lovm2Result<Value> {
-        let mut val = self.unref().ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
+        let mut val = self
+            .unref()
+            .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
         while let Value::Ref(r) = val {
-            val = r.unref().ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
+            val = r
+                .unref()
+                .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
         }
         Ok(val)
     }
@@ -67,14 +71,18 @@ where
 
 impl std::cmp::PartialEq for Reference {
     fn eq(&self, rhs: &Self) -> bool {
-        if let Ok(lhs) = self.unref_total() {
-            if let Ok(rhs) = rhs.unref_total() {
-                lhs == rhs
-            } else {
-                false
-            }
+        self.unref_total().map_or(false, |lhs| {
+            rhs.unref_total().map_or(false, |rhs| lhs == rhs)
+        })
+    }
+}
+
+impl std::cmp::PartialEq<Value> for Reference {
+    fn eq(&self, rhs: &Value) -> bool {
+        if let Value::Ref(rhs) = rhs {
+            self == rhs
         } else {
-            false
+            self.unref_total().map_or(false, |lhs| lhs == *rhs)
         }
     }
 }
