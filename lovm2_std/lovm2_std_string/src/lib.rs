@@ -2,6 +2,11 @@ use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
+fn indexof(base: String, pat: String) -> Option<i64> {
+    todo!()
+}
+
+#[lovm2_function]
 fn join(base: Value, sep: String) -> Lovm2Result<String> {
     let base = base.deref().unwrap();
     if let Value::List(ls) = base {
@@ -22,11 +27,30 @@ fn join(base: Value, sep: String) -> Lovm2Result<String> {
 }
 
 #[lovm2_function]
-fn split(base: Value, sep: String) -> Lovm2Result<Value> {
-    let s = base.as_str_inner()?;
-    let ls = s.split(&sep).map(Value::from).collect::<Vec<_>>();
+fn replace(base: String, pat: String, repl: String) -> String {
+    todo!()
+}
+
+#[lovm2_function]
+fn split(base: String, sep: String) -> Lovm2Result<Value> {
+    let ls = base.split(&sep).map(Value::from).collect::<Vec<_>>();
     let val = Value::List(ls);
     Ok(box_value(val))
+}
+
+#[lovm2_function]
+fn tolower(base: String) -> String {
+    todo!()
+}
+
+#[lovm2_function]
+fn toupper(base: String) -> String {
+    todo!()
+}
+
+#[lovm2_function]
+fn trim(base: String) -> String {
+    todo!()
 }
 
 lovm2_module_init!();

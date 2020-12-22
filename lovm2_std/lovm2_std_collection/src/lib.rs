@@ -26,4 +26,34 @@ fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
     }
 }
 
+#[lovm2_function]
+fn count(val: Value) -> Lovm2Result<i64> {
+    todo!()
+}
+
+#[lovm2_function]
+fn deepclone(val: Value) -> Value {
+    todo!()
+}
+
+#[lovm2_function]
+fn delete(collection: Value, key: Value) -> Lovm2Result<bool> {
+    todo!()
+}
+
+#[lovm2_function]
+fn get(collection: Value, key: Value) -> Lovm2Result<bool> {
+    todo!()
+}
+
+#[lovm2_function]
+fn insert(collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
+    todo!()
+}
+
+#[lovm2_function]
+fn sort(collection: Value) -> Lovm2Result<bool> {
+    todo!()
+}
+
 lovm2_module_init!();
