@@ -166,6 +166,10 @@ impl std::hash::Hash for Value {
             Value::Str(s) => hasher.write(s.as_bytes()),
             Value::Dict(_) => unimplemented!(),
             Value::List(_) => unimplemented!(),
+            Value::Ref(r) => {
+                let r = r.borrow().unwrap();
+                r.hash(hasher);
+            }
             _ => panic!("TODO: ref does not have a type"),
         }
     }
