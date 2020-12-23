@@ -27,8 +27,8 @@ fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn count(val: Value) -> Lovm2Result<i64> {
-    todo!()
+fn count(mut val: Value) -> Lovm2Result<i64> {
+    val.len().map(|n| n as i64)
 }
 
 #[lovm2_function]

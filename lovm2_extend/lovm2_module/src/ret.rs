@@ -88,7 +88,6 @@ impl FunctionRet {
 
 impl std::fmt::Display for FunctionRet {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        println!("{:?}", self);
         match self {
             Self::None => write!(f, "()"),
             Self::Ident(name) => write!(f, "{}", name),

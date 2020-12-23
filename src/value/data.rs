@@ -109,6 +109,7 @@ impl Value {
 
     pub fn len(&self) -> Lovm2Result<usize> {
         match self {
+            Value::Str(s) => Ok(s.len()),
             Value::Dict(dict) => Ok(dict.len()),
             Value::List(list) => Ok(list.len()),
             Value::Ref(r) => r.borrow()?.len(),

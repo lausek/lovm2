@@ -13,7 +13,7 @@ use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use std::collections::HashSet;
 use std::sync::Mutex;
-use syn::{export::Span, Block, Ident, ItemFn, ReturnType, Type};
+use syn::{export::Span, Block, Ident, ItemFn, ReturnType};
 
 use lovm2::module::EXTERN_LOVM2_INITIALIZER;
 
