@@ -83,4 +83,4 @@ fn sqrt(val: f64) -> f64 {
     val.sqrt()
 }
 
-lovm2_module_init!();
+lovm2_module_init!(math);

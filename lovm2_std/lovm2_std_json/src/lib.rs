@@ -88,4 +88,4 @@ fn to_json_value(val: Value) -> Lovm2Result<JsonValue> {
     Ok(json)
 }
 
-lovm2_module_init!();
+lovm2_module_init!(json);

@@ -82,7 +82,7 @@ fn is_dir(path: String) -> bool {
 
 #[lovm2_function]
 fn list_dir(path: String) -> bool {
-    std::path::Path::new(&path).is_dir()
+    todo!()
 }
 
 #[lovm2_function]
@@ -90,4 +90,9 @@ fn unlink(path: String) -> bool {
     std::fs::remove_file(path).is_ok()
 }
 
-lovm2_module_init!();
+#[lovm2_function]
+fn rename(from: String, to: String) -> Lovm2Result<bool> {
+    todo!()
+}
+
+lovm2_module_init!(fs);

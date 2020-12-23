@@ -56,4 +56,4 @@ fn sort(collection: Value) -> Lovm2Result<bool> {
     todo!()
 }
 
-lovm2_module_init!();
+lovm2_module_init!(collection);

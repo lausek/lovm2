@@ -33,4 +33,4 @@ fn is_match(regex: &Regex, text: String) -> bool {
     regex.inner.is_match(&text)
 }
 
-lovm2_module_init!();
+lovm2_module_init!(regex);

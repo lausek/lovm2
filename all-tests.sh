@@ -19,24 +19,32 @@ pytest
 popd
 
 # test the shared object extension
-pushd lovm2_extend/examples/primitives
+pushd lovm2_extend
+for example in $(ls ./examples); do
+    pushd ./examples/$example
+    cargo build
+    popd
+done
+
+for example in $(ls ./examples); do
+    pushd ./examples/$example
+    cargo test
+    popd
+done
+
 cargo build
-cargo test
 popd
 
-pushd lovm2_extend/examples/so_module
-cargo build
-popd
-
-pushd lovm2_extend/examples/custom-objects
-cargo build
-cargo test
-popd
-
+# test standard library
 pushd lovm2_std
 for submodule in $(ls | grep lovm2); do
     pushd $submodule
     cargo build
+    popd
+done
+
+for submodule in $(ls | grep lovm2); do
+    pushd $submodule
     cargo test
     popd
 done

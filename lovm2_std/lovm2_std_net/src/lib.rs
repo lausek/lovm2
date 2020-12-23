@@ -1,4 +1,5 @@
 use lovm2_extend::prelude::*;
+use lovm2_std_buffer::Buffer;
 
 use std::collections::HashMap;
 
@@ -40,4 +41,7 @@ fn get_status(res: &Response) -> i64 { todo!() }
 #[lovm2_function]
 fn get_body_as_string(res: &Response) -> Lovm2Result<String> { todo!() }
 
-lovm2_module_init!();
+#[lovm2_function]
+fn get_body_as_buffer(res: &Response) -> Lovm2Result<Buffer> { todo!() }
+
+lovm2_module_init!(net);

@@ -19,18 +19,24 @@ use crate::var::Variable;
 use crate::vm::Vm;
 
 /// Name of the unmangled function name to call when initializing module slots
-pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initializer";
+pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
 
 /// Definition for dynamically linked function
 pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
 /// Function signature of the extern module initializer
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CallableRef>);
 
-fn load_slots(lib: Library) -> Lovm2Result<Slots> {
+fn load_slots(name: &str, lib: Library) -> Lovm2Result<Slots> {
     unsafe {
+        let named_initializer = format!("{}_{}", EXTERN_LOVM2_INITIALIZER, name);
+
         let lib = Rc::new(lib);
-        let lookup: Result<Symbol<ExternInitializer>, Error> =
-            lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
+
+        // try to lookup named initializer first, fallback to initializer without name
+        let lookup: Result<Symbol<ExternInitializer>, Error> = lib
+            .get(named_initializer.as_bytes())
+            .or_else(|_| lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes()));
+
         match lookup {
             Ok(initializer) => {
                 let mut slots = HashMap::new();
@@ -73,7 +79,7 @@ where
 
     Ok(Module {
         code_object: Rc::new(code_object),
-        slots: load_slots(lib)?,
+        slots: load_slots(name, lib)?,
     })
 }
 

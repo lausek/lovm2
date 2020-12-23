@@ -53,4 +53,4 @@ fn trim(base: String) -> String {
     base.trim().to_string()
 }
 
-lovm2_module_init!();
+lovm2_module_init!(string);
