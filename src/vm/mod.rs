@@ -52,6 +52,10 @@ pub struct LoadRequest {
     pub relative_to: Option<String>,
 }
 
+pub fn get_lovm2_user_dir() -> String {
+    format!("{}/.local/lib/lovm2/", dirs::home_dir().unwrap().to_str().unwrap())
+}
+
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
         let second = $vm.ctx.pop_value()?;
@@ -94,10 +98,7 @@ impl Vm {
             import_hook: Rc::new(default_import_hook),
             interrupts: vec![None; 256],
             load_hook: None,
-            load_paths: vec![format!(
-                "{}/.local/lib/lovm2/",
-                dirs::home_dir().unwrap().to_str().unwrap()
-            )],
+            load_paths: vec![get_lovm2_user_dir()],
         }
     }
 
