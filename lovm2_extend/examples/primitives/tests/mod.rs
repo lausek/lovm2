@@ -8,7 +8,7 @@ fn create_caller(modder: fn(&mut Hir)) -> Vm {
     let mut builder = ModuleBuilder::new();
 
     let hir = builder.entry();
-    hir.step(Include::import_global("primitives"));
+    hir.step(Include::import_global("libprimitives"));
     modder(hir);
 
     let module = builder.build().unwrap();

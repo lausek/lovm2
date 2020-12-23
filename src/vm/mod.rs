@@ -18,6 +18,9 @@ mod frame;
 pub use self::context::Context;
 pub use self::frame::Frame;
 
+pub const LOVM2_RESERVED_INTERRUPTS: u16 = 63;
+pub const LOVM2_DEBUG_INTERRUPT: u16 = 10;
+
 /// Virtual machine for executing [modules](crate::module::Module)
 ///
 /// Call convention is pascal style. If you have a function like `f(a, b, c)` it will be translated
@@ -81,7 +84,7 @@ pub struct Vm {
     import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
     /// Interrupt table. These functions can be triggered using the `Interrupt` instruction
-    interrupts: Vec<Option<Rc<InterruptFn>>>,
+    pub(crate) interrupts: Vec<Option<Rc<InterruptFn>>>,
     /// Function to call if a module is about to be loaded
     load_hook: Option<Rc<LoadHookFn>>,
     /// List of directories for module lookup
@@ -441,11 +444,15 @@ impl Vm {
     }
 
     /// Gegister a new callback function on interrupt `n`
-    pub fn set_interrupt<T>(&mut self, n: u16, func: T)
+    pub fn set_interrupt<T>(&mut self, n: u16, func: T) -> Lovm2Result<()>
     where
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
     {
+        if n != LOVM2_DEBUG_INTERRUPT && LOVM2_RESERVED_INTERRUPTS < n {
+            return Err("reserved interrupt".into());
+        }
         self.interrupts[n as usize] = Some(Rc::new(func));
+        Ok(())
     }
 }
 

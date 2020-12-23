@@ -13,10 +13,10 @@ cargo build --benches
 popd
 
 # build python bindings and run tests
-pushd pylovm2
-cargo build
-pytest
-popd
+#pushd pylovm2
+#cargo build
+#pytest
+#popd
 
 # test the shared object extension
 pushd lovm2_extend

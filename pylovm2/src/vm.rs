@@ -122,7 +122,8 @@ impl Vm {
             }
 
             Ok(())
-        });
+        })
+        .map_err(err_to_exception)?;
 
         Ok(())
     }
