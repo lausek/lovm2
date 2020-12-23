@@ -18,6 +18,7 @@ pub const DEFAULT_VSTACK_SIZE: usize = 256;
 ///
 /// This contains all necessary runtime data and gets shared with objects that
 /// implement `CallProtocol` as well as interrupts.
+#[derive(Debug)]
 pub struct Context {
     /// Starting point of execution
     pub(super) entry: Option<Rc<dyn CallProtocol>>,
@@ -53,6 +54,11 @@ impl Context {
     /// Get a mutable reference to the value stack itself
     pub fn stack_mut(&mut self) -> &mut Vec<Value> {
         &mut self.vstack
+    }
+
+    /// Get a mutable reference to the value lstack itself
+    pub fn lstack_mut(&mut self) -> &mut Vec<Frame> {
+        &mut self.lstack
     }
 
     /// Get a mutable reference to the last stack frame

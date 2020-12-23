@@ -10,6 +10,7 @@ use lovm2_error::*;
 use crate::value::Value;
 
 /// A stack frame used in `Context.lstack`
+#[derive(Debug)]
 pub struct Frame {
     /// Amount of parameters passed to the frame
     pub argn: u8,

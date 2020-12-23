@@ -279,7 +279,7 @@ impl Vm {
                     let value = &co.consts[*cidx as usize];
                     self.ctx.push_value(value.clone());
                 }
-                Instruction::LMove(lidx) => {
+                Instruction::LMove(lidx) => {;
                     let variable = &co.idents[*lidx as usize];
                     let value = self.ctx.pop_value()?;
                     self.ctx.frame_mut()?.set_local(variable, value);
