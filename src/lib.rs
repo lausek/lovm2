@@ -43,7 +43,7 @@
 
 #![allow(clippy::new_without_default)]
 #![allow(clippy::wrong_self_convention)]
-#![feature(result_cloned)]
+//#![feature(result_cloned)]
 
 extern crate lovm2_internals;
 

@@ -128,7 +128,8 @@ impl Expr {
 
             Expr::Slice(_) => todo!(),
             Expr::Value { val, .. } => Ok(val.clone()),
-            Expr::Variable(var) => ctx.value_of(&var).cloned(),
+            // TODO: wait until `result_cloned` is stabilized
+            Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
         }
     }
 
