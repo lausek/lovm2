@@ -19,6 +19,45 @@ fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
 }
 
 #[test]
+fn native_set_predicates() {
+    let (a, b, c, d, e, f) = &lv2_var!(a, b, c, d, e, f);
+
+    let mut vm = run_module_test(|builder| {
+        builder
+            .add("init")
+            .step(Assign::global(a, lv2_list!(true)))
+            .step(Assign::global(b, lv2_list!(true, "abc", 1)))
+            .step(Assign::global(c, lv2_list!(true, "", 1)))
+            .step(Assign::global(d, lv2_list!()))
+            .step(Assign::global(e, lv2_list!(false, true)))
+            .step(Assign::global(f, lv2_list!(false)));
+    });
+
+    vm.call("init", &[]).unwrap();
+
+    let a = vm.context_mut().value_of(a).unwrap().clone();
+    let b = vm.context_mut().value_of(b).unwrap().clone();
+    let c = vm.context_mut().value_of(c).unwrap().clone();
+    let d = vm.context_mut().value_of(d).unwrap().clone();
+    let e = vm.context_mut().value_of(e).unwrap().clone();
+    let f = vm.context_mut().value_of(f).unwrap().clone();
+
+    assert_eq!(Value::from(true), vm.call("all", &[a.clone()]).unwrap());
+    assert_eq!(Value::from(true), vm.call("all", &[b.clone()]).unwrap());
+    assert_eq!(Value::from(false), vm.call("all", &[c.clone()]).unwrap());
+    assert_eq!(Value::from(true), vm.call("all", &[d.clone()]).unwrap());
+    assert_eq!(Value::from(false), vm.call("all", &[e.clone()]).unwrap());
+    assert_eq!(Value::from(false), vm.call("all", &[f.clone()]).unwrap());
+
+    assert_eq!(Value::from(true), vm.call("any", &[a.clone()]).unwrap());
+    assert_eq!(Value::from(true), vm.call("any", &[b.clone()]).unwrap());
+    assert_eq!(Value::from(true), vm.call("any", &[c.clone()]).unwrap());
+    assert_eq!(Value::from(false), vm.call("any", &[d.clone()]).unwrap());
+    assert_eq!(Value::from(true), vm.call("any", &[e.clone()]).unwrap());
+    assert_eq!(Value::from(false), vm.call("any", &[f.clone()]).unwrap());
+}
+
+#[test]
 fn native_contains() {
     let (n, s, d, ls) = &lv2_var!(n, s, d, ls);
 

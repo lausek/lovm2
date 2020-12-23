@@ -26,16 +26,17 @@ pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
 /// Function signature of the extern module initializer
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CallableRef>);
 
-fn load_slots(name: &str, lib: Library) -> Lovm2Result<Slots> {
+fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
     unsafe {
-        let named_initializer = format!("{}_{}", EXTERN_LOVM2_INITIALIZER, name);
+        //let named_initializer = format!("{}_{}", EXTERN_LOVM2_INITIALIZER, name);
 
         let lib = Rc::new(lib);
 
         // try to lookup named initializer first, fallback to initializer without name
         let lookup: Result<Symbol<ExternInitializer>, Error> = lib
-            .get(named_initializer.as_bytes())
-            .or_else(|_| lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes()));
+            .get(EXTERN_LOVM2_INITIALIZER.as_bytes());
+            //.get(named_initializer.as_bytes());
+            //.or_else(|_| lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes()));
 
         match lookup {
             Ok(initializer) => {

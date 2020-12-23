@@ -1,6 +1,44 @@
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
+fn all(mut collection: Value) -> Lovm2Result<bool> {
+    if collection.is_ref() {
+        collection = collection.deref().unwrap();
+    }
+
+    match collection {
+        Value::List(ls) => {
+            for item in ls.iter() {
+                if !item.as_bool_inner()? {
+                    return Ok(false);
+                }
+            }
+            Ok(true)
+        }
+        _ => Err(Lovm2ErrorTy::OperationNotSupported.into()),
+    }
+}
+
+#[lovm2_function]
+fn any(mut collection: Value) -> Lovm2Result<bool> {
+    if collection.is_ref() {
+        collection = collection.deref().unwrap();
+    }
+
+    match collection {
+        Value::List(ls) => {
+            for item in ls.iter() {
+                if item.as_bool_inner()? {
+                    return Ok(true);
+                }
+            }
+            Ok(false)
+        }
+        _ => Err(Lovm2ErrorTy::OperationNotSupported.into()),
+    }
+}
+
+#[lovm2_function]
 fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
     if haystack.is_ref() {
         haystack = haystack.deref().unwrap();
@@ -42,7 +80,17 @@ fn delete(collection: Value, key: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
+fn filter(collection: Value, func_name: String) -> Lovm2Result<Value> {
+    todo!()
+}
+
+#[lovm2_function]
 fn get(collection: Value, key: Value) -> Lovm2Result<Value> {
+    todo!()
+}
+
+#[lovm2_function]
+fn map(collection: Value, func_name: String) -> Lovm2Result<Value> {
     todo!()
 }
 
