@@ -22,7 +22,7 @@ impl Function {
     pub fn generate_rust_function(&self) -> impl quote::ToTokens {
         let ident = &self.name;
         let body = self.generate_body();
-        let docstring = format!("{}({}) -> {}", ident, self.args, self.output);
+        let docstring = format!("`{}({}) -> {}`", ident, self.args, self.output);
         let code = quote! {
             #[doc = #docstring]
             #[no_mangle]

@@ -191,7 +191,14 @@ impl FunctionArg {
 
 impl std::fmt::Display for FunctionArg {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use crate::quote::ToTokens;
-        write!(f, "{}", self.as_tokens().to_token_stream())
+        if self.is_mut && self.is_ref {
+            write!(f, "{}: &mut {}", self.name, self.ty_name)
+        } else if self.is_ref {
+            write!(f, "{}: &{}", self.name, self.ty_name)
+        } else if self.is_mut {
+            write!(f, "mut {}: {}", self.name, self.ty_name)
+        } else {
+            write!(f, "{}: {}", self.name, self.ty_name)
+        }
     }
 }

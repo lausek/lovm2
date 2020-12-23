@@ -9,13 +9,17 @@ use super::*;
 //
 // + check if the expected arguments in `argn` have been taken from stack
 
-pub struct FunctionRet {
-    ty: RetType,
+#[derive(Debug)]
+pub enum FunctionRet {
+    None,
+    Ident(Ident),
+    Maybe(Box<FunctionRet>),
+    Result(Box<FunctionRet>),
 }
 
 impl FunctionRet {
     pub fn from(ret: ReturnType) -> GenResult<Self> {
-        let mut ty = RetType::None;
+        let mut ty = Self::None;
 
         match &ret {
             syn::ReturnType::Default => {}
@@ -24,22 +28,30 @@ impl FunctionRet {
             }
         }
 
-        Ok(Self { ty })
+        Ok(ty)
     }
 
     pub fn as_tokens(&self) -> impl quote::ToTokens {
-        match &self.ty {
-            RetType::None => quote! { () },
-            RetType::Ident(ty) | RetType::Maybe(ty) | RetType::Result(ty) => quote! { #ty },
+        match &self {
+            Self::None => quote! { () },
+            Self::Ident(name) => quote! { #name },
+            Self::Maybe(ty) => {
+                let ty = ty.as_tokens();
+                quote! { Option<#ty> }
+            }
+            Self::Result(ty) => {
+                let ty = ty.as_tokens();
+                quote! { Lovm2Result<#ty> }
+            }
         }
     }
 
     pub fn generate(&self) -> impl quote::ToTokens {
-        match self.ty {
-            RetType::Ident(_) | RetType::Result(_) => {
+        match self {
+            Self::Ident(_) | Self::Result(_) => {
                 let ident = format_ident!("_lv2_return_value");
 
-                let raise_error = if let RetType::Result(_) = self.ty {
+                let raise_error = if matches!(self, Self::Result(_)) {
                     quote! { let #ident = #ident?; }
                 } else {
                     quote! {}
@@ -52,7 +64,7 @@ impl FunctionRet {
                     Ok(())
                 }
             }
-            RetType::Maybe(_) => {
+            Self::Maybe(_) => {
                 let ident = format_ident!("_lv2_return_value");
                 quote! {
                     if let Some(val) = #ident {
@@ -64,7 +76,7 @@ impl FunctionRet {
                     Ok(())
                 }
             }
-            RetType::None => {
+            Self::None => {
                 quote! {
                     vm.context_mut().push_value(Value::Nil);
                     Ok(())
@@ -76,32 +88,46 @@ impl FunctionRet {
 
 impl std::fmt::Display for FunctionRet {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use crate::quote::ToTokens;
-        write!(f, "{}", self.as_tokens().to_token_stream())
+        println!("{:?}", self);
+        match self {
+            Self::None => write!(f, "()"),
+            Self::Ident(name) => write!(f, "{}", name),
+            Self::Maybe(ty) => write!(f, "Option<{}>", *ty),
+            Self::Result(ty) => write!(f, "Lovm2Result<{}>", *ty),
+        }
     }
 }
 
-pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<RetType> {
+pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<FunctionRet> {
     match ty {
         syn::Type::Path(ty_path) => {
             if let Some(segment) = ty_path.path.segments.first() {
-                let ty = ty.clone();
+                use syn::{AngleBracketedGenericArguments, GenericArgument, PathArguments};
+
+                let ty_arg =
+                    if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                        args,
+                        ..
+                    }) = &segment.arguments
+                    {
+                        match args.first() {
+                            Some(GenericArgument::Type(ty)) => Some(accept_type(&ty)?),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    };
+
                 let rt = match segment.ident.to_string().as_ref() {
-                    "Option" => RetType::Maybe(ty),
-                    "Lovm2Result" => RetType::Result(ty),
-                    _ => RetType::Ident(ty),
+                    "Option" => FunctionRet::Maybe(Box::new(ty_arg.unwrap())),
+                    "Lovm2Result" => FunctionRet::Result(Box::new(ty_arg.unwrap())),
+                    _ => FunctionRet::Ident(segment.ident.clone()),
                 };
+
                 return Ok(rt);
             }
         }
         _ => {}
     }
     Err(format!("unexpected type {:?}", ty))
-}
-
-pub enum RetType {
-    None,
-    Ident(Type),
-    Maybe(Type),
-    Result(Type),
 }
