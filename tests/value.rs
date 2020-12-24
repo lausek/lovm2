@@ -3,7 +3,7 @@ use lovm2::value::{box_value, Value};
 #[test]
 fn integer_casting() {
     let a = Value::Int(1);
-    let e = Value::Dict(std::collections::HashMap::new());
+    let e = Value::dict();
     let f = Value::from(vec![1]);
 
     assert_eq!(1, a.as_integer_inner().unwrap());
@@ -18,7 +18,7 @@ fn integer_casting() {
 #[test]
 fn float_casting() {
     let a = Value::Float(1.);
-    let e = Value::Dict(std::collections::HashMap::new());
+    let e = Value::dict();
     let f = Value::from(vec![1]);
 
     assert_eq!(1, a.as_integer_inner().unwrap());
@@ -33,7 +33,7 @@ fn float_casting() {
 #[test]
 fn bool_casting() {
     let a = Value::Bool(true);
-    let e = Value::Dict(std::collections::HashMap::new());
+    let e = Value::dict();
     let f = Value::from(vec![1]);
 
     assert_eq!(1, a.as_integer_inner().unwrap());
@@ -48,7 +48,7 @@ fn bool_casting() {
 #[test]
 fn str_casting() {
     let a = Value::from("1");
-    let e = Value::Dict(std::collections::HashMap::new());
+    let e = Value::dict();
     let f = Value::from(vec![1]);
 
     assert_eq!(1, a.as_integer_inner().unwrap());
@@ -149,4 +149,52 @@ fn xor_operation() {
 
     a.xor_inplace(b).unwrap();
     assert_eq!(Value::Int(0), a);
+}
+
+#[test]
+fn test_iterator_list() {
+    let ls = Value::List(vec![1.into(), 2.into(), 3.into(), 4.into()]);
+    let mut ls_iter = ls.iter().unwrap();
+
+    for n in vec![1, 2, 3, 4].into_iter().map(Value::from) {
+        assert!(ls_iter.has_next());
+        let item = ls_iter.next().unwrap();
+        assert_eq!(n, item);
+    }
+
+    assert!(!ls_iter.has_next());
+}
+
+#[test]
+fn test_iterator_dict() {
+    let mut d = Value::dict();
+    d.set(&Value::from("method"), Value::from("get")).unwrap();
+    d.set(&Value::from("host"), Value::from("localhost"))
+        .unwrap();
+    let mut d_iter = d.iter().unwrap();
+
+    assert!(d_iter.has_next());
+    let item = d_iter.next().unwrap();
+    assert_eq!(Value::from("method"), item.get(&0.into()).unwrap());
+    assert_eq!(Value::from("get"), item.get(&1.into()).unwrap());
+
+    assert!(d_iter.has_next());
+    let item = d_iter.next().unwrap();
+    assert_eq!(Value::from("host"), item.get(&0.into()).unwrap());
+    assert_eq!(Value::from("localhost"), item.get(&1.into()).unwrap());
+
+    assert!(!d_iter.has_next());
+}
+
+#[test]
+fn test_iterator_string() {
+    let mut s_iter = Value::from("abcd").iter().unwrap();
+
+    for c in "abcd".chars().map(String::from).map(Value::from) {
+        assert!(s_iter.has_next());
+        let item = s_iter.next().unwrap();
+        assert_eq!(c, item);
+    }
+
+    assert!(!s_iter.has_next());
 }

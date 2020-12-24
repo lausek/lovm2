@@ -119,8 +119,9 @@ impl Access {
     }
 }
 
-impl <T> From<T> for Access
-    where T: std::borrow::Borrow<Variable>
+impl<T> From<T> for Access
+where
+    T: std::borrow::Borrow<Variable>,
 {
     fn from(target: T) -> Self {
         Self {

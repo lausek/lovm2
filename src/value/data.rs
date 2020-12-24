@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::rc::Rc;
 
 use super::*;
@@ -16,7 +16,7 @@ pub type ValueRef = Reference;
 pub fn box_value(value: Value) -> Value {
     let outer = match value {
         Value::Dict(d) => {
-            let mut hm = HashMap::new();
+            let mut hm = IndexMap::new();
             for (key, val) in d.into_iter() {
                 if val.is_ref() {
                     hm.insert(key, val);
@@ -44,7 +44,8 @@ pub enum Value {
     Int(i64),
     Float(f64),
     Str(String),
-    Dict(HashMap<Value, Value>),
+    #[serde(with = "indexmap::serde_seq")]
+    Dict(IndexMap<Value, Value>),
     List(Vec<Value>),
     Ref(Reference),
     #[serde(skip_serializing)]
@@ -67,8 +68,21 @@ impl Value {
         }
     }
 
+    pub fn deref_total(&mut self) -> Lovm2Result<()> {
+        while let Value::Ref(r) = self {
+            *self = r
+                .unref()
+                .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
+        }
+        Ok(())
+    }
+
     pub fn is_ref(&self) -> bool {
         matches!(self, Value::Ref(_))
+    }
+
+    pub fn iter(&self) -> Lovm2Result<iter::Iter> {
+        iter::Iter::try_from(self.clone())
     }
 
     pub fn delete(&mut self, key: &Value) -> Lovm2Result<()> {
@@ -88,7 +102,7 @@ impl Value {
 
     pub fn get(&self, key: &Value) -> Lovm2Result<Value> {
         match self {
-            Value::Dict(dict) => match dict.get(&key) {
+            Value::Dict(dict) => match dict.get(key) {
                 Some(val) => Ok(val.clone()),
                 None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
             },
@@ -104,6 +118,26 @@ impl Value {
             }
             Value::Ref(r) => r.borrow()?.get(key),
             _ => Err((Lovm2ErrorTy::OperationNotSupported, "get").into()),
+        }
+    }
+
+    pub fn get_by_index(&self, idx: usize) -> Lovm2Result<Value> {
+        match self {
+            Value::Str(s) => s
+                .chars()
+                .nth(idx)
+                .map(Value::from)
+                .ok_or_else(|| "string index out of bounds".into()),
+            Value::Dict(dict) => dict
+                .get_index(idx)
+                .map(|(key, val)| box_value(Value::List(vec![key.clone(), val.clone()])))
+                .ok_or_else(|| (Lovm2ErrorTy::KeyNotFound, idx.to_string()).into()),
+            Value::List(list) => list
+                .get(idx)
+                .cloned()
+                .ok_or_else(|| (Lovm2ErrorTy::KeyNotFound, idx.to_string()).into()),
+            Value::Ref(r) => r.borrow()?.get_by_index(idx),
+            _ => Err((Lovm2ErrorTy::OperationNotSupported, "get_by_index").into()),
         }
     }
 
@@ -144,7 +178,7 @@ impl Value {
 
 impl Value {
     pub fn dict() -> Self {
-        Self::Dict(HashMap::new())
+        Self::Dict(IndexMap::new())
     }
 
     pub fn list() -> Self {
@@ -209,6 +243,12 @@ impl std::fmt::Display for Value {
 impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Bool(b)
+    }
+}
+
+impl From<char> for Value {
+    fn from(c: char) -> Self {
+        Value::Str(c.to_string())
     }
 }
 

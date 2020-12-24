@@ -6,7 +6,7 @@ use super::*;
 pub enum RepeatKind {
     Until(Expr),
     Endless,
-    Iterating(Expr, Access),
+    Iterating(Access, Variable),
 }
 
 /// Runs a [Block] forever or until a condition is met
@@ -31,13 +31,14 @@ impl Repeat {
         }
     }
 
-    pub fn iterating<U, T>(base: U, item: T) -> Self
-        where U: Into<Expr>,
-              T: Into<Access>
+    pub fn iterating<U, T>(iterator: U, item: T) -> Self
+    where
+        U: Into<Access>,
+        T: Into<Variable>,
     {
         Self {
             block: Block::new(),
-            condition: RepeatKind::Iterating(base.into(), item.into()),
+            condition: RepeatKind::Iterating(iterator.into(), item.into()),
         }
     }
 }
@@ -68,7 +69,14 @@ impl HirLowering for Repeat {
                 runtime.emit(LirElement::jump_conditional(true, repeat_end.clone()));
             }
             RepeatKind::Endless => {}
-            RepeatKind::Iterating(base, item) => { }
+            RepeatKind::Iterating(iterator, item) => {
+                Iter::has_next(iterator.clone()).lower(runtime);
+
+                // break loop if iterator does not have another item
+                runtime.emit(LirElement::jump_conditional(false, repeat_end.clone()));
+
+                Assign::local(&item, Iter::next(iterator)).lower(runtime);
+            }
         }
 
         self.block.lower(runtime);

@@ -19,7 +19,11 @@ pub use self::context::Context;
 pub use self::frame::Frame;
 
 pub const LOVM2_RESERVED_INTERRUPTS: u16 = 63;
-pub const LOVM2_DEBUG_INTERRUPT: u16 = 10;
+pub const LOVM2_INT_DEBUG: u16 = 10;
+pub const LOVM2_INT_ITER_CREATE: u16 = 12;
+pub const LOVM2_INT_ITER_HAS_NEXT: u16 = 13;
+pub const LOVM2_INT_ITER_NEXT: u16 = 14;
+pub const LOVM2_INT_ITER_REVERSE: u16 = 15;
 
 /// Virtual machine for executing [modules](crate::module::Module)
 ///
@@ -64,8 +68,10 @@ pub fn get_lovm2_user_dir() -> String {
 
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
-        let second = $vm.ctx.pop_value()?;
+        let mut second = $vm.ctx.pop_value()?;
+        second.deref_total()?;
         let first = $vm.ctx.last_value_mut()?;
+        first.deref_total()?;
         first.$fn(second)?;
     }};
 }
@@ -97,7 +103,7 @@ pub struct Vm {
 impl Vm {
     /// Create a new instance
     pub fn new() -> Self {
-        Self {
+        let mut vm = Self {
             ctx: Context::new(),
             modules: HashMap::new(),
 
@@ -105,7 +111,9 @@ impl Vm {
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![get_lovm2_user_dir()],
-        }
+        };
+        crate::value::register_iter_interrupts(&mut vm.interrupts);
+        vm
     }
 
     /// Create a new instance with standard functions already imported
@@ -326,7 +334,7 @@ impl Vm {
                     let mut val = self.ctx.pop_value()?;
                     let target = self.ctx.pop_value()?;
 
-                    deref_total(&mut val)?;
+                    val.deref_total()?;
 
                     match target {
                         Value::Ref(r) => *r.borrow_mut()? = val,
@@ -452,21 +460,12 @@ impl Vm {
     where
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
     {
-        if n != LOVM2_DEBUG_INTERRUPT && n <= LOVM2_RESERVED_INTERRUPTS {
+        if n != LOVM2_INT_DEBUG && n <= LOVM2_RESERVED_INTERRUPTS {
             return Err("reserved interrupt".into());
         }
         self.interrupts[n as usize] = Some(Rc::new(func));
         Ok(())
     }
-}
-
-fn deref_total(val: &mut Value) -> Lovm2Result<()> {
-    while let Value::Ref(r) = val {
-        *val = r
-            .unref()
-            .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
-    }
-    Ok(())
 }
 
 fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {

@@ -50,11 +50,12 @@ impl Block {
         }
     }
 
-    pub fn repeat_iterating<U, T>(&mut self, base: U, item: T) -> &mut Repeat
-        where U: Into<Expr>,
-              T: Into<Access>
+    pub fn repeat_iterating<U, T>(&mut self, iterator: U, item: T) -> &mut Repeat
+    where
+        U: Into<Access>,
+        T: Into<Variable>,
     {
-        self.step(Repeat::iterating(base, item));
+        self.step(Repeat::iterating(iterator, item));
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
