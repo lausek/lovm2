@@ -11,6 +11,7 @@ path = "src/lib.rs"
 [dependencies]
 lovm2_std_buffer = { path = "./lovm2_std_buffer" }
 lovm2_std_collection = { path = "./lovm2_std_collection" }
+lovm2_std_data = { path = "./lovm2_std_data" }
 lovm2_std_json = { path = "./lovm2_std_json" }
 lovm2_std_fs = { path = "./lovm2_std_fs" }
 lovm2_std_functional = { path = "./lovm2_std_functional" }
@@ -23,9 +24,11 @@ lovm2_std_string = { path = "./lovm2_std_string" }
 #members = [
 #    "lovm2_std_buffer",
 #    "lovm2_std_collection",
-#    "lovm2_std_json",
+#    "lovm2_std_data",
 #    "lovm2_std_fs",
 #    "lovm2_std_functional",
+#    "lovm2_std_json",
+#    "lovm2_std_fs",
 #    "lovm2_std_math",
 #    "lovm2_std_net",
 #    "lovm2_std_regex",

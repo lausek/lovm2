@@ -1,5 +1,6 @@
 pub use lovm2_std_buffer;
 pub use lovm2_std_collection;
+pub use lovm2_std_data;
 pub use lovm2_std_fs;
 pub use lovm2_std_json;
 pub use lovm2_std_math;
@@ -9,6 +10,7 @@ pub use lovm2_std_string;
 
 pub use lovm2_std_buffer::*;
 pub use lovm2_std_collection::*;
+pub use lovm2_std_data::*;
 pub use lovm2_std_fs::*;
 pub use lovm2_std_json::*;
 pub use lovm2_std_math::*;

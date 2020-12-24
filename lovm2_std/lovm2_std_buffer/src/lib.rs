@@ -1,10 +1,5 @@
 use lovm2_extend::prelude::*;
 
-#[lovm2_object]
-pub struct Buffer {
-    inner: Vec<u8>,
-}
-
 /*
 #[lovm2_function]
 fn read(buffer: &mut Buffer, n: i64) -> Lovm2Result<String> {

@@ -1,27 +1,7 @@
 use lovm2_extend::prelude::*;
-use lovm2_std_buffer::Buffer;
+use lovm2_std_data::{Buffer, Response, Request};
 
 use std::collections::HashMap;
-
-enum Method {
-    POST,
-    GET,
-    DELETE,
-    PUT,
-}
-
-#[lovm2_object]
-pub struct Request {
-    url: Option<String>,
-    headers: HashMap<String, String>,
-    method: Method,
-}
-
-#[lovm2_object]
-pub struct Response {
-    status: i64,
-    body: Vec<u8>,
-}
 
 #[lovm2_function]
 fn new_request() -> Request { todo!() }

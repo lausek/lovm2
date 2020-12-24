@@ -1,10 +1,6 @@
 use lovm2::prelude::*;
 use lovm2_extend::prelude::*;
-
-#[lovm2_object]
-pub struct File {
-    inner: std::fs::File,
-}
+use lovm2_std_data::File;
 
 #[lovm2_function]
 fn create_file(path: String) -> Lovm2Result<File> {

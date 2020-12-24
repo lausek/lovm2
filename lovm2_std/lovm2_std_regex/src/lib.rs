@@ -1,11 +1,7 @@
 use lovm2::prelude::*;
 use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
-
-#[lovm2_object]
-pub struct Regex {
-    inner: regex::Regex,
-}
+use lovm2_std_data::Regex;
 
 #[lovm2_function]
 fn new_regex(pat: String) -> Lovm2Result<Regex> {
