@@ -557,3 +557,23 @@ fn create_slice() {
         })
     }
 }
+
+#[test]
+fn iterating_repeat() {
+    fn check(ctx: &mut Context) {
+        assert!(false);
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i) = &lv2_var!(sum, i);
+
+    let main_hir = builder.entry();
+    
+    main_hir.step(Assign::global(sum, 0));
+    main_hir
+        .repeat_iterating(lv2_list!(1, 2, 3, 4), i)
+        .step(Assign::global(sum, Expr::add(sum, i)));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+}

@@ -108,4 +108,12 @@ pub trait HasBlock {
     fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
         self.block_mut().repeat_until(condition)
     }
+
+    #[inline]
+    fn repeat_iterating<U, T>(&mut self, base: U, item: T) -> &mut Repeat
+        where U: Into<Expr>,
+              T: Into<Access>
+    {
+        self.block_mut().repeat_iterating(base, item)
+    }
 }
