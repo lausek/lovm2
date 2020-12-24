@@ -53,6 +53,7 @@ pub enum Operator2 {
     Rem,
     And,
     Or,
+    XOr,
 
     Equal,
     NotEqual,
@@ -88,6 +89,7 @@ impl Expr {
             Operator2::Rem => Self::rem(left, right),
             Operator2::And => Self::and(left, right),
             Operator2::Or => Self::or(left, right),
+            Operator2::XOr => Self::xor(left, right),
 
             Operator2::Equal => Self::eq(left, right),
             Operator2::NotEqual => Self::ne(left, right),
@@ -168,6 +170,7 @@ impl Expr {
     auto_implement!(2, Rem, rem);
     auto_implement!(2, And, and);
     auto_implement!(2, Or, or);
+    auto_implement!(2, XOr, xor);
 
     auto_implement!(2, Equal, eq);
     auto_implement!(2, NotEqual, ne);

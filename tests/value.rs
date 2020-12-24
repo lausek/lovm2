@@ -119,3 +119,34 @@ fn reference_equality() {
     assert!(item_a == item_b);
     assert!(a2 != b2);
 }
+
+#[test]
+fn xor_operation() {
+    assert_eq!(Value::Int(0), (Value::from(0) ^ Value::from(0)).unwrap());
+    assert_eq!(Value::Int(1), (Value::from(0) ^ Value::from(1)).unwrap());
+    assert_eq!(Value::Int(1), (Value::from(1) ^ Value::from(0)).unwrap());
+    assert_eq!(Value::Int(0), (Value::from(1) ^ Value::from(1)).unwrap());
+
+    assert_eq!(
+        Value::Bool(false),
+        (Value::from(false) ^ Value::from(false)).unwrap()
+    );
+    assert_eq!(
+        Value::Bool(true),
+        (Value::from(false) ^ Value::from(true)).unwrap()
+    );
+    assert_eq!(
+        Value::Bool(true),
+        (Value::from(true) ^ Value::from(false)).unwrap()
+    );
+    assert_eq!(
+        Value::Bool(false),
+        (Value::from(true) ^ Value::from(true)).unwrap()
+    );
+
+    let mut a = Value::Int(1);
+    let b = a.clone();
+
+    a.xor_inplace(b).unwrap();
+    assert_eq!(Value::Int(0), a);
+}

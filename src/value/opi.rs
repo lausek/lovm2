@@ -90,6 +90,15 @@ impl Value {
         Ok(())
     }
 
+    pub fn xor_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+        match (self, other) {
+            (Bool(a), Bool(b)) => *a ^= b,
+            (Int(a), Int(b)) => *a ^= b,
+            _ => not_supported()?,
+        }
+        Ok(())
+    }
+
     pub fn not_inplace(&mut self) -> Lovm2Result<()> {
         match self {
             Bool(ref mut a) => *a = !*a,

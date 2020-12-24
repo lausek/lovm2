@@ -145,6 +145,7 @@ impl LirLoweringRuntime {
                         Operator2::Rem => Instruction::Rem,
                         Operator2::And => Instruction::And,
                         Operator2::Or => Instruction::Or,
+                        Operator2::XOr => Instruction::XOr,
                         Operator2::Equal => Instruction::Eq,
                         Operator2::NotEqual => Instruction::Ne,
                         Operator2::GreaterEqual => Instruction::Ge,

@@ -42,6 +42,8 @@ pub enum Instruction {
     And,
     /// logical or for `Bool`, bitwise or for `Int`
     Or,
+    /// logical xor for `Bool`, bitwise xor for `Int`
+    XOr,
     /// logical not for `Bool`, bitwise not for `Int`
     Not,
 

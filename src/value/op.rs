@@ -110,6 +110,18 @@ impl std::ops::BitOr for Value {
     }
 }
 
+impl std::ops::BitXor for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn bitxor(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Bool(a), Bool(b)) => Ok(Bool(a ^ b)),
+            (Int(a), Int(b)) => Ok(Int(a ^ b)),
+            _ => not_supported(),
+        }
+    }
+}
+
 impl std::ops::Not for Value {
     type Output = Lovm2Result<Value>;
 

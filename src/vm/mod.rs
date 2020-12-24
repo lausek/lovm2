@@ -341,6 +341,7 @@ impl Vm {
                 Instruction::Rem => value_operation!(self, rem_inplace),
                 Instruction::And => value_operation!(self, and_inplace),
                 Instruction::Or => value_operation!(self, or_inplace),
+                Instruction::XOr => value_operation!(self, xor_inplace),
                 Instruction::Not => {
                     let first = self.ctx.pop_value()?;
                     self.ctx.push_value(first.not()?);
