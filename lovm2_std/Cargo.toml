@@ -20,17 +20,17 @@ lovm2_std_net = { path = "./lovm2_std_net" }
 lovm2_std_regex = { path = "./lovm2_std_regex" }
 lovm2_std_string = { path = "./lovm2_std_string" }
 
-[workspace]
-members = [
-    "lovm2_std_buffer",
-    "lovm2_std_collection",
-    "lovm2_std_data",
-    "lovm2_std_fs",
-    "lovm2_std_functional",
-    "lovm2_std_json",
-    "lovm2_std_fs",
-    "lovm2_std_math",
-    "lovm2_std_net",
-    "lovm2_std_regex",
-    "lovm2_std_string",
-]
+#[workspace]
+#members = [
+#    "lovm2_std_buffer",
+#    "lovm2_std_collection",
+#    "lovm2_std_data",
+#    "lovm2_std_fs",
+#    "lovm2_std_functional",
+#    "lovm2_std_json",
+#    "lovm2_std_fs",
+#    "lovm2_std_math",
+#    "lovm2_std_net",
+#    "lovm2_std_regex",
+#    "lovm2_std_string",
+#]
