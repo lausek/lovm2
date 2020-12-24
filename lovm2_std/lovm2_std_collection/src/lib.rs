@@ -75,8 +75,10 @@ fn deep_clone(val: Value) -> Value {
 }
 
 #[lovm2_function]
-fn delete(collection: Value, key: Value) -> Lovm2Result<bool> {
-    todo!()
+fn delete(mut collection: Value, key: Value) -> Lovm2Result<bool> {
+    collection
+        .delete(&key)
+        .map(|_| true)
 }
 
 #[lovm2_function]
@@ -86,7 +88,7 @@ fn filter(collection: Value, func_name: String) -> Lovm2Result<Value> {
 
 #[lovm2_function]
 fn get(collection: Value, key: Value) -> Lovm2Result<Value> {
-    todo!()
+    collection.get(&key)
 }
 
 #[lovm2_function]
@@ -95,8 +97,10 @@ fn map(collection: Value, func_name: String) -> Lovm2Result<Value> {
 }
 
 #[lovm2_function]
-fn insert(collection: Value, key: Value, val: Value) -> bool {
-    todo!()
+fn insert(mut collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
+    collection
+        .set(&key, val)
+        .map(|_| true)
 }
 
 #[lovm2_function]

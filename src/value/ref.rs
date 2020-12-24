@@ -90,9 +90,9 @@ impl std::cmp::PartialEq<Value> for Reference {
 impl std::fmt::Display for Reference {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         if let Some(r) = &self.0 {
-            write!(f, "Ref({})", r.borrow())
+            write!(f, "{}", r.borrow())
         } else {
-            write!(f, "Ref(None)")
+            write!(f, "None")
         }
     }
 }

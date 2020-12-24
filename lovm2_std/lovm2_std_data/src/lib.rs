@@ -18,6 +18,7 @@ pub struct Regex {
     pub inner: regex::Regex,
 }
 
+#[doc(hidden)]
 pub enum Method {
     POST,
     GET,
