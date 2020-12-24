@@ -5,6 +5,7 @@ _site
 vendor
 bench/**
 lovm2_extend/**
+lovm2_std/**
 pylovm2/**
 src/**
 target/**
