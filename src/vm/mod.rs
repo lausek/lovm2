@@ -56,7 +56,10 @@ pub struct LoadRequest {
 }
 
 pub fn get_lovm2_user_dir() -> String {
-    format!("{}/.local/lib/lovm2/", dirs::home_dir().unwrap().to_str().unwrap())
+    format!(
+        "{}/.local/lib/lovm2/",
+        dirs::home_dir().unwrap().to_str().unwrap()
+    )
 }
 
 macro_rules! value_operation {
@@ -448,7 +451,7 @@ impl Vm {
     where
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
     {
-        if n != LOVM2_DEBUG_INTERRUPT && LOVM2_RESERVED_INTERRUPTS < n {
+        if n != LOVM2_DEBUG_INTERRUPT && n <= LOVM2_RESERVED_INTERRUPTS {
             return Err("reserved interrupt".into());
         }
         self.interrupts[n as usize] = Some(Rc::new(func));

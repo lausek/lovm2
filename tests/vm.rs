@@ -192,3 +192,13 @@ fn namespaced_imports() {
     assert!(vm.call("b.inb", &[]).is_ok());
     assert!(vm.call("inb", &[]).is_ok());
 }
+
+#[test]
+fn setting_interrupts() {
+    let mut vm = Vm::new();
+
+    assert!(vm.set_interrupt(1, |_| { unreachable!() }).is_err());
+    assert!(vm.set_interrupt(10, |_| { unreachable!() }).is_ok());
+    assert!(vm.set_interrupt(11, |_| { unreachable!() }).is_err());
+    assert!(vm.set_interrupt(64, |_| { unreachable!() }).is_ok());
+}

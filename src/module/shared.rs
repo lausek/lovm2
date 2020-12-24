@@ -33,10 +33,10 @@ fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
         let lib = Rc::new(lib);
 
         // try to lookup named initializer first, fallback to initializer without name
-        let lookup: Result<Symbol<ExternInitializer>, Error> = lib
-            .get(EXTERN_LOVM2_INITIALIZER.as_bytes());
-            //.get(named_initializer.as_bytes());
-            //.or_else(|_| lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes()));
+        let lookup: Result<Symbol<ExternInitializer>, Error> =
+            lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
+        //.get(named_initializer.as_bytes());
+        //.or_else(|_| lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes()));
 
         match lookup {
             Ok(initializer) => {
