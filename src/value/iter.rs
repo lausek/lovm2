@@ -54,8 +54,18 @@ macro_rules! get_iter {
 
 fn int_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
     let from = vm.context_mut().pop_value()?;
-    let it = from.iter()?;
-    vm.context_mut().push_value(Value::create_any(it));
+
+    if from
+        .as_any_inner()
+        .map(|any| any.borrow().0.downcast_ref::<Iter>().is_some())
+        .unwrap_or(false)
+    {
+        vm.context_mut().push_value(from);
+    } else {
+        let it = from.iter()?;
+        vm.context_mut().push_value(Value::create_any(it));
+    }
+
     Ok(())
 }
 

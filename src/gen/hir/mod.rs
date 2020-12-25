@@ -112,11 +112,11 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn repeat_iterating<U, T>(&mut self, iterator: U, item: T) -> &mut Repeat
+    fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut Repeat
     where
-        U: Into<Access>,
+        U: Into<Expr>,
         T: Into<Variable>,
     {
-        self.block_mut().repeat_iterating(iterator, item)
+        self.block_mut().repeat_iterating(collection, item)
     }
 }

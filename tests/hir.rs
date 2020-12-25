@@ -562,6 +562,7 @@ fn create_slice() {
 fn iterating_repeat() {
     fn check(ctx: &mut Context) {
         assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
     }
 
     let mut builder = ModuleBuilder::new();
@@ -573,6 +574,27 @@ fn iterating_repeat() {
     main_hir
         .step(Assign::local(iter, Iter::create(lv2_list!(1, 2, 3, 4))))
         .repeat_iterating(iter, i)
+        .step(Assign::global(sum, Expr::add(sum, i)));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+}
+
+#[test]
+fn iterating_repeat_inplace() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i) = &lv2_var!(sum, i);
+
+    let main_hir = builder.entry();
+
+    main_hir.step(Assign::global(sum, 0));
+    main_hir
+        .repeat_iterating(Iter::create(lv2_list!(1, 2, 3, 4)), i)
         .step(Assign::global(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
