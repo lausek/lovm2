@@ -461,7 +461,7 @@ impl Vm {
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
     {
         if n != LOVM2_INT_DEBUG && n <= LOVM2_RESERVED_INTERRUPTS {
-            return Err("reserved interrupt".into());
+            return err_reserved_interrupt(n);
         }
         self.interrupts[n as usize] = Some(Rc::new(func));
         Ok(())

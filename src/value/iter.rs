@@ -57,7 +57,7 @@ fn int_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
 
     if from
         .as_any_inner()
-        .map(|any| any.borrow().0.downcast_ref::<Iter>().is_some())
+        .map(|any| any.borrow().0.is::<Iter>())
         .unwrap_or(false)
     {
         vm.context_mut().push_value(from);

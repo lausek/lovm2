@@ -1,5 +1,9 @@
+mod compile;
+mod methods;
 mod ty;
 
+pub use crate::compile::Lovm2CompileError;
+pub use crate::methods::*;
 pub use crate::ty::Lovm2ErrorTy;
 
 pub type Lovm2Result<T> = Result<T, Lovm2Error>;
@@ -17,6 +21,15 @@ impl From<Lovm2ErrorTy> for Lovm2Error {
     fn from(ty: Lovm2ErrorTy) -> Self {
         Self {
             ty,
+            ..Self::default()
+        }
+    }
+}
+
+impl From<std::io::Error> for Lovm2Error {
+    fn from(e: std::io::Error) -> Self {
+        Self {
+            ty: Lovm2ErrorTy::Custom(format!("{}", e)),
             ..Self::default()
         }
     }
@@ -44,10 +57,23 @@ impl From<(String, String)> for Lovm2Error {
     }
 }
 
-impl From<String> for Lovm2Error {
-    fn from(f: String) -> Self {
+/*
+impl <T> From<T> for Lovm2Error
+where T: std::fmt::Display
+{
+    fn from(val: T) -> Self {
         Self {
-            msg: f,
+            msg: format!("{}", val),
+            ..Self::default()
+        }
+    }
+}
+*/
+
+impl From<String> for Lovm2Error {
+    fn from(msg: String) -> Self {
+        Self {
+            msg,
             ..Self::default()
         }
     }
@@ -76,32 +102,6 @@ impl Default for Lovm2Error {
             ty: Lovm2ErrorTy::Basic,
             msg: String::new(),
             trace: backtrace::Backtrace::new(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum Lovm2CompileError {
-    Msg(Option<String>, String),
-}
-
-impl From<String> for Lovm2CompileError {
-    fn from(f: String) -> Self {
-        Self::Msg(None, f)
-    }
-}
-
-impl From<&str> for Lovm2CompileError {
-    fn from(f: &str) -> Self {
-        Self::Msg(None, f.to_string())
-    }
-}
-
-impl std::fmt::Display for Lovm2CompileError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Msg(Some(ty), msg) => write!(f, "{}: {}", ty, msg),
-            Self::Msg(None, msg) => write!(f, "{}", msg),
         }
     }
 }

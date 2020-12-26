@@ -15,8 +15,3 @@ pub use self::data::{box_value, AnyRef, Value, ValueRef};
 pub use self::r#ref::Reference;
 
 pub(crate) use self::iter::register_iter_interrupts;
-
-#[inline]
-fn not_supported<T>() -> lovm2_error::Lovm2Result<T> {
-    Err(lovm2_error::Lovm2ErrorTy::OperationNotSupported.into())
-}

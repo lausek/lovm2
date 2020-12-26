@@ -1,3 +1,4 @@
+use lovm2::prelude::*;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
@@ -15,7 +16,7 @@ fn all(mut collection: Value) -> Lovm2Result<bool> {
             }
             Ok(true)
         }
-        _ => Err(Lovm2ErrorTy::OperationNotSupported.into()),
+        _ => err_not_supported(),
     }
 }
 
@@ -34,7 +35,7 @@ fn any(mut collection: Value) -> Lovm2Result<bool> {
             }
             Ok(false)
         }
-        _ => Err(Lovm2ErrorTy::OperationNotSupported.into()),
+        _ => err_not_supported(),
     }
 }
 
@@ -60,7 +61,7 @@ fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
             let needle = needle.as_str_inner()?;
             Ok(s.contains(&needle))
         }
-        _ => Err(Lovm2ErrorTy::OperationNotSupported.into()),
+        _ => err_not_supported(),
     }
 }
 

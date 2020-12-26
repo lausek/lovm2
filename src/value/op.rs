@@ -18,7 +18,7 @@ impl std::ops::Add for Value {
 
             // switching positions is okay, because add is commutative
             (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => Ok(Float(a + b.as_float_inner()?)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -34,7 +34,7 @@ impl std::ops::Sub for Value {
             // sub is not commutative
             (Float(a), b @ Int(_)) => Ok(Float(a - b.as_float_inner()?)),
             (b @ Int(_), Float(a)) => Ok(Float(b.as_float_inner()? - a)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -49,7 +49,7 @@ impl std::ops::Mul for Value {
 
             // switching positions is okay, because mul is commutative
             (Float(a), b @ Int(_)) | (b @ Int(_), Float(a)) => Ok(Float(a * b.as_float_inner()?)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -65,7 +65,7 @@ impl std::ops::Div for Value {
             // div is not commutative
             (Float(a), b @ Int(_)) => Ok(Float(a / b.as_float_inner()?)),
             (b @ Int(_), Float(a)) => Ok(Float(b.as_float_inner()? / a)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -81,7 +81,7 @@ impl std::ops::Rem for Value {
             // rem is not commutative
             (Float(a), b @ Int(_)) => Ok(Float(a % b.as_float_inner()?)),
             (b @ Int(_), Float(a)) => Ok(Float(b.as_float_inner()? % a)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -93,7 +93,7 @@ impl std::ops::BitAnd for Value {
         match (self, other) {
             (Bool(a), Bool(b)) => Ok(Bool(a && b)),
             (Int(a), Int(b)) => Ok(Int(a & b)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -105,7 +105,7 @@ impl std::ops::BitOr for Value {
         match (self, other) {
             (Bool(a), Bool(b)) => Ok(Bool(a || b)),
             (Int(a), Int(b)) => Ok(Int(a | b)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -117,7 +117,7 @@ impl std::ops::BitXor for Value {
         match (self, other) {
             (Bool(a), Bool(b)) => Ok(Bool(a ^ b)),
             (Int(a), Int(b)) => Ok(Int(a ^ b)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -129,7 +129,7 @@ impl std::ops::Not for Value {
         match self {
             Bool(a) => Ok(Bool(!a)),
             Int(a) => Ok(Int(!a)),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
@@ -140,7 +140,7 @@ impl Value {
         match self {
             Int(base) => Ok(Int(base.pow(exp as u32))),
             Float(base) => Ok(Float(base.powi(exp as i32))),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 }
