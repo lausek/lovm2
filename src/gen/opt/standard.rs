@@ -64,6 +64,13 @@ impl Optimizer for StandardOptimizer {
                     }
                 }
 
+                // if an iterator creation was requested but the instruction before
+                // already covers it, remove the last create
+                [LirElement::IterCreateRanged, LirElement::IterCreate]
+                | [LirElement::IterCreate, LirElement::IterCreate] => {
+                    code.pop();
+                }
+
                 /*
                 // a jump should not target the next instruction
                 [LirElement::Jump {
@@ -72,6 +79,7 @@ impl Optimizer for StandardOptimizer {
                 }, LirElement::Label(tlabel)] if jlabel == tlabel => {
                 }
                 */
+
                 // if two constants were pushed before an operation, remove all three instructions
                 // and push the computed value instead
                 [LirElement::PushConstant { value: left }, LirElement::PushConstant { value: right }, LirElement::Operation(Operator::Operator2(op))] =>
@@ -110,6 +118,7 @@ impl Optimizer for StandardOptimizer {
         match lir_element {
             LirElement::Jump { .. } => 2,
             LirElement::Operation(Operator::Operator2(_)) => 3,
+            LirElement::IterCreate => 2,
             //LirElement::Label(_) => 2,
             _ => 0,
         }

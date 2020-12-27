@@ -116,8 +116,8 @@ pub(crate) fn vm_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
 }
 
 pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> Lovm2Result<()> {
-    let from = vm.context_mut().pop_value()?;
     let to = vm.context_mut().pop_value()?;
+    let from = vm.context_mut().pop_value()?;
 
     let it = match (from, to) {
         (Value::Nil, Value::Nil) => unimplemented!(),
