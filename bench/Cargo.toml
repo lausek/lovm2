@@ -11,6 +11,6 @@ harness = false
 
 [dev-dependencies]
 criterion = "0.3.3"
-lol = { git = "https://github.com/lausek/lol" }
+lol = { git = "https://github.com/lausek/lol", branch = "v0.4.8" }
 #lovm2 = { path = "./lovm2" }
 lovm2 = { path = "../" }

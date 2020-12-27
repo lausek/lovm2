@@ -24,3 +24,8 @@ where T: ToString
         ..Lovm2Error::default()
     })
 }
+
+#[inline]
+pub fn err_iterator_exhausted<T>() -> Lovm2Result<T> {
+    err_from_string(format!("iterator exhausted"))
+}

@@ -202,16 +202,46 @@ fn test_iterator_string() {
 #[test]
 fn test_iterator_ranged() {
     use lovm2::value::Iter;
+    use std::convert::TryFrom;
 
     let expected: Vec<Value> = (0..10).map(Value::from).collect();
-
     let r_iter = Iter::ranged(0, 10);
     let r_to_iter = Iter::ranged_to(10);
-
     assert_eq!(expected, r_iter.collect());
     assert_eq!(expected, r_to_iter.collect());
 
     let mut r_from_iter = Iter::ranged_from(5);
-
     assert_eq!(Value::from(5), r_from_iter.next().unwrap());
+
+    let expected: Vec<Value> = (0..10).rev().map(Value::from).collect();
+    assert_eq!(expected, Iter::ranged(0, 10).reverse().collect());
+    assert_eq!(expected, Iter::ranged(10, 0).collect());
+    assert_eq!(expected, Iter::ranged(10, 0).reverse().reverse().collect());
+
+    let expected: Vec<Value> = (-5..5).rev().map(Value::from).collect();
+    assert_eq!(expected, Iter::ranged(-5, 5).reverse().collect());
+
+    let base: Vec<Value> = vec![
+        Value::from(true),
+        Value::from(10),
+        Value::from("abc"),
+        Value::from(1.5),
+    ];
+    let rev_expected: Vec<Value> = base.clone().into_iter().rev().collect();
+    let lv2_base = box_value(Value::List(base.clone()));
+    assert_eq!(
+        rev_expected,
+        Iter::try_from(lv2_base.clone())
+            .unwrap()
+            .reverse()
+            .collect()
+    );
+    assert_eq!(
+        base,
+        Iter::try_from(lv2_base)
+            .unwrap()
+            .reverse()
+            .reverse()
+            .collect()
+    );
 }

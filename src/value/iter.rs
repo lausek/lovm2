@@ -4,46 +4,55 @@ use crate::vm::Vm;
 
 use super::*;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 enum IterType {
-    Limit(usize),
+    Limit(i64),
     Open,
     Over(Value),
 }
 
 #[derive(Clone, Debug)]
 pub struct Iter {
-    current: usize,
+    current: i64,
+    reversed: bool,
     ty: IterType,
 }
 
 impl Iter {
     pub fn ranged(from: i64, to: i64) -> Self {
-        Self {
-            current: from as usize,
-            ty: IterType::Limit(to as usize),
+        if to < from {
+            Iter::ranged(to, from).reverse()
+        } else {
+            Self {
+                current: from,
+                ty: IterType::Limit(to),
+                ..Self::default()
+            }
         }
     }
 
     pub fn ranged_from(from: i64) -> Self {
         Self {
-            current: from as usize,
-            ty: IterType::Open,
+            current: from,
+            ..Self::default()
         }
     }
 
     pub fn ranged_to(to: i64) -> Self {
         Self {
-            current: 0,
-            ty: IterType::Limit(to as usize),
+            ty: IterType::Limit(to),
+            ..Self::default()
         }
     }
 
     pub fn has_next(&self) -> bool {
         match &self.ty {
-            IterType::Limit(limit) => self.current < *limit,
+            // exclusive range. see `reverse()`
+            IterType::Limit(limit) if !self.reversed => self.current < *limit,
+            // inclusive range. see `reverse()`
+            IterType::Limit(limit) => self.current >= *limit,
             IterType::Open => true,
-            IterType::Over(val) => val.get_by_index(self.current).is_ok(),
+            IterType::Over(val) => val.get_by_index(self.current as usize).is_ok(),
         }
     }
 
@@ -51,18 +60,66 @@ impl Iter {
         let idx = self.current;
 
         let val = match &self.ty {
-            IterType::Limit(_) if self.has_next() => (idx as i64).into(),
-            IterType::Open => (idx as i64).into(),
-            IterType::Over(val) => val.get_by_index(idx)?,
-            _ => Err(Lovm2Error::from("iterator exhausted"))?,
+            IterType::Limit(_) if self.has_next() => idx.into(),
+            IterType::Open => idx.into(),
+            IterType::Over(val) => val.get_by_index(idx as usize)?,
+            _ => err_iterator_exhausted()?,
         };
 
-        self.current += 1;
+        if !self.reversed {
+            self.current += 1;
+        } else {
+            self.current -= 1;
+        }
+
         Ok(val)
     }
 
-    pub fn reverse(&mut self) {
-        todo!()
+    // by default `!reversed (default) => exclusive range`.
+    //     example: 0..5 -> [0, 1, 2, 3, 4]
+    //     reversing requirements: 0 < limit
+    //     mapping rules (new <- old): current <- limit - 1, limit <- current
+    //
+    // otherwise `reversed => inclusive range`. example:
+    //     4..=0 -> [4, 3, 2, 1, 0]
+    //     mapping rules (new <- old): current <- limit, limit <- current + 1
+    pub fn reverse(self) -> Self {
+        let reversed = !self.reversed;
+
+        let it = match &self.ty {
+            IterType::Limit(limit) if !self.reversed => Self {
+                current: *limit - 1,
+                ty: IterType::Limit(self.current),
+                reversed,
+            },
+            IterType::Limit(limit) => Self {
+                current: *limit,
+                ty: IterType::Limit(self.current + 1),
+                reversed,
+            },
+            IterType::Open => Self {
+                current: self.current,
+                ty: self.ty,
+                reversed,
+            },
+            IterType::Over(val) => {
+                let len = val.len().unwrap() as i64;
+                let current = if self.current == 0 {
+                    len - 1
+                } else if self.current == len - 1 {
+                    0
+                } else {
+                    panic!("iterator was moved")
+                };
+                Self {
+                    current,
+                    ty: self.ty,
+                    reversed,
+                }
+            }
+        };
+
+        it
     }
 
     pub fn collect(mut self) -> Vec<Value> {
@@ -81,9 +138,19 @@ impl TryFrom<Value> for Iter {
     fn try_from(value: Value) -> Result<Self, Self::Error> {
         let _ = value.len()?;
         Ok(Self {
-            current: 0,
             ty: IterType::Over(value),
+            ..Self::default()
         })
+    }
+}
+
+impl std::default::Default for Iter {
+    fn default() -> Self {
+        Self {
+            current: 0,
+            reversed: false,
+            ty: IterType::Open,
+        }
     }
 }
 
@@ -152,6 +219,9 @@ pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_reverse(_vm: &mut Vm) -> Lovm2Result<()> {
-    todo!()
+pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> Lovm2Result<()> {
+    get_iter!(vm, it);
+    let reversed = it.clone().reverse();
+    vm.context_mut().push_value(Value::create_any(reversed));
+    Ok(())
 }

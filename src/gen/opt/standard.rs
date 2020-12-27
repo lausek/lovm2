@@ -79,7 +79,6 @@ impl Optimizer for StandardOptimizer {
                 }, LirElement::Label(tlabel)] if jlabel == tlabel => {
                 }
                 */
-
                 // if two constants were pushed before an operation, remove all three instructions
                 // and push the computed value instead
                 [LirElement::PushConstant { value: left }, LirElement::PushConstant { value: right }, LirElement::Operation(Operator::Operator2(op))] =>
