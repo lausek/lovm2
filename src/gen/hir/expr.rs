@@ -35,6 +35,7 @@ pub enum Expr {
     Call(Call),
     Cast(Cast),
     DynamicValue(Initialize),
+    Iter(Iter),
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Slice(Slice),
@@ -124,7 +125,15 @@ impl Expr {
             Expr::Access(_) => todo!(),
             Expr::Call(_) => todo!(),
             Expr::Cast(_) => todo!(),
-            Expr::DynamicValue(_) => todo!(),
+            Expr::DynamicValue(init) => {
+                let mut base = init.base.clone();
+                for (key, val) in init.slots.iter() {
+                    let (key, val) = (key.eval(ctx)?, val.eval(ctx)?);
+                    base.set(&key, val)?;
+                }
+                Ok(base)
+            }
+            Expr::Iter(_) => todo!(),
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
 
@@ -206,6 +215,12 @@ impl From<Initialize> for Expr {
     }
 }
 
+impl From<Iter> for Expr {
+    fn from(it: Iter) -> Expr {
+        Expr::Iter(it)
+    }
+}
+
 impl From<Slice> for Expr {
     fn from(slice: Slice) -> Expr {
         Expr::Slice(slice)
@@ -251,16 +266,17 @@ impl HirLowering for Expr {
                 }
 
                 // push key onto stack
-                let key = key_it.next().unwrap();
-                key.lower(runtime);
-
-                while key_it.peek().is_some() {
-                    runtime.emit(LirElement::Get);
-                    let key = key_it.next().unwrap();
+                if let Some(key) = key_it.next() {
                     key.lower(runtime);
-                }
 
-                runtime.emit(LirElement::Get);
+                    while key_it.peek().is_some() {
+                        runtime.emit(LirElement::Get);
+                        let key = key_it.next().unwrap();
+                        key.lower(runtime);
+                    }
+
+                    runtime.emit(LirElement::Get);
+                }
             }
             Expr::Call(mut call) => {
                 call.keep(true);
@@ -268,6 +284,7 @@ impl HirLowering for Expr {
             }
             Expr::Cast(cast) => cast.lower(runtime),
             Expr::DynamicValue(init) => init.lower(runtime),
+            Expr::Iter(it) => it.lower(runtime),
             Expr::Operation1(op, expr) => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::operation(op));

@@ -13,7 +13,7 @@ impl Value {
             (Str(ref mut a), Str(b)) => *a = format!("{}{}", a, b),
             (Float(ref mut a), b @ Int(_)) => *a += b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() + b)?,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -24,7 +24,7 @@ impl Value {
             (Float(ref mut a), Float(b)) => *a -= b,
             (Float(ref mut a), b @ Int(_)) => *a -= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() - b)?,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -35,7 +35,7 @@ impl Value {
             (Float(ref mut a), Float(b)) => *a *= b,
             (Float(ref mut a), b @ Int(_)) => *a *= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() * b)?,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -46,7 +46,7 @@ impl Value {
             (Float(ref mut a), Float(b)) => *a /= b,
             (Float(ref mut a), b @ Int(_)) => *a /= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() / b)?,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -57,7 +57,7 @@ impl Value {
             (Float(ref mut a), Float(b)) => *a %= b,
             (Float(ref mut a), b @ Int(_)) => *a %= b.as_float_inner()?,
             (a @ Int(_), b @ Float(_)) => *a = (a.clone() % b)?,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -67,7 +67,7 @@ impl Value {
         match self {
             Int(ref mut base) => *base = base.pow(exp as u32),
             Float(ref mut base) => *base = base.powi(exp as i32),
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         };
         Ok(())
     }
@@ -76,7 +76,7 @@ impl Value {
         match (self, other) {
             (Bool(a), Bool(b)) => *a &= b,
             (Int(a), Int(b)) => *a &= b,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -85,7 +85,7 @@ impl Value {
         match (self, other) {
             (Bool(a), Bool(b)) => *a |= b,
             (Int(a), Int(b)) => *a |= b,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -94,7 +94,7 @@ impl Value {
         match (self, other) {
             (Bool(a), Bool(b)) => *a ^= b,
             (Int(a), Int(b)) => *a ^= b,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -103,7 +103,7 @@ impl Value {
         match self {
             Bool(ref mut a) => *a = !*a,
             Int(ref mut a) => *a = !*a,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }

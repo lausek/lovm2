@@ -12,6 +12,7 @@ mod expr;
 mod include;
 mod initialize;
 mod interrupt;
+mod iter;
 mod repeat;
 mod r#return;
 mod slice;
@@ -33,6 +34,7 @@ pub use self::expr::{Expr, Operator1, Operator2};
 pub use self::include::Include;
 pub use self::initialize::Initialize;
 pub use self::interrupt::Interrupt;
+pub use self::iter::Iter;
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 pub use self::r#return::Return;
 pub use self::repeat::{Break, Continue, Repeat};
@@ -107,5 +109,14 @@ pub trait HasBlock {
     #[inline]
     fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
         self.block_mut().repeat_until(condition)
+    }
+
+    #[inline]
+    fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut Repeat
+    where
+        U: Into<Expr>,
+        T: Into<Variable>,
+    {
+        self.block_mut().repeat_iterating(collection, item)
     }
 }

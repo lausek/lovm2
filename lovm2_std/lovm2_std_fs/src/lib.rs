@@ -6,14 +6,14 @@ use lovm2_std_data::File;
 fn create_file(path: String) -> Lovm2Result<File> {
     std::fs::File::create(path)
         .map(|inner| File { inner })
-        .map_err(|e| e.to_string().into())
+        .map_err(Lovm2Error::from)
 }
 
 #[lovm2_function]
 fn open_file(path: String) -> Lovm2Result<File> {
     std::fs::File::open(path)
         .map(|inner| File { inner })
-        .map_err(|e| e.to_string().into())
+        .map_err(Lovm2Error::from)
 }
 
 #[lovm2_function]
@@ -22,7 +22,7 @@ fn read_all(file: &mut File) -> Lovm2Result<String> {
     let mut buffer = String::new();
     file.inner
         .read_to_string(&mut buffer)
-        .map_err(|e| Lovm2Error::from(e.to_string()))?;
+        .map_err(Lovm2Error::from)?;
     Ok(buffer)
 }
 
@@ -31,7 +31,7 @@ fn write_all(file: &mut File, content: String) -> Lovm2Result<bool> {
     use std::io::Write;
     file.inner
         .write_all(content.as_bytes())
-        .map_err(|e| Lovm2Error::from(e.to_string()))?;
+        .map_err(Lovm2Error::from)?;
     Ok(true)
 }
 
@@ -39,7 +39,7 @@ fn write_all(file: &mut File, content: String) -> Lovm2Result<bool> {
 fn absolute(path: String) -> Lovm2Result<String> {
     std::fs::canonicalize(path)
         .map(|buf| buf.to_string_lossy().into_owned())
-        .map_err(|e| Lovm2Error::from(e.to_string()))
+        .map_err(Lovm2Error::from)
 }
 
 #[lovm2_function]
@@ -77,7 +77,8 @@ fn is_dir(path: String) -> bool {
 }
 
 #[lovm2_function]
-fn list_dir(path: String) -> bool {
+fn list_dir(path: String) -> Lovm2Result<Value> {
+    std::fs::read_dir(path).map_err(Lovm2Error::from)?;
     todo!()
 }
 

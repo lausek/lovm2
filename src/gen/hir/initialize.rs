@@ -5,8 +5,8 @@ use super::*;
 /// Initialize complex objects (`Dict` and `List`), supports `Expr` as arguments
 #[derive(Clone, Debug)]
 pub struct Initialize {
-    base: Value,
-    slots: Vec<(Expr, Expr)>,
+    pub(crate) base: Value,
+    pub(crate) slots: Vec<(Expr, Expr)>,
 }
 
 impl Initialize {

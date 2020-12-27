@@ -235,6 +235,15 @@ impl BlockBuilder {
         }
     }
 
+    pub fn repeat_iterating(&mut self, collection: &PyAny, item: String) -> PyResult<BlockBuilder> {
+        let collection = any_to_expr(collection)?;
+        unsafe {
+            let repeat = (*self.inner).repeat_iterating(collection, item);
+            let inner = repeat.block_mut() as *mut Lovm2Block;
+            Ok(BlockBuilder { inner })
+        }
+    }
+
     pub fn ret(&mut self, val: &PyAny) -> PyResult<()> {
         use lovm2::prelude::*;
         unsafe {

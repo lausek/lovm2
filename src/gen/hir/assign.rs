@@ -119,11 +119,14 @@ impl Access {
     }
 }
 
-impl From<Variable> for Access {
-    fn from(target: Variable) -> Self {
+impl<T> From<T> for Access
+where
+    T: std::borrow::Borrow<Variable>,
+{
+    fn from(target: T) -> Self {
         Self {
             keys: vec![],
-            target,
+            target: target.borrow().clone(),
         }
     }
 }

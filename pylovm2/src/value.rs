@@ -33,7 +33,14 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
                 py.None()
             }
         }
-        _ => todo!(),
+        Lovm2ValueRaw::Any(any) => {
+            if let Some(it) = any.borrow().0.downcast_ref::<lovm2::value::Iter>() {
+                let ls = lovm2::value::box_value(Lovm2ValueRaw::List(it.clone().collect()));
+                lovm2py(&ls, py)
+            } else {
+                todo!()
+            }
+        }
     }
 }
 
