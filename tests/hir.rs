@@ -585,16 +585,19 @@ fn iterating_repeat_inplace() {
     fn check(ctx: &mut Context) {
         assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
+        assert_eq!(ctx.value_of("orig").unwrap(), ctx.value_of("ls").unwrap());
     }
 
     let mut builder = ModuleBuilder::new();
-    let (sum, i) = &lv2_var!(sum, i);
+    let (sum, i, ls, orig) = &lv2_var!(sum, i, ls, orig);
 
     let main_hir = builder.entry();
 
     main_hir.step(Assign::global(sum, 0));
+    main_hir.step(Assign::global(orig, lv2_list!(1, 2, 3, 4)));
+    main_hir.step(Assign::global(ls, lv2_list!(1, 2, 3, 4)));
     main_hir
-        .repeat_iterating(Iter::create(lv2_list!(1, 2, 3, 4)), i)
+        .repeat_iterating(ls, i)
         .step(Assign::global(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 

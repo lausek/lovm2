@@ -126,7 +126,6 @@ impl Expr {
             Expr::Call(_) => todo!(),
             Expr::Cast(_) => todo!(),
             Expr::DynamicValue(init) => {
-                println!("{:?}", init.slots);
                 let mut base = init.base.clone();
                 for (key, val) in init.slots.iter() {
                     let (key, val) = (key.eval(ctx)?, val.eval(ctx)?);
