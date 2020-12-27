@@ -1,20 +1,12 @@
-use crate::vm::*;
-
 use super::*;
 
-#[repr(u16)]
 #[derive(Clone, Debug)]
-enum IterMethod {
-    Create = LOVM2_INT_ITER_CREATE,
-    HasNext = LOVM2_INT_ITER_HAS_NEXT,
-    Next = LOVM2_INT_ITER_NEXT,
-    Reverse = LOVM2_INT_ITER_REVERSE,
-}
-
-#[derive(Clone, Debug)]
-pub struct Iter {
-    method: IterMethod,
-    expr: Box<Expr>,
+pub enum Iter {
+    Create(Box<Expr>),
+    CreateRanged(Box<Expr>, Box<Expr>),
+    HasNext(Box<Expr>),
+    Next(Box<Expr>),
+    Reverse(Box<Expr>),
 }
 
 impl Iter {
@@ -22,46 +14,63 @@ impl Iter {
     where
         T: Into<Expr>,
     {
-        Self {
-            method: IterMethod::Create,
-            expr: Box::new(expr.into()),
-        }
+        Self::Create(Box::new(expr.into()))
+    }
+
+    pub fn create_ranged<T, U>(from: T, to: U) -> Self
+    where
+        T: Into<Expr>,
+        U: Into<Expr>,
+    {
+        Self::CreateRanged(Box::new(from.into()), Box::new(to.into()))
     }
 
     pub fn has_next<T>(expr: T) -> Self
     where
         T: Into<Expr>,
     {
-        Self {
-            method: IterMethod::HasNext,
-            expr: Box::new(expr.into()),
-        }
+        Self::HasNext(Box::new(expr.into()))
     }
 
     pub fn next<T>(expr: T) -> Self
     where
         T: Into<Expr>,
     {
-        Self {
-            method: IterMethod::Next,
-            expr: Box::new(expr.into()),
-        }
+        Self::Next(Box::new(expr.into()))
     }
 
     pub fn reverse<T>(expr: T) -> Self
     where
         T: Into<Expr>,
     {
-        Self {
-            method: IterMethod::Reverse,
-            expr: Box::new(expr.into()),
-        }
+        Self::Reverse(Box::new(expr.into()))
     }
 }
 
 impl HirLowering for Iter {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
-        self.expr.lower(runtime);
-        runtime.emit(LirElement::Interrupt(self.method as u16));
+        match self {
+            Self::Create(expr) => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterCreate);
+            }
+            Self::CreateRanged(from, to) => {
+                from.lower(runtime);
+                to.lower(runtime);
+                runtime.emit(LirElement::IterCreateRanged);
+            }
+            Self::HasNext(expr) => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterHasNext);
+            }
+            Self::Next(expr) => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterNext);
+            }
+            Self::Reverse(expr) => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterReverse);
+            }
+        }
     }
 }

@@ -1,25 +1,62 @@
 use std::convert::TryFrom;
-use std::rc::Rc;
 
-use crate::vm::{InterruptFn, Vm};
+use crate::vm::Vm;
 
 use super::*;
 
 #[derive(Clone, Debug)]
+enum IterType {
+    Limit(usize),
+    Open,
+    Over(Value),
+}
+
+#[derive(Clone, Debug)]
 pub struct Iter {
     current: usize,
-    limit: usize,
-    value: Value,
+    ty: IterType,
 }
 
 impl Iter {
+    pub fn ranged(from: i64, to: i64) -> Self {
+        Self {
+            current: from as usize,
+            ty: IterType::Limit(to as usize),
+        }
+    }
+
+    pub fn ranged_from(from: i64) -> Self {
+        Self {
+            current: from as usize,
+            ty: IterType::Open,
+        }
+    }
+
+    pub fn ranged_to(to: i64) -> Self {
+        Self {
+            current: 0,
+            ty: IterType::Limit(to as usize),
+        }
+    }
+
     pub fn has_next(&self) -> bool {
-        self.value.get_by_index(self.current).is_ok()
+        match &self.ty {
+            IterType::Limit(limit) => self.current < *limit,
+            IterType::Open => true,
+            IterType::Over(val) => val.get_by_index(self.current).is_ok(),
+        }
     }
 
     pub fn next(&mut self) -> Lovm2Result<Value> {
         let idx = self.current;
-        let val = self.value.get_by_index(idx)?;
+
+        let val = match &self.ty {
+            IterType::Limit(_) if self.has_next() => (idx as i64).into(),
+            IterType::Open => (idx as i64).into(),
+            IterType::Over(val) => val.get_by_index(idx)?,
+            _ => Err(Lovm2Error::from("iterator exhausted"))?,
+        };
+
         self.current += 1;
         Ok(val)
     }
@@ -27,16 +64,25 @@ impl Iter {
     pub fn reverse(&mut self) {
         todo!()
     }
+
+    pub fn collect(mut self) -> Vec<Value> {
+        let mut result = vec![];
+
+        while self.has_next() {
+            result.push(self.next().unwrap());
+        }
+
+        result
+    }
 }
 
 impl TryFrom<Value> for Iter {
     type Error = Lovm2Error;
     fn try_from(value: Value) -> Result<Self, Self::Error> {
-        let limit = value.len()?;
+        let _ = value.len()?;
         Ok(Self {
             current: 0,
-            limit,
-            value,
+            ty: IterType::Over(value),
         })
     }
 }
@@ -52,7 +98,7 @@ macro_rules! get_iter {
     };
 }
 
-fn int_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
     let from = vm.context_mut().pop_value()?;
 
     if from
@@ -69,31 +115,43 @@ fn int_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-fn int_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> Lovm2Result<()> {
+    let from = vm.context_mut().pop_value()?;
+    let to = vm.context_mut().pop_value()?;
+
+    let it = match (from, to) {
+        (Value::Nil, Value::Nil) => unimplemented!(),
+        (Value::Nil, to) => {
+            let to = to.as_integer_inner()?;
+            Iter::ranged_to(to)
+        }
+        (from, Value::Nil) => {
+            let from = from.as_integer_inner()?;
+            Iter::ranged_from(from)
+        }
+        (from, to) => {
+            let (from, to) = (from.as_integer_inner()?, to.as_integer_inner()?);
+            Iter::ranged(from, to)
+        }
+    };
+
+    vm.context_mut().push_value(Value::create_any(it));
+
+    Ok(())
+}
+
+pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
     get_iter!(vm, it);
     vm.context_mut().push_value(it.has_next().into());
     Ok(())
 }
 
-fn int_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
     get_iter!(vm, it);
     vm.context_mut().push_value(it.next()?.into());
     Ok(())
 }
 
-fn int_iter_reverse(_vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_reverse(_vm: &mut Vm) -> Lovm2Result<()> {
     todo!()
-    /*
-    let iter = get_iter!(vm)?;
-    Ok(())
-        */
-}
-
-pub(crate) fn register_iter_interrupts(table: &mut [Option<Rc<InterruptFn>>]) {
-    use crate::vm::*;
-
-    table[LOVM2_INT_ITER_CREATE as usize] = Some(Rc::new(int_iter_create));
-    table[LOVM2_INT_ITER_HAS_NEXT as usize] = Some(Rc::new(int_iter_has_next));
-    table[LOVM2_INT_ITER_NEXT as usize] = Some(Rc::new(int_iter_next));
-    table[LOVM2_INT_ITER_REVERSE as usize] = Some(Rc::new(int_iter_reverse));
 }

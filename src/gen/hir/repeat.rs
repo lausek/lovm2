@@ -1,7 +1,5 @@
 //! Runs a `Block` forever or until a condition is met
 
-use crate::vm::*;
-
 use super::*;
 
 /// Runs a [Block] forever or until a condition is met
@@ -95,13 +93,13 @@ fn iterating_lower(
     let repeat_end = runtime.loop_mut().unwrap().end();
 
     runtime.emit(LirElement::Duplicate);
-    runtime.emit(LirElement::Interrupt(LOVM2_INT_ITER_HAS_NEXT));
+    runtime.emit(LirElement::IterHasNext);
 
     // break loop if iterator does not have another item
     runtime.emit(LirElement::jump_conditional(false, repeat_end.clone()));
 
     runtime.emit(LirElement::Duplicate);
-    runtime.emit(LirElement::Interrupt(LOVM2_INT_ITER_NEXT));
+    runtime.emit(LirElement::IterNext);
     runtime.emit(LirElement::store(Scope::Local, item));
 
     postlude(runtime, block);

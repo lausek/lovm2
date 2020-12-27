@@ -198,3 +198,20 @@ fn test_iterator_string() {
 
     assert!(!s_iter.has_next());
 }
+
+#[test]
+fn test_iterator_ranged() {
+    use lovm2::value::Iter;
+
+    let expected: Vec<Value> = (0..10).map(Value::from).collect();
+
+    let r_iter = Iter::ranged(0, 10);
+    let r_to_iter = Iter::ranged_to(10);
+
+    assert_eq!(expected, r_iter.collect());
+    assert_eq!(expected, r_to_iter.collect());
+
+    let mut r_from_iter = Iter::ranged_from(5);
+
+    assert_eq!(Value::from(5), r_from_iter.next().unwrap());
+}

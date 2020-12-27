@@ -20,10 +20,6 @@ pub use self::frame::Frame;
 
 pub const LOVM2_RESERVED_INTERRUPTS: u16 = 63;
 pub const LOVM2_INT_DEBUG: u16 = 10;
-pub const LOVM2_INT_ITER_CREATE: u16 = 12;
-pub const LOVM2_INT_ITER_HAS_NEXT: u16 = 13;
-pub const LOVM2_INT_ITER_NEXT: u16 = 14;
-pub const LOVM2_INT_ITER_REVERSE: u16 = 15;
 
 /// Virtual machine for executing [modules](crate::module::Module)
 ///
@@ -103,7 +99,7 @@ pub struct Vm {
 impl Vm {
     /// Create a new instance
     pub fn new() -> Self {
-        let mut vm = Self {
+        Self {
             ctx: Context::new(),
             modules: HashMap::new(),
 
@@ -111,9 +107,7 @@ impl Vm {
             interrupts: vec![None; 256],
             load_hook: None,
             load_paths: vec![get_lovm2_user_dir()],
-        };
-        crate::value::register_iter_interrupts(&mut vm.interrupts);
-        vm
+        }
     }
 
     /// Create a new instance with standard functions already imported
@@ -276,6 +270,8 @@ impl Vm {
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
     /// if not handled correctly. See [Vm::run_object]
     pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
+        use crate::value::iter::*;
+
         let mut ip = offset;
         while let Some(inx) = co.code.get(ip) {
             match inx {
@@ -432,6 +428,12 @@ impl Vm {
                     let slice = create_slice(target, start, end)?;
                     self.ctx.push_value(slice);
                 }
+
+                Instruction::IterCreate => vm_iter_create(self)?,
+                Instruction::IterCreateRanged => vm_iter_create_ranged(self)?,
+                Instruction::IterHasNext => vm_iter_has_next(self)?,
+                Instruction::IterNext => vm_iter_next(self)?,
+                Instruction::IterReverse => vm_iter_reverse(self)?,
             }
 
             ip += 1;

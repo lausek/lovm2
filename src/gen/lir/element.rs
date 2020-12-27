@@ -53,6 +53,12 @@ pub enum LirElement {
     Ret,
     Set,
     Slice,
+
+    IterCreate,
+    IterCreateRanged,
+    IterHasNext,
+    IterNext,
+    IterReverse,
 }
 
 impl LirElement {
