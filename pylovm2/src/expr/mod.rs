@@ -3,7 +3,7 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::prelude::{Cast, Operator2};
+use lovm2::prelude::{Cast, Iter, Operator2};
 use lovm2::Variable;
 
 pub use self::conv::*;
@@ -204,6 +204,7 @@ impl Expr {
     }
 }
 
+// conversion methods
 #[pymethods]
 impl Expr {
     pub fn to_bool(&self) -> PyResult<Self> {
@@ -228,5 +229,41 @@ impl Expr {
         Ok(Self {
             inner: Cast::to_str(self.inner.clone()).into(),
         })
+    }
+}
+
+// iterator methods
+#[pymethods]
+impl Expr {
+    #[classmethod]
+    pub fn iter(_this: &PyAny, from: &PyAny) -> PyResult<Self> {
+        let from = any_to_expr(from)?;
+        Ok(Expr {
+            inner: Iter::create(from).into(),
+        })
+    }
+
+    #[classmethod]
+    pub fn range(_this: &PyAny, from: &PyAny, to: Option<&PyAny>) -> PyResult<Self> {
+        if let Some(to) = to {
+            let (from, to) = (any_to_expr(from)?, any_to_expr(to)?);
+            Ok(Expr {
+                inner: Iter::create_ranged(from, to).into(),
+            })
+        } else {
+            let to = any_to_expr(from)?;
+            Ok(Expr {
+                inner: Iter::create_ranged(Lovm2ValueRaw::Nil, to).into(),
+            })
+        }
+    }
+
+    pub fn reverse(&mut self) -> PyResult<Self> {
+        match &self.inner {
+            Lovm2Expr::Iter(it) => Ok(Expr {
+                inner: Iter::reverse(it.clone()).into(),
+            }),
+            _ => todo!(),
+        }
     }
 }

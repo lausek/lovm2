@@ -125,7 +125,15 @@ impl Expr {
             Expr::Access(_) => todo!(),
             Expr::Call(_) => todo!(),
             Expr::Cast(_) => todo!(),
-            Expr::DynamicValue(_) => todo!(),
+            Expr::DynamicValue(init) => {
+                println!("{:?}", init.slots);
+                let mut base = init.base.clone();
+                for (key, val) in init.slots.iter() {
+                    let (key, val) = (key.eval(ctx)?, val.eval(ctx)?);
+                    base.set(&key, val)?;
+                }
+                Ok(base)
+            }
             Expr::Iter(_) => todo!(),
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
