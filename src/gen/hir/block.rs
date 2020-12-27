@@ -49,6 +49,18 @@ impl Block {
             _ => unreachable!(),
         }
     }
+
+    pub fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut Repeat
+    where
+        U: Into<Expr>,
+        T: Into<Variable>,
+    {
+        self.step(Repeat::iterating(collection, item));
+        match self.last_mut().unwrap() {
+            HirElement::Repeat(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl std::iter::IntoIterator for Block {

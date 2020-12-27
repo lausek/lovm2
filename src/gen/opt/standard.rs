@@ -64,6 +64,13 @@ impl Optimizer for StandardOptimizer {
                     }
                 }
 
+                // if an iterator creation was requested but the instruction before
+                // already covers it, remove the last create
+                [LirElement::IterCreateRanged, LirElement::IterCreate]
+                | [LirElement::IterCreate, LirElement::IterCreate] => {
+                    code.pop();
+                }
+
                 /*
                 // a jump should not target the next instruction
                 [LirElement::Jump {
@@ -86,6 +93,7 @@ impl Optimizer for StandardOptimizer {
                         Operator2::Rem => left.rem(right),
                         Operator2::And => left.bitand(right),
                         Operator2::Or => left.bitor(right),
+                        Operator2::XOr => left.bitxor(right),
                         Operator2::Equal => Ok(left.eq(&right).into()),
                         Operator2::NotEqual => Ok(left.ne(&right).into()),
                         Operator2::GreaterEqual => Ok(left.ge(&right).into()),
@@ -109,6 +117,7 @@ impl Optimizer for StandardOptimizer {
         match lir_element {
             LirElement::Jump { .. } => 2,
             LirElement::Operation(Operator::Operator2(_)) => 3,
+            LirElement::IterCreate => 2,
             //LirElement::Label(_) => 2,
             _ => 0,
         }

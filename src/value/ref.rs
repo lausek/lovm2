@@ -88,7 +88,7 @@ impl std::cmp::PartialEq<Value> for Reference {
 }
 
 impl std::fmt::Display for Reference {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(r) = &self.0 {
             write!(f, "{}", r.borrow())
         } else {
@@ -98,7 +98,7 @@ impl std::fmt::Display for Reference {
 }
 
 impl std::fmt::Debug for Reference {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(r) = &self.0 {
             write!(f, "Ref({:?})", r.borrow())
         } else {

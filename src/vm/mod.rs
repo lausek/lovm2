@@ -19,7 +19,7 @@ pub use self::context::Context;
 pub use self::frame::Frame;
 
 pub const LOVM2_RESERVED_INTERRUPTS: u16 = 63;
-pub const LOVM2_DEBUG_INTERRUPT: u16 = 10;
+pub const LOVM2_INT_DEBUG: u16 = 10;
 
 /// Virtual machine for executing [modules](crate::module::Module)
 ///
@@ -64,8 +64,10 @@ pub fn get_lovm2_user_dir() -> String {
 
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
-        let second = $vm.ctx.pop_value()?;
+        let mut second = $vm.ctx.pop_value()?;
+        second.deref_total()?;
         let first = $vm.ctx.last_value_mut()?;
+        first.deref_total()?;
         first.$fn(second)?;
     }};
 }
@@ -268,6 +270,8 @@ impl Vm {
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
     /// if not handled correctly. See [Vm::run_object]
     pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
+        use crate::value::iter::*;
+
         let mut ip = offset;
         while let Some(inx) = co.code.get(ip) {
             match inx {
@@ -326,7 +330,7 @@ impl Vm {
                     let mut val = self.ctx.pop_value()?;
                     let target = self.ctx.pop_value()?;
 
-                    deref_total(&mut val)?;
+                    val.deref_total()?;
 
                     match target {
                         Value::Ref(r) => *r.borrow_mut()? = val,
@@ -341,6 +345,7 @@ impl Vm {
                 Instruction::Rem => value_operation!(self, rem_inplace),
                 Instruction::And => value_operation!(self, and_inplace),
                 Instruction::Or => value_operation!(self, or_inplace),
+                Instruction::XOr => value_operation!(self, xor_inplace),
                 Instruction::Not => {
                     let first = self.ctx.pop_value()?;
                     self.ctx.push_value(first.not()?);
@@ -423,6 +428,12 @@ impl Vm {
                     let slice = create_slice(target, start, end)?;
                     self.ctx.push_value(slice);
                 }
+
+                Instruction::IterCreate => vm_iter_create(self)?,
+                Instruction::IterCreateRanged => vm_iter_create_ranged(self)?,
+                Instruction::IterHasNext => vm_iter_has_next(self)?,
+                Instruction::IterNext => vm_iter_next(self)?,
+                Instruction::IterReverse => vm_iter_reverse(self)?,
             }
 
             ip += 1;
@@ -451,21 +462,12 @@ impl Vm {
     where
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
     {
-        if n != LOVM2_DEBUG_INTERRUPT && n <= LOVM2_RESERVED_INTERRUPTS {
-            return Err("reserved interrupt".into());
+        if n != LOVM2_INT_DEBUG && n <= LOVM2_RESERVED_INTERRUPTS {
+            return err_reserved_interrupt(n);
         }
         self.interrupts[n as usize] = Some(Rc::new(func));
         Ok(())
     }
-}
-
-fn deref_total(val: &mut Value) -> Lovm2Result<()> {
-    while let Value::Ref(r) = val {
-        *val = r
-            .unref()
-            .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
-    }
-    Ok(())
 }
 
 fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {

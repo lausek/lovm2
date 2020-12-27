@@ -24,7 +24,7 @@ impl Value {
             ValueType::Int => self.as_integer(),
             ValueType::Float => self.as_float(),
             ValueType::Str => self.as_str(),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 
@@ -34,7 +34,7 @@ impl Value {
             ValueType::Int => *self = self.as_integer()?,
             ValueType::Float => *self = self.as_float()?,
             ValueType::Str => *self = self.as_str()?,
-            _ => not_supported()?,
+            _ => err_not_supported()?,
         }
         Ok(())
     }
@@ -62,14 +62,14 @@ impl Value {
     pub fn as_any_inner(&self) -> Lovm2Result<AnyRef> {
         match self {
             Value::Any(r) => Ok(r.clone()),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 
     pub fn as_any_ref(&self) -> Lovm2Result<AnyRef> {
         match self {
             Value::Any(ar) => Ok(ar.clone()),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 
@@ -88,35 +88,35 @@ impl Value {
             Value::Nil |
             // TODO: compare with 0
             Value::Float(_) => Ok(false),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 
     pub fn as_float_inner(&self) -> Lovm2Result<f64> {
         match self {
-            Value::Nil => not_supported(),
+            Value::Nil => err_not_supported(),
             Value::Bool(b) => Ok(if *b { 1. } else { 0. }),
             Value::Int(n) => Ok(*n as f64),
             Value::Float(n) => Ok(*n),
             Value::Str(s) => s.parse::<f64>().map_err(|_| "not a float".into()),
-            Value::Dict(_) => not_supported(),
-            Value::List(_) => not_supported(),
+            Value::Dict(_) => err_not_supported(),
+            Value::List(_) => err_not_supported(),
             Value::Ref(r) => r.borrow()?.as_float_inner(),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 
     pub fn as_integer_inner(&self) -> Lovm2Result<i64> {
         match self {
-            Value::Nil => not_supported(),
+            Value::Nil => err_not_supported(),
             Value::Bool(b) => Ok(if *b { 1 } else { 0 }),
             Value::Int(n) => Ok(*n),
             Value::Float(n) => Ok(*n as i64),
             Value::Str(s) => s.parse::<i64>().map_err(|_| "not an integer".into()),
-            Value::Dict(_) => not_supported(),
-            Value::List(_) => not_supported(),
+            Value::Dict(_) => err_not_supported(),
+            Value::List(_) => err_not_supported(),
             Value::Ref(r) => r.borrow()?.as_integer_inner(),
-            _ => not_supported(),
+            _ => err_not_supported(),
         }
     }
 

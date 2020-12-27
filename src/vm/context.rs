@@ -23,13 +23,13 @@ pub struct Context {
     /// Starting point of execution
     pub(super) entry: Option<Rc<dyn CallProtocol>>,
     /// Global variables that can be altered from every object
-    globals: HashMap<String, Value>,
+    pub(super) globals: HashMap<String, Value>,
     /// Entries in this map can directly be called from lovm2 bytecode
     pub(super) scope: HashMap<Variable, CallableRef>,
     /// Call stack that contains local variables
-    lstack: Vec<Frame>,
+    pub(super) lstack: Vec<Frame>,
     /// Value stack. This is shared across `CallProtocol` functionality
-    vstack: Vec<Value>,
+    pub(super) vstack: Vec<Value>,
 }
 
 impl Context {

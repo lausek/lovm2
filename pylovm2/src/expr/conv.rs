@@ -98,14 +98,15 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
             Ok(Lovm2ValueRaw::List(ls).into())
         }
         "dict" => {
-            use std::collections::HashMap;
-            let mut map = HashMap::new();
             let dict = any.downcast::<PyDict>()?;
+            let mut map = Lovm2ValueRaw::dict();
+
             for (key, value) in dict.iter() {
                 let (key, value) = (any_to_value(key)?, any_to_value(value)?);
-                map.insert(key, value);
+                map.set(&key, value).unwrap();
             }
-            Ok(Lovm2ValueRaw::Dict(map).into())
+
+            Ok(map.into())
         }
         "NoneType" => Ok(Lovm2ValueRaw::Nil),
         "Expr" => {

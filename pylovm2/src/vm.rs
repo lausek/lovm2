@@ -109,21 +109,22 @@ impl Vm {
 
         let func = func.to_object(py);
 
-        self.inner.set_interrupt(id, move |vm| {
-            let guard = Python::acquire_gil();
-            let py = guard.python();
+        self.inner
+            .set_interrupt(id, move |vm| {
+                let guard = Python::acquire_gil();
+                let py = guard.python();
 
-            let context_ref = vm.context_mut() as *mut Lovm2Context;
-            let ctx = Py::new(py, Context::new(context_ref)).unwrap();
-            let args = PyTuple::new(py, vec![ctx]);
+                let context_ref = vm.context_mut() as *mut Lovm2Context;
+                let ctx = Py::new(py, Context::new(context_ref)).unwrap();
+                let args = PyTuple::new(py, vec![ctx]);
 
-            if let Err(e) = func.call1(py, args) {
-                return Err(Lovm2Error::from(exception_to_err(&e, py)));
-            }
+                if let Err(e) = func.call1(py, args) {
+                    return Err(Lovm2Error::from(exception_to_err(&e, py)));
+                }
 
-            Ok(())
-        })
-        .map_err(err_to_exception)?;
+                Ok(())
+            })
+            .map_err(err_to_exception)?;
 
         Ok(())
     }

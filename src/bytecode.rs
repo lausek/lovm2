@@ -42,6 +42,8 @@ pub enum Instruction {
     And,
     /// logical or for `Bool`, bitwise or for `Int`
     Or,
+    /// logical xor for `Bool`, bitwise xor for `Int`
+    XOr,
     /// logical not for `Bool`, bitwise not for `Int`
     Not,
 
@@ -90,4 +92,10 @@ pub enum Instruction {
     /// create a new list from the first argument on stack.
     /// second is starting index or nil, third is end index (exclusive) or nil
     Slice,
+
+    IterCreate,
+    IterCreateRanged,
+    IterHasNext,
+    IterNext,
+    IterReverse,
 }

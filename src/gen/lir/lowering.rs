@@ -145,6 +145,7 @@ impl LirLoweringRuntime {
                         Operator2::Rem => Instruction::Rem,
                         Operator2::And => Instruction::And,
                         Operator2::Or => Instruction::Or,
+                        Operator2::XOr => Instruction::XOr,
                         Operator2::Equal => Instruction::Eq,
                         Operator2::NotEqual => Instruction::Ne,
                         Operator2::GreaterEqual => Instruction::Ge,
@@ -193,6 +194,12 @@ impl LirLoweringRuntime {
             LirElement::Ret => self.code.push(Instruction::Ret),
             LirElement::Set => self.code.push(Instruction::Set),
             LirElement::Slice => self.code.push(Instruction::Slice),
+
+            LirElement::IterCreate => self.code.push(Instruction::IterCreate),
+            LirElement::IterCreateRanged => self.code.push(Instruction::IterCreateRanged),
+            LirElement::IterHasNext => self.code.push(Instruction::IterHasNext),
+            LirElement::IterNext => self.code.push(Instruction::IterNext),
+            LirElement::IterReverse => self.code.push(Instruction::IterReverse),
         }
 
         Ok(())
