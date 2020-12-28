@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use lovm2::prelude::*;
+use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
 fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
@@ -123,25 +124,82 @@ fn native_count() {
 
 #[test]
 fn native_deep_clone() {
-    assert!(false);
+    let ls = box_value(Value::List(vec![1.into(), 2.into()]));
+
+    let mut d = Value::dict();
+    d.set(&1.into(), 2.into()).unwrap();
+    let d = box_value(d);
+
+    let mut vm = run_module_test(|_| {});
+
+    let mut dc = vm.call("deep_clone", &[d.clone()]).unwrap();
+    dc.set(&1.into(), 3.into()).unwrap();
+    assert_eq!(Value::from(2), d.get(&1.into()).unwrap());
+
+    let mut lsc = vm.call("deep_clone", &[d.clone()]).unwrap();
+    lsc.delete(&0.into()).unwrap();
+    assert_eq!(2, ls.len().unwrap());
 }
 
 #[test]
 fn native_delete() {
-    assert!(false);
+    let ls = box_value(Value::List(vec![1.into(), 2.into()]));
+
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(2, ls.len().unwrap());
+    vm.call("delete", &[ls.clone(), 1.into()]).unwrap();
+    assert_eq!(1, ls.len().unwrap());
+    assert!(ls.get(&0.into()).is_ok());
+    assert!(ls.get(&1.into()).is_err())
 }
 
 #[test]
 fn native_get() {
-    assert!(false);
+    let s = Value::from("abcd");
+    let ls = box_value(Value::List(vec![1.into()]));
+
+    let mut d = Value::dict();
+    d.set(&1.into(), 2.into()).unwrap();
+    let d = box_value(d);
+
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(Value::from("c"), vm.call("get", &[s.clone(), 2.into()]).unwrap());
+    assert_eq!(Value::from(1), vm.call("get", &[ls.clone(), 0.into()]).unwrap());
+    assert_eq!(Value::from(2), vm.call("get", &[d.clone(), 1.into()]).unwrap());
 }
 
 #[test]
-fn native_insert() {
-    assert!(false);
+fn native_set() {
+    let ls = box_value(Value::List(vec![1.into()]));
+
+    let mut d = Value::dict();
+    d.set(&1.into(), 2.into()).unwrap();
+    let d = box_value(d);
+
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(Value::from(1), ls.get(&0.into()).unwrap());
+    vm.call("set", &[ls.clone(), 0.into(), 2.into()]).unwrap();
+    assert_eq!(Value::from(2), ls.get(&0.into()).unwrap());
+    assert_eq!(1, ls.len().unwrap());
+
+    assert!(d.get(&"ab".into()).is_err());
+    vm.call("set", &[d.clone(), "ab".into(), 3.into()]).unwrap();
+    assert_eq!(Value::from(3), d.get(&"ab".into()).unwrap());
 }
 
 #[test]
 fn native_sort() {
-    assert!(false);
+    let s = Value::from("bcda");
+    let ls = box_value(Value::List(vec![1.into(), "a".into(), true.into()]));
+
+    let mut vm = run_module_test(|_| {});
+
+    vm.call("sort", &[s.clone()]).unwrap();
+    assert_eq!(Value::from("abcd"), s);
+
+    vm.call("sort", &[ls.clone()]).unwrap();
+    assert_eq!(Value::from("abcd"), ls);
 }

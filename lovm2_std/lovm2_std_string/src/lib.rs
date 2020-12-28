@@ -1,3 +1,4 @@
+use lovm2::prelude::*;
 use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
@@ -8,13 +9,13 @@ fn index_of(base: String, pat: String) -> Option<i64> {
 
 #[lovm2_function]
 fn join(base: Value, sep: String) -> Lovm2Result<String> {
-    let base = base.deref().unwrap();
+    let base = base.unref().unwrap();
     if let Value::List(ls) = base {
         let mut items = vec![];
 
         for item in ls.iter() {
             if item.is_ref() {
-                items.push(item.deref().unwrap().as_str_inner()?);
+                items.push(item.unref().unwrap().as_str_inner()?);
             } else {
                 items.push(item.as_str_inner()?);
             }
@@ -24,6 +25,32 @@ fn join(base: Value, sep: String) -> Lovm2Result<String> {
     } else {
         Err("argument is not a list".into())
     }
+}
+
+#[lovm2_function]
+fn chr(n: i64) -> Lovm2Result<String> {
+    let bytes: Vec<u8> = n.to_be_bytes()[4..]
+        .iter()
+        .filter(|n| **n != 0)
+        .map(u8::clone)
+        .collect();
+
+    String::from_utf8(bytes).map_err(|e| Lovm2Error::from(e.to_string()))
+}
+
+#[lovm2_function]
+fn ord(c: String) -> Lovm2Result<i64> {
+    if 1 != c.chars().count() {
+        return Err(Lovm2Error::from("ord requires string of length one"));
+    }
+
+    let mut n: i64 = 0;
+    for codepoint in c.as_bytes().iter() {
+        n <<= 8;
+        n |= *codepoint as i64;
+    }
+
+    Ok(n)
 }
 
 #[lovm2_function]

@@ -4,7 +4,7 @@ use lovm2_extend::prelude::*;
 #[lovm2_function]
 fn all(mut collection: Value) -> Lovm2Result<bool> {
     if collection.is_ref() {
-        collection = collection.deref().unwrap();
+        collection = collection.unref().unwrap();
     }
 
     match collection {
@@ -23,7 +23,7 @@ fn all(mut collection: Value) -> Lovm2Result<bool> {
 #[lovm2_function]
 fn any(mut collection: Value) -> Lovm2Result<bool> {
     if collection.is_ref() {
-        collection = collection.deref().unwrap();
+        collection = collection.unref().unwrap();
     }
 
     match collection {
@@ -42,7 +42,7 @@ fn any(mut collection: Value) -> Lovm2Result<bool> {
 #[lovm2_function]
 fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
     if haystack.is_ref() {
-        haystack = haystack.deref().unwrap();
+        haystack = haystack.unref().unwrap();
     }
 
     match haystack {
@@ -72,7 +72,7 @@ fn count(mut val: Value) -> Lovm2Result<i64> {
 
 #[lovm2_function]
 fn deep_clone(val: Value) -> Value {
-    todo!()
+    val.deep_clone()
 }
 
 #[lovm2_function]
@@ -98,7 +98,7 @@ fn map(collection: Value, func_name: String) -> Lovm2Result<Value> {
 }
 
 #[lovm2_function]
-fn insert(mut collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
+fn set(mut collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
     collection
         .set(&key, val)
         .map(|_| true)

@@ -66,6 +66,31 @@ fn native_index_of() {
 }
 
 #[test]
+fn native_char_conversion() {
+    let mut vm = run_module_test(|_| {});
+
+    let x_as_str = Value::from("x");
+    let x_as_int = Value::from(120);
+
+    assert_eq!(x_as_int, vm.call("ord", &[x_as_str.clone()]).unwrap(),);
+    assert_eq!(x_as_str, vm.call("chr", &[x_as_int.clone()]).unwrap(),);
+
+    let sigma_as_str = Value::from("∑");
+    let sigma_as_int = Value::from(i64::from_be_bytes([
+        0, 0, 0, 0, 0, 0b11100010, 0b10001000, 0b10010001,
+    ]));
+
+    assert_eq!(
+        sigma_as_int,
+        vm.call("ord", &[sigma_as_str.clone()]).unwrap(),
+    );
+    assert_eq!(
+        sigma_as_str,
+        vm.call("chr", &[sigma_as_int.clone()]).unwrap(),
+    );
+}
+
+#[test]
 fn native_replace() {
     let mut vm = run_module_test(|_| {});
 
