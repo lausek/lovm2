@@ -165,9 +165,18 @@ fn native_get() {
 
     let mut vm = run_module_test(|_| {});
 
-    assert_eq!(Value::from("c"), vm.call("get", &[s.clone(), 2.into()]).unwrap());
-    assert_eq!(Value::from(1), vm.call("get", &[ls.clone(), 0.into()]).unwrap());
-    assert_eq!(Value::from(2), vm.call("get", &[d.clone(), 1.into()]).unwrap());
+    assert_eq!(
+        Value::from("c"),
+        vm.call("get", &[s.clone(), 2.into()]).unwrap()
+    );
+    assert_eq!(
+        Value::from(1),
+        vm.call("get", &[ls.clone(), 0.into()]).unwrap()
+    );
+    assert_eq!(
+        Value::from(2),
+        vm.call("get", &[d.clone(), 1.into()]).unwrap()
+    );
 }
 
 #[test]
@@ -192,14 +201,72 @@ fn native_set() {
 
 #[test]
 fn native_sort() {
+    let (d, ds, ls, lss) = &lv2_var!(d, ds, ls, lss);
     let s = Value::from("bcda");
-    let ls = box_value(Value::List(vec![1.into(), "a".into(), true.into()]));
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test(|builder| {
+        builder
+            .add("init")
+            .step(Assign::global(d, lv2_dict!("b" => 1, "a" => 1)))
+            .step(Assign::global(ds, lv2_dict!("a" => 1, "b" => 1)))
+            .step(Assign::global(ls, lv2_list!(3, 1, 2)))
+            .step(Assign::global(lss, lv2_list!(1, 2, 3)));
+    });
 
-    vm.call("sort", &[s.clone()]).unwrap();
-    assert_eq!(Value::from("abcd"), s);
+    vm.call("init", &[]).unwrap();
 
-    vm.call("sort", &[ls.clone()]).unwrap();
-    assert_eq!(Value::from("abcd"), ls);
+    let d = vm.context_mut().value_of(d).unwrap().clone();
+    let ds = vm.context_mut().value_of(ds).unwrap().clone();
+    let ls = vm.context_mut().value_of(ls).unwrap().clone();
+    let lss = vm.context_mut().value_of(lss).unwrap().clone();
+
+    assert_eq!(Value::from("abcd"), vm.call("sort", &[s.clone()]).unwrap());
+
+    assert_eq!(lss, vm.call("sort", &[ls.clone()]).unwrap());
+
+    assert_eq!(ds, vm.call("sort", &[d.clone()]).unwrap());
+
+    assert!(vm.call("sort", &[Value::from(1)]).is_err());
+}
+
+#[test]
+fn native_map() {
+    let mut vm = run_module_test(|builder| {
+        builder
+            .add_with_args("inc", vec![lv2_var!(x)])
+            .step(Return::value(Expr::add(lv2_var!(x), 1)));
+
+        builder
+            .add_with_args("toe", vec![lv2_var!(x)])
+            .step(Return::value(Value::from("e")));
+    });
+
+    assert_eq!(
+        Value::from(vec!["e", "e", "e"]),
+        vm.call("map", &["abc".into(), "toe".into()]).unwrap(),
+    );
+    assert_eq!(
+        Value::from(vec![101, 102, 103]),
+        vm.call("map", &[vec![100, 101, 102].into(), "inc".into()])
+            .unwrap(),
+    );
+}
+
+#[test]
+fn native_filter() {
+    let mut vm = run_module_test(|builder| {
+        builder
+            .add_with_args("even", vec![lv2_var!(x)])
+            .step(Return::value(Expr::eq(Expr::rem(lv2_var!(x), 2), 0)));
+
+        builder
+            .add_with_args("toe", vec![lv2_var!(x)])
+            .step(Return::value(Value::from("e")));
+    });
+
+    assert_eq!(
+        Value::from(vec![100, 102]),
+        vm.call("filter", &[vec![100, 101, 102].into(), "even".into()])
+            .unwrap(),
+    );
 }

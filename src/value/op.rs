@@ -165,6 +165,9 @@ impl std::cmp::PartialEq for Value {
 impl std::cmp::PartialOrd for Value {
     fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
         match (self, other) {
+            (Ref(a), b) => a.borrow().unwrap().partial_cmp(b),
+            (a, Ref(b)) => a.partial_cmp(&b.borrow().unwrap()),
+
             (Int(a), Int(b)) => a.partial_cmp(b),
             (Float(a), Float(b)) => a.partial_cmp(b),
             (Str(a), Str(b)) => a.partial_cmp(b),
@@ -173,26 +176,10 @@ impl std::cmp::PartialOrd for Value {
             _ => None,
         }
     }
+}
 
-    fn lt(&self, other: &Value) -> bool {
-        self.partial_cmp(other) == Some(Ordering::Less)
-    }
-
-    fn le(&self, other: &Value) -> bool {
-        matches!(
-            self.partial_cmp(other),
-            Some(Ordering::Less) | Some(Ordering::Equal)
-        )
-    }
-
-    fn gt(&self, other: &Value) -> bool {
-        self.partial_cmp(other) == Some(Ordering::Greater)
-    }
-
-    fn ge(&self, other: &Value) -> bool {
-        matches!(
-            self.partial_cmp(other),
-            Some(Ordering::Greater) | Some(Ordering::Equal)
-        )
+impl std::cmp::Ord for Value {
+    fn cmp(&self, other: &Value) -> Ordering {
+        self.partial_cmp(other).unwrap_or(Ordering::Equal)
     }
 }

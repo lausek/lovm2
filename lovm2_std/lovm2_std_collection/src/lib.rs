@@ -1,4 +1,5 @@
 use lovm2::prelude::*;
+use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
@@ -77,14 +78,25 @@ fn deep_clone(val: Value) -> Value {
 
 #[lovm2_function]
 fn delete(mut collection: Value, key: Value) -> Lovm2Result<bool> {
-    collection
-        .delete(&key)
-        .map(|_| true)
+    collection.delete(&key).map(|_| true)
 }
 
 #[lovm2_function]
-fn filter(collection: Value, func_name: String) -> Lovm2Result<Value> {
-    todo!()
+fn filter(vm: &mut Vm, collection: Value, func_name: String) -> Lovm2Result<Value> {
+    let mut it = collection.iter()?;
+    let mut ls = vec![];
+
+    while it.has_next() {
+        let item = it.next()?;
+        if vm
+            .call(func_name.as_ref(), &[item.clone()])?
+            .as_bool_inner()?
+        {
+            ls.push(item);
+        }
+    }
+
+    Ok(box_value(Value::List(ls)))
 }
 
 #[lovm2_function]
@@ -93,20 +105,54 @@ fn get(collection: Value, key: Value) -> Lovm2Result<Value> {
 }
 
 #[lovm2_function]
-fn map(collection: Value, func_name: String) -> Lovm2Result<Value> {
-    todo!()
+fn map(vm: &mut Vm, collection: Value, func_name: String) -> Lovm2Result<Value> {
+    let mut it = collection.iter()?;
+    let mut ls = vec![];
+
+    while it.has_next() {
+        let item = it.next()?;
+        let result = vm.call(func_name.as_ref(), &[item])?;
+        ls.push(result);
+    }
+
+    Ok(box_value(Value::List(ls)))
 }
 
 #[lovm2_function]
 fn set(mut collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
-    collection
-        .set(&key, val)
-        .map(|_| true)
+    collection.set(&key, val).map(|_| true)
 }
 
 #[lovm2_function]
-fn sort(collection: Value) -> Lovm2Result<bool> {
-    todo!()
+fn sort(mut collection: Value) -> Lovm2Result<Value> {
+    collection.unref_total()?;
+
+    let sorted = match collection {
+        Value::Str(s) => {
+            let mut cs: Vec<char> = s.chars().collect();
+            cs.sort();
+            let sorted: String = cs.into_iter().collect();
+            Value::from(sorted)
+        }
+        Value::List(ls) => {
+            let mut ls: Vec<Value> = ls.iter().map(Value::deep_clone).collect();
+            ls.sort();
+            box_value(Value::from(ls))
+        }
+        Value::Dict(_) => {
+            let mut d = collection.deep_clone();
+            d.unref_total()?;
+            if let Value::Dict(mut d) = d {
+                d.sort_keys();
+                box_value(Value::Dict(d))
+            } else {
+                unreachable!()
+            }
+        }
+        _ => err_method_not_supported("sort")?,
+    };
+
+    Ok(sorted)
 }
 
 lovm2_module_init!(collection);
