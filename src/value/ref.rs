@@ -8,7 +8,7 @@ use super::*;
 pub struct Reference(
     #[serde(serialize_with = "serialize_value_ref")]
     #[serde(deserialize_with = "deserialize_value_ref")]
-    Option<Rc<RefCell<Value>>>,
+    pub(crate) Option<Rc<RefCell<Value>>>,
 );
 
 impl Reference {

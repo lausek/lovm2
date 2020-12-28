@@ -61,14 +61,14 @@ impl Value {
         Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
     }
 
-    pub fn deref(&self) -> Option<Value> {
+    pub fn unref(&self) -> Option<Value> {
         match self {
             Value::Ref(r) => r.unref(),
             _ => None,
         }
     }
 
-    pub fn deref_total(&mut self) -> Lovm2Result<()> {
+    pub fn unref_total(&mut self) -> Lovm2Result<()> {
         while let Value::Ref(r) = self {
             *self = r
                 .unref()
@@ -83,6 +83,31 @@ impl Value {
 
     pub fn iter(&self) -> Lovm2Result<iter::Iter> {
         iter::Iter::try_from(self.clone())
+    }
+
+    pub fn deep_clone(&self) -> Self {
+        match self {
+            Value::Dict(d) => {
+                let mut dc = Value::dict();
+                for (key, val) in d.iter() {
+                    dc.set(&key.clone(), val.clone()).unwrap();
+                }
+                box_value(dc)
+            }
+            Value::List(ls) => {
+                let ls = ls.iter().map(Self::deep_clone).collect();
+                box_value(Value::List(ls))
+            }
+            Value::Ref(r) => {
+                r.unref_total().unwrap();
+                if let Some(inner) = &r.0 {
+                    box_value(inner.borrow().clone())
+                } else {
+                    Value::Ref(Reference(None))
+                }
+            }
+            _ => self.clone(),
+        }
     }
 
     pub fn delete(&mut self, key: &Value) -> Lovm2Result<()> {
@@ -102,6 +127,7 @@ impl Value {
 
     pub fn get(&self, key: &Value) -> Lovm2Result<Value> {
         match self {
+            Value::Str(_) => self.get_by_index(key.as_integer_inner()? as usize),
             Value::Dict(dict) => match dict.get(key) {
                 Some(val) => Ok(val.clone()),
                 None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),

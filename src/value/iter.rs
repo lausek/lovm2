@@ -136,6 +136,13 @@ impl Iter {
 impl TryFrom<Value> for Iter {
     type Error = Lovm2Error;
     fn try_from(value: Value) -> Result<Self, Self::Error> {
+        if let Value::Any(any) = &value {
+            if let Some(value) = any.borrow().0.downcast_ref::<Iter>() {
+                return Ok(value.clone());
+            }
+        }
+
+        // values supporting len tend to support iteration as well
         let _ = value.len()?;
         Ok(Self {
             ty: IterType::Over(value),

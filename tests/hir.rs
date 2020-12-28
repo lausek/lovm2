@@ -159,7 +159,7 @@ fn try_setting() {
         #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             let list = &frame.value_of(&list).unwrap();
-            assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap().unref().unwrap());
         })
     }
 }
@@ -395,12 +395,12 @@ fn set_field_on_dict() {
                 Value::Int(37),
                 frame.value_of(&d1).unwrap()
                     .get(&Value::from("x")).unwrap()
-                    .deref().unwrap()
+                    .unref().unwrap()
             );
             assert!(
                 !frame.value_of(&d2).unwrap()
                     .get(&Value::from("x")).unwrap()
-                    .deref().unwrap()
+                    .unref().unwrap()
                     .is_ref()
             );
             assert_eq!(
@@ -408,13 +408,13 @@ fn set_field_on_dict() {
                 frame.value_of(&d2).unwrap()
                     .get(&Value::from("x")).unwrap()
                     .get(&Value::from("y")).unwrap()
-                    .deref().unwrap()
+                    .unref().unwrap()
             );
             assert_eq!(
                 Value::Int(67),
                 ctx.value_of(&g).unwrap()
                     .get(&Value::from("x")).unwrap()
-                    .deref().unwrap()
+                    .unref().unwrap()
             );
         })
     }
@@ -527,7 +527,7 @@ fn store_without_reference() {
         #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
-            assert_eq!(Value::Int(7), frame.value_of(&y).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(7), frame.value_of(&y).unwrap().unref().unwrap());
         })
     }
 }
@@ -548,11 +548,11 @@ fn create_slice() {
             let s = frame.value_of(&s).unwrap();
             assert_eq!(
                 Value::Int(9),
-                s.get(&Value::Int(1)).unwrap().deref().unwrap()
+                s.get(&Value::Int(1)).unwrap().unref().unwrap()
             );
             assert_eq!(
                 Value::Int(9),
-                ls.get(&Value::Int(2)).unwrap().deref().unwrap()
+                ls.get(&Value::Int(2)).unwrap().unref().unwrap()
             );
         })
     }

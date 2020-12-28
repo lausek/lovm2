@@ -65,9 +65,9 @@ pub fn get_lovm2_user_dir() -> String {
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
         let mut second = $vm.ctx.pop_value()?;
-        second.deref_total()?;
+        second.unref_total()?;
         let first = $vm.ctx.last_value_mut()?;
-        first.deref_total()?;
+        first.unref_total()?;
         first.$fn(second)?;
     }};
 }
@@ -310,7 +310,7 @@ impl Vm {
                     let key = self.ctx.pop_value()?;
                     let obj = self.ctx.pop_value()?;
                     let val = obj.get(&key)?;
-                    self.ctx.push_value(val.deref().unwrap());
+                    self.ctx.push_value(val.unref().unwrap());
                 }
                 Instruction::RGet => {
                     let key = self.ctx.pop_value()?;
@@ -330,7 +330,7 @@ impl Vm {
                     let mut val = self.ctx.pop_value()?;
                     let target = self.ctx.pop_value()?;
 
-                    val.deref_total()?;
+                    val.unref_total()?;
 
                     match target {
                         Value::Ref(r) => *r.borrow_mut()? = val,
