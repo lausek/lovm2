@@ -1,5 +1,4 @@
 use lovm2::prelude::*;
-use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
@@ -16,8 +15,13 @@ fn argn(vm: &mut Vm) -> Lovm2Result<i64> {
 }
 
 #[lovm2_function]
-fn call(vm: &mut Vm, function_name: String, args: Value) -> Lovm2Result<Value> {
-    todo!()
+fn call(vm: &mut Vm, function_name: String, mut args: Value) -> Lovm2Result<Value> {
+    args.unref_total()?;
+
+    match args {
+        Value::List(args) => vm.call(function_name.as_ref(), args.as_slice()),
+        _ => err_not_supported(),
+    }
 }
 
 #[lovm2_function]

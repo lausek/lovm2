@@ -28,8 +28,7 @@ fn dynamic_varargs() {
             .step(Assign::local(args, lv2_call!(argn)))
             .step(Assign::local(result, 0));
 
-        let sum_loop = hir
-            .repeat_until(Expr::eq(args, 0))
+        hir.repeat_until(Expr::eq(args, 0))
             .step(Assign::local(arg, lv2_call!(pop_vstack)))
             .step(Assign::local(result, Expr::add(result, arg)))
             .step(Assign::decrement(args));
@@ -50,4 +49,29 @@ fn dynamic_varargs() {
 }
 
 #[test]
-fn dynamic_call() {}
+fn dynamic_call() {
+    let (n, i) = &lv2_var!(n, i);
+
+    let mut vm = run_module_test(|builder| {
+        let hir = builder
+            .add("return_argn")
+            .step(Assign::local(n, lv2_call!(argn)));
+
+        hir.step(Assign::local(i, n))
+            .repeat_until(Expr::eq(i, 0))
+            .step(lv2_call!(pop_vstack))
+            .step(Assign::decrement(i));
+
+        hir.step(Return::value(n));
+    });
+
+    let mut args = vec![];
+    for i in 0..5 {
+        assert_eq!(
+            Value::from(i),
+            vm.call("call", &["return_argn".into(), args.clone().into()])
+                .unwrap(),
+        );
+        args.push(Value::from(i));
+    }
+}
