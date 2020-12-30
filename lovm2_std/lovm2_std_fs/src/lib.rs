@@ -1,4 +1,5 @@
 use lovm2::prelude::*;
+use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
 use lovm2_std_data::File;
 
@@ -78,8 +79,18 @@ fn is_dir(path: String) -> bool {
 
 #[lovm2_function]
 fn list_dir(path: String) -> Lovm2Result<Value> {
-    std::fs::read_dir(path).map_err(Lovm2Error::from)?;
-    todo!()
+    let mut entries = vec![];
+
+    for entry in std::fs::read_dir(path).map_err(Lovm2Error::from)? {
+        let entry = entry?;
+        if let Some(entry) = entry.path().to_str() {
+            entries.push(Value::from(entry));
+        } else {
+            return Err(Lovm2Error::from("could not read dir entry"));
+        }
+    }
+
+    Ok(box_value(Value::List(entries)))
 }
 
 #[lovm2_function]
@@ -89,7 +100,8 @@ fn unlink(path: String) -> bool {
 
 #[lovm2_function]
 fn rename(from: String, to: String) -> Lovm2Result<bool> {
-    todo!()
+    std::fs::rename(from, to).map_err(Lovm2Error::from)?;
+    Ok(true)
 }
 
 lovm2_module_init!(fs);
