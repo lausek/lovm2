@@ -258,10 +258,6 @@ fn native_filter() {
         builder
             .add_with_args("even", vec![lv2_var!(x)])
             .step(Return::value(Expr::eq(Expr::rem(lv2_var!(x), 2), 0)));
-
-        builder
-            .add_with_args("toe", vec![lv2_var!(x)])
-            .step(Return::value(Value::from("e")));
     });
 
     assert_eq!(

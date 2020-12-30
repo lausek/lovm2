@@ -5,8 +5,10 @@ use std::collections::HashMap;
 
 // buffer
 #[lovm2_object]
+#[derive(Default)]
 pub struct Buffer {
     pub inner: Vec<u8>,
+    pub roff: usize,
 }
 
 // fs
