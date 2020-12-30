@@ -64,10 +64,10 @@ pub fn get_lovm2_user_dir() -> String {
 
 macro_rules! value_operation {
     ($vm:expr, $fn:ident) => {{
-        let mut second = $vm.ctx.pop_value()?;
-        second.unref_total()?;
+        let second = $vm.ctx.pop_value()?;
+        let second = second.clone_inner()?;
         let first = $vm.ctx.last_value_mut()?;
-        first.unref_total()?;
+        first.unref_inplace()?;
         first.$fn(second)?;
     }};
 }
@@ -310,7 +310,7 @@ impl Vm {
                     let key = self.ctx.pop_value()?;
                     let obj = self.ctx.pop_value()?;
                     let val = obj.get(&key)?;
-                    self.ctx.push_value(val.unref().unwrap());
+                    self.ctx.push_value(val.clone_inner()?);
                 }
                 Instruction::RGet => {
                     let key = self.ctx.pop_value()?;
@@ -327,13 +327,11 @@ impl Vm {
                     self.ctx.push_value(val);
                 }
                 Instruction::Set => {
-                    let mut val = self.ctx.pop_value()?;
+                    let val = self.ctx.pop_value()?;
                     let target = self.ctx.pop_value()?;
 
-                    val.unref_total()?;
-
                     match target {
-                        Value::Ref(r) => *r.borrow_mut()? = val,
+                        Value::Ref(r) => *r.borrow_mut()? = val.clone_inner()?,
                         _ => return Err(format!("cannot use {:?} as set target", target).into()),
                     }
                 }

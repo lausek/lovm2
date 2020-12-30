@@ -66,13 +66,6 @@ impl Value {
         }
     }
 
-    pub fn as_any_ref(&self) -> Lovm2Result<AnyRef> {
-        match self {
-            Value::Any(ar) => Ok(ar.clone()),
-            _ => err_not_supported(),
-        }
-    }
-
     pub fn as_bool_inner(&self) -> Lovm2Result<bool> {
         match self {
             Value::Bool(b) => Ok(*b),
@@ -141,7 +134,7 @@ impl Value {
             Value::Str(_) => ValueType::Str,
             Value::Dict(_) => ValueType::Dict,
             Value::List(_) => ValueType::List,
-            Value::Ref(r) => r.unref_total()?.type_id()?,
+            Value::Ref(r) => r.unref_to_value()?.borrow().type_id()?,
             _ => todo!(),
         };
         Ok(tid)

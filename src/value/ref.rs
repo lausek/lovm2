@@ -32,20 +32,26 @@ impl Reference {
         }
     }
 
-    pub fn unref(&self) -> Option<Value> {
-        self.0.as_ref().map(|r| r.borrow().clone())
+    // follow all references until a value is reached
+    pub fn unref_to_value(&self) -> Lovm2Result<Rc<RefCell<Value>>> {
+        if let Some(val) = &self.0 {
+            if let Value::Ref(r) = &*val.borrow() {
+                r.unref_to_value()
+            } else {
+                Ok(val.clone())
+            }
+        } else {
+            Err(Lovm2Error::from("dereference on empty"))
+        }
     }
 
-    pub fn unref_total(&self) -> Lovm2Result<Value> {
-        let mut val = self
-            .unref()
-            .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
-        while let Value::Ref(r) = val {
-            val = r
-                .unref()
-                .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
+    // create an independent copy of this reference
+    pub fn deep_clone(&self) -> Self {
+        if let Some(val) = &self.0 {
+            Self::from(val.borrow().deep_clone())
+        } else {
+            Self(None)
         }
-        Ok(val)
     }
 }
 
@@ -71,8 +77,8 @@ where
 
 impl std::cmp::PartialEq for Reference {
     fn eq(&self, rhs: &Self) -> bool {
-        self.unref_total().map_or(false, |lhs| {
-            rhs.unref_total().map_or(false, |rhs| lhs == rhs)
+        self.unref_to_value().map_or(false, |lhs| {
+            rhs.unref_to_value().map_or(false, |rhs| lhs == rhs)
         })
     }
 }
@@ -82,7 +88,8 @@ impl std::cmp::PartialEq<Value> for Reference {
         if let Value::Ref(rhs) = rhs {
             self == rhs
         } else {
-            self.unref_total().map_or(false, |lhs| lhs == *rhs)
+            self.unref_to_value()
+                .map_or(false, |lhs| *lhs.borrow() == *rhs)
         }
     }
 }

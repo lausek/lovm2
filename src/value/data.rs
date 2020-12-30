@@ -61,18 +61,19 @@ impl Value {
         Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
     }
 
-    pub fn unref(&self) -> Option<Value> {
-        match self {
-            Value::Ref(r) => r.unref(),
-            _ => None,
+    pub fn clone_inner(&self) -> Lovm2Result<Value> {
+        if let Value::Ref(r) = self {
+            Ok(r.unref_to_value()?.borrow().clone())
+        } else {
+            Ok(self.clone())
         }
     }
 
-    pub fn unref_total(&mut self) -> Lovm2Result<()> {
-        while let Value::Ref(r) = self {
-            *self = r
-                .unref()
-                .ok_or_else(|| Lovm2Error::from("dereference on empty"))?;
+    // make sure that the value is not wrapped in a reference.
+    // used for stack mutations as first operand.
+    pub fn unref_inplace(&mut self) -> Lovm2Result<()> {
+        if let Value::Ref(r) = self {
+            *self = r.unref_to_value()?.borrow().clone();
         }
         Ok(())
     }
@@ -98,14 +99,7 @@ impl Value {
                 let ls = ls.iter().map(Self::deep_clone).collect();
                 box_value(Value::List(ls))
             }
-            Value::Ref(r) => {
-                r.unref_total().unwrap();
-                if let Some(inner) = &r.0 {
-                    box_value(inner.borrow().clone())
-                } else {
-                    Value::Ref(Reference(None))
-                }
-            }
+            Value::Ref(r) => Value::Ref(r.deep_clone()),
             _ => self.clone(),
         }
     }
