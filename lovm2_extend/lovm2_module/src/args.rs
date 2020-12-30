@@ -87,7 +87,7 @@ impl FunctionArgs {
 
     pub fn as_tokens_call_position(
         &self,
-        callback: Option<&dyn Fn(&FunctionArg) -> syn::export::TokenStream2>,
+        pass_as_reference: bool
     ) -> impl quote::ToTokens {
         let mut parts = vec![];
 
@@ -97,11 +97,7 @@ impl FunctionArgs {
 
         for arg in self.simple.iter() {
             use crate::quote::ToTokens;
-            if let Some(callback) = callback {
-                parts.push(callback(arg).to_token_stream());
-            } else {
-                parts.push(arg.as_tokens_call_position().to_token_stream());
-            }
+            parts.push(arg.as_tokens_call_position(pass_as_reference).to_token_stream());
         }
 
         quote! { #( #parts, )* }
@@ -159,22 +155,12 @@ impl FunctionArgs {
     }
 
     pub fn generate_call(&self) -> impl quote::ToTokens {
-        let argscall = self.as_tokens_call_position(None);
+        let argscall = self.as_tokens_call_position(false);
 
         match self.simple.first() {
-            Some(first) if first.is_ref => {
+            Some(first) if !first.is_custom_ty() && first.is_ref => {
                 let first_name = &first.name;
-
-                let argscall_first_normalized = self.as_tokens_call_position(Some(
-                    &|arg: &FunctionArg| -> syn::export::TokenStream2 {
-                        if arg.name.to_string() == first_name.to_string() {
-                            (quote! { #first_name }).into()
-                        } else {
-                            use crate::quote::ToTokens;
-                            arg.as_tokens_call_position().to_token_stream()
-                        }
-                    },
-                ));
+                let argscall_first_normalized = self.as_tokens_call_position(true);
 
                 let mut_kw = if first.is_mut {
                     quote! { mut }
@@ -194,14 +180,14 @@ impl FunctionArgs {
                 };
 
                 quote! {
-                    if let lovm2::value::Value::Ref(r) = #first_name {
+                    if let lovm2_extend::prelude::Value::Ref(r) = #first_name {
                         use std::ops::{Deref, DerefMut};
                         let #first_name = r.unref_to_value()?;
                         let #mut_kw #first_name = (*#first_name).#borrow();
                         let #first_name = #first_name.#deref();
-                        _lv2_wrapper(#argscall_first_normalized)
-                    } else {
                         _lv2_wrapper(#argscall)
+                    } else {
+                        _lv2_wrapper(#argscall_first_normalized)
                     }
                 }
             }
@@ -248,15 +234,13 @@ impl FunctionArg {
         }
     }
 
-    pub fn as_tokens_call_position(&self) -> impl quote::ToTokens {
+    pub fn as_tokens_call_position(&self, pass_as_reference: bool) -> impl quote::ToTokens {
         let name = &self.name;
 
-        if self.is_mut && self.is_ref {
-            quote! { &mut #name }
-        } else if self.is_ref {
-            quote! { &#name }
-        } else {
-            quote! { #name }
+        match (self.is_mut, self.is_ref) {
+            (true, true) if pass_as_reference => quote! { &mut #name },
+            (_, true) if pass_as_reference => quote! { &#name },
+            _ => quote! { #name },
         }
     }
 

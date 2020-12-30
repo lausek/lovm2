@@ -54,6 +54,7 @@ fn from_json_value(val: &JsonValue) -> Lovm2Result<Value> {
     Ok(val)
 }
 
+// TODO: can this be changed to accept a &Value?
 fn to_json_value(val: Value) -> Lovm2Result<JsonValue> {
     let json = match val {
         Value::Nil => JsonValue::Null,
@@ -77,7 +78,7 @@ fn to_json_value(val: Value) -> Lovm2Result<JsonValue> {
             }
             json_ls.into()
         }
-        Value::Ref(r) => to_json_value(r.unref_total()?)?,
+        Value::Ref(r) => to_json_value(r.unref_to_value()?.borrow().clone())?,
         _ => {
             return Err(Lovm2Error::from(format!(
                 "{:?} not supported for json",

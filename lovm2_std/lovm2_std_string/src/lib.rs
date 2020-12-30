@@ -8,22 +8,17 @@ fn index_of(base: String, pat: String) -> Option<i64> {
 }
 
 #[lovm2_function]
-fn join(base: Value, sep: String) -> Lovm2Result<String> {
-    let base = base.unref().unwrap();
+fn join(base: &Value, sep: String) -> Lovm2Result<String> {
     if let Value::List(ls) = base {
         let mut items = vec![];
 
         for item in ls.iter() {
-            if item.is_ref() {
-                items.push(item.unref().unwrap().as_str_inner()?);
-            } else {
-                items.push(item.as_str_inner()?);
-            }
+            items.push(item.as_str_inner()?);
         }
 
         Ok(items.join(sep.as_ref()))
     } else {
-        Err("argument is not a list".into())
+        err_method_not_supported("join")
     }
 }
 

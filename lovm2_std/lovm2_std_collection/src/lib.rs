@@ -4,11 +4,7 @@ use lovm2_extend::prelude::*;
 use lovm2_std_data::*;
 
 #[lovm2_function]
-fn all(mut collection: Value) -> Lovm2Result<bool> {
-    if collection.is_ref() {
-        collection = collection.unref().unwrap();
-    }
-
+fn all(collection: &Value) -> Lovm2Result<bool> {
     match collection {
         Value::List(ls) => {
             for item in ls.iter() {
@@ -23,11 +19,7 @@ fn all(mut collection: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn any(mut collection: Value) -> Lovm2Result<bool> {
-    if collection.is_ref() {
-        collection = collection.unref().unwrap();
-    }
-
+fn any(collection: &Value) -> Lovm2Result<bool> {
     match collection {
         Value::List(ls) => {
             for item in ls.iter() {
@@ -42,27 +34,18 @@ fn any(mut collection: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn append(mut collection: Value, value: Value) -> Lovm2Result<()> {
-    use std::ops::DerefMut;
-
+fn append(collection: &mut Value, value: Value) -> Lovm2Result<()> {
     match collection {
-        Value::Ref(r) => match r.borrow_mut()?.deref_mut() {
-            Value::List(ls) => {
-                ls.push(value);
-                Ok(())
-            }
-            _ => err_not_supported(),
-        },
+        Value::List(ls) => {
+            ls.push(value);
+            Ok(())
+        }
         _ => err_not_supported(),
     }
 }
 
 #[lovm2_function]
-fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
-    if haystack.is_ref() {
-        haystack = haystack.unref().unwrap();
-    }
-
+fn contains(haystack: &Value, needle: Value) -> Lovm2Result<bool> {
     match haystack {
         Value::Dict(_) => Ok(haystack.get(&needle).is_ok()),
         Value::List(ls) => {
@@ -84,7 +67,7 @@ fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn count(mut val: Value) -> Lovm2Result<i64> {
+fn count(val: &Value) -> Lovm2Result<i64> {
     val.as_any_inner()
         .and_then(|any| {
             if let Some(buf) = any.borrow().0.downcast_ref::<Buffer>() {
@@ -110,12 +93,12 @@ fn deep_clone(val: Value) -> Value {
 }
 
 #[lovm2_function]
-fn delete(mut collection: Value, key: Value) -> Lovm2Result<bool> {
+fn delete(collection: &mut Value, key: Value) -> Lovm2Result<bool> {
     collection.delete(&key).map(|_| true)
 }
 
 #[lovm2_function]
-fn filter(vm: &mut Vm, collection: Value, func_name: String) -> Lovm2Result<Value> {
+fn filter(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
 
@@ -133,12 +116,12 @@ fn filter(vm: &mut Vm, collection: Value, func_name: String) -> Lovm2Result<Valu
 }
 
 #[lovm2_function]
-fn get(collection: Value, key: Value) -> Lovm2Result<Value> {
+fn get(collection: &Value, key: Value) -> Lovm2Result<Value> {
     collection.get(&key)
 }
 
 #[lovm2_function]
-fn map(vm: &mut Vm, collection: Value, func_name: String) -> Lovm2Result<Value> {
+fn map(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
 
@@ -152,14 +135,12 @@ fn map(vm: &mut Vm, collection: Value, func_name: String) -> Lovm2Result<Value> 
 }
 
 #[lovm2_function]
-fn set(mut collection: Value, key: Value, val: Value) -> Lovm2Result<bool> {
+fn set(collection: &mut Value, key: Value, val: Value) -> Lovm2Result<bool> {
     collection.set(&key, val).map(|_| true)
 }
 
 #[lovm2_function]
-fn sort(mut collection: Value) -> Lovm2Result<Value> {
-    collection.unref_total()?;
-
+fn sort(collection: &Value) -> Lovm2Result<Value> {
     let sorted = match collection {
         Value::Str(s) => {
             let mut cs: Vec<char> = s.chars().collect();
@@ -174,7 +155,7 @@ fn sort(mut collection: Value) -> Lovm2Result<Value> {
         }
         Value::Dict(_) => {
             let mut d = collection.deep_clone();
-            d.unref_total()?;
+            d.unref_inplace()?;
             if let Value::Dict(mut d) = d {
                 d.sort_keys();
                 box_value(Value::Dict(d))

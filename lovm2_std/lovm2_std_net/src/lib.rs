@@ -21,7 +21,7 @@ fn set_header(req: &mut Request, key: String, val: String) {
 
 #[lovm2_function]
 fn set_body(req: &mut Request, mut body: Value) -> Lovm2Result<bool> {
-    body.unref_total()?;
+    body.unref_inplace()?;
 
     if let Value::Str(body) = body {
         req.body = Some(body.as_bytes().to_vec());
@@ -108,6 +108,7 @@ fn get_body_as_string(res: &Response) -> Lovm2Result<String> {
 fn get_body_as_buffer(res: &Response) -> Lovm2Result<Buffer> {
     Ok(Buffer {
         inner: res.body.clone(),
+        ..Buffer::default()
     })
 }
 
