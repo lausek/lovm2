@@ -4,7 +4,7 @@ use super::*;
 
 pub struct FunctionArgs {
     vm: Option<Ident>,
-    simple: Vec<FunctionArg>,
+    pub(crate) simple: Vec<FunctionArg>,
 }
 
 impl FunctionArgs {
@@ -85,15 +85,23 @@ impl FunctionArgs {
         quote! { #( #parts, )* }
     }
 
-    pub fn as_tokens_call_position(&self) -> impl quote::ToTokens {
+    pub fn as_tokens_call_position(
+        &self,
+        callback: Option<&dyn Fn(&FunctionArg) -> syn::export::TokenStream2>,
+    ) -> impl quote::ToTokens {
         let mut parts = vec![];
 
         if let Some(vm) = &self.vm {
-            parts.push(vm);
+            parts.push(quote! { #vm });
         }
 
         for arg in self.simple.iter() {
-            parts.push(&arg.name);
+            use crate::quote::ToTokens;
+            if let Some(callback) = callback {
+                parts.push(callback(arg).to_token_stream());
+            } else {
+                parts.push(arg.as_tokens_call_position().to_token_stream());
+            }
         }
 
         quote! { #( #parts, )* }
@@ -104,15 +112,16 @@ impl FunctionArgs {
 
         // call convention requires reverse popping
         for arg in self.simple.iter().rev() {
+            let is_custom_ty = arg.is_custom_ty();
             let FunctionArg {
                 name,
                 ty_name,
-                is_ref,
                 is_mut,
+                ..
             } = arg;
 
-            let code = if *is_ref {
-                // if a immutable reference was requested, drop mutability
+            let code = if is_custom_ty {
+                // if an immutable reference was requested, drop mutability
                 let downcast_method = if *is_mut {
                     quote! { downcast_mut }
                 } else {
@@ -120,7 +129,7 @@ impl FunctionArgs {
                 };
 
                 quote! {
-                    let #name = vm.context_mut().pop_value()?.as_any_ref()?;
+                    let #name = vm.context_mut().pop_value()?.as_any_inner()?;
                     let mut #name = (*#name).borrow_mut();
                     let #name = (*#name).0.#downcast_method::<#ty_name>()
                                 .ok_or_else(|| (Lovm2ErrorTy::OperationNotSupported, "downcast"))?;
@@ -148,6 +157,57 @@ impl FunctionArgs {
             #vm
         }
     }
+
+    pub fn generate_call(&self) -> impl quote::ToTokens {
+        let argscall = self.as_tokens_call_position(None);
+
+        match self.simple.first() {
+            Some(first) if first.is_ref => {
+                let first_name = &first.name;
+
+                let argscall_first_normalized = self.as_tokens_call_position(Some(
+                    &|arg: &FunctionArg| -> syn::export::TokenStream2 {
+                        if arg.name.to_string() == first_name.to_string() {
+                            (quote! { #first_name }).into()
+                        } else {
+                            use crate::quote::ToTokens;
+                            arg.as_tokens_call_position().to_token_stream()
+                        }
+                    },
+                ));
+
+                let mut_kw = if first.is_mut {
+                    quote! { mut }
+                } else {
+                    quote! {}
+                };
+
+                let borrow = if first.is_mut {
+                    quote! { borrow_mut }
+                } else {
+                    quote! {borrow}
+                };
+                let deref = if first.is_mut {
+                    quote! { deref_mut }
+                } else {
+                    quote! {deref}
+                };
+
+                quote! {
+                    if let lovm2::value::Value::Ref(r) = #first_name {
+                        use std::ops::{Deref, DerefMut};
+                        let #first_name = r.unref_to_value()?;
+                        let #mut_kw #first_name = (*#first_name).#borrow();
+                        let #first_name = #first_name.#deref();
+                        _lv2_wrapper(#argscall_first_normalized)
+                    } else {
+                        _lv2_wrapper(#argscall)
+                    }
+                }
+            }
+            _ => quote! { _lv2_wrapper(#argscall) },
+        }
+    }
 }
 
 impl std::fmt::Display for FunctionArgs {
@@ -166,7 +226,7 @@ impl std::fmt::Display for FunctionArgs {
     }
 }
 
-struct FunctionArg {
+pub struct FunctionArg {
     pub(self) name: Ident,
     ty_name: Ident,
     is_ref: bool,
@@ -185,6 +245,25 @@ impl FunctionArg {
             quote! { mut #name: #ty }
         } else {
             quote! { #name: #ty }
+        }
+    }
+
+    pub fn as_tokens_call_position(&self) -> impl quote::ToTokens {
+        let name = &self.name;
+
+        if self.is_mut && self.is_ref {
+            quote! { &mut #name }
+        } else if self.is_ref {
+            quote! { &#name }
+        } else {
+            quote! { #name }
+        }
+    }
+
+    pub fn is_custom_ty(&self) -> bool {
+        match self.ty_name.to_string().as_str() {
+            "Value" | "bool" | "i64" | "f64" | "String" => false,
+            _ => true,
         }
     }
 }
