@@ -266,6 +266,12 @@ impl std::fmt::Display for Value {
     }
 }
 
+impl From<()> for Value {
+    fn from(_: ()) -> Self {
+        Value::Nil
+    }
+}
+
 impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Bool(b)

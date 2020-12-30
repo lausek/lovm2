@@ -1,6 +1,7 @@
 use lovm2::prelude::*;
 use lovm2::value::box_value;
 use lovm2_extend::prelude::*;
+use lovm2_std_data::*;
 
 #[lovm2_function]
 fn all(mut collection: Value) -> Lovm2Result<bool> {
@@ -41,6 +42,22 @@ fn any(mut collection: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
+fn append(mut collection: Value, value: Value) -> Lovm2Result<()> {
+    use std::ops::DerefMut;
+
+    match collection {
+        Value::Ref(r) => match r.borrow_mut()?.deref_mut() {
+            Value::List(ls) => {
+                ls.push(value);
+                Ok(())
+            }
+            _ => err_not_supported(),
+        },
+        _ => err_not_supported(),
+    }
+}
+
+#[lovm2_function]
 fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
     if haystack.is_ref() {
         haystack = haystack.unref().unwrap();
@@ -62,13 +79,29 @@ fn contains(mut haystack: Value, needle: Value) -> Lovm2Result<bool> {
             let needle = needle.as_str_inner()?;
             Ok(s.contains(&needle))
         }
-        _ => err_not_supported(),
+        _ => err_method_not_supported("contains"),
     }
 }
 
 #[lovm2_function]
 fn count(mut val: Value) -> Lovm2Result<i64> {
-    val.len().map(|n| n as i64)
+    val.as_any_inner()
+        .and_then(|any| {
+            if let Some(buf) = any.borrow().0.downcast_ref::<Buffer>() {
+                return Ok(buf.inner.len() as i64);
+            }
+
+            if let Some(file) = any.borrow().0.downcast_ref::<File>() {
+                let meta = file
+                    .inner
+                    .metadata()
+                    .map_err(|e| Lovm2Error::from(e.to_string()))?;
+                return Ok(meta.len() as i64);
+            }
+
+            err_method_not_supported("count")
+        })
+        .or_else(|_| val.len().map(|n| n as i64))
 }
 
 #[lovm2_function]

@@ -266,3 +266,16 @@ fn native_filter() {
             .unwrap(),
     );
 }
+
+#[test]
+fn native_append() {
+    let mut vm = run_module_test(|_| {});
+
+    let ls = box_value(Value::List(vec![]));
+    assert_eq!(0, ls.len().unwrap());
+    assert!(vm.call("append", &[ls.clone(), 2.into()]).is_ok());
+    assert_eq!(1, ls.len().unwrap());
+    assert_eq!(Value::from(2), ls.get(&0.into()).unwrap());
+
+    assert!(vm.call("append", &[1.into(), 2.into()]).is_err());
+}

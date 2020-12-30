@@ -126,6 +126,9 @@ pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<FunctionRet> {
                 return Ok(rt);
             }
         }
+        syn::Type::Tuple(tuple) if tuple.elems.is_empty() => {
+            return Ok(FunctionRet::None);
+        }
         _ => {}
     }
     Err(format!("unexpected type {:?}", ty))
