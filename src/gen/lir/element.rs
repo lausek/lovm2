@@ -111,7 +111,7 @@ impl LirElement {
 impl std::fmt::Display for LirElement {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Call { argn, ident } => write!(f, "\tCall({}, {})", argn, ident),
+            Self::Call { argn, ident } => write!(f, "\tCall({}, {})", ident, argn),
             Self::Cast { tyid } => write!(f, "\tCast({:?})", tyid),
             Self::Entry { ident } => write!(f, "{}:", ident),
             Self::Jump { condition, label } => match condition {

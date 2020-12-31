@@ -67,10 +67,10 @@ pub enum Instruction {
     /// jump to instruction offset if top of stack is false
     Jf(u16),
 
-    /// call function with `argn`, `global index`
-    Call(u8, u16),
+    /// call function with `ident index`, `argn`
+    Call(u16, u8),
     /// call a function in the same module
-    LCall(u8, u16),
+    LCall(u16, u8),
     /// return early from a code object
     Ret,
 

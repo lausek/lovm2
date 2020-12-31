@@ -93,7 +93,7 @@ impl LirLoweringRuntime {
         match lir_element {
             LirElement::Call { argn, ident } => {
                 let iidx = self.index_ident(&ident) as u16;
-                self.code.push(Instruction::Call(argn, iidx));
+                self.code.push(Instruction::Call(iidx, argn));
             }
             LirElement::Cast { tyid } => self.code.push(Instruction::Cast(tyid as u16)),
             LirElement::Entry { ident } => {
@@ -207,10 +207,10 @@ impl LirLoweringRuntime {
 
     fn postprocess(&mut self) {
         for inx in self.code.iter_mut() {
-            if let Instruction::Call(argn, iidx) = inx {
+            if let Instruction::Call(iidx, argn) = inx {
                 // if the calls target name was declared inside the current module
                 if self.entries.iter().any(|(idx, _)| *idx == *iidx as usize) {
-                    *inx = Instruction::LCall(*argn, *iidx);
+                    *inx = Instruction::LCall(*iidx, *argn);
                 }
             }
         }

@@ -372,14 +372,14 @@ impl Vm {
                         continue;
                     }
                 }
-                Instruction::Call(argn, gidx) => {
+                Instruction::Call(gidx, argn) => {
                     let func = &co.idents[*gidx as usize];
                     let other_co = self.ctx.lookup_code_object(func)?;
                     self.ctx.push_frame(*argn);
                     other_co.run(self)?;
                     self.ctx.pop_frame();
                 }
-                Instruction::LCall(argn, gidx) => {
+                Instruction::LCall(gidx, argn) => {
                     let (_, off) = co
                         .entries
                         .iter()
