@@ -26,7 +26,10 @@ impl Return {
 }
 
 impl HirLowering for Return {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         self.expr.lower(runtime);
         runtime.emit(LirElement::Ret);
     }

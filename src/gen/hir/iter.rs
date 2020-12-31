@@ -48,7 +48,10 @@ impl Iter {
 }
 
 impl HirLowering for Iter {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         match self {
             Self::Create(expr) => {
                 expr.lower(runtime);

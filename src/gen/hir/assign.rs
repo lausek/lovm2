@@ -142,17 +142,20 @@ impl From<Expr> for Access {
 }
 
 impl Assign {
-    fn lower_dynamic(self, runtime: &mut HirLoweringRuntime) {
-        let variable = self.access.target;
+    fn lower_dynamic<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
+        let target = &self.access.target;
 
         // push (initial) target onto stack
-        if runtime.has_local(&variable) {
-            runtime.emit(LirElement::push_dynamic(Scope::Local, variable));
+        if runtime.has_local(target) {
+            runtime.emit(LirElement::push_dynamic(Scope::Local, target));
         } else {
-            runtime.emit(LirElement::push_dynamic(Scope::Global, variable));
+            runtime.emit(LirElement::push_dynamic(Scope::Global, target));
         }
 
-        let mut key_it = self.access.keys.into_iter().peekable();
+        let mut key_it = self.access.keys.iter().peekable();
         // push key onto stack
         if let Some(key) = key_it.next() {
             key.lower(runtime);
@@ -171,35 +174,44 @@ impl Assign {
         runtime.emit(LirElement::Set);
     }
 
-    fn lower_static(self, runtime: &mut HirLoweringRuntime) {
+    fn lower_static<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         self.expr.lower(runtime);
 
-        let variable = self.access.target;
+        let target = &self.access.target;
         match self.ty {
             AssignType::StaticLocal => {
-                runtime.emit(LirElement::store(Scope::Local, variable));
+                runtime.emit(LirElement::store(Scope::Local, target));
             }
             AssignType::StaticGlobal => {
-                runtime.emit(LirElement::store(Scope::Global, variable));
+                runtime.emit(LirElement::store(Scope::Global, target));
             }
-            _ => unimplemented!(),
+            _ => unreachable!(),
         }
     }
 
-    fn lower_update(self, runtime: &mut HirLoweringRuntime) {
+    fn lower_update<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         self.expr.lower(runtime);
 
-        let var = self.access.target;
-        if runtime.has_local(&var) {
-            runtime.emit(LirElement::store(Scope::Local, var));
+        let target = &self.access.target;
+        if runtime.has_local(&target) {
+            runtime.emit(LirElement::store(Scope::Local, target));
         } else {
-            runtime.emit(LirElement::store(Scope::Global, var));
+            runtime.emit(LirElement::store(Scope::Global, target));
         }
     }
 }
 
 impl HirLowering for Assign {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         match &self.ty {
             AssignType::StaticLocal | AssignType::StaticGlobal => self.lower_static(runtime),
             AssignType::Dynamic => self.lower_dynamic(runtime),

@@ -1,5 +1,7 @@
 //! Sum type for every LIR element
 
+use std::borrow::Cow;
+
 use crate::value::{Value, ValueType};
 use crate::var::Variable;
 
@@ -7,16 +9,16 @@ use super::{Label, Operator, Scope};
 
 /// Sum type for every LIR element
 #[derive(Clone, Debug)]
-pub enum LirElement {
+pub enum LirElement<'hir> {
     Call {
         argn: u8,
-        ident: Variable,
+        ident: &'hir Variable,
     },
     Conv {
         tyid: ValueType,
     },
     Entry {
-        ident: Variable,
+        ident: &'hir Variable,
     },
     // Jmp(u16), Jt(u16), Jf(u16)
     Jump {
@@ -28,16 +30,16 @@ pub enum LirElement {
     Operation(Operator),
     // CPush(u16)
     PushConstant {
-        value: Value,
+        value: Cow<'hir, Value>,
     },
     // LPush(u16), GPush(u16),
     PushDynamic {
-        ident: Variable,
+        ident: &'hir Variable,
         scope: Scope,
     },
     // LMove(u16), GMove(u16)
     StoreDynamic {
-        ident: Variable,
+        ident: &'hir Variable,
         scope: Scope,
     },
     Import {
@@ -61,8 +63,9 @@ pub enum LirElement {
     IterReverse,
 }
 
-impl LirElement {
-    pub fn call(argn: u8, ident: Variable) -> Self {
+impl<'hir> LirElement<'hir> {
+    // TODO: change argument order
+    pub fn call(argn: u8, ident: &'hir Variable) -> Self {
         Self::Call { argn, ident }
     }
 
@@ -70,7 +73,7 @@ impl LirElement {
         Self::Conv { tyid }
     }
 
-    pub fn entry(ident: Variable) -> Self {
+    pub fn entry(ident: &'hir Variable) -> Self {
         Self::Entry { ident }
     }
 
@@ -88,11 +91,19 @@ impl LirElement {
         }
     }
 
-    pub fn push_constant(value: Value) -> Self {
-        Self::PushConstant { value }
+    pub fn push_constant(value: &'hir Value) -> Self {
+        Self::PushConstant {
+            value: Cow::Borrowed(value),
+        }
     }
 
-    pub fn push_dynamic(scope: Scope, ident: Variable) -> Self {
+    pub fn push_constant_owned(value: Value) -> Self {
+        Self::PushConstant {
+            value: Cow::Owned(value),
+        }
+    }
+
+    pub fn push_dynamic(scope: Scope, ident: &'hir Variable) -> Self {
         Self::PushDynamic { ident, scope }
     }
 
@@ -103,12 +114,12 @@ impl LirElement {
         Self::Operation(op.into())
     }
 
-    pub fn store(scope: Scope, ident: Variable) -> Self {
+    pub fn store(scope: Scope, ident: &'hir Variable) -> Self {
         Self::StoreDynamic { ident, scope }
     }
 }
 
-impl std::fmt::Display for LirElement {
+impl std::fmt::Display for LirElement<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Call { argn, ident } => write!(f, "\tCall({}, {})", ident, argn),

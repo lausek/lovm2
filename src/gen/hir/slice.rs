@@ -40,19 +40,22 @@ impl Slice {
 }
 
 impl HirLowering for Slice {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         self.target.lower(runtime);
 
-        if let Some(start) = self.start {
+        if let Some(start) = &self.start {
             start.lower(runtime);
         } else {
-            Expr::from(Value::Nil).lower(runtime);
+            runtime.emit(LirElement::push_constant_owned(Value::Nil));
         }
 
-        if let Some(end) = self.end {
+        if let Some(end) = &self.end {
             end.lower(runtime);
         } else {
-            Expr::from(Value::Nil).lower(runtime);
+            runtime.emit(LirElement::push_constant_owned(Value::Nil));
         }
 
         runtime.emit(LirElement::Slice);

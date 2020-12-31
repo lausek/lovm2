@@ -69,17 +69,20 @@ impl Initialize {
 }
 
 impl HirLowering for Initialize {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         let requires_box = matches!(&self.base, Value::Dict(_) | Value::List(_));
 
-        Expr::from(self.base).lower(runtime);
+        runtime.emit(LirElement::push_constant(&self.base));
 
         if requires_box {
             runtime.emit(LirElement::Box);
         }
 
         // slots are only allowed on `Dict` and `List`
-        for (key, expr) in self.slots.into_iter() {
+        for (key, expr) in self.slots.iter() {
             runtime.emit(LirElement::Duplicate);
             key.lower(runtime);
             runtime.emit(LirElement::RGet);

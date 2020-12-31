@@ -22,15 +22,15 @@ pub enum Operator {
     Operator2(Operator2),
 }
 
-impl From<Operator1> for Operator {
-    fn from(op: Operator1) -> Self {
-        Self::Operator1(op)
+impl From<&Operator1> for Operator {
+    fn from(op: &Operator1) -> Self {
+        Self::Operator1(op.clone())
     }
 }
 
-impl From<Operator2> for Operator {
-    fn from(op: Operator2) -> Self {
-        Self::Operator2(op)
+impl From<&Operator2> for Operator {
+    fn from(op: &Operator2) -> Self {
+        Self::Operator2(op.clone())
     }
 }
 

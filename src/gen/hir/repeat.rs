@@ -58,7 +58,10 @@ impl HasBlock for Repeat {
 }
 
 impl HirLowering for Repeat {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         runtime.push_loop();
 
         match self {
@@ -75,18 +78,24 @@ impl HirLowering for Repeat {
     }
 }
 
-fn endless_lower(runtime: &mut HirLoweringRuntime, block: Block) {
+fn endless_lower<'hir, 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block: &'hir Block)
+where
+    'hir: 'lir,
+{
     prelude(runtime);
     postlude(runtime, block);
 }
 
-fn iterating_lower(
-    runtime: &mut HirLoweringRuntime,
-    collection: Expr,
-    item: Variable,
-    block: Block,
-) {
-    Iter::create(collection).lower(runtime);
+fn iterating_lower<'hir, 'lir>(
+    runtime: &mut HirLoweringRuntime<'lir>,
+    collection: &'hir Expr,
+    item: &'hir Variable,
+    block: &'hir Block,
+) where
+    'hir: 'lir,
+{
+    collection.lower(runtime);
+    runtime.emit(LirElement::IterCreate);
 
     prelude(runtime);
 
@@ -100,14 +109,20 @@ fn iterating_lower(
 
     runtime.emit(LirElement::Duplicate);
     runtime.emit(LirElement::IterNext);
-    runtime.emit(LirElement::store(Scope::Local, item));
+    runtime.emit(LirElement::store(Scope::Local, &item));
 
     postlude(runtime, block);
 
     runtime.emit(LirElement::Drop);
 }
 
-fn until_lower(runtime: &mut HirLoweringRuntime, condition: Expr, block: Block) {
+fn until_lower<'hir, 'lir>(
+    runtime: &mut HirLoweringRuntime<'lir>,
+    condition: &'hir Expr,
+    block: &'hir Block,
+) where
+    'hir: 'lir,
+{
     prelude(runtime);
 
     let repeat_end = runtime.loop_mut().unwrap().end();
@@ -127,11 +142,16 @@ fn prelude(runtime: &mut HirLoweringRuntime) {
     runtime.emit(LirElement::Label(repeat_start));
 }
 
-fn postlude(runtime: &mut HirLoweringRuntime, block: Block) {
-    let repeat_end = runtime.loop_mut().unwrap().end();
+fn postlude<'hir, 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block: &'hir Block)
+where
+    'hir: 'lir,
+{
+    let repeat = runtime.loop_mut().unwrap();
+    let repeat_start = repeat.start();
+    let repeat_end = repeat.end();
 
     block.lower(runtime);
-    Continue::new().lower(runtime);
+    runtime.emit(LirElement::jump(repeat_start));
 
     runtime.emit(LirElement::Label(repeat_end));
 }
@@ -141,7 +161,10 @@ fn postlude(runtime: &mut HirLoweringRuntime, block: Block) {
 pub struct Break {}
 
 impl HirLowering for Break {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         let repeat_end = runtime.loop_mut().unwrap().end();
         runtime.emit(LirElement::jump(repeat_end));
     }
@@ -164,7 +187,10 @@ impl Continue {
 }
 
 impl HirLowering for Continue {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         let repeat_start = runtime.loop_mut().unwrap().start();
         runtime.emit(LirElement::jump(repeat_start));
     }
