@@ -32,7 +32,10 @@ impl Include {
 }
 
 impl HirLowering for Include {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         self.name.lower(runtime);
 
         let elem = LirElement::Import {

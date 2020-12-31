@@ -4,7 +4,7 @@ use super::*;
 
 /// List of statements forming a code block
 #[derive(Clone)]
-pub struct Block(Vec<HirElement>);
+pub struct Block(pub(crate) Vec<HirElement>);
 
 impl Block {
     pub fn new() -> Self {
@@ -73,8 +73,11 @@ impl std::iter::IntoIterator for Block {
 }
 
 impl HirLowering for Block {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
-        for element in self.0.into_iter() {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
+        for element in self.0.iter() {
             element.lower(runtime);
         }
     }

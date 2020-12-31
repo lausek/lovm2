@@ -64,9 +64,15 @@ impl Hir {
     }
 
     /// Add a HIR to the lowering runtime
-    pub fn build(&self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
+    pub fn build<'hir, 'lir>(
+        &'hir self,
+        ru: &mut HirLoweringRuntime<'lir>,
+    ) -> Lovm2CompileResult<()>
+    where
+        'hir: 'lir,
+    {
         // TODO: avoid clone here. needs change of `HirLoweringRuntime`
-        ru.add_hir(self.clone())
+        ru.add_hir(self)
     }
 }
 

@@ -17,7 +17,10 @@ pub enum HirElement {
 }
 
 impl HirLowering for HirElement {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         match self {
             HirElement::Assign(assign) => assign.lower(runtime),
             HirElement::Branch(branch) => branch.lower(runtime),

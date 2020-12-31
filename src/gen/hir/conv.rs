@@ -49,8 +49,11 @@ impl Conv {
 }
 
 impl HirLowering for Conv {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         self.expr.lower(runtime);
-        runtime.emit(LirElement::conv(self.ty));
+        runtime.emit(LirElement::conv(self.ty.clone()));
     }
 }

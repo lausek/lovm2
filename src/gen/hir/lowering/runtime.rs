@@ -12,18 +12,18 @@ use crate::var::Variable;
 use super::*;
 
 /// Information for the process of lowering HIR to LIR
-pub struct HirLoweringRuntime {
-    code: Vec<LirElement>,
+pub struct HirLoweringRuntime<'lir> {
+    code: Vec<LirElement<'lir>>,
     counter: LabelCounterRef,
     meta: ModuleMeta,
     optimizer: Box<dyn Optimizer>,
 
     branch_stack: Vec<HirLoweringBranch>,
-    locals: Vec<Variable>,
+    locals: Vec<&'lir Variable>,
     loop_stack: Vec<HirLoweringRepeat>,
 }
 
-impl HirLoweringRuntime {
+impl<'lir> HirLoweringRuntime<'lir> {
     pub fn new(meta: ModuleMeta, options: CompileOptions) -> Self {
         let optimizer = if options.optimize {
             Box::new(StandardOptimizer::new()) as Box<dyn Optimizer>
@@ -47,13 +47,17 @@ impl HirLoweringRuntime {
         self.counter.borrow_mut().create_new_label()
     }
 
-    pub fn add_hir(&mut self, hir: Hir) -> Lovm2CompileResult<()> {
+    pub fn add_hir(&mut self, hir: &'lir Hir) -> Lovm2CompileResult<()> {
         // before lowering a code object function, reset locals
         self.locals.clear();
 
-        let hir_elements = hir.block.into_iter();
+        let hir_elements = hir.block.0.iter();
 
-        self.add_prelude(hir.args)?;
+        // read in code object parameters from value stack
+        // read this in reverse, because last parameter is top of stack
+        for arg in hir.args.iter().rev() {
+            self.emit(LirElement::store(Scope::Local, arg));
+        }
 
         for element in hir_elements {
             element.lower(self);
@@ -62,7 +66,8 @@ impl HirLoweringRuntime {
         // automatically add a `return nil` if not present already
         match self.code.last_mut() {
             Some(LirElement::Ret) => {}
-            _ => Return::nil().lower(self),
+            // TODO: requires push of `Nil`
+            _ => self.emit(LirElement::Ret), //Return::nil().lower(self),
         }
 
         Ok(())
@@ -74,23 +79,14 @@ impl HirLoweringRuntime {
         lir_runtime.lower(self.code)
     }
 
-    pub fn add_prelude(&mut self, args: Vec<Variable>) -> Lovm2CompileResult<()> {
-        // read in code object parameters from value stack
-        // read this in reverse, because last parameter is top of stack
-        for arg in args.into_iter().rev() {
-            self.emit(LirElement::store(Scope::Local, arg));
-        }
-        Ok(())
-    }
-
-    pub fn emit(&mut self, elem: LirElement) {
+    pub fn emit(&mut self, elem: LirElement<'lir>) {
         if let LirElement::StoreDynamic {
             ident,
             scope: Scope::Local,
         } = &elem
         {
             if !self.has_local(ident) {
-                self.locals.push(ident.clone());
+                self.locals.push(ident);
             }
         }
 
@@ -100,7 +96,7 @@ impl HirLoweringRuntime {
     }
 
     pub fn has_local(&self, var: &Variable) -> bool {
-        self.locals.contains(var)
+        self.locals.contains(&var)
     }
 
     pub fn loop_mut(&mut self) -> Option<&mut HirLoweringRepeat> {

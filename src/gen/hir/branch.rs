@@ -32,7 +32,10 @@ impl Branch {
 }
 
 impl HirLowering for Branch {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         // branches without conditions but a default block make no sense
         if self.branches.is_empty() && self.default.is_some() {
             panic!("cannot lower branch: no conditions");
@@ -48,7 +51,7 @@ impl HirLowering for Branch {
         // the branch section starts now
         runtime.emit(LirElement::Label(branch_start));
 
-        for (condition, block) in self.branches.into_iter() {
+        for (condition, block) in self.branches.iter() {
             let cond = runtime.branch_mut().unwrap().add_condition();
 
             // declare the start of a new condition
@@ -69,7 +72,7 @@ impl HirLowering for Branch {
             runtime.emit(LirElement::Label(cond.end()));
         }
 
-        if let Some(default_block) = self.default {
+        if let Some(default_block) = &self.default {
             default_block.lower(runtime);
         }
 

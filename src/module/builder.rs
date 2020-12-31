@@ -91,13 +91,13 @@ impl ModuleBuilder {
         // main entry point must be at start (offset 0)
         let entry_key = Variable::from(ENTRY_POINT);
 
-        if let Some((key, hir)) = self.hirs.iter_mut().find(|(k, _)| **k == entry_key) {
-            ru.emit(LirElement::entry(key.clone()));
+        if let Some((key, hir)) = self.hirs.iter().find(|(k, _)| **k == entry_key) {
+            ru.emit(LirElement::entry(key));
             hir.build(&mut ru)?;
         }
 
-        for (key, hir) in self.hirs.iter_mut().filter(|(k, _)| **k != entry_key) {
-            ru.emit(LirElement::entry(key.clone()));
+        for (key, hir) in self.hirs.iter().filter(|(k, _)| **k != entry_key) {
+            ru.emit(LirElement::entry(key));
             hir.build(&mut ru)?;
         }
 

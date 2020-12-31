@@ -252,11 +252,14 @@ impl From<&Variable> for Expr {
 }
 
 impl HirLowering for Expr {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         match self {
-            Expr::Access(access) => {
-                let variable = access.target;
-                let mut key_it = access.keys.into_iter().peekable();
+            Expr::Access(ref access) => {
+                let variable = &access.target;
+                let mut key_it = access.keys.iter().peekable();
 
                 // push (initial) target onto stack
                 if runtime.has_local(&variable) {
@@ -278,9 +281,10 @@ impl HirLowering for Expr {
                     runtime.emit(LirElement::Get);
                 }
             }
-            Expr::Call(mut call) => {
-                call.keep(true);
-                call.lower(runtime);
+            Expr::Call(call) =>
+            /* call.keep(true); */
+            {
+                call.lower(runtime)
             }
             Expr::Conv(conv) => conv.lower(runtime),
             Expr::DynamicValue(init) => init.lower(runtime),
@@ -297,7 +301,7 @@ impl HirLowering for Expr {
                 let sc_label = if matches!(op, Operator2::And | Operator2::Or) {
                     let sc_label = runtime.create_new_label();
                     // jump if first expression was already true
-                    let cond = op == Operator2::Or;
+                    let cond = *op == Operator2::Or;
 
                     runtime.emit(LirElement::Duplicate);
                     runtime.emit(LirElement::jump_conditional(cond, sc_label.clone()));
@@ -316,18 +320,18 @@ impl HirLowering for Expr {
                 }
             }
             Expr::Slice(slice) => slice.lower(runtime),
-            Expr::Value { val, boxed } => {
+            Expr::Value { ref val, boxed } => {
                 runtime.emit(LirElement::push_constant(val));
 
-                if boxed {
+                if *boxed {
                     runtime.emit(LirElement::Box);
                 }
             }
             Expr::Variable(ref var) => {
                 if runtime.has_local(var) {
-                    runtime.emit(LirElement::push_dynamic(Scope::Local, var.clone()));
+                    runtime.emit(LirElement::push_dynamic(Scope::Local, var));
                 } else {
-                    runtime.emit(LirElement::push_dynamic(Scope::Global, var.clone()));
+                    runtime.emit(LirElement::push_dynamic(Scope::Global, var));
                 }
             }
         }

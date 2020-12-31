@@ -47,17 +47,20 @@ impl Call {
 }
 
 impl HirLowering for Call {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         // calling convention is pascal-style i.e. f(a, b)
         // will be lowered as:
         //  push a
         //  push b
         let argn = self.args.len();
-        for arg in self.args {
+        for arg in self.args.iter() {
             arg.lower(runtime);
         }
 
-        runtime.emit(LirElement::call(argn as u8, self.name));
+        runtime.emit(LirElement::call(argn as u8, &self.name));
 
         // every call has to leave a return value on stack.
         // if that value isn't needed e.g. for assignments, we

@@ -15,7 +15,10 @@ impl Interrupt {
 }
 
 impl HirLowering for Interrupt {
-    fn lower(self, runtime: &mut HirLoweringRuntime) {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
         runtime.emit(LirElement::Interrupt(self.n));
     }
 }

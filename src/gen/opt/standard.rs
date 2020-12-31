@@ -51,7 +51,7 @@ impl Optimizer for StandardOptimizer {
                     condition: cond @ Some(_),
                     ..
                 }] => {
-                    let bval: bool = value.clone().into();
+                    let bval: bool = value.as_ref().clone().into();
                     if bval == cond.unwrap() {
                         // always jump
                         *cond = None;
@@ -83,7 +83,8 @@ impl Optimizer for StandardOptimizer {
                 // and push the computed value instead
                 [LirElement::PushConstant { value: left }, LirElement::PushConstant { value: right }, LirElement::Operation(Operator::Operator2(op))] =>
                 {
-                    let (left, right) = (left.clone(), right.clone());
+                    // TODO: avoid clone here
+                    let (left, right) = (left.as_ref().clone(), right.as_ref().clone());
                     let newval = match op {
                         Operator2::Add => left.add(right),
                         Operator2::Sub => left.sub(right),
@@ -103,7 +104,7 @@ impl Optimizer for StandardOptimizer {
                     }
                     .unwrap();
 
-                    view[0] = LirElement::PushConstant { value: newval };
+                    view[0] = LirElement::push_constant_owned(newval);
 
                     code.pop();
                     code.pop();

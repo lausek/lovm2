@@ -14,7 +14,9 @@ pub(crate) type LabelCounterRef = std::rc::Rc<std::cell::RefCell<LabelCounter>>;
 
 /// Structures supporting transformation into LIR
 pub trait HirLowering {
-    fn lower(self, runtime: &mut HirLoweringRuntime);
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir;
 }
 
 /// Structures supporting custom jump targets
