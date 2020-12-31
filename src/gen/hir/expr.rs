@@ -281,11 +281,7 @@ impl HirLowering for Expr {
                     runtime.emit(LirElement::Get);
                 }
             }
-            Expr::Call(call) =>
-            /* call.keep(true); */
-            {
-                call.lower(runtime)
-            }
+            Expr::Call(call) => call.lower(runtime),
             Expr::Conv(conv) => conv.lower(runtime),
             Expr::DynamicValue(init) => init.lower(runtime),
             Expr::Iter(it) => it.lower(runtime),

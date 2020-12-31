@@ -78,7 +78,16 @@ impl HirLowering for Block {
         'hir: 'lir,
     {
         for element in self.0.iter() {
+            // every call has to leave a return value on stack.
+            // if that value isn't needed - as in a statement position - we
+            // need to get rid of it.
+            let requires_drop = matches!(element, HirElement::Call(_));
+
             element.lower(runtime);
+
+            if requires_drop {
+                runtime.emit(LirElement::Drop);
+            }
         }
     }
 }

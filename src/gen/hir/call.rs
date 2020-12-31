@@ -7,7 +7,6 @@ use super::*;
 pub struct Call {
     name: Variable,
     args: Vec<Expr>,
-    keep_value: bool,
 }
 
 impl Call {
@@ -18,7 +17,6 @@ impl Call {
         Self {
             args: vec![],
             name: name.into(),
-            keep_value: false,
         }
     }
 
@@ -29,7 +27,6 @@ impl Call {
         Self {
             args,
             name: name.into(),
-            keep_value: false,
         }
     }
 
@@ -39,10 +36,6 @@ impl Call {
     {
         self.args.push(expr.into());
         self
-    }
-
-    pub fn keep(&mut self, keep_value: bool) {
-        self.keep_value = keep_value;
     }
 }
 
@@ -55,18 +48,10 @@ impl HirLowering for Call {
         // will be lowered as:
         //  push a
         //  push b
-        let argn = self.args.len();
         for arg in self.args.iter() {
             arg.lower(runtime);
         }
 
-        runtime.emit(LirElement::call(argn as u8, &self.name));
-
-        // every call has to leave a return value on stack.
-        // if that value isn't needed e.g. for assignments, we
-        // need to get rid of it.
-        if !self.keep_value {
-            runtime.emit(LirElement::Drop);
-        }
+        runtime.emit(LirElement::call(self.args.len() as u8, &self.name));
     }
 }
