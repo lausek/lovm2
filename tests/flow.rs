@@ -1,7 +1,35 @@
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
-use lovm2::{define_code, Instruction};
+use lovm2::Instruction;
+
+/// Define `CodeObject` on a low-level basis
+#[macro_export]
+macro_rules! define_code {
+    {
+        $(consts {$($cval:expr),*})?
+        $(idents {$($name:ident),*})?
+        {
+            $( $inx:ident $($args:expr),* ; )*
+        }
+    } => {{
+        let mut co = lovm2::code::CodeObject::new();
+        $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
+        $( co.consts = vec![$( Value::from($cval) ),*]; )?
+
+        let c = vec![
+            $(
+                define_code! { compile_inx $inx $(, $args)* },
+            )*
+        ];
+
+        co.code = c;
+        co
+    }};
+
+    { compile_inx $inx:ident } => { Instruction::$inx };
+    { compile_inx $inx:ident $(, $args:expr)+ } => { Instruction::$inx($($args),*) };
+}
 
 #[test]
 fn pushing_constant() {

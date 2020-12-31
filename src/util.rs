@@ -1,31 +1,3 @@
-/// Define `CodeObject` on a low-level basis
-#[macro_export]
-macro_rules! define_code {
-    {
-        $(consts {$($cval:expr),*})?
-        $(idents {$($name:ident),*})?
-        {
-            $( $inx:ident $($args:expr),* ; )*
-        }
-    } => {{
-        let mut co = lovm2::code::CodeObject::new();
-        $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
-        $( co.consts = vec![$( Value::from($cval) ),*]; )?
-
-        let mut c = vec![
-            $(
-                define_code! { compile_inx $inx $(, $args)* },
-            )*
-        ];
-
-        co.code = c;
-        co
-    }};
-
-    { compile_inx $inx:ident } => { Instruction::$inx };
-    { compile_inx $inx:ident $(, $args:expr)+ } => { Instruction::$inx($($args),*) };
-}
-
 /// Creates an `Access` expression
 #[macro_export]
 macro_rules! lv2_access {
