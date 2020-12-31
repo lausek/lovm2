@@ -59,6 +59,12 @@ impl HirLoweringRuntime {
             element.lower(self);
         }
 
+        // automatically add a `return nil` if not present already
+        match self.code.last_mut() {
+            Some(LirElement::Ret) => {}
+            _ => Return::nil().lower(self),
+        }
+
         Ok(())
     }
 

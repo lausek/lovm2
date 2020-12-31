@@ -64,13 +64,7 @@ impl Hir {
     }
 
     /// Add a HIR to the lowering runtime
-    pub fn build(&mut self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
-        // automatically add a `return nil` if not present already
-        match self.block.last_mut() {
-            Some(HirElement::Return(_)) => {}
-            _ => self.block.step(Return::nil()),
-        }
-
+    pub fn build(&self, ru: &mut HirLoweringRuntime) -> Lovm2CompileResult<()> {
         // TODO: avoid clone here. needs change of `HirLoweringRuntime`
         ru.add_hir(self.clone())
     }

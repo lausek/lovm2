@@ -271,6 +271,21 @@ fn taking_parameters() {
 }
 
 #[test]
+fn automatic_return() {
+    let mut vm = Vm::new();
+    let mut builder = ModuleBuilder::new();
+
+    builder.entry();
+    builder.add("no-return");
+
+    let module = builder.build().unwrap();
+
+    vm.add_main_module(module).unwrap();
+
+    assert_eq!(Value::Nil, vm.call("no-return", &[]).unwrap());
+}
+
+#[test]
 fn return_values() {
     let mut builder = ModuleBuilder::new();
     let n = lv2_var!(n);
