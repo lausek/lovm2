@@ -52,6 +52,6 @@ impl HirLowering for Call {
             arg.lower(runtime);
         }
 
-        runtime.emit(LirElement::call(self.args.len() as u8, &self.name));
+        runtime.emit(LirElement::call(&self.name, self.args.len() as u8));
     }
 }

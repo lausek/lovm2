@@ -64,8 +64,7 @@ pub enum LirElement<'hir> {
 }
 
 impl<'hir> LirElement<'hir> {
-    // TODO: change argument order
-    pub fn call(argn: u8, ident: &'hir Variable) -> Self {
+    pub fn call(ident: &'hir Variable, argn: u8) -> Self {
         Self::Call { argn, ident }
     }
 
