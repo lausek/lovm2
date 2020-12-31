@@ -188,7 +188,7 @@ impl Assign {
             AssignType::StaticGlobal => {
                 runtime.emit(LirElement::store(Scope::Global, target));
             }
-            _ => unimplemented!(),
+            _ => unreachable!(),
         }
     }
 
