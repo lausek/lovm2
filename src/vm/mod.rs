@@ -395,7 +395,7 @@ impl Vm {
                         func.clone()(self)?;
                     }
                 }
-                Instruction::Cast(tid) => {
+                Instruction::Conv(tid) => {
                     let ty = ValueType::from_raw(*tid)?;
                     self.ctx.last_value_mut()?.cast_inplace(ty)?;
                 }

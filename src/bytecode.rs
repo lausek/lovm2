@@ -78,7 +78,7 @@ pub enum Instruction {
     Interrupt(u16),
 
     /// convert top of stack into type. see `Value::type_id`
-    Cast(u16),
+    Conv(u16),
     /// take top of stack as name of module to load and import functions without module prefix as
     /// well
     Import,

@@ -188,7 +188,7 @@ fn try_casting() {
     let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(&n, Cast::to_integer(5.));
+            Assign::local(&n, Conv::to_integer(5.));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -312,10 +312,10 @@ fn cast_to_string() {
 
     let main = builder.entry();
     let (a, b, c, d) = lv2_var!(a, b, c, d);
-    main.step(Assign::local(&a, Cast::to_str(10)));
-    main.step(Assign::local(&b, Cast::to_str(10.1)));
-    main.step(Assign::local(&c, Cast::to_str("10")));
-    main.step(Assign::local(&d, Cast::to_str(true)));
+    main.step(Assign::local(&a, Conv::to_str(10)));
+    main.step(Assign::local(&b, Conv::to_str(10.1)));
+    main.step(Assign::local(&c, Conv::to_str("10")));
+    main.step(Assign::local(&d, Conv::to_str(true)));
     main.step(Interrupt::new(10));
 
     run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {

@@ -12,7 +12,7 @@ pub enum LirElement {
         argn: u8,
         ident: Variable,
     },
-    Cast {
+    Conv {
         tyid: ValueType,
     },
     Entry {
@@ -66,8 +66,8 @@ impl LirElement {
         Self::Call { argn, ident }
     }
 
-    pub fn cast(tyid: ValueType) -> Self {
-        Self::Cast { tyid }
+    pub fn conv(tyid: ValueType) -> Self {
+        Self::Conv { tyid }
     }
 
     pub fn entry(ident: Variable) -> Self {
@@ -112,7 +112,7 @@ impl std::fmt::Display for LirElement {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Call { argn, ident } => write!(f, "\tCall({}, {})", ident, argn),
-            Self::Cast { tyid } => write!(f, "\tCast({:?})", tyid),
+            Self::Conv { tyid } => write!(f, "\tConv({:?})", tyid),
             Self::Entry { ident } => write!(f, "{}:", ident),
             Self::Jump { condition, label } => match condition {
                 Some(true) => write!(f, "\tJumpIfTrue(.{})", label),

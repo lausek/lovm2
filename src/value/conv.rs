@@ -18,7 +18,7 @@ pub enum ValueType {
 }
 
 impl Value {
-    pub fn cast(self, ty: ValueType) -> Lovm2Result<Value> {
+    pub fn conv(self, ty: ValueType) -> Lovm2Result<Value> {
         match ty {
             ValueType::Bool => self.as_bool(),
             ValueType::Int => self.as_integer(),

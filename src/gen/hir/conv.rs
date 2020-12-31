@@ -6,12 +6,12 @@ use crate::value::ValueType;
 
 /// Do type conversion on a lowered `Expr` at runtime
 #[derive(Clone, Debug)]
-pub struct Cast {
+pub struct Conv {
     ty: ValueType,
     expr: Box<Expr>,
 }
 
-impl Cast {
+impl Conv {
     fn new(ty: ValueType, expr: Expr) -> Self {
         Self {
             ty,
@@ -48,9 +48,9 @@ impl Cast {
     }
 }
 
-impl HirLowering for Cast {
+impl HirLowering for Conv {
     fn lower(self, runtime: &mut HirLoweringRuntime) {
         self.expr.lower(runtime);
-        runtime.emit(LirElement::cast(self.ty));
+        runtime.emit(LirElement::conv(self.ty));
     }
 }

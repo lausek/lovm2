@@ -95,7 +95,7 @@ impl LirLoweringRuntime {
                 let iidx = self.index_ident(&ident) as u16;
                 self.code.push(Instruction::Call(iidx, argn));
             }
-            LirElement::Cast { tyid } => self.code.push(Instruction::Cast(tyid as u16)),
+            LirElement::Conv { tyid } => self.code.push(Instruction::Conv(tyid as u16)),
             LirElement::Entry { ident } => {
                 let iidx = self.index_ident(&ident);
                 let off = self.code.len();

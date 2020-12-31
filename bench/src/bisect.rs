@@ -76,7 +76,7 @@ pub fn bisect_hir(module: &mut ModuleBuilder) {
     let hir = module.add_with_args("bisect", vec![coeffs.clone(), startx.clone()]);
 
     // function setup
-    hir.step(Assign::local(x, Cast::to_float(startx)))
+    hir.step(Assign::local(x, Conv::to_float(startx)))
         .step(Assign::local(dcoeffs, lv2_call!(derive, coeffs)))
         .step(Assign::local(prev, Value::Nil));
 

@@ -101,7 +101,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
             .borrow()
             .unwrap()
             .clone()
-            .cast(Lovm2ValueType::Int)
+            .conv(Lovm2ValueType::Int)
         {
             Ok(val) => Ok(Value::from_struct(val).to_py(py)),
             _ => Err(PyRuntimeError::new_err(
@@ -118,7 +118,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
             .borrow()
             .unwrap()
             .clone()
-            .cast(Lovm2ValueType::Float)
+            .conv(Lovm2ValueType::Float)
         {
             Ok(val) => Ok(Value::from_struct(val).to_py(py)),
             _ => Err(PyRuntimeError::new_err(

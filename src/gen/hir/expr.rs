@@ -33,7 +33,7 @@ macro_rules! auto_implement {
 pub enum Expr {
     Access(Access),
     Call(Call),
-    Cast(Cast),
+    Conv(Conv),
     DynamicValue(Initialize),
     Iter(Iter),
     Operation1(Operator1, Box<Expr>),
@@ -124,7 +124,7 @@ impl Expr {
         match self {
             Expr::Access(_) => todo!(),
             Expr::Call(_) => todo!(),
-            Expr::Cast(_) => todo!(),
+            Expr::Conv(_) => todo!(),
             Expr::DynamicValue(init) => {
                 let mut base = init.base.clone();
                 for (key, val) in init.slots.iter() {
@@ -203,9 +203,9 @@ impl From<Call> for Expr {
     }
 }
 
-impl From<Cast> for Expr {
-    fn from(cast: Cast) -> Expr {
-        Expr::Cast(cast)
+impl From<Conv> for Expr {
+    fn from(conv: Conv) -> Expr {
+        Expr::Conv(conv)
     }
 }
 
@@ -282,7 +282,7 @@ impl HirLowering for Expr {
                 call.keep(true);
                 call.lower(runtime);
             }
-            Expr::Cast(cast) => cast.lower(runtime),
+            Expr::Conv(conv) => conv.lower(runtime),
             Expr::DynamicValue(init) => init.lower(runtime),
             Expr::Iter(it) => it.lower(runtime),
             Expr::Operation1(op, expr) => {

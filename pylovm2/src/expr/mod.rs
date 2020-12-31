@@ -3,7 +3,7 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::prelude::{Cast, Iter, Operator2};
+use lovm2::prelude::{Conv, Iter, Operator2};
 use lovm2::Variable;
 
 pub use self::conv::*;
@@ -209,25 +209,25 @@ impl Expr {
 impl Expr {
     pub fn to_bool(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_bool(self.inner.clone()).into(),
+            inner: Conv::to_bool(self.inner.clone()).into(),
         })
     }
 
     pub fn to_int(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_integer(self.inner.clone()).into(),
+            inner: Conv::to_integer(self.inner.clone()).into(),
         })
     }
 
     pub fn to_float(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_float(self.inner.clone()).into(),
+            inner: Conv::to_float(self.inner.clone()).into(),
         })
     }
 
     pub fn to_str(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_str(self.inner.clone()).into(),
+            inner: Conv::to_str(self.inner.clone()).into(),
         })
     }
 }
