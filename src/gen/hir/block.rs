@@ -4,7 +4,7 @@ use super::*;
 
 /// List of statements forming a code block
 #[derive(Clone)]
-pub struct Block(pub(crate) Vec<HirElement>);
+pub struct Block(Vec<HirElement>);
 
 impl Block {
     pub fn new() -> Self {

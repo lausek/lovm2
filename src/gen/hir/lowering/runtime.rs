@@ -51,23 +51,21 @@ impl<'lir> HirLoweringRuntime<'lir> {
         // before lowering a code object function, reset locals
         self.locals.clear();
 
-        let hir_elements = hir.block.0.iter();
-
         // read in code object parameters from value stack
         // read this in reverse, because last parameter is top of stack
         for arg in hir.args.iter().rev() {
             self.emit(LirElement::store(Scope::Local, arg));
         }
 
-        for element in hir_elements {
-            element.lower(self);
-        }
+        hir.block.lower(self);
 
         // automatically add a `return nil` if not present already
         match self.code.last_mut() {
             Some(LirElement::Ret) => {}
-            // TODO: requires push of `Nil`
-            _ => self.emit(LirElement::Ret), //Return::nil().lower(self),
+            _ => {
+                self.emit(LirElement::push_constant_owned(Value::Nil));
+                self.emit(LirElement::Ret);
+            }
         }
 
         Ok(())
