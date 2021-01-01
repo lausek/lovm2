@@ -105,7 +105,6 @@ impl LirLoweringRuntime {
                 let off = match self.offsets.get_mut(&label) {
                     Some(Offset::Resolved(off)) => *off as u16,
                     Some(Offset::Unresolved(uoffs)) => {
-                        // TODO: is this correct?
                         uoffs.push(self.code.len());
                         u16::MAX
                     }
@@ -125,7 +124,6 @@ impl LirLoweringRuntime {
                 self.code.push(inx)
             }
             LirElement::Label(label) => {
-                // TODO: is this correct?
                 let coff = self.code.len();
 
                 if let Some(Offset::Unresolved(jmps)) =

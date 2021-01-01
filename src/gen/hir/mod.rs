@@ -71,7 +71,6 @@ impl Hir {
     where
         'hir: 'lir,
     {
-        // TODO: avoid clone here. needs change of `HirLoweringRuntime`
         ru.add_hir(self)
     }
 }
