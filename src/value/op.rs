@@ -86,6 +86,28 @@ impl std::ops::Rem for Value {
     }
 }
 
+impl std::ops::Shl for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn shl(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Int(a << b)),
+            _ => err_not_supported(),
+        }
+    }
+}
+
+impl std::ops::Shr for Value {
+    type Output = Lovm2Result<Value>;
+
+    fn shr(self, other: Value) -> Lovm2Result<Value> {
+        match (self, other) {
+            (Int(a), Int(b)) => Ok(Int(a >> b)),
+            _ => err_not_supported(),
+        }
+    }
+}
+
 impl std::ops::BitAnd for Value {
     type Output = Lovm2Result<Value>;
 

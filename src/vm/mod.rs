@@ -341,6 +341,8 @@ impl Vm {
                 Instruction::Div => value_operation!(self, div_inplace),
                 Instruction::Pow => value_operation!(self, pow_inplace),
                 Instruction::Rem => value_operation!(self, rem_inplace),
+                Instruction::Shl => value_operation!(self, shl_inplace),
+                Instruction::Shr => value_operation!(self, shr_inplace),
                 Instruction::And => value_operation!(self, and_inplace),
                 Instruction::Or => value_operation!(self, or_inplace),
                 Instruction::XOr => value_operation!(self, xor_inplace),

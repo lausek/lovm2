@@ -38,6 +38,11 @@ pub enum Instruction {
     /// = first % second
     Rem,
 
+    /// logical shift left `first` by `second` places
+    Shl,
+    /// logical shift right `first` by `second` places
+    Shr,
+
     /// logical and for `Bool`, bitwise and for `Int`
     And,
     /// logical or for `Bool`, bitwise or for `Int`

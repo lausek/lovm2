@@ -92,6 +92,8 @@ impl Optimizer for StandardOptimizer {
                         Operator2::Div => left.div(right),
                         Operator2::Pow => left.pow(right),
                         Operator2::Rem => left.rem(right),
+                        Operator2::Shl => left.shl(right),
+                        Operator2::Shr => left.shr(right),
                         Operator2::And => left.bitand(right),
                         Operator2::Or => left.bitor(right),
                         Operator2::XOr => left.bitxor(right),

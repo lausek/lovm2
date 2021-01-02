@@ -62,6 +62,22 @@ impl Value {
         Ok(())
     }
 
+    pub fn shl_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+        match (self, other) {
+            (Int(ref mut a), Int(b)) => *a <<= b,
+            _ => err_not_supported()?,
+        }
+        Ok(())
+    }
+
+    pub fn shr_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+        match (self, other) {
+            (Int(ref mut a), Int(b)) => *a >>= b,
+            _ => err_not_supported()?,
+        }
+        Ok(())
+    }
+
     pub fn pow_inplace(&mut self, exp: Value) -> Lovm2Result<()> {
         let exp = exp.as_integer_inner()?;
         match self {

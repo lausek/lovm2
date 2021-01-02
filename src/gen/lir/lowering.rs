@@ -141,6 +141,8 @@ impl LirLoweringRuntime {
                         Operator2::Div => Instruction::Div,
                         Operator2::Pow => Instruction::Pow,
                         Operator2::Rem => Instruction::Rem,
+                        Operator2::Shl => Instruction::Shl,
+                        Operator2::Shr => Instruction::Shr,
                         Operator2::And => Instruction::And,
                         Operator2::Or => Instruction::Or,
                         Operator2::XOr => Instruction::XOr,

@@ -657,3 +657,26 @@ fn iterating_repeat_nested() {
 
     run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
 }
+
+#[test]
+fn shift_values() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(4), *ctx.value_of("a").unwrap());
+        assert_eq!(Value::from(8), *ctx.value_of("b").unwrap());
+        assert_eq!(Value::from(0b10100000), *ctx.value_of("c").unwrap());
+        assert_eq!(Value::from(0), *ctx.value_of("d").unwrap());
+    }
+
+    let (a, b, c, d) = &lv2_var!(a, b, c, d);
+    let mut builder = ModuleBuilder::new();
+
+    builder
+        .entry()
+        .step(Assign::global(a, Expr::shl(2, 1)))
+        .step(Assign::global(b, Expr::shr(16, 1)))
+        .step(Assign::global(c, Expr::shl(0b00001010, 4)))
+        .step(Assign::global(d, Expr::shr(0b0001010, 4)))
+        .step(Interrupt::new(10));
+
+    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+}
