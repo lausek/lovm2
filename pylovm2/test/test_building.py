@@ -191,3 +191,16 @@ class TestBuilding(Test):
         self.assertEqual([0, 1, 2, 3, 4], vm.ctx().globals('r1'))
         self.assertEqual([-5, -4, -3, -2, -1], vm.ctx().globals('r2'))
         self.assertEqual([4, 3, 2, 1, 0], vm.ctx().globals('r3'))
+
+    def test_shifting_value(self, internals):
+        main_hir = internals.main
+        main_hir.assign_global('a', Expr.shl(2, 2))
+        main_hir.assign_global('b', Expr.shr(16, 2))
+        main_hir.interrupt(10)
+        module = internals.mod.build()
+
+        def testfn(ctx):
+            assert 8 == int(ctx.globals('a'))
+            assert 4 == int(ctx.globals('b'))
+
+        self.run_module_test(module, testfn)

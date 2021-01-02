@@ -139,6 +139,18 @@ impl Expr {
 
     #[classmethod]
     #[args(args = "*")]
+    pub fn shl(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Shl, args)
+    }
+
+    #[classmethod]
+    #[args(args = "*")]
+    pub fn shr(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Shr, args)
+    }
+
+    #[classmethod]
+    #[args(args = "*")]
     pub fn rem(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
         auto_wrapper!(Operator2::Rem, args)
     }
