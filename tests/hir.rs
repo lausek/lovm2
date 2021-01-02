@@ -635,3 +635,25 @@ fn iterating_repeat_ranged() {
 
     run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
 }
+
+#[test]
+fn iterating_repeat_nested() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(17199), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i, j) = &lv2_var!(sum, i, j);
+
+    let main_hir = builder.entry();
+
+    main_hir.step(Assign::global(sum, 0));
+    main_hir
+        .repeat_iterating(Iter::create_ranged(0, 5), i)
+        .repeat_iterating(Iter::create_ranged(5, 10), j)
+        .step(Assign::global(sum, Expr::add(sum, Expr::pow(j, i))));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+}
