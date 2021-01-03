@@ -14,11 +14,13 @@ description = "a lightweight virtual machine with a focus on simplicity and exte
 [[bin]]
 name = "lovm2-repl"
 path = "bin/bin.rs"
+# required for criterion to work
 bench = false
 
 [lib]
 name = "lovm2"
 path = "src/lib.rs"
+# required for criterion to work
 bench = false
 
 [dependencies]
@@ -32,3 +34,7 @@ indexmap = { version = "1.6.1", features = ["serde"] }
 
 [dev-dependencies]
 test-utils = { path = "./tests/test-utils" }
+
+[features]
+default = ["stdlib"]
+stdlib = []

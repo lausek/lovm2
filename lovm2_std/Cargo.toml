@@ -20,6 +20,10 @@ lovm2_std_net = { path = "./lovm2_std_net" }
 lovm2_std_regex = { path = "./lovm2_std_regex" }
 lovm2_std_string = { path = "./lovm2_std_string" }
 
+[features]
+net = []
+regex = []
+
 #[workspace]
 #members = [
 #    "lovm2_std_buffer",
