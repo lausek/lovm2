@@ -113,7 +113,7 @@ impl Vm {
     /// Create a new instance with standard functions already imported
     pub fn with_std() -> Self {
         let mut vm = Self::new();
-        if cfg!(features = "stdlib") {
+        if cfg!(feature = "stdlib") {
             vm.add_module(create_standard_module(), false).unwrap();
         }
         vm

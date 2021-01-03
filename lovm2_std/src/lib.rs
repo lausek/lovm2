@@ -6,7 +6,6 @@ pub use lovm2_std_json;
 pub use lovm2_std_math;
 #[cfg(feature = "net")]
 pub use lovm2_std_net;
-#[cfg(feature = "regex")]
 pub use lovm2_std_regex;
 pub use lovm2_std_string;
 
@@ -18,6 +17,5 @@ pub use lovm2_std_json::*;
 pub use lovm2_std_math::*;
 #[cfg(feature = "net")]
 pub use lovm2_std_net::*;
-#[cfg(feature = "regex")]
 pub use lovm2_std_regex::*;
 pub use lovm2_std_string::*;

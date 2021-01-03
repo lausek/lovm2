@@ -7,9 +7,10 @@ edition = "2018"
 [lib]
 name = "lovm2_std"
 path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-lovm2_std_buffer = { path = "./lovm2_std_buffer" }
+lovm2_std_buffer = { path = "./lovm2_std_buffer", default-features = false }
 lovm2_std_collection = { path = "./lovm2_std_collection" }
 lovm2_std_data = { path = "./lovm2_std_data" }
 lovm2_std_json = { path = "./lovm2_std_json" }
@@ -22,7 +23,6 @@ lovm2_std_string = { path = "./lovm2_std_string" }
 
 [features]
 net = []
-regex = []
 
 #[workspace]
 #members = [
