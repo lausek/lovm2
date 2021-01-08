@@ -42,7 +42,7 @@ impl Module {
         use std::fs::File;
         use std::io::Read;
 
-        const ELF_MAGIC_NUMBER: &[u8] = &[0x7F, 'E' as u8, 'L' as u8, 'F' as u8];
+        const ELF_MAGIC_NUMBER: &[u8] = &[0x7F, b'E', b'L', b'F'];
 
         let mut mark = [0; 4];
         let mut file = File::open(path).unwrap();

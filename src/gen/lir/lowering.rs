@@ -24,7 +24,7 @@ fn patch_addrs(
             Instruction::Jf(off) => *off = coff,
             Instruction::Jt(off) => *off = coff,
             Instruction::Jmp(off) => *off = coff,
-            _ => unreachable!(),
+            inx => return Err(format!("cannot patch address into {:?} instruction", inx).into()),
         }
     }
 

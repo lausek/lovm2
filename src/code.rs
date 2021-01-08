@@ -10,7 +10,7 @@ use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::Vm;
 
-pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, 'L' as u8, 'V' as u8, '2' as u8];
+pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, b'L', b'V', b'2'];
 
 /// Generic object implementing the `CallProtocol`
 pub type CallableRef = Rc<dyn CallProtocol>;

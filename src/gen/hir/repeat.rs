@@ -105,7 +105,7 @@ fn iterating_lower<'hir, 'lir>(
     runtime.emit(LirElement::IterHasNext);
 
     // break loop if iterator does not have another item
-    runtime.emit(LirElement::jump_conditional(false, repeat_end.clone()));
+    runtime.emit(LirElement::jump_conditional(false, repeat_end));
 
     runtime.emit(LirElement::Duplicate);
     runtime.emit(LirElement::IterNext);
@@ -131,7 +131,7 @@ fn until_lower<'hir, 'lir>(
     // which is equal to a break. the instruction will
     // receive its final address once the block has been
     // lowered.
-    runtime.emit(LirElement::jump_conditional(true, repeat_end.clone()));
+    runtime.emit(LirElement::jump_conditional(true, repeat_end));
 
     postlude(runtime, block);
 }

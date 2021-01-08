@@ -86,7 +86,7 @@ impl Iter {
     pub fn reverse(self) -> Self {
         let reversed = !self.reversed;
 
-        let it = match &self.ty {
+        match &self.ty {
             IterType::Limit(limit) if !self.reversed => Self {
                 current: *limit - 1,
                 ty: IterType::Limit(self.current),
@@ -117,9 +117,7 @@ impl Iter {
                     reversed,
                 }
             }
-        };
-
-        it
+        }
     }
 
     pub fn collect(mut self) -> Vec<Value> {
@@ -222,7 +220,7 @@ pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
 
 pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
     get_iter!(vm, it);
-    vm.context_mut().push_value(it.next()?.into());
+    vm.context_mut().push_value(it.next()?);
     Ok(())
 }
 
