@@ -5,8 +5,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PyTuple};
 
-use lovm2::gen::{hir, HasBlock};
-use lovm2::module::{ModuleMeta, DEFAULT_MODULE_NAME};
+use lovm2::gen::{hir, HasBlock, ModuleMeta, DEFAULT_MODULE_NAME};
 
 use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};

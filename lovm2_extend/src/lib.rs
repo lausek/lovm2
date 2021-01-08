@@ -111,7 +111,7 @@ pub fn create_test_vm() -> Vm {
     let build_dir = format!("{}/target/debug", cargo_root);
     assert!(std::path::Path::new(&build_dir).exists());
 
-    let mut vm = Vm::with_std();
+    let mut vm = Vm::new();
     vm.add_load_path(build_dir);
 
     vm

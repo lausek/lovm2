@@ -5,8 +5,6 @@
 //! implementing the `CallProtocol` can be added and executed from inside the VM. On load, all
 //! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
-mod builder;
-mod meta;
 mod shared;
 mod slots;
 mod standard;
@@ -19,8 +17,6 @@ use crate::code::CallProtocol;
 use crate::code::{CodeObject, CodeObjectFunction, LV2_MAGIC_NUMBER};
 use crate::var::Variable;
 
-pub use self::builder::ModuleBuilder;
-pub use self::meta::{ModuleMeta, DEFAULT_MODULE_NAME};
 pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
 pub use self::slots::Slots;
 pub use self::standard::add_standard_module;

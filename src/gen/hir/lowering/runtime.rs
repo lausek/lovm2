@@ -6,7 +6,7 @@ use std::rc::Rc;
 use lovm2_error::*;
 
 use crate::code::CodeObject;
-use crate::module::ModuleMeta;
+use crate::gen::ModuleMeta;
 use crate::var::Variable;
 
 use super::*;

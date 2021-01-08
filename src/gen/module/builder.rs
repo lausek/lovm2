@@ -5,10 +5,10 @@ use std::rc::Rc;
 
 use lovm2_error::*;
 
-use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement};
+use crate::code::CodeObjectFunction;
+use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement, ModuleMeta};
+use crate::module::{Module, ENTRY_POINT};
 use crate::var::Variable;
-
-use super::*;
 
 /// Representation of modules before lowering
 #[derive(Clone)]
