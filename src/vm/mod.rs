@@ -8,7 +8,7 @@ use lovm2_error::*;
 
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
-use crate::module::{create_standard_module, Module};
+use crate::module::{add_standard_module, Module};
 use crate::value::{box_value, Value, ValueType};
 use crate::var::Variable;
 
@@ -114,7 +114,8 @@ impl Vm {
     pub fn with_std() -> Self {
         let mut vm = Self::new();
         if cfg!(feature = "stdlib") {
-            vm.add_module(create_standard_module(), false).unwrap();
+            // TODO: this creates an error
+            add_standard_module(&mut vm).unwrap();
         }
         vm
     }

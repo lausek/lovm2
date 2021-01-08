@@ -7,7 +7,7 @@ edition = "2018"
 [lib]
 name = "lovm2_std"
 path = "src/lib.rs"
-crate-type = ["cdylib", "rlib"]
+#crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 lovm2_std_buffer = { path = "./lovm2_std_buffer", default-features = false }

@@ -23,7 +23,7 @@ pub use self::builder::ModuleBuilder;
 pub use self::meta::{ModuleMeta, DEFAULT_MODULE_NAME};
 pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
 pub use self::slots::Slots;
-pub use self::standard::create_standard_module;
+pub use self::standard::add_standard_module;
 
 /// Name of the [CodeObject] entry that is used as a programs starting point inside
 /// [Vm::run](crate::vm::Vm::run)

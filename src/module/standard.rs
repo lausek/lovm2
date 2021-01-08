@@ -2,11 +2,12 @@
 
 use std::rc::Rc;
 
-use crate::code::{CallProtocol, CodeObject};
+use crate::code::CallProtocol;
 use crate::lovm2_builtin;
-use crate::module::Module;
 use crate::value::Value;
 use crate::vm::Vm;
+
+use super::*;
 
 #[lovm2_builtin]
 fn input(vm: &mut Vm) -> Lovm2Result<()> {
@@ -49,18 +50,26 @@ fn print(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-/// Create a [Module] of builtin functions. If [Vm::with_std] is used, this
+/// Add standard functions to the given vm. If [Vm::with_std] is used, this
 /// gets loaded automatically.
-pub fn create_standard_module() -> Module {
-    let mut module: Module = CodeObject {
-        name: "std".to_string(),
-        ..CodeObject::default()
+pub fn add_standard_module(vm: &mut Vm) -> Lovm2Result<()> {
+    vm.add_function("input".into(), InputBuiltin::instantiate())?;
+    vm.add_function("len".into(), LenBuiltin::instantiate())?;
+    vm.add_function("print".into(), PrintBuiltin::instantiate())?;
+
+    for modname in &[
+        "buffer",
+        "collection",
+        "fs",
+        "functional",
+        "json",
+        "math",
+        "net",
+        "regex",
+        "string",
+    ] {
+        vm.add_module_by_name(modname, None, false)?;
     }
-    .into();
 
-    module.slots.insert("input", InputBuiltin::instantiate());
-    module.slots.insert("len", LenBuiltin::instantiate());
-    module.slots.insert("print", PrintBuiltin::instantiate());
-
-    module
+    Ok(())
 }

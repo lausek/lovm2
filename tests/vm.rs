@@ -155,7 +155,13 @@ fn main_has_no_entry_point() {
     let mut vm = Vm::new();
 
     let e = vm.add_main_module(module).err().unwrap();
-    assert!(matches!(e, Lovm2Error { ty: Lovm2ErrorTy::NoEntryPoint, .. }));
+    assert!(matches!(
+        e,
+        Lovm2Error {
+            ty: Lovm2ErrorTy::NoEntryPoint,
+            ..
+        }
+    ));
 }
 
 #[test]
@@ -201,4 +207,15 @@ fn setting_interrupts() {
     assert!(vm.set_interrupt(10, |_| { unreachable!() }).is_ok());
     assert!(vm.set_interrupt(11, |_| { unreachable!() }).is_err());
     assert!(vm.set_interrupt(64, |_| { unreachable!() }).is_ok());
+}
+
+#[test]
+fn call_stdlib_functions() {
+    let mut vm = Vm::with_std();
+
+    assert_eq!(
+        Value::from("a"),
+        vm.call("trim", &["    a ".into()]).unwrap(),
+    );
+    assert!(vm.call("new_request", &["".into()]).is_ok());
 }

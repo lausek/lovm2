@@ -8,7 +8,7 @@ edition = "2018"
 
 [lib]
 name = "lovm2_std_data"
-crate-type = ["cdylib", "rlib"]
+#crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 lovm2 = { path = "../../" }
