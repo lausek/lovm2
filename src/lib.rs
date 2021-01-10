@@ -45,8 +45,6 @@
 #![allow(clippy::wrong_self_convention)]
 //#![feature(result_cloned)]
 
-extern crate lovm2_internals;
-
 pub mod code;
 pub mod gen;
 pub mod module;
@@ -60,6 +58,3 @@ pub(crate) mod var;
 
 pub use crate::bytecode::Instruction;
 pub use crate::var::Variable;
-
-/// Used for generating wrappers of statically linked functions to be called from lovm2
-pub use lovm2_internals::lovm2_builtin;

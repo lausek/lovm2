@@ -1,15 +1,11 @@
 //! Native implementation of lovm2's builtin functions
 
-use std::rc::Rc;
-
-use crate::code::CallProtocol;
-use crate::lovm2_builtin;
+use crate::code::create_callable;
 use crate::value::Value;
 use crate::vm::Vm;
 
 use super::*;
 
-#[lovm2_builtin]
 fn input(vm: &mut Vm) -> Lovm2Result<()> {
     use std::io::stdin;
 
@@ -21,7 +17,6 @@ fn input(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-#[lovm2_builtin]
 fn len(vm: &mut Vm) -> Lovm2Result<()> {
     let target = vm.context_mut().pop_value()?;
 
@@ -31,7 +26,6 @@ fn len(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-#[lovm2_builtin]
 fn print(vm: &mut Vm) -> Lovm2Result<()> {
     use std::io::Write;
 
@@ -53,9 +47,9 @@ fn print(vm: &mut Vm) -> Lovm2Result<()> {
 /// Add standard functions to the given vm. If [Vm::with_std] is used, this
 /// gets loaded automatically.
 pub fn add_standard_module(vm: &mut Vm) -> Lovm2Result<()> {
-    vm.add_function("input".into(), InputBuiltin::instantiate())?;
-    vm.add_function("len".into(), LenBuiltin::instantiate())?;
-    vm.add_function("print".into(), PrintBuiltin::instantiate())?;
+    vm.add_function("input".into(), create_callable(input))?;
+    vm.add_function("len".into(), create_callable(len))?;
+    vm.add_function("print".into(), create_callable(print))?;
 
     for modname in &[
         "buffer",
