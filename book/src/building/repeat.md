@@ -11,6 +11,10 @@ let repeat_endless = main_hir.repeat();
 let repeat_until = main_hir.repeat_until(expr);
 ```
 
+To avoid namespace collissions in Rust, there is no `while` construct but you can simply create it via `.repeat_until(Expr::not(..))`. The optimizer makes sure that no instruction overhead is generated.
+
+Inside loop blocks you are free to use `Break` and `Continue` to precisely control the flow. As in every programming language, `Break` terminates the loop while `Continue` jumps to its start again. 
+
 The `.repeat_iterating(collection, item)` constructor is able to consecutively assign every entity to the variable passed as `item` as long as the `collection` value supports iteration. Check the [Iterators](./iterators.md) chapter if you want to find out more about this.
 
 ``` rust,no_run
@@ -21,10 +25,6 @@ let repeat_iterating = main_hir.repeat_iterating(lv2_list!(1, 2, 3), lv2_var!(i)
 let it = Iter::create(lv2_list!(1, 2, 3));
 let repeat_iterating = main_hir.repeat_iterating(it, lv2_var!(i));
 ```
-
-To avoid namespace collissions in Rust, there is no `while` construct but you can simply create it via `.repeat_until(Expr::not(..))`. The optimizer makes sure that no instruction overhead is generated.
-
-Inside loop blocks you are free to use `Break` and `Continue` to precisely control the flow. As in every programming language, `Break` terminates the loop while `Continue` jumps to its start again. 
 
 ## Example
 
