@@ -1,6 +1,8 @@
 # Optimization
 
-The rudimentary bytecode optimizer is enabled by default. It acts upon the generated `LIR`. If you want to disable optimization at all use the method `build_with_options` and set the attribute `optimize` to false.
+A rudimentary bytecode optimizer is enabled by default. It acts upon the generated `LIR`. If you want to disable optimization at all, use the method `build_with_options` and set the attribute `optimize` to false.
+
+`lovm2` gives you a guarantee that your `HIR` will not be unexpectedly altered when lowering.
 
 ## Dead Code elimination
 
@@ -24,11 +26,11 @@ CPush(1)   =>   CPush(2)
 Add
 ```
 
-> **v0.4.7 Note:** the optimizer currently only optimizes expressions if all operands are constant.
+> **Note:** The optimizer currently only optimizes expressions if all operands are constant and does not cover neutral elements like `+ 0` or `* 1` as such.
 
 ## Logical short-curcuit
 
-All languages should not evaluate the second operand of a `Or` or `And` operation if the first result is already sufficient for the expressions outcome.
+It is common for languages to avoid evaluating the second operand of `Or`/`And` operations if the first term is already sufficient for the expressions outcome.
 
 ## Small adjustments
 

@@ -17,7 +17,7 @@ pub enum Expr {
     // operations with two operands
     Operation2,
     // result of a type conversion
-    Cast,
+    Conv,
     // attribute read on a list or dict
     Access,
     // special variant for creating lists and dicts

@@ -2632,7 +2632,7 @@ hljs.registerLanguage("bytecode", (() => {
             keywords: {
                 $pattern: e.UNDERSCORE_IDENT_RE,
                 literal: "nil",
-                keyword: "LPush GPush CPush LMove GMove Drop Dup Get RGet Set Add Sub Mul Div Pow Rem And Or Not Eq Ne Ge Gt Le Lt Jmp Jt Jf Call LCall Ret Interrupt Cast Import NImport Box Slice",
+                keyword: "LPush GPush CPush LMove GMove Drop Dup Get RGet Set Add Sub Mul Div Pow Rem And Or Not Eq Ne Ge Gt Le Lt Jmp Jt Jf Call LCall Ret Interrupt Conv Import NImport Box Slice",
                 built_in: ""
             },
             contains: o.concat([e.C_NUMBER_MODE, e.APOS_STRING_MODE, e.QUOTE_STRING_MODE, {
@@ -2665,7 +2665,7 @@ hljs.registerLanguage("lir", (() => {
             keywords: {
                 $pattern: e.UNDERSCORE_IDENT_RE,
                 literal: "nil",
-                keyword: "Call Cast JumpIfTrue JumpIfFalse Jump Operator1 Operator2 CPush PushLocal PushGlobal StoreLocal StoreGlobal Interrupt Box Drop Duplicate Get RGet Ret Set Slice",
+                keyword: "Call Conv JumpIfTrue JumpIfFalse Jump Operator1 Operator2 CPush PushLocal PushGlobal StoreLocal StoreGlobal Interrupt Box Drop Duplicate Get RGet Ret Set Slice",
                 built_in: ""
             },
             contains: o.concat([e.C_NUMBER_MODE, e.APOS_STRING_MODE, e.QUOTE_STRING_MODE, {

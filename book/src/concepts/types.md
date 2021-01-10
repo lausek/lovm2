@@ -18,7 +18,7 @@ These types also utilize `Ref` heavily. If you use the standard `lovm2` function
 
 ## Conversion
 
-The `Cast` instruction is able to convert data according to the following rules:
+The `Conv` instruction is able to convert data according to the following rules:
 
 |from / to| Nil | Bool | Int | Float | String | List | Dict | Ref |
 |:-----:|:---:|:----:|:---:|:-----:|:------:|:----:|:----:|:---:|
