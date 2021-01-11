@@ -9,7 +9,7 @@ cargo test
 
 # assure that benchmark code compiles
 pushd bench
-cargo build --benches
+env RUSTFLAGS="--cfg lovm2_version=\"0.4.8\"" cargo build --benches
 popd
 
 # build python bindings and run tests
@@ -19,7 +19,7 @@ pytest
 popd
 
 # test the shared object extension
-pushd lovm2_extend
+pushd src/lovm2_extend
 for example in $(ls ./examples); do
     pushd ./examples/$example
     cargo build
@@ -36,19 +36,7 @@ cargo build
 popd
 
 # test standard library
-pushd lovm2_std
-for submodule in $(ls | grep lovm2); do
-    pushd $submodule
-    cargo build
-    popd
-done
-
-for submodule in $(ls | grep lovm2); do
-    pushd $submodule
-    cargo test
-    popd
-done
-
+pushd src/lovm2_std
 cargo build
 cargo test
 popd

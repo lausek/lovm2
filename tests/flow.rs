@@ -1,6 +1,6 @@
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
 use lovm2::value::Value;
-use lovm2::vm::Vm;
 use lovm2::Instruction;
 
 /// Define `CodeObject` on a low-level basis
@@ -33,7 +33,7 @@ macro_rules! define_code {
 
 #[test]
 fn pushing_constant() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 2 }
 
@@ -50,7 +50,7 @@ fn pushing_constant() {
 
 #[test]
 fn store_global() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 42 }
         idents { globaln }
@@ -72,7 +72,7 @@ fn store_global() {
 
 #[test]
 fn calculation() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 2, 3 }
         idents { result_add, result_sub, result_mul, result_div }
@@ -124,7 +124,7 @@ fn calculation() {
 
 #[test]
 fn jumping() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 0, 1, 10, "a" }
         idents { i, output }

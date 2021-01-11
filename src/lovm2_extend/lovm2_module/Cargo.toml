@@ -1,0 +1,19 @@
+[package]
+name = "lovm2_module"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "lovm2_module"
+proc-macro = true
+
+[dependencies]
+lazy_static = "1.4.0"
+lovm2_core = { path = "../../lovm2_core" }
+proc-macro2 = "1.0.24"
+quote = "1.0.7"
+
+[dependencies.syn]
+version = "1.0.48"
+features = ["full", "printing", "extra-traits"]

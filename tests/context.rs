@@ -1,5 +1,5 @@
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
-use lovm2::vm::Vm;
 
 use test_utils::*;
 
@@ -16,7 +16,7 @@ fn load_avoid_sigabrt() {
 
     let this_dir = Path::new(file!()).parent().unwrap().canonicalize().unwrap();
     let this_dir = this_dir.to_str().unwrap();
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.load_paths.clear();
     vm.load_paths.push(this_dir.to_string());
 
@@ -35,7 +35,7 @@ fn avoid_double_import() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|_name| {
         let mut builder = ModuleBuilder::named("abc");
         builder.add("add");

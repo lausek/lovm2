@@ -1,7 +1,7 @@
 #![allow(unused_parens)]
 
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
-use lovm2::value::Value;
 use lovm2::vm::{Context, Vm};
 
 use test_utils::*;
@@ -22,7 +22,7 @@ macro_rules! define_test {
             hir.step(Interrupt::new(10));
         )*
 
-        run_module_test(Vm::with_std(), builder.build().unwrap(), $ensure).unwrap();
+        run_module_test(create_vm_with_std(), builder.build().unwrap(), $ensure).unwrap();
     }};
 }
 
@@ -216,7 +216,7 @@ fn true_branching() {
 
     hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
     })
@@ -244,7 +244,7 @@ fn multiple_branches() {
 
     hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::from("buzz"), *frame.value_of("result").unwrap());
     })
@@ -262,7 +262,7 @@ fn taking_parameters() {
 
     builder.entry().step(lv2_call!(called, 2, 7));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&a).unwrap());
         assert_eq!(Value::Int(7), *frame.value_of(&b).unwrap());
@@ -297,7 +297,7 @@ fn return_values() {
         .step(Assign::local(&n, Call::new("returner")))
         .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(10), *frame.value_of(&n).unwrap());
     })
@@ -315,7 +315,7 @@ fn drop_call_values() {
         .step(Call::new("returner"))
         .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         assert!(ctx.last_value_mut().is_err());
     })
     .unwrap();
@@ -333,7 +333,7 @@ fn cast_to_string() {
     main.step(Assign::local(&d, Conv::to_str(true)));
     main.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::from("10"), *frame.value_of(&a).unwrap());
         assert_eq!(Value::from("10.1"), *frame.value_of(&b).unwrap());
@@ -360,7 +360,7 @@ fn folding_expr() {
     ))
     .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
         let n = ctx.value_of(&n).unwrap();
         assert_eq!(Value::Int(2), *a);
@@ -451,7 +451,7 @@ fn call_into_vm() {
     let module = builder.build().unwrap();
 
     // ensure that the interrupt has been called
-    run_module_test(Vm::with_std(), module, |ctx| {
+    run_module_test(create_vm_with_std(), module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
     })
@@ -588,7 +588,7 @@ fn iterating_repeat() {
         .step(Assign::global(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
 
 #[test]
@@ -612,7 +612,7 @@ fn iterating_repeat_inplace() {
         .step(Assign::global(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
 
 #[test]
@@ -633,7 +633,7 @@ fn iterating_repeat_ranged() {
         .step(Assign::global(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
 
 #[test]
@@ -655,7 +655,7 @@ fn iterating_repeat_nested() {
         .step(Assign::global(sum, Expr::add(sum, Expr::pow(j, i))));
     main_hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
 
 #[test]
@@ -678,5 +678,5 @@ fn shift_values() {
         .step(Assign::global(d, Expr::shr(0b0001010, 4)))
         .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), check).unwrap();
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }

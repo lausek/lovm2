@@ -1,6 +1,6 @@
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
 use lovm2::value::Value;
-use lovm2::vm::Vm;
 use lovm2::Instruction;
 
 #[test]
@@ -28,7 +28,7 @@ fn merge_not_jump_false() {
         .iter()
         .any(|c| matches!(c, Instruction::Not)));
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
@@ -62,7 +62,7 @@ fn merge_constant_jump() {
     // check if dead code elimination is working
     assert_eq!(2, module.code_object.code.len());
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
@@ -84,7 +84,7 @@ fn short_circuit_and() {
     let module = builder.build().unwrap();
     println!("{}", module);
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
@@ -106,7 +106,7 @@ fn short_circuit_or() {
     let module = builder.build().unwrap();
     println!("{}", module);
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
@@ -136,7 +136,7 @@ fn compute_constants() {
     assert_eq!(1, module.code_object.consts.len());
     assert!(module.code_object.consts.contains(&expected));
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
@@ -173,7 +173,7 @@ fn dead_code_elimination_else_branche() {
     assert_eq!(4, module.code_object.consts.len());
     assert!(!module.code_object.consts.contains(&Value::Int(7)));
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 

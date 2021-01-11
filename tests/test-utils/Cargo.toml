@@ -10,4 +10,3 @@ path = "src/lib.rs"
 
 [dependencies]
 lovm2 = { path = "../../" }
-lovm2_error = { path = "../../src/lovm2_error" }
