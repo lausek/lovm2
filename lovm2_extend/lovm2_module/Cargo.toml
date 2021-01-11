@@ -12,6 +12,7 @@ proc-macro = true
 lazy_static = "1.4.0"
 lovm2_core = { path = "../../src/lovm2_core" }
 lovm2_error = { path = "../../src/lovm2_error" }
+proc-macro2 = "1.0.24"
 quote = "1.0.7"
 
 [dependencies.syn]

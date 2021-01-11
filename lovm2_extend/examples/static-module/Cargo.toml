@@ -1,14 +1,11 @@
 [package]
-name = "primitives"
+name = "static-module"
 version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
 [lib]
-crate-type = ["cdylib"]
+name = "static_module"
 
 [dependencies]
 lovm2_extend = { path = "../../" }
-
-[dev-dependencies]
-lovm2 = { path = "../../../" }

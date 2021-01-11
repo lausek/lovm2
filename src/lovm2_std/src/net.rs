@@ -62,7 +62,7 @@ fn exec(req: &Request) -> Lovm2Result<Response> {
     }
 
     let mut body = vec![];
-    let mut rbuf = req.body.as_ref().map(Vec::as_slice);
+    let mut rbuf = req.body.as_deref();
 
     {
         let mut transfer = easy.transfer();

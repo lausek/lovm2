@@ -57,7 +57,7 @@ let module = module.build().unwrap();
 println!("{}", module);
 
 // load the module and run it
-let mut vm = Vm::with_std();
+let mut vm = create_vm_with_std();
 vm.add_main_module(module).expect("load error");
 vm.run().expect("run error");
 ```

@@ -1,10 +1,10 @@
 use std::path::Path;
 
+use lovm2::create_vm_with_std;
 use lovm2::code::CodeObject;
 use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::value::Value;
-use lovm2::vm::Vm;
 
 const SERIALIZE_PATH: &str = "/tmp/hello-world.lovm2c";
 const DESERIALIZE_PATH: &str = "/tmp/assign-global.lovm2c";
@@ -42,7 +42,7 @@ fn deserialize_module() {
 
     let module = Module::load_from_file(DESERIALIZE_PATH).unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
@@ -66,7 +66,7 @@ fn global_uses() {
 
     assert!(!module.uses().is_empty());
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
 
     let called = Rc::new(std::cell::Cell::new(false));
     let called_ref = called.clone();

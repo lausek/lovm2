@@ -27,7 +27,7 @@ fn read_line(buffer: &mut Buffer) -> Lovm2Result<String> {
 
     while let Some(c) = buffer.inner.get(n) {
         n += 1;
-        if *c == '\n' as u8 {
+        if *c == b'\n' {
             break;
         }
     }

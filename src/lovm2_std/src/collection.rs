@@ -145,7 +145,7 @@ fn sort(collection: &Value) -> Lovm2Result<Value> {
     let sorted = match collection {
         Value::Str(s) => {
             let mut cs: Vec<char> = s.chars().collect();
-            cs.sort();
+            cs.sort_unstable();
             let sorted: String = cs.into_iter().collect();
             Value::from(sorted)
         }

@@ -8,8 +8,7 @@ pub fn argn(vm: &mut Vm) -> Lovm2Result<i64> {
         .lstack_mut()
         .iter_mut()
         .rev()
-        .skip(1)
-        .next()
+        .nth(1)
         .unwrap();
     Ok(frame.argn as i64)
 }

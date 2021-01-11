@@ -1,5 +1,6 @@
 use test_utils::*;
 
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
@@ -13,7 +14,7 @@ fn load_hook_none() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|_name| Ok(None));
 
     assert!(run_module_test(vm, module, |_| ()).is_err());
@@ -32,7 +33,7 @@ fn load_custom_module() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
@@ -62,7 +63,7 @@ fn import_global_scope() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
@@ -98,7 +99,7 @@ fn import_vice_versa() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
@@ -128,7 +129,7 @@ fn custom_naming_scheme() {
     ex.add("call");
     let ex = ex.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
 
     vm.set_import_hook(|module, name| {
         let key = to_lower_camel_case(name);
@@ -211,7 +212,7 @@ fn setting_interrupts() {
 
 #[test]
 fn call_stdlib_functions() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
 
     assert_eq!(
         Value::from("a"),

@@ -113,7 +113,7 @@ impl Vm {
     /// Create a new instance with standard functions already imported
     #[deprecated]
     pub fn with_std() -> Self {
-        let mut vm = Self::new();
+        let vm = Self::new();
         if cfg!(feature = "stdlib") {
             // TODO: this creates an error
             //add_standard_module(&mut vm).unwrap();

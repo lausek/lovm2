@@ -36,19 +36,7 @@ cargo build
 popd
 
 # test standard library
-pushd lovm2_std
-for submodule in $(ls | grep lovm2); do
-    pushd $submodule
-    cargo build
-    popd
-done
-
-for submodule in $(ls | grep lovm2); do
-    pushd $submodule
-    cargo test
-    popd
-done
-
+pushd src/lovm2_std
 cargo build
 cargo test
 popd

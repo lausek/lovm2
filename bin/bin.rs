@@ -1,5 +1,5 @@
+use lovm2::create_vm_with_std;
 use lovm2::gen::prelude::*;
-use lovm2::vm::Vm;
 
 fn loading() -> ModuleBuilder {
     let mut builder = ModuleBuilder::new();
@@ -23,7 +23,7 @@ fn main() {
         Ok(result) => {
             println!("{}", result);
 
-            let mut vm = Vm::with_std();
+            let mut vm = create_vm_with_std();
             vm.add_main_module(result).unwrap();
 
             if let Err(err) = vm.run() {
