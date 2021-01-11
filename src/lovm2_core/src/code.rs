@@ -113,7 +113,7 @@ impl CodeObject {
             .unwrap()
             .to_string();
         let loc = path.as_ref().to_str().unwrap().to_string();
-        let mut file = File::open(path).map_err(|e| e.to_string())?;
+        let mut file = File::open(path).or_else(err_from_string)?;
         let mut buffer = vec![];
 
         // avoid misinterpreting random bytes as length of buffer
@@ -122,7 +122,7 @@ impl CodeObject {
         let mut co: CodeObject = bincode::options()
             .with_varint_encoding()
             .deserialize(&buffer[4..])
-            .map_err(|e| e.to_string())?;
+            .or_else(err_from_string)?;
 
         co.name = name;
         co.loc = Some(loc);
@@ -135,11 +135,10 @@ impl CodeObject {
         use bincode::Options;
 
         let mut buffer = Vec::from(LV2_MAGIC_NUMBER);
-        let obj: Lovm2Result<Vec<u8>> = bincode::options()
+        let obj: Vec<u8> = bincode::options()
             .with_varint_encoding()
             .serialize(self)
-            .map_err(|e| e.to_string().into());
-        let obj = obj?;
+            .or_else(err_from_string)?;
 
         buffer.extend(obj);
 
@@ -154,9 +153,9 @@ impl CodeObject {
     {
         use std::fs::File;
         use std::io::Write;
-        let mut file = File::create(path).map_err(|e| e.to_string())?;
+        let mut file = File::create(path).or_else(err_from_string)?;
         let bytes = self.to_bytes()?;
-        file.write_all(&bytes).map_err(|e| e.to_string().into())
+        file.write_all(&bytes).or_else(err_from_string)
     }
 }
 

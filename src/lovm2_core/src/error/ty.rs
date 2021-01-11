@@ -5,6 +5,8 @@ pub enum Lovm2ErrorTy {
     Basic,
     FrameStackEmpty,
     ImportConflict,
+    InvalidSetTarget,
+    InvalidType,
     KeyNotFound,
     LookupFailed,
     ModuleNotFound,

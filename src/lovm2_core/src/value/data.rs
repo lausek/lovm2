@@ -147,7 +147,7 @@ impl Value {
                 .chars()
                 .nth(idx)
                 .map(Value::from)
-                .ok_or_else(|| "string index out of bounds".into()),
+                .ok_or_else(|| (Lovm2ErrorTy::KeyNotFound, idx.to_string()).into()),
             Value::Dict(dict) => dict
                 .get_index(idx)
                 .map(|(key, val)| box_value(Value::List(vec![key.clone(), val.clone()])))

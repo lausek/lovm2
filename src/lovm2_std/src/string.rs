@@ -28,13 +28,13 @@ fn chr(n: i64) -> Lovm2Result<String> {
         .map(u8::clone)
         .collect();
 
-    String::from_utf8(bytes).map_err(|e| Lovm2Error::from(e.to_string()))
+    String::from_utf8(bytes).or_else(err_from_string)
 }
 
 #[lovm2_function]
 fn ord(c: String) -> Lovm2Result<i64> {
     if 1 != c.chars().count() {
-        return Err(Lovm2Error::from("ord requires string of length one"));
+        return err_from_string("ord requires string of length one");
     }
 
     let mut n: i64 = 0;

@@ -20,7 +20,7 @@ impl Reference {
         if let Some(inner) = &self.0 {
             Ok(inner.borrow())
         } else {
-            Err("".into())
+            err_from_string("value is already borrowed")
         }
     }
 
@@ -28,7 +28,7 @@ impl Reference {
         if let Some(inner) = &self.0 {
             Ok(inner.borrow_mut())
         } else {
-            Err("".into())
+            err_from_string("value is already borrowed")
         }
     }
 
@@ -41,7 +41,7 @@ impl Reference {
                 Ok(val.clone())
             }
         } else {
-            Err(Lovm2Error::from("dereference on empty"))
+            err_empty_dereference()
         }
     }
 

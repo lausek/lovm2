@@ -62,7 +62,7 @@ where
     #[cfg(not(target_os = "linux"))]
     let library = Library::new(path.as_ref());
 
-    library.map_err(|e| Lovm2Error::from(format!("{}", e)))
+    library.or_else(err_from_string)
 }
 
 pub fn module_from_library<T>(path: T, lib: Library) -> Lovm2Result<Module>
@@ -102,9 +102,7 @@ impl SharedObjectSlot {
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
             match lookup {
                 Ok(symbol) => Ok(Self(lib.clone(), symbol.into_raw())),
-                Err(_) => {
-                    Err(format!("symbol `{}` cannot be loaded from shared object", name).into())
-                }
+                Err(_) => err_symbol_not_found(name),
             }
         }
     }

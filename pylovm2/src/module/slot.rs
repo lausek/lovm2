@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
+use lovm2::error::err_custom;
 use lovm2::gen::{HasBlock, Hir};
 use lovm2::Variable;
 
@@ -39,7 +40,7 @@ impl ModuleBuilderSlot {
             let inner = hir.block_mut() as *mut Lovm2Block;
             Ok(BlockBuilder { inner })
         } else {
-            Err(err_to_exception(format!("slot is not a hir").into()))
+            Err(err_to_exception(err_custom("slot is not a hir")))
         }
     }
 }

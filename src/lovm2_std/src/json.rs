@@ -5,7 +5,7 @@ use lovm2_extend::prelude::*;
 #[lovm2_function]
 fn decode(json: String) -> Lovm2Result<Value> {
     json::parse(&json)
-        .map_err(|e| Lovm2Error::from(e.to_string()))
+        .or_else(err_from_string)
         .and_then(|val| from_json_value(&val))
 }
 
@@ -78,10 +78,10 @@ fn to_json_value(val: Value) -> Lovm2Result<JsonValue> {
         }
         Value::Ref(r) => to_json_value(r.unref_to_value()?.borrow().clone())?,
         _ => {
-            return Err(Lovm2Error::from(format!(
+            return err_from_string(format!(
                 "{:?} not supported for json",
                 val
-            )))
+            ))
         }
     };
     Ok(json)

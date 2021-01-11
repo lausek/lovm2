@@ -324,7 +324,7 @@ impl Vm {
 
                     match target {
                         Value::Ref(r) => *r.borrow_mut()? = val.clone_inner()?,
-                        _ => return Err(format!("cannot use {:?} as set target", target).into()),
+                        _ => return err_invalid_set_target(target),
                     }
                 }
                 Instruction::Add => value_operation!(self, add_inplace),

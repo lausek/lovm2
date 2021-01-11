@@ -32,7 +32,7 @@ macro_rules! add_function {
     };
 }
 
-/// Add standard functions to the given vm. If [create_vm_with_std] is used, this
+/// Add standard functions to the given vm. If `create_vm_with_std` is used, this
 /// gets loaded automatically.
 pub fn create_std_module() -> Module {
     let mut module = ModuleBuilder::with_meta(ModuleMeta::new("std".to_string(), None, vec![]));

@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::types::*;
 
 use lovm2::code;
+use lovm2::error;
 use lovm2::prelude::Lovm2Result;
 use lovm2::vm;
 
@@ -40,7 +41,7 @@ impl code::CallProtocol for CodeObject {
 
                 // convert result of call into ruvalue representation
                 let res = any_to_value(res.as_ref(py))
-                    .map_err(|_| "error in ruvalue conversion".to_string())?;
+                    .or_else(|_| error::err_from_string("error in ruvalue conversion"))?;
 
                 vm.context_mut().push_value(res.clone());
 

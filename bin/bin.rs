@@ -30,6 +30,6 @@ fn main() {
                 println!("{}", err);
             }
         }
-        Err(msg) => println!("{}", msg),
+        Err(msg) => println!("{:?}", msg),
     }
 }

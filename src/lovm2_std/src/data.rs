@@ -55,7 +55,7 @@ impl std::convert::TryFrom<String> for Method {
             "get" => Ok(Self::Get),
             "post" => Ok(Self::Post),
             "put" => Ok(Self::Put),
-            _ => Err(Lovm2Error::from("not a valid request method")),
+            _ => err_from_string("not a valid request method"),
         }
     }
 }

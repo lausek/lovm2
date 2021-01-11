@@ -85,7 +85,7 @@ fn list_dir(path: String) -> Lovm2Result<Value> {
         if let Some(entry) = entry.path().to_str() {
             entries.push(Value::from(entry));
         } else {
-            return Err(Lovm2Error::from("could not read dir entry"));
+            err_from_string("could not read dir entry")?
         }
     }
 

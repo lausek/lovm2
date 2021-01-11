@@ -77,7 +77,7 @@ fn count(val: &Value) -> Lovm2Result<i64> {
                 let meta = file
                     .inner
                     .metadata()
-                    .map_err(|e| Lovm2Error::from(e.to_string()))?;
+                    .or_else(err_from_string)?;
                 return Ok(meta.len() as i64);
             }
 

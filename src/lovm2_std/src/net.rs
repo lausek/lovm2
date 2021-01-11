@@ -101,7 +101,7 @@ fn get_status(res: &Response) -> i64 {
 
 #[lovm2_function]
 fn get_body_as_string(res: &Response) -> Lovm2Result<String> {
-    String::from_utf8(res.body.clone()).map_err(|_| Lovm2Error::from("response is not valid utf-8"))
+    String::from_utf8(res.body.clone()).or_else(|_| err_from_string("response is not valid utf-8"))
 }
 
 #[lovm2_function]

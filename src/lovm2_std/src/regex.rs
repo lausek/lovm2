@@ -4,7 +4,7 @@ use super::*;
 
 #[lovm2_function]
 fn new_regex(pat: String) -> Lovm2Result<Regex> {
-    let inner = ::regex::Regex::new(&pat).map_err(|e| Lovm2Error::from(e.to_string()))?;
+    let inner = ::regex::Regex::new(&pat).or_else(err_from_string)?;
     Ok(Regex { inner })
 }
 

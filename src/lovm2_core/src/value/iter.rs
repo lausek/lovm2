@@ -166,7 +166,7 @@ macro_rules! get_iter {
         let $name = $name
             .0
             .downcast_mut::<Iter>()
-            .ok_or_else(|| Lovm2Error::from("not an iterator"))?;
+            .ok_or_else(|| err_ty_unexpected("iterator", "any"))?;
     };
 }
 

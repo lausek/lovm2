@@ -89,7 +89,7 @@ impl Value {
             Value::Bool(b) => Ok(if *b { 1. } else { 0. }),
             Value::Int(n) => Ok(*n as f64),
             Value::Float(n) => Ok(*n),
-            Value::Str(s) => s.parse::<f64>().map_err(|_| "not a float".into()),
+            Value::Str(s) => s.parse::<f64>().or_else(|_| err_from_string("not a float")),
             Value::Dict(_) => err_not_supported(),
             Value::List(_) => err_not_supported(),
             Value::Ref(r) => r.borrow()?.as_float_inner(),
@@ -103,7 +103,7 @@ impl Value {
             Value::Bool(b) => Ok(if *b { 1 } else { 0 }),
             Value::Int(n) => Ok(*n),
             Value::Float(n) => Ok(*n as i64),
-            Value::Str(s) => s.parse::<i64>().map_err(|_| "not an integer".into()),
+            Value::Str(s) => s.parse::<i64>().or_else(|_| err_from_string("not an integer")),
             Value::Dict(_) => err_not_supported(),
             Value::List(_) => err_not_supported(),
             Value::Ref(r) => r.borrow()?.as_integer_inner(),
@@ -149,7 +149,7 @@ impl ValueType {
             4 => Ok(ValueType::Str),
             5 => Ok(ValueType::Dict),
             6 => Ok(ValueType::List),
-            _ => Err("not a valid type".to_string().into()),
+            _ => err_from_string("not a valid type"),
         }
     }
 }
