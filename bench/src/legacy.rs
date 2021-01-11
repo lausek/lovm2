@@ -43,7 +43,7 @@ pub(crate) fn create_vm() -> lovm2::vm::Vm {
 
 #[cfg(lovm2_version = "0.4.8")]
 pub(crate) fn create_vm() -> lovm2::vm::Vm {
-    lovm2::vm::create_vm_with_std()
+    lovm2::create_vm_with_std()
 }
 
 #[cfg(all(not(lovm2_version = "0.3.7"), not(lovm2_version = "0.4.8")))]

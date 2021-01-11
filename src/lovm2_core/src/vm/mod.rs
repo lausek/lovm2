@@ -109,17 +109,6 @@ impl Vm {
         }
     }
 
-    /// Create a new instance with standard functions already imported
-    #[deprecated]
-    pub fn with_std() -> Self {
-        let vm = Self::new();
-        if cfg!(feature = "stdlib") {
-            // TODO: this creates an error
-            //add_standard_module(&mut vm).unwrap();
-        }
-        vm
-    }
-
     /// Add a directory for module lookup
     pub fn add_load_path(&mut self, path: String) {
         self.load_paths.push(path);

@@ -1,5 +1,3 @@
-//use lovm2_core::prelude::*;
-//use lovm2_core::value::box_value;
 use lovm2_extend::prelude::*;
 
 use super::*;

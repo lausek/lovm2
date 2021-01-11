@@ -1,4 +1,3 @@
-//use lovm2_core::prelude::*;
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]

@@ -9,7 +9,7 @@ cargo test
 
 # assure that benchmark code compiles
 pushd bench
-cargo build --benches
+env RUSTFLAGS="--cfg lovm2_version=\"0.4.8\"" cargo build --benches
 popd
 
 # build python bindings and run tests

@@ -2,7 +2,7 @@
 
 set -e
 
-echo "release script"
+echo "release script. use --skip-python to avoid publishing pylovm2"
 echo ""
 
 # move to project root
