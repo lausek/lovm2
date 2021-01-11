@@ -79,11 +79,14 @@
 //! - Wrapping the types above in `Option<_>` or `Lovm2Result<_>` also produces an accepted return type.
 //! - A function is allowed to have at most one argument taking a mutable or immutable reference to the virtual machine itself e.g. `vm: &mut Vm`.
 
+pub mod prelude;
+mod wrapper;
+
 use lovm2_core::vm::Vm;
 
 pub use lovm2_module::*;
 
-pub mod prelude;
+pub use self::wrapper::create_callable;
 
 pub const BASIC: u8 = 1;
 pub const FRAME_STACK_EMPTY: u8 = 2;

@@ -85,10 +85,7 @@ impl FunctionArgs {
         quote! { #( #parts, )* }
     }
 
-    pub fn as_tokens_call_position(
-        &self,
-        pass_as_reference: bool
-    ) -> impl quote::ToTokens {
+    pub fn as_tokens_call_position(&self, pass_as_reference: bool) -> impl quote::ToTokens {
         let mut parts = vec![];
 
         if let Some(vm) = &self.vm {
@@ -97,7 +94,10 @@ impl FunctionArgs {
 
         for arg in self.simple.iter() {
             use crate::quote::ToTokens;
-            parts.push(arg.as_tokens_call_position(pass_as_reference).to_token_stream());
+            parts.push(
+                arg.as_tokens_call_position(pass_as_reference)
+                    .to_token_stream(),
+            );
         }
 
         quote! { #( #parts, )* }

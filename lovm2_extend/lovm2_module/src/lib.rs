@@ -10,7 +10,7 @@ mod obj;
 mod ret;
 
 use lazy_static::lazy_static;
-use proc_macro::TokenStream;
+use proc_macro::{TokenStream, TokenTree};
 use std::collections::HashSet;
 use std::sync::Mutex;
 use syn::{export::Span, Block, Ident, ItemFn, ReturnType};
@@ -63,13 +63,21 @@ pub fn lovm2_module_init(_args: TokenStream) -> TokenStream {
 
 /// Makes the function available inside the module
 #[proc_macro_attribute]
-pub fn lovm2_function(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn lovm2_function(attrs: TokenStream, item: TokenStream) -> TokenStream {
     use crate::quote::ToTokens;
 
-    let item_fn = syn::parse::<syn::ItemFn>(item).unwrap();
-    let function = Function::from(item_fn).unwrap();
+    let is_extern = match attrs.into_iter().next() {
+        Some(TokenTree::Ident(ident)) => ident.to_string() == "extern",
+        _ => false,
+    };
 
-    FUNCS.lock().unwrap().insert(function.name.to_string());
+    let item_fn = syn::parse::<syn::ItemFn>(item).unwrap();
+    let mut function = Function::from(item_fn).unwrap();
+
+    if is_extern {
+        function.set_extern(true);
+        FUNCS.lock().unwrap().insert(function.name.to_string());
+    }
 
     function.generate_rust_function().into_token_stream().into()
 }

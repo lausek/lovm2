@@ -2,9 +2,9 @@ pub use libloading::Library;
 pub use std::collections::HashMap;
 pub use std::rc::Rc;
 
-pub use lovm2_core::prelude::*;
 pub use lovm2_core::code::CallableRef;
 pub use lovm2_core::module::SharedObjectSlot;
+pub use lovm2_core::prelude::*;
 pub use lovm2_core::value::box_value;
 pub use lovm2_core::vm::Vm;
 //pub use lovm2_core::Variable;

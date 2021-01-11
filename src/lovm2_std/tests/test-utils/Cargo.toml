@@ -1,0 +1,13 @@
+[package]
+name = "test-utils"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "test_utils"
+path = "src/lib.rs"
+
+[dependencies]
+lovm2_extend = { path = "../../../../lovm2_extend" }
+lovm2_std = { path = "../../" }

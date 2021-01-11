@@ -5,6 +5,7 @@ pub struct Function {
     args: FunctionArgs,
     block: Box<Block>,
     output: FunctionRet,
+    is_extern: bool,
 }
 
 impl Function {
@@ -16,18 +17,32 @@ impl Function {
             args,
             block: item_fn.block,
             output: FunctionRet::from(item_fn.sig.output)?,
+            is_extern: false,
         })
+    }
+
+    pub fn set_extern(&mut self, is_extern: bool) {
+        self.is_extern = is_extern;
     }
 
     pub fn generate_rust_function(&self) -> impl quote::ToTokens {
         let ident = &self.name;
         let body = self.generate_body();
         let docstring = format!("`{}({}) -> {}`", ident, self.args, self.output);
-        let code = quote! {
-            #[doc = #docstring]
-            #[no_mangle]
-            pub extern fn #ident(vm: &mut Vm) -> lovm2_extend::prelude::Lovm2Result<()> {
-                #body
+        let code = if self.is_extern {
+            quote! {
+                #[doc = #docstring]
+                #[no_mangle]
+                pub extern fn #ident(vm: &mut Vm) -> lovm2_extend::prelude::Lovm2Result<()> {
+                    #body
+                }
+            }
+        } else {
+            quote! {
+                #[doc = #docstring]
+                pub fn #ident(vm: &mut Vm) -> lovm2_extend::prelude::Lovm2Result<()> {
+                    #body
+                }
             }
         };
         code

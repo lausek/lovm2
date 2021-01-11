@@ -1,26 +1,12 @@
 #![cfg(test)]
 
-use lovm2::prelude::*;
+use test_utils::*;
+
 use lovm2_extend::prelude::*;
 
 use httptest::{all_of, matchers::request, responders::*, Expectation, ServerPool};
 
 static SERVER_POOL: ServerPool = ServerPool::new(2);
-
-fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
-    let mut builder = ModuleBuilder::new();
-    builder
-        .entry()
-        .step(Include::import_global("liblovm2_std_net"));
-    func(&mut builder);
-    let module = builder.build().unwrap();
-
-    let mut vm = create_test_vm();
-    vm.add_main_module(module).unwrap();
-    vm.run().unwrap();
-
-    vm
-}
 
 #[test]
 fn get_body_as_string() {

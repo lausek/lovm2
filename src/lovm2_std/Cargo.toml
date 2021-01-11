@@ -7,7 +7,6 @@ edition = "2018"
 [lib]
 name = "lovm2_std"
 path = "src/lib.rs"
-#crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 curl = "0.4.34"
@@ -15,5 +14,11 @@ json = "0.12.4"
 lovm2_extend = { path = "../../lovm2_extend" }
 regex = "1.4.2"
 
+[dev-dependencies]
+test-utils = { path = "./tests/test-utils" }
+httptest = "0.14.0"
+tempfile = "3.1.0"
+
 [features]
+default = ["net"]
 net = []

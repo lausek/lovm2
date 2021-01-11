@@ -1,25 +1,10 @@
 #![cfg(test)]
 
-use lovm2::prelude::*;
+use test_utils::*;
+
 use lovm2_extend::prelude::*;
 
 use tempfile::tempdir;
-
-fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
-    let mut builder = ModuleBuilder::new();
-    builder
-        .entry()
-        .step(Include::import_global("liblovm2_std_fs"));
-    func(&mut builder);
-    let module = builder.build().unwrap();
-    println!("{}", module);
-
-    let mut vm = create_test_vm();
-    vm.add_main_module(module).unwrap();
-    vm.run().unwrap();
-
-    vm
-}
 
 #[test]
 fn file_creation_deletion() {
