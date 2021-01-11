@@ -19,7 +19,7 @@ pytest
 popd
 
 # test the shared object extension
-pushd lovm2_extend
+pushd src/lovm2_extend
 for example in $(ls ./examples); do
     pushd ./examples/$example
     cargo build

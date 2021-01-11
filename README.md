@@ -13,7 +13,7 @@ lovm2 = "0.4.8"
 
 - [X] dynamic typing
 - [X] generate bytecode using highlevel intermediate representation
-- [X] call into shared objects: [lovm2_extend](lovm2_extend/README.md)
+- [X] call into shared objects: [lovm2_extend](src/lovm2_extend/README.md)
 - [X] python bindings: [pylovm2](pylovm2/README.md)
 - [X] define own callbacks for interrupts
 
@@ -34,7 +34,6 @@ lovm2 = "0.4.8"
 
 ``` rust
 use lovm2::prelude::*;
-use lovm2::vm::Vm;
 
 let mut module = ModuleBuilder::new();
 

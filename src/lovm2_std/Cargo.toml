@@ -11,7 +11,7 @@ path = "src/lib.rs"
 [dependencies]
 curl = "0.4.34"
 json = "0.12.4"
-lovm2_extend = { path = "../../lovm2_extend" }
+lovm2_extend = { path = "../lovm2_extend" }
 regex = "1.4.2"
 
 [dev-dependencies]
