@@ -6,6 +6,8 @@ mod module;
 pub mod opt;
 pub mod prelude;
 
+use crate::error::*;
+
 pub use self::hir::*;
 pub use self::lir::*;
 pub use self::module::{ModuleBuilder, ModuleMeta, DEFAULT_MODULE_NAME};

@@ -2,8 +2,6 @@
 
 use std::cmp::Ordering;
 
-use lovm2_error::*;
-
 use super::Value::*;
 use super::*;
 

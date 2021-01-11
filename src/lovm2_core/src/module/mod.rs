@@ -10,8 +10,7 @@ mod slots;
 
 use std::rc::Rc;
 
-use lovm2_error::*;
-
+use crate::error::*;
 use crate::code::CallProtocol;
 use crate::code::{CodeObject, CodeObjectFunction, LV2_MAGIC_NUMBER};
 use crate::var::Variable;

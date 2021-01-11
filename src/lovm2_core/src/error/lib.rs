@@ -2,9 +2,9 @@ mod compile;
 mod methods;
 mod ty;
 
-pub use crate::compile::Lovm2CompileError;
-pub use crate::methods::*;
-pub use crate::ty::Lovm2ErrorTy;
+pub use self::compile::Lovm2CompileError;
+pub use self::methods::*;
+pub use self::ty::Lovm2ErrorTy;
 
 pub type Lovm2Result<T> = Result<T, Lovm2Error>;
 pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;

@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use lovm2::create_vm_with_std;
 use lovm2::code::CodeObject;
+use lovm2::create_vm_with_std;
 use lovm2::module::Module;
 use lovm2::prelude::*;
 use lovm2::value::Value;

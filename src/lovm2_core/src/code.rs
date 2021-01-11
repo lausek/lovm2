@@ -3,9 +3,8 @@
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
-use lovm2_error::*;
-
 use crate::bytecode::Instruction;
+use crate::error::*;
 use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::Vm;

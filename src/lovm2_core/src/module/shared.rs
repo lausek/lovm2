@@ -11,9 +11,8 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use lovm2_error::*;
-
 use crate::code::{CallProtocol, CallableRef, CodeObject};
+use crate::error::*;
 use crate::module::{Module, Slots};
 use crate::var::Variable;
 use crate::vm::Vm;

@@ -10,5 +10,4 @@ name = "lovm2_extend"
 [dependencies]
 libloading = "0.6.2"
 lovm2_core = { path = "../lovm2_core" }
-lovm2_error = { path = "../lovm2_error" }
 lovm2_module = { path = "./lovm2_module/" }

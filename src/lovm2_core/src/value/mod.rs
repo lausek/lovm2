@@ -1,7 +1,8 @@
 //! Representation and operations for lovm2 values
 
 use indexmap::IndexMap;
-use lovm2_error::*;
+
+use crate::error::*;
 
 mod conv;
 mod data;

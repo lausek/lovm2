@@ -2,8 +2,6 @@
 
 use std::collections::HashMap;
 
-use lovm2_error::*;
-
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::value::Value;

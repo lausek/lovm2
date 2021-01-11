@@ -5,9 +5,9 @@
 
 use std::collections::HashMap;
 
-use lovm2_error::*;
-
 use crate::value::Value;
+
+use super::*;
 
 /// A stack frame used in `Context.lstack`
 #[derive(Debug)]

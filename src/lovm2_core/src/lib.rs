@@ -46,6 +46,7 @@
 //#![feature(result_cloned)]
 
 pub mod code;
+pub mod error;
 pub mod gen;
 pub mod module;
 pub mod util;

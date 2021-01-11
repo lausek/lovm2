@@ -17,8 +17,6 @@ mod repeat;
 mod r#return;
 mod slice;
 
-use lovm2_error::*;
-
 use crate::value::Value;
 use crate::var::Variable;
 

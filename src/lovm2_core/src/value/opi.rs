@@ -1,7 +1,5 @@
 //! Implementation of primitive inplace operations on `Value`
 
-use lovm2_error::*;
-
 use super::Value::*;
 use super::*;
 

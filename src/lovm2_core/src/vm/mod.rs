@@ -4,10 +4,9 @@ use std::collections::HashMap;
 use std::ops::*;
 use std::rc::Rc;
 
-use lovm2_error::*;
-
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CodeObject};
+use crate::error::*;
 use crate::module::Module;
 use crate::value::{box_value, Value, ValueType};
 use crate::var::Variable;

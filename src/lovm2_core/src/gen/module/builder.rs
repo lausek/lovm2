@@ -3,9 +3,8 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use lovm2_error::*;
-
 use crate::code::CodeObjectFunction;
+use crate::error::*;
 use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement, ModuleMeta};
 use crate::module::{Module, ENTRY_POINT};
 use crate::var::Variable;

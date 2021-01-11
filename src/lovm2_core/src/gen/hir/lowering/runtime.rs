@@ -3,8 +3,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use lovm2_error::*;
-
 use crate::code::CodeObject;
 use crate::gen::ModuleMeta;
 use crate::var::Variable;

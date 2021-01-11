@@ -1,7 +1,5 @@
 //! Conversion of values
 
-use lovm2_error::*;
-
 use super::*;
 
 /// Type of a value as integer

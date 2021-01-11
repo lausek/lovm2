@@ -2,17 +2,11 @@
 
 set -e
 
-echo "RELEASE: use arguments --skip-error to prevent publishing subcrates"
+echo "release script"
 echo ""
 
 # move to project root
 cd $(dirname `realpath $0`)
-
-if [[ "$@" != *"--skip-error"* ]]; then
-    pushd ./src/lovm2_error
-    cargo publish
-    popd
-fi
 
 cargo publish
 
