@@ -28,12 +28,13 @@ pub struct Request {
     pub url: String,
     pub headers: HashMap<String, String>,
     pub method: Method,
-    pub body: Option<Vec<u8>>,
+    pub body: Vec<u8>,
 }
 
 #[lovm2_object]
 pub struct Response {
     pub status: i64,
+    pub headers: HashMap<String, String>,
     pub body: Vec<u8>,
 }
 

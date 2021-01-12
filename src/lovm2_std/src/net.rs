@@ -5,12 +5,21 @@ use std::collections::HashMap;
 use super::*;
 
 #[lovm2_function]
+fn new_response() -> Response {
+    Response {
+        status: 200,
+        headers: HashMap::new(),
+        body: vec![],
+    }
+}
+
+#[lovm2_function]
 fn new_request(url: String) -> Request {
     Request {
         url,
         headers: HashMap::new(),
         method: Method::Get,
-        body: None,
+        body: vec![],
     }
 }
 
@@ -24,13 +33,13 @@ fn set_body(req: &mut Request, mut body: Value) -> Lovm2Result<bool> {
     body.unref_inplace()?;
 
     if let Value::Str(body) = body {
-        req.body = Some(body.as_bytes().to_vec());
+        req.body = body.as_bytes().to_vec();
         return Ok(true);
     }
 
     if let Value::Any(any) = body {
         if let Some(buf) = (*any).borrow_mut().0.downcast_mut::<Buffer>() {
-            req.body = Some(buf.inner.clone());
+            req.body = buf.inner.clone();
         }
         return Ok(true);
     }
@@ -60,7 +69,7 @@ fn serve(vm: &mut Vm, host: String, callback: String) -> Lovm2Result<()> {
                 tiny_http::Method::Put => Method::Put,
                 method => err_method_not_supported(&format!("{:?}", method))?,
             },
-            body: None,
+            body: vec![],
         };
 
         for tiny_http::Header { field, value } in request.headers() {
@@ -69,18 +78,25 @@ fn serve(vm: &mut Vm, host: String, callback: String) -> Lovm2Result<()> {
                 .insert(field.to_string(), value.to_string());
         }
 
-        let mut buffer = vec![];
-        request.as_reader().read_to_end(&mut buffer).unwrap();
-        parsed_request.body = Some(buffer);
+        request
+            .as_reader()
+            .read_to_end(&mut parsed_request.body)
+            .unwrap();
 
-        let (status_code, body) = {
+        let (status_code, content_type, body) = {
             let response = vm.call(callback.as_ref(), &[parsed_request.into()])?;
             let status_code = response.get(&0.into())?.as_integer_inner()?;
-            let body = response.get(&1.into())?.as_str_inner()?;
-            (status_code, body)
+            let content_type = response.get(&1.into())?.as_str_inner()?;
+            let body = response.get(&2.into())?.as_str_inner()?;
+            (status_code, content_type, body)
         };
 
-        let response = tiny_http::Response::from_string(body).with_status_code(status_code as u16);
+        let response = tiny_http::Response::from_string(body)
+            .with_status_code(status_code as u16)
+            .with_header(
+                tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.into_bytes())
+                    .unwrap(),
+            );
 
         request.respond(response).unwrap();
     }
@@ -104,7 +120,7 @@ fn exec(req: &Request) -> Lovm2Result<Response> {
     }
 
     let mut body = vec![];
-    let mut rbuf = req.body.as_deref();
+    let mut rbuf = req.body.as_slice();
 
     {
         let mut transfer = easy.transfer();
@@ -112,12 +128,8 @@ fn exec(req: &Request) -> Lovm2Result<Response> {
         // write request data
         transfer
             .read_function(|into| {
-                if let Some(ref mut rbuf) = rbuf {
-                    use std::io::Read;
-                    Ok(rbuf.read(into).unwrap())
-                } else {
-                    Ok(0)
-                }
+                use std::io::Read;
+                Ok(rbuf.read(into).unwrap())
             })
             .unwrap();
 
@@ -134,7 +146,11 @@ fn exec(req: &Request) -> Lovm2Result<Response> {
 
     let status = easy.response_code().unwrap() as i64;
 
-    Ok(Response { status, body })
+    Ok(Response {
+        status,
+        body,
+        headers: HashMap::new(),
+    })
 }
 
 #[lovm2_function]
