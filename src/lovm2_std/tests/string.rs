@@ -5,6 +5,17 @@ use test_utils::*;
 use lovm2_extend::prelude::*;
 
 #[test]
+fn native_format() {
+    let mut vm = run_module_test(|_| {});
+
+    assert_eq!(
+        Value::from("abcd"),
+        vm.call("format", &["a{}c{}".into(), "b".into(), "d".into()])
+            .unwrap()
+    );
+}
+
+#[test]
 fn native_join() {
     let mut vm = run_module_test(|_| {});
 

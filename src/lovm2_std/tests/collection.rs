@@ -82,7 +82,7 @@ fn native_contains() {
 }
 
 #[test]
-fn native_count() {
+fn native_len() {
     let (n, s, d, ls) = &lv2_var!(n, s, d, ls);
 
     let mut vm = run_module_test(|builder| {
@@ -101,10 +101,10 @@ fn native_count() {
     let d = vm.context_mut().value_of(d).unwrap().clone();
     let ls = vm.context_mut().value_of(ls).unwrap().clone();
 
-    assert_eq!(Value::from(6), vm.call("count", &[s.clone()]).unwrap());
-    assert_eq!(Value::from(2), vm.call("count", &[d.clone()]).unwrap());
-    assert_eq!(Value::from(3), vm.call("count", &[ls.clone()]).unwrap());
-    assert!(vm.call("count", &[n.clone()]).is_err());
+    assert_eq!(Value::from(6), vm.call("len", &[s.clone()]).unwrap());
+    assert_eq!(Value::from(2), vm.call("len", &[d.clone()]).unwrap());
+    assert_eq!(Value::from(3), vm.call("len", &[ls.clone()]).unwrap());
+    assert!(vm.call("len", &[n.clone()]).is_err());
 }
 
 #[test]

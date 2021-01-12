@@ -1,7 +1,5 @@
 use lovm2_extend::prelude::*;
 
-use super::*;
-
 #[lovm2_function]
 fn all(collection: &Value) -> Lovm2Result<bool> {
     match collection {
@@ -63,24 +61,6 @@ fn contains(haystack: &Value, needle: Value) -> Lovm2Result<bool> {
         }
         _ => err_method_not_supported("contains"),
     }
-}
-
-#[lovm2_function]
-fn count(val: &Value) -> Lovm2Result<i64> {
-    val.as_any_inner()
-        .and_then(|any| {
-            if let Some(buf) = any.borrow().0.downcast_ref::<Buffer>() {
-                return Ok(buf.inner.len() as i64);
-            }
-
-            if let Some(file) = any.borrow().0.downcast_ref::<File>() {
-                let meta = file.inner.metadata().or_else(err_from_string)?;
-                return Ok(meta.len() as i64);
-            }
-
-            err_method_not_supported("count")
-        })
-        .or_else(|_| val.len().map(|n| n as i64))
 }
 
 #[lovm2_function]

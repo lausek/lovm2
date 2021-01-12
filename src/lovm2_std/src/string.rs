@@ -1,6 +1,24 @@
 use lovm2_extend::prelude::*;
 
 #[lovm2_function]
+fn format(vm: &mut Vm) -> Lovm2Result<String> {
+    let argn = vm.context_mut().frame_mut()?.argn - 1;
+    let mut args = vec![];
+
+    for _ in 0..argn {
+        args.push(vm.context_mut().pop_value()?.as_str_inner()?);
+    }
+
+    let mut format_base = vm.context_mut().pop_value()?.as_str_inner()?;
+
+    for arg in args.iter().rev() {
+        format_base = format_base.replacen("{}", arg, 1);
+    }
+
+    Ok(format_base)
+}
+
+#[lovm2_function]
 fn index_of(base: String, pat: String) -> Option<i64> {
     base.find(&pat).map(|i| i as i64)
 }

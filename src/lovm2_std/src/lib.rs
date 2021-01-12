@@ -55,7 +55,6 @@ pub fn create_std_module() -> Module {
     add_function!(module, clamp);
     add_function!(module, contains);
     add_function!(module, cos);
-    add_function!(module, count);
     add_function!(module, create_file);
     add_function!(module, decode);
     add_function!(module, deep_clone);
@@ -65,6 +64,7 @@ pub fn create_std_module() -> Module {
     add_function!(module, exists);
     add_function!(module, filter);
     add_function!(module, floor);
+    add_function!(module, format);
     add_function!(module, get);
     add_function!(module, has_data);
     add_function!(module, index_of);
@@ -112,6 +112,7 @@ pub fn create_std_module() -> Module {
         add_function!(module, get_body_as_string);
         add_function!(module, get_status);
         add_function!(module, new_request);
+        add_function!(module, serve);
         add_function!(module, set_body);
         add_function!(module, set_header);
         add_function!(module, set_method);
@@ -131,13 +132,22 @@ pub fn input(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-pub fn len(vm: &mut Vm) -> Lovm2Result<()> {
-    let target = vm.context_mut().pop_value()?;
+#[lovm2_function]
+fn len(val: &Value) -> Lovm2Result<i64> {
+    val.as_any_inner()
+        .and_then(|any| {
+            if let Some(buf) = any.borrow().0.downcast_ref::<Buffer>() {
+                return Ok(buf.inner.len() as i64);
+            }
 
-    let val = target.len()?;
-    vm.context_mut().push_value(Value::Int(val as i64));
+            if let Some(file) = any.borrow().0.downcast_ref::<File>() {
+                let meta = file.inner.metadata().or_else(err_from_string)?;
+                return Ok(meta.len() as i64);
+            }
 
-    Ok(())
+            err_method_not_supported("count")
+        })
+        .or_else(|_| val.len().map(|n| n as i64))
 }
 
 pub fn print(vm: &mut Vm) -> Lovm2Result<()> {

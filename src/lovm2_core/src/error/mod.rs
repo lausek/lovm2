@@ -63,6 +63,16 @@ impl From<(String, String)> for Lovm2Error {
     }
 }
 
+impl From<String> for Lovm2Error {
+    fn from(msg: String) -> Self {
+        Self {
+            ty: Lovm2ErrorTy::Basic,
+            msg,
+            ..Self::default()
+        }
+    }
+}
+
 impl std::fmt::Display for Lovm2Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "{}: {}", self.ty, self.msg)?;
