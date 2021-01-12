@@ -14,6 +14,7 @@ pub type Lovm2Result<T> = Result<T, Lovm2Error>;
 pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
 
 // TODO: format output/display; only output first backtrace line that starts with `lovm2`
+/// Runtime Error
 #[derive(Debug)]
 pub struct Lovm2Error {
     pub ty: Lovm2ErrorTy,
@@ -39,8 +40,9 @@ impl From<std::io::Error> for Lovm2Error {
     }
 }
 
-impl <T> From<(Lovm2ErrorTy, T)> for Lovm2Error
-where T: AsRef<str>
+impl<T> From<(Lovm2ErrorTy, T)> for Lovm2Error
+where
+    T: AsRef<str>,
 {
     fn from(descr: (Lovm2ErrorTy, T)) -> Self {
         Self {

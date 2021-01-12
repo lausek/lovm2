@@ -26,9 +26,9 @@ lovm2 = "0.4.8"
 
 ### Source Code References
 
-- [Bytecode](https://github.com/lausek/lovm2/blob/master/src/bytecode.rs)
-- [Context](https://github.com/lausek/lovm2/blob/master/src/vm/context.rs)
-- [Vm](https://github.com/lausek/lovm2/blob/master/src/vm/mod.rs)
+- [Bytecode](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/bytecode.rs)
+- [Context](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/context.rs)
+- [Vm](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/mod.rs)
 
 ### Generating Bytecode
 

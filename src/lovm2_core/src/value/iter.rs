@@ -11,6 +11,7 @@ enum IterType {
     Over(Value),
 }
 
+/// Runtime iterator implementation
 #[derive(Clone, Debug)]
 pub struct Iter {
     current: i64,
@@ -19,6 +20,7 @@ pub struct Iter {
 }
 
 impl Iter {
+    /// Create a number generator where `from` is inclusive and `to` is exclusive.
     pub fn ranged(from: i64, to: i64) -> Self {
         if to < from {
             Iter::ranged(to, from).reverse()
@@ -31,6 +33,7 @@ impl Iter {
         }
     }
 
+    /// Creates an endless number generator starting at `from` inclusive.
     pub fn ranged_from(from: i64) -> Self {
         Self {
             current: from,
@@ -38,6 +41,7 @@ impl Iter {
         }
     }
 
+    /// Creates a number generator starting at 0 and running until `to` exclusive.
     pub fn ranged_to(to: i64) -> Self {
         Self {
             ty: IterType::Limit(to),
@@ -45,6 +49,7 @@ impl Iter {
         }
     }
 
+    /// Returns true if `next()` can be called safely.
     pub fn has_next(&self) -> bool {
         match &self.ty {
             // exclusive range. see `reverse()`
@@ -56,6 +61,8 @@ impl Iter {
         }
     }
 
+    /// Advance the iterator and get the next value. This will return an error
+    /// if the iterator has no elements left.
     pub fn next(&mut self) -> Lovm2Result<Value> {
         let idx = self.current;
 
@@ -120,6 +127,7 @@ impl Iter {
         }
     }
 
+    /// Consume the iterator into a vector of values.
     pub fn collect(mut self) -> Vec<Value> {
         let mut result = vec![];
 

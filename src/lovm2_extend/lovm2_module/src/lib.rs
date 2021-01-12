@@ -31,16 +31,6 @@ lazy_static! {
 /// Generates the module initializer (always required)
 #[proc_macro]
 pub fn lovm2_module_init(_args: TokenStream) -> TokenStream {
-    /*
-    let modname: syn::parse::Result<Ident> = syn::parse(args);
-
-    let initfn = if let Ok(modname) = modname {
-        Ident::new(&format!("{}_{}", EXTERN_LOVM2_INITIALIZER, modname), Span::call_site())
-    } else {
-        Ident::new(EXTERN_LOVM2_INITIALIZER, Span::call_site())
-    };
-    */
-
     let initfn = Ident::new(EXTERN_LOVM2_INITIALIZER, proc_macro2::Span::call_site());
     let funcs = FUNCS.lock().unwrap();
     let names = funcs.iter();

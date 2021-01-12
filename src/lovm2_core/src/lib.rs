@@ -49,8 +49,8 @@ pub mod code;
 pub mod error;
 pub mod gen;
 pub mod module;
-pub mod util;
 pub mod prelude;
+pub mod util;
 pub mod value;
 pub mod vm;
 

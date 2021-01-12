@@ -16,7 +16,7 @@ pub type CallableRef = Rc<dyn CallProtocol>;
 
 /// Generalization for runnable objects
 /// - lovm2 bytecode ([CodeObject])
-/// - Statically linked functions (defined in `module::standard`, `create_callable`)
+/// - Statically linked functions (standard library is an example, `create_callable`)
 /// - Dynamically linked functions ([SharedObjectSlot](crate::module::SharedObjectSlot))
 ///
 /// Functions implementing this protocol can support variadic arguments by looking at
@@ -49,21 +49,21 @@ pub trait CallProtocol: std::fmt::Debug {
 /// to return some value on termination. If no value is produced, `Nil` is implicitly returned.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CodeObject {
-    /// Name of the object. This is used as the modules name when imported
+    /// Name of the object. This is used as the modules name when imported.
     pub name: String,
     #[serde(skip_deserializing)]
     #[serde(skip_serializing)]
-    /// Location of objects origin
+    /// Location of objects origin.
     pub loc: Option<String>,
-    /// Modules required for executing this object successfully
+    /// Modules required for executing this object successfully.
     pub uses: Vec<String>,
-    /// Entry points for the bytecode in the form Vec<(index_into_idents, bytecode_offset)>. These are the functions of the module
+    /// Entry points for the bytecode in the form Vec<(index_into_idents, bytecode_offset)>. These are the functions of the module.
     pub entries: Vec<(usize, usize)>,
-    /// Necessary constants
+    /// Necessary constants.
     pub consts: Vec<Value>,
-    /// Necessary identifiers
+    /// Necessary identifiers.
     pub idents: Vec<Variable>,
-    /// Bytecode
+    /// Bytecode itself.
     pub code: Vec<Instruction>,
 }
 

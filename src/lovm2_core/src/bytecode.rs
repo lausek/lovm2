@@ -3,26 +3,26 @@ use serde::{Deserialize, Serialize};
 /// Definition of the bytecode
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Instruction {
-    /// push local variable
+    /// Push local variable.
     LPush(u16),
-    /// push global variable
+    /// Push global variable.
     GPush(u16),
-    /// push constant
+    /// Push constant.
     CPush(u16),
-    /// store into local variable
+    /// Store into local variable.
     LMove(u16),
-    /// store into global variable
+    /// Store into global variable.
     GMove(u16),
-    /// drops the value on top of stack
+    /// Drops the value on top of stack.
     Drop,
-    /// duplicates top of stack
+    /// Duplicates top of stack.
     Dup,
 
-    /// get(obj, key): get key from object and push it
+    /// Get first argument as key from second argument and push it.
     Get,
-    /// rget(obj, key): get key from object by reference and push it
+    /// Get first argument as key from second argument by reference and push it.
     RGet,
-    /// set(ref, val): write value into a value reference
+    /// Write second argument into first argument which must be a reference.
     Set,
 
     /// = first + second
@@ -38,18 +38,18 @@ pub enum Instruction {
     /// = first % second
     Rem,
 
-    /// logical shift left `first` by `second` places
+    /// Logical shift left `first` by `second` places.
     Shl,
-    /// logical shift right `first` by `second` places
+    /// Logical shift right `first` by `second` places.
     Shr,
 
-    /// logical and for `Bool`, bitwise and for `Int`
+    /// Logical and for `Bool`, Bitwise and for `Int`.
     And,
-    /// logical or for `Bool`, bitwise or for `Int`
+    /// Logical or for `Bool`, Bitwise or for `Int`.
     Or,
-    /// logical xor for `Bool`, bitwise xor for `Int`
+    /// Logical xor for `Bool`, Bitwise xor for `Int`.
     XOr,
-    /// logical not for `Bool`, bitwise not for `Int`
+    /// Logical not for `Bool`, Bitwise not for `Int`.
     Not,
 
     /// = first == second
@@ -65,42 +65,49 @@ pub enum Instruction {
     /// = first < second
     Lt,
 
-    /// jump to instruction offset
+    /// Jump to instruction offset.
     Jmp(u16),
-    /// jump to instruction offset if top of stack is true
+    /// Jump to instruction offset if top of stack is true.
     Jt(u16),
-    /// jump to instruction offset if top of stack is false
+    /// Jump to instruction offset if top of stack is false.
     Jf(u16),
 
-    /// call function with `ident index`, `argn`
+    /// Call function with `ident index`, `argn`.
     Call(u16, u8),
-    /// call a function in the same module
+    /// Call a function in the same module.
     LCall(u16, u8),
-    /// return early from a code object
+    /// Return early from a code object.
     Ret,
 
-    /// trigger interrupt `n`
+    /// Trigger interrupt `n`.
     Interrupt(u16),
 
-    /// convert top of stack into type. see `Value::type_id`
+    /// Convert top of stack into type. See `Value::type_id`.
     Conv(u16),
-    /// take top of stack as name of module to load and import functions without module prefix as
-    /// well
+    /// Take top of stack as name of module to load and import functions without module prefix as
+    /// well.
     Import,
-    /// take top of stack as name of module to import. function name will be padded using the
-    /// import hook
+    /// Take top of stack as name of module to import. Function name will be padded using the
+    /// import hook.
     NImport,
-    /// turn the value on stack into a referenceable value.
-    /// lists and dicts are boxed deeply
+    /// Turn the value on stack into a referenceable value.
+    /// Lists and dicts are boxed deeply.
     Box,
 
-    /// create a new list from the first argument on stack.
-    /// second is starting index or nil, third is end index (exclusive) or nil
+    /// Create a new list from the first argument on stack.
+    /// Second is starting index or nil, third is end index (exclusive) or nil.
     Slice,
 
+    /// Create a new iterator from the first argument on stack.
     IterCreate,
+    /// Create a new ranged iterator using the first argument as `from` and second argument as `to`.
+    /// on of the arguments is allowed to be nil.
     IterCreateRanged,
+    /// Consumes the iterator on top of stack and leaves a bool on top if the iterator has another
+    /// element.
     IterHasNext,
+    /// Consumes the iterator on top of stack and returns the next value if any.
     IterNext,
+    /// Consumes the iterator on top of stack and create a new one in reverse.
     IterReverse,
 }

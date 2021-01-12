@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use super::*;
 
+/// Reference to another value
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Reference(
     #[serde(serialize_with = "serialize_value_ref")]
@@ -12,10 +13,12 @@ pub struct Reference(
 );
 
 impl Reference {
-    pub fn is_nil(&self) -> bool {
+    /// Returns true if the reference is bound to a value.
+    pub fn is_empty(&self) -> bool {
         self.0.is_none()
     }
 
+    /// Try to borrow the inner value.
     pub fn borrow(&self) -> Lovm2Result<Ref<'_, Value>> {
         if let Some(inner) = &self.0 {
             Ok(inner.borrow())
@@ -24,6 +27,7 @@ impl Reference {
         }
     }
 
+    /// Try to borrow the inner value as mutable.
     pub fn borrow_mut(&self) -> Lovm2Result<RefMut<'_, Value>> {
         if let Some(inner) = &self.0 {
             Ok(inner.borrow_mut())
@@ -32,7 +36,8 @@ impl Reference {
         }
     }
 
-    // follow all references until a value is reached
+    /// Dereference to the contained value. Nested references will
+    /// be dereferenced until a non-reference value was found.
     pub fn unref_to_value(&self) -> Lovm2Result<Rc<RefCell<Value>>> {
         if let Some(val) = &self.0 {
             if let Value::Ref(r) = &*val.borrow() {
@@ -45,7 +50,7 @@ impl Reference {
         }
     }
 
-    // create an independent copy of this reference
+    /// Replicate into an independet reference.
     pub fn deep_clone(&self) -> Self {
         if let Some(val) = &self.0 {
             Self::from(val.borrow().deep_clone())

@@ -74,10 +74,7 @@ fn count(val: &Value) -> Lovm2Result<i64> {
             }
 
             if let Some(file) = any.borrow().0.downcast_ref::<File>() {
-                let meta = file
-                    .inner
-                    .metadata()
-                    .or_else(err_from_string)?;
+                let meta = file.inner.metadata().or_else(err_from_string)?;
                 return Ok(meta.len() as i64);
             }
 

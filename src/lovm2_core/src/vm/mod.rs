@@ -5,7 +5,7 @@ use std::ops::*;
 use std::rc::Rc;
 
 use crate::bytecode::Instruction;
-use crate::code::{CallProtocol, CodeObject};
+use crate::code::{CallProtocol, CallableRef, CodeObject};
 use crate::error::*;
 use crate::module::Module;
 use crate::value::{box_value, Value, ValueType};
@@ -41,14 +41,14 @@ pub const LOVM2_INT_DEBUG: u16 = 10;
 /// ```
 ///
 
-/// Function signature for module loading callback
+/// Function signature for module loading callback.
 pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
-/// Function signature of interrupts
+/// Function signature of interrupts.
 pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
-/// Function signature for `Callable` importing
+/// Function signature for `Callable` importing.
 pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> String;
 
-/// Structure containing relevant information for module resolvement
+/// Structure containing relevant information for module resolvement.
 pub struct LoadRequest {
     pub module: String,
     pub relative_to: Option<String>,
@@ -82,21 +82,21 @@ macro_rules! value_compare {
 /// VM structure containing hooks and loaded modules
 pub struct Vm {
     ctx: Context,
-    /// List of loaded modules: `Module` or `SharedObjectModule`
+    /// List of loaded modules: `Module` or `SharedObjectModule`.
     modules: HashMap<String, Rc<Module>>,
 
     import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
-    /// Interrupt table. These functions can be triggered using the `Interrupt` instruction
+    /// Interrupt table. These functions can be triggered using the `Interrupt` instruction.
     pub(crate) interrupts: Vec<Option<Rc<InterruptFn>>>,
-    /// Function to call if a module is about to be loaded
+    /// Function to call if a module is about to be loaded.
     load_hook: Option<Rc<LoadHookFn>>,
-    /// List of directories for module lookup
+    /// List of directories for module lookup.
     pub load_paths: Vec<String>,
 }
 
 impl Vm {
-    /// Create a new instance
+    /// Create a new instance.
     pub fn new() -> Self {
         Self {
             ctx: Context::new(),
@@ -109,11 +109,12 @@ impl Vm {
         }
     }
 
-    /// Add a directory for module lookup
+    /// Add a directory for module lookup.
     pub fn add_load_path(&mut self, path: String) {
         self.load_paths.push(path);
     }
 
+    /// Call a function by name with given arguments.
     pub fn call(&mut self, name: &str, args: &[Value]) -> Lovm2Result<Value> {
         let name = Variable::from(name);
         let co = self.ctx.lookup_code_object(&name)?;
@@ -137,11 +138,13 @@ impl Vm {
         Ok(val)
     }
 
+    /// Get a mutable reference to the current `Context`
     pub fn context_mut(&mut self) -> &mut Context {
         &mut self.ctx
     }
 
-    pub fn add_function(&mut self, key: Variable, co: Rc<dyn CallProtocol>) -> Lovm2Result<()> {
+    /// Add a new function by name to the virtual machine.
+    pub fn add_function(&mut self, key: Variable, co: CallableRef) -> Lovm2Result<()> {
         // this overwrites the slot with the new function. maybe not so good
         if self.ctx.scope.insert(key.clone(), co).is_some() {
             return Err((Lovm2ErrorTy::ImportConflict, key).into());
@@ -149,7 +152,7 @@ impl Vm {
         Ok(())
     }
 
-    /// Add the module and all of its slots to `scope`
+    /// Add the module and all of its slots to `scope`.
     pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
     where
         T: Into<Module>,
@@ -184,7 +187,7 @@ impl Vm {
     }
 
     /// Lookup a module name in `load_paths` and add it to the context.
-    /// `relative_to` is expected to be an absolute path to the imported module
+    /// `relative_to` is expected to be an absolute path to the imported module.
     pub fn add_module_by_name(
         &mut self,
         name: &str,
@@ -225,7 +228,7 @@ impl Vm {
         self.add_module(module.unwrap(), namespaced)
     }
 
-    /// Add the module and all of its slots to `scope`
+    /// Add the module and all of its slots to `scope`.
     pub fn add_main_module<T>(&mut self, module: T) -> Lovm2Result<()>
     where
         T: Into<Module>,
@@ -239,7 +242,7 @@ impl Vm {
         }
     }
 
-    /// A wrapper for `run_bytecode` that handles pushing and popping stack frames
+    /// A wrapper for `run_bytecode` that handles pushing and popping stack frames.
     pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<Value> {
         self.ctx.push_frame(0);
         co.run(self)?;
@@ -248,7 +251,7 @@ impl Vm {
         self.ctx.pop_value()
     }
 
-    /// Start the execution at `ENTRY_POINT`
+    /// Start the execution at `ENTRY_POINT`.
     pub fn run(&mut self) -> Lovm2Result<Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
@@ -260,7 +263,7 @@ impl Vm {
     /// implementation of lovm2 bytecode behavior
     ///
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
-    /// if not handled correctly. See [Vm::run_object]
+    /// if not handled correctly. See [Vm::run_object].
     pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
         use crate::value::iter::*;
 
@@ -434,6 +437,7 @@ impl Vm {
         Ok(())
     }
 
+    /// Register a new callback function that is used for patching function names.
     pub fn set_import_hook<T>(&mut self, hook: T)
     where
         T: Fn(Option<&str>, &str) -> String + 'static,
@@ -441,7 +445,7 @@ impl Vm {
         self.import_hook = Rc::new(hook);
     }
 
-    /// Register a new callback function that is used for resolving dependencies at runtime
+    /// Register a new callback function that is used for resolving dependencies at runtime.
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
         T: Fn(&LoadRequest) -> Lovm2Result<Option<Module>> + Sized + 'static,
@@ -449,7 +453,7 @@ impl Vm {
         self.load_hook = Some(Rc::new(hook));
     }
 
-    /// Gegister a new callback function on interrupt `n`
+    /// Gegister a new callback function on interrupt `n`.
     pub fn set_interrupt<T>(&mut self, n: u16, func: T) -> Lovm2Result<()>
     where
         T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,

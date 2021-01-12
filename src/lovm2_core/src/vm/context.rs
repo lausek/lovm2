@@ -18,15 +18,15 @@ pub const DEFAULT_VSTACK_SIZE: usize = 256;
 /// implement `CallProtocol` as well as interrupts.
 #[derive(Debug)]
 pub struct Context {
-    /// Starting point of execution
+    /// Starting point of execution.
     pub(super) entry: Option<Rc<dyn CallProtocol>>,
-    /// Global variables that can be altered from every object
+    /// Global variables that can be altered from every object.
     pub(super) globals: HashMap<String, Value>,
-    /// Entries in this map can directly be called from lovm2 bytecode
+    /// Entries in this map can directly be called from `lovm2` bytecode.
     pub(super) scope: HashMap<Variable, CallableRef>,
-    /// Call stack that contains local variables
+    /// Call stack that contains local variables and the amount of arguments passed.
     pub(super) lstack: Vec<Frame>,
-    /// Value stack. This is shared across `CallProtocol` functionality
+    /// Value stack. This is where the computation happens.
     pub(super) vstack: Vec<Value>,
 }
 

@@ -16,6 +16,7 @@ pub use self::opt::*;
 /// Settings for lowering to bytecode
 #[derive(Clone, Debug)]
 pub struct CompileOptions {
+    /// If this is `false`, do not run any optimization.
     pub optimize: bool,
 }
 

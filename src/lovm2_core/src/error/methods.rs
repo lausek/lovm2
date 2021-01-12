@@ -34,7 +34,10 @@ pub fn err_empty_dereference<T>() -> Lovm2Result<T> {
 
 /// Unexpected type, expected other type instead
 #[inline]
-pub fn err_ty_unexpected<U: std::fmt::Display, V: std::fmt::Display>(expected: U, got: V) -> Lovm2Error {
+pub fn err_ty_unexpected<U: std::fmt::Display, V: std::fmt::Display>(
+    expected: U,
+    got: V,
+) -> Lovm2Error {
     Lovm2Error {
         msg: format!("expected {}, got {}", expected, got),
         ..Lovm2Error::default()
@@ -52,13 +55,15 @@ pub fn err_custom<T: std::fmt::Display>(msg: T) -> Lovm2Error {
 /// Shared object symbol was not found
 #[inline]
 pub fn err_symbol_not_found<T, U: std::fmt::Display>(name: U) -> Lovm2Result<T> {
-    err_from_string(format!("symbol `{}` cannot be loaded from shared object", name))
+    err_from_string(format!(
+        "symbol `{}` cannot be loaded from shared object",
+        name
+    ))
 }
 
 /// Create a custom error from string
 #[inline]
-pub fn err_from_string<T, U: ToString>(msg: U) -> Lovm2Result<T>
-{
+pub fn err_from_string<T, U: ToString>(msg: U) -> Lovm2Result<T> {
     Err(Lovm2Error {
         msg: msg.to_string(),
         ..Lovm2Error::default()

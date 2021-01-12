@@ -10,28 +10,30 @@ mod slots;
 
 use std::rc::Rc;
 
-use crate::error::*;
 use crate::code::CallProtocol;
 use crate::code::{CodeObject, CodeObjectFunction, LV2_MAGIC_NUMBER};
+use crate::error::*;
 use crate::var::Variable;
 
 pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
 pub use self::slots::Slots;
 
 /// Name of the [CodeObject] entry that is used as a programs starting point inside
-/// [Vm::run](crate::vm::Vm::run)
+/// [Vm::run](crate::vm::Vm::run).
 pub const ENTRY_POINT: &str = "main";
 
 /// Main runtime representation for loadable modules.
 #[derive(Clone, Debug)]
 pub struct Module {
-    /// Always required. Shared object libraries will only fill the `name` and `loc` attribute
+    /// Always required. Shared object libraries will only fill the `name` and `loc` attribute.
     pub code_object: Rc<CodeObject>,
-    /// Contains `CallProtocol` entries that will be added to the context
+    /// Contains `CallProtocol` entries that will be added to the context.
     pub slots: Slots,
 }
 
 impl Module {
+    /// A module is loadable if the first four bytes of the file are either the ELF
+    /// magic number (shared object) or the `lovm2` magic number [LV2_MAGIC_NUMBER].
     pub fn is_loadable<T>(path: T) -> Lovm2Result<bool>
     where
         T: AsRef<std::path::Path>,
@@ -49,6 +51,7 @@ impl Module {
         Ok(mark == LV2_MAGIC_NUMBER || mark == ELF_MAGIC_NUMBER)
     }
 
+    /// Checks if the file is loadable and tries creating a module from it.
     pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
     where
         T: AsRef<std::path::Path>,
@@ -62,10 +65,12 @@ impl Module {
         }
     }
 
+    /// Returns the modules name.
     pub fn name(&self) -> &str {
         self.code_object.name.as_ref()
     }
 
+    /// Returns the filesystem path from which the module was created.
     pub fn location(&self) -> Option<&String> {
         self.code_object.loc.as_ref()
     }
@@ -74,10 +79,13 @@ impl Module {
         &self.slots
     }
 
+    /// Try looking up a `Callable` by name.
     pub fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
         self.slots.get(name).cloned()
     }
 
+    /// Write the contained `CodeObject` into a file. This wil do nothing
+    /// for shared object modules.
     pub fn store_to_file<T>(&self, path: T) -> Lovm2Result<()>
     where
         T: AsRef<std::path::Path>,
@@ -85,10 +93,12 @@ impl Module {
         self.code_object.store_to_file(path)
     }
 
+    /// Returns the `CodeObject` representation as bytes.
     pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
         self.code_object.to_bytes()
     }
 
+    /// List static dependencies of the module.
     pub fn uses(&self) -> &[String] {
         &self.code_object.uses
     }

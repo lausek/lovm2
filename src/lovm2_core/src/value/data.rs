@@ -54,6 +54,7 @@ pub enum Value {
 }
 
 impl Value {
+    /// Create a `Handle` to the given value.
     pub fn create_any<T>(from: T) -> Self
     where
         T: std::any::Any,
@@ -61,6 +62,9 @@ impl Value {
         Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
     }
 
+    /// If the current value is an instance of `Ref`, this function
+    /// will return an owned clone of the innermost value. If the value
+    /// is not a reference, this is just a clone.
     pub fn clone_inner(&self) -> Lovm2Result<Value> {
         if let Value::Ref(r) = self {
             Ok(r.unref_to_value()?.borrow().clone())
@@ -69,8 +73,8 @@ impl Value {
         }
     }
 
-    // make sure that the value is not wrapped in a reference.
-    // used for stack mutations as first operand.
+    /// Ensure that the value is not wrapped in a reference.
+    /// This is used for stack mutations as first operand.
     pub fn unref_inplace(&mut self) -> Lovm2Result<()> {
         if let Value::Ref(r) = self {
             *self = r.unref_to_value()?.borrow().clone();
@@ -78,14 +82,20 @@ impl Value {
         Ok(())
     }
 
+    /// Returns true if the value is a reference.
     pub fn is_ref(&self) -> bool {
         matches!(self, Value::Ref(_))
     }
 
+    /// Create an iterator from the value. This will return
+    /// an error if the value does not support iteration.
     pub fn iter(&self) -> Lovm2Result<iter::Iter> {
         iter::Iter::try_from(self.clone())
     }
 
+    /// Returns a completely independent version of the value.
+    /// This will recursively clone the items of `List` and `Dict`
+    /// as well as `Ref`.
     pub fn deep_clone(&self) -> Self {
         match self {
             Value::Dict(d) => {
@@ -104,6 +114,7 @@ impl Value {
         }
     }
 
+    /// Delete an item from a value by key.
     pub fn delete(&mut self, key: &Value) -> Lovm2Result<()> {
         match self {
             Value::Dict(dict) => {
@@ -119,6 +130,7 @@ impl Value {
         Ok(())
     }
 
+    /// Retrieve an item by key.
     pub fn get(&self, key: &Value) -> Lovm2Result<Value> {
         match self {
             Value::Str(_) => self.get_by_index(key.as_integer_inner()? as usize),
@@ -141,6 +153,7 @@ impl Value {
         }
     }
 
+    /// Get an item by a number. This is mainly used for iteration.
     pub fn get_by_index(&self, idx: usize) -> Lovm2Result<Value> {
         match self {
             Value::Str(s) => s
@@ -161,6 +174,7 @@ impl Value {
         }
     }
 
+    /// Retrieve the length of the value.
     pub fn len(&self) -> Lovm2Result<usize> {
         match self {
             Value::Str(s) => Ok(s.len()),
@@ -171,6 +185,7 @@ impl Value {
         }
     }
 
+    /// Insert a new item into the value.
     pub fn set(&mut self, key: &Value, mut val: Value) -> Lovm2Result<()> {
         if !val.is_ref() {
             val = box_value(val);
@@ -197,10 +212,12 @@ impl Value {
 }
 
 impl Value {
+    /// Create a new instance of `Dict`.
     pub fn dict() -> Self {
         Self::Dict(IndexMap::new())
     }
 
+    /// Create a new instance of `List`.
     pub fn list() -> Self {
         Self::List(vec![])
     }
@@ -351,6 +368,7 @@ impl std::fmt::Debug for Value {
     }
 }
 
+/// Value type mostly used to handle extern values
 pub struct Handle(pub Box<dyn std::any::Any>);
 
 impl PartialEq for Handle {

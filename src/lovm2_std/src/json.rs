@@ -77,12 +77,7 @@ fn to_json_value(val: Value) -> Lovm2Result<JsonValue> {
             json_ls.into()
         }
         Value::Ref(r) => to_json_value(r.unref_to_value()?.borrow().clone())?,
-        _ => {
-            return err_from_string(format!(
-                "{:?} not supported for json",
-                val
-            ))
-        }
+        _ => return err_from_string(format!("{:?} not supported for json", val)),
     };
     Ok(json)
 }

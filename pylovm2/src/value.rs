@@ -27,7 +27,7 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
             .to_object(py),
         Lovm2ValueRaw::Nil => py.None(),
         Lovm2ValueRaw::Ref(r) => {
-            if !r.is_nil() {
+            if !r.is_empty() {
                 lovm2py(&r.borrow().unwrap(), py)
             } else {
                 py.None()

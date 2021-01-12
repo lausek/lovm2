@@ -7,7 +7,7 @@ use crate::var::Variable;
 
 use super::{Label, Operator, Scope};
 
-/// Sum type for every LIR element
+/// Sum type for every LIR element.
 #[derive(Clone, Debug)]
 pub enum LirElement<'hir> {
     Call {

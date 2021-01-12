@@ -2,7 +2,7 @@ use super::*;
 
 use std::ops::*;
 
-/// Default optimizer
+/// Default optimizer.
 pub struct StandardOptimizer;
 
 impl StandardOptimizer {

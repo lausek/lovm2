@@ -36,17 +36,13 @@ macro_rules! lv2_list {
     };
 }
 
-#[cfg(lovm2_version = "0.3.7")]
 pub(crate) fn create_vm() -> lovm2::vm::Vm {
+    if cfg!(lovm2_version = "0.4.8") {
+        return lovm2::create_vm_with_std()
+    }
+
+    #[cfg(not(any(lovm2_version = "0.3.7", lovm2_version = "0.4.8")))]
+    return lovm2::vm::Vm::with_std();
+
     lovm2::vm::Vm::new()
-}
-
-#[cfg(lovm2_version = "0.4.8")]
-pub(crate) fn create_vm() -> lovm2::vm::Vm {
-    lovm2::create_vm_with_std()
-}
-
-#[cfg(all(not(lovm2_version = "0.3.7"), not(lovm2_version = "0.4.8")))]
-pub(crate) fn create_vm() -> lovm2::vm::Vm {
-    lovm2::vm::Vm::with_std()
 }

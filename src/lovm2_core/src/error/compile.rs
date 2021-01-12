@@ -6,7 +6,8 @@ pub struct Lovm2CompileError {
 }
 
 impl<T> From<T> for Lovm2CompileError
-where T: ToString
+where
+    T: ToString,
 {
     fn from(msg: T) -> Self {
         Self {

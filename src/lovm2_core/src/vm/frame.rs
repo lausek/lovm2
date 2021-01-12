@@ -26,6 +26,7 @@ impl Frame {
         }
     }
 
+    /// Create or update a local value.
     pub fn set_local<T>(&mut self, var: T, value: Value)
     where
         T: AsRef<str>,
@@ -33,6 +34,7 @@ impl Frame {
         self.locals.insert(var.as_ref().to_string(), value);
     }
 
+    /// Try looking up the value of a local variable.
     pub fn value_of<T>(&self, var: T) -> Lovm2Result<&Value>
     where
         T: AsRef<str>,
