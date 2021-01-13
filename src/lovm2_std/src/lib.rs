@@ -110,6 +110,7 @@ pub fn create_std_module() -> Module {
         add_function!(module, exec);
         add_function!(module, get_body_as_buffer);
         add_function!(module, get_body_as_string);
+        add_function!(module, get_url);
         add_function!(module, get_status);
         add_function!(module, new_request);
         add_function!(module, serve);

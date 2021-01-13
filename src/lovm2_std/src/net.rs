@@ -24,6 +24,11 @@ fn new_request(url: String) -> Request {
 }
 
 #[lovm2_function]
+fn get_url(req: &mut Request) -> String {
+    req.url.clone()
+}
+
+#[lovm2_function]
 fn set_header(req: &mut Request, key: String, val: String) {
     req.headers.insert(key, val);
 }
