@@ -3,32 +3,29 @@
 
 # lovm2
 
-Is a lightweight virtual machine with a focus on simplicity and extendability.
-
-```
-lovm2 = "0.4.8"
-```
+`lovm2` is a library for building your own programming language in the blink of an eye. It offers you easy to use constructs to generate bytecode for its virtual machine.
 
 ## Features
 
 - [X] Dynamic typing
 - [X] Generate bytecode using a High-Level Intermediate Representation
-- [X] Call into shared objects: [lovm2_extend](src/lovm2_extend/README.md)
+- [X] Define own instructions as `Interrupt`s
+- [X] Standard library included: [lovm2_std](src/lovm2_std/README.md)
+- [X] Extend your programs with Rust: [lovm2_extend](src/lovm2_extend/README.md)
 - [X] Python bindings: [pylovm2](pylovm2/README.md)
-- [X] Define own callbacks for interrupts
 
 ## Examples
+
+Add this line to your `Cargo.toml`:
+
+```
+lovm2 = "0.4.8"
+```
 
 ### Projects
 
 - [lol - a lisp language](https://github.com/lausek/lol)
 - [quasicode - the best language around](https://github.com/witling/quasicode)
-
-### Source Code References
-
-- [Bytecode](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/bytecode.rs)
-- [Context](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/context.rs)
-- [Vm](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/mod.rs)
 
 ### Generating Bytecode
 
@@ -60,6 +57,12 @@ let mut vm = create_vm_with_std();
 vm.add_main_module(module).expect("load error");
 vm.run().expect("run error");
 ```
+
+### Internal Source Code References
+
+- [Bytecode](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/bytecode.rs)
+- [Context](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/context.rs)
+- [Vm](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/mod.rs)
 
 #### Customer Reviews
 
