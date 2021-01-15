@@ -19,19 +19,19 @@
 # in the templates via {{ site.myvariable }}.
 
 title: lovm2
-email: your-email@example.com
+#email: noreply@my.mail
 description: >- # this means to ignore newlines until "baseurl:"
-    a simple language base
-baseurl: "" # the subpath of your site, e.g. /blog
+    lovm2 is a library for building your own programming language in the blink of an eye.
+    It offers you easy to use constructs to generate bytecode for its virtual machine.
+baseurl: "/lovm2" # the subpath of your site, e.g. /blog
 url: "https://lausek.eu" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  lausek
-show_downloads: true
+github_repository: https://github.com/lausek/lovm2
 
 # Build settings
-#theme: minima
-theme: jekyll-theme-minimal
+theme: minima
 plugins:
-  - jekyll-feed
+    - jekyll-feed
 
 # Exclude from processing.
 # The following items will not be processed, by default.

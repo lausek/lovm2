@@ -3,11 +3,3 @@ _site
 .jekyll-cache
 .jekyll-metadata
 vendor
-bench/**
-lovm2_extend/**
-lovm2_std/**
-pylovm2/**
-src/**
-target/**
-Cargo.lock
-book/book/*
