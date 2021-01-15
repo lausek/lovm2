@@ -11,11 +11,11 @@ lovm2 = "0.4.8"
 
 ## Features
 
-- [X] dynamic typing
-- [X] generate bytecode using highlevel intermediate representation
-- [X] call into shared objects: [lovm2_extend](src/lovm2_extend/README.md)
-- [X] python bindings: [pylovm2](pylovm2/README.md)
-- [X] define own callbacks for interrupts
+- [X] Dynamic typing
+- [X] Generate bytecode using a High-Level Intermediate Representation
+- [X] Call into shared objects: [lovm2_extend](src/lovm2_extend/README.md)
+- [X] Python bindings: [pylovm2](pylovm2/README.md)
+- [X] Define own callbacks for interrupts
 
 ## Examples
 
