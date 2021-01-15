@@ -9,6 +9,7 @@ use crate::value::Value;
 use crate::var::Variable;
 use crate::vm::Vm;
 
+/// 4 bytes at the start of each serialized lovm2 module.
 pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, b'L', b'V', b'2'];
 
 /// Generic object implementing the `CallProtocol`

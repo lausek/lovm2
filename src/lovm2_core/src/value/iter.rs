@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::convert::TryFrom;
+use std::rc::Rc;
 
 use crate::vm::Vm;
 
@@ -142,10 +144,14 @@ impl Iter {
 impl TryFrom<Value> for Iter {
     type Error = Lovm2Error;
     fn try_from(value: Value) -> Result<Self, Self::Error> {
-        if let Value::Any(any) = &value {
-            if let Some(value) = any.borrow().0.downcast_ref::<Iter>() {
-                return Ok(value.clone());
+        match &value {
+            Value::Any(any) => {
+                if let Some(value) = any.borrow().0.downcast_ref::<Iter>() {
+                    return Ok(value.clone());
+                }
             }
+            Value::Iter(it) => return Ok(it.borrow().clone()),
+            _ => {}
         }
 
         // values supporting len tend to support iteration as well
@@ -167,30 +173,25 @@ impl std::default::Default for Iter {
     }
 }
 
-macro_rules! get_iter {
-    ($vm:expr, $name:ident) => {
-        let $name = $vm.context_mut().pop_value()?.as_any_inner()?;
-        let mut $name = $name.borrow_mut();
-        let $name = $name
-            .0
-            .downcast_mut::<Iter>()
-            .ok_or_else(|| err_ty_unexpected("iterator", "any"))?;
-    };
+#[inline]
+fn get_iter(vm: &mut Vm) -> Lovm2Result<Rc<RefCell<Iter>>> {
+    match vm.context_mut().pop_value()? {
+        Value::Iter(it) => Ok(it),
+        val => return Err(err_ty_unexpected("iterator", format!("{:?}", val))),
+    }
 }
 
 pub(crate) fn vm_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
     let from = vm.context_mut().pop_value()?;
 
-    if from
-        .as_any_inner()
-        .map(|any| any.borrow().0.is::<Iter>())
-        .unwrap_or(false)
-    {
-        vm.context_mut().push_value(from);
+    // if the value on stack already is an iterator, leave it
+    let it = if matches!(from, Value::Iter(_)) {
+        from
     } else {
-        let it = from.iter()?;
-        vm.context_mut().push_value(Value::create_any(it));
-    }
+        Value::from(from.iter()?)
+    };
+
+    vm.context_mut().push_value(it);
 
     Ok(())
 }
@@ -215,26 +216,35 @@ pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> Lovm2Result<()> {
         }
     };
 
-    vm.context_mut().push_value(Value::create_any(it));
+    vm.context_mut().push_value(Value::from(it));
 
     Ok(())
 }
 
 pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
-    get_iter!(vm, it);
+    let it = get_iter(vm)?;
+    let it = it.borrow();
     vm.context_mut().push_value(it.has_next().into());
     Ok(())
 }
 
 pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
-    get_iter!(vm, it);
+    let it = get_iter(vm)?;
+    let mut it = it.borrow_mut();
     vm.context_mut().push_value(it.next()?);
     Ok(())
 }
 
 pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> Lovm2Result<()> {
-    get_iter!(vm, it);
+    let it = get_iter(vm)?;
+    let it = it.borrow();
     let reversed = it.clone().reverse();
-    vm.context_mut().push_value(Value::create_any(reversed));
+    vm.context_mut().push_value(Value::from(reversed));
     Ok(())
+}
+
+impl std::fmt::Display for Iter {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "iterator")
+    }
 }

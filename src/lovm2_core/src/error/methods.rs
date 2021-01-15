@@ -24,6 +24,7 @@ pub fn err_invalid_set_target<T, U: ToString>(target: U) -> Lovm2Result<T> {
     Err((Lovm2ErrorTy::InvalidSetTarget, target.to_string()).into())
 }
 
+/// Tried to operate on an empty reference
 #[inline]
 pub fn err_empty_dereference<T>() -> Lovm2Result<T> {
     Err(Lovm2Error {
@@ -44,6 +45,7 @@ pub fn err_ty_unexpected<U: std::fmt::Display, V: std::fmt::Display>(
     }
 }
 
+/// Create an error from a custom message
 #[inline]
 pub fn err_custom<T: std::fmt::Display>(msg: T) -> Lovm2Error {
     Lovm2Error {

@@ -67,6 +67,7 @@ macro_rules! lv2_var {
 /// Translate a name from `snake_case` (lovm2 default) to `lowerCamelCase`
 ///
 /// ``` rust
+/// # use lovm2_core::util::to_lower_camel_case;
 /// assert_eq!("toCamelCase".to_string(), to_lower_camel_case("to_camel_case"));
 /// ```
 pub fn to_lower_camel_case(name: &str) -> String {

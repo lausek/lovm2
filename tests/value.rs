@@ -250,7 +250,7 @@ fn test_iterator_ranged() {
 fn test_iterator_try_from() {
     let iter1: Vec<Value> = vec![1, 2, 3, 4].into_iter().map(Value::from).collect();
 
-    let iter2 = Value::create_any(box_value(Value::List(iter1.clone())).iter().unwrap());
+    let iter2 = Value::from(box_value(Value::List(iter1.clone())).iter().unwrap());
     let iter2 = iter2.iter().unwrap();
 
     assert_eq!(iter1, iter2.collect());

@@ -50,6 +50,9 @@ pub enum Value {
     Ref(Reference),
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
+    Iter(Rc<RefCell<Iter>>),
+    #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
     Any(AnyRef),
 }
 
@@ -272,6 +275,7 @@ impl std::fmt::Display for Value {
                     .join(", ")
             ),
             Value::Ref(r) => write!(f, "{}", r),
+            Value::Iter(it) => write!(f, "{}", it.borrow()),
             Value::Any(_) => write!(f, "Handle"),
         }
     }
@@ -328,6 +332,12 @@ where
     }
 }
 
+impl From<Iter> for Value {
+    fn from(it: Iter) -> Self {
+        Value::Iter(Rc::new(RefCell::new(it)))
+    }
+}
+
 impl Into<bool> for Value {
     fn into(self) -> bool {
         self.as_bool_inner().unwrap()
@@ -363,6 +373,7 @@ impl std::fmt::Debug for Value {
             Value::Dict(m) => write!(f, "Dict({:?})", m),
             Value::List(ls) => write!(f, "List({:?})", ls),
             Value::Ref(r) => write!(f, "{:?}", r),
+            Value::Iter(it) => write!(f, "{:?}", it),
             Value::Any(_) => write!(f, "Handle"),
         }
     }

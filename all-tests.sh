@@ -18,6 +18,10 @@ cargo build
 pytest
 popd
 
+pushd src/lovm2_core
+cargo test
+popd
+
 # test the shared object extension
 pushd src/lovm2_extend
 for example in $(ls ./examples); do

@@ -1,5 +1,6 @@
 use super::*;
 
+/// Iterator expressions and operations.
 #[derive(Clone, Debug)]
 pub enum Iter {
     Create(Box<Expr>),
