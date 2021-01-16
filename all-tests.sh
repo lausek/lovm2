@@ -44,3 +44,4 @@ pushd src/lovm2_std
 cargo build
 cargo test
 popd
+

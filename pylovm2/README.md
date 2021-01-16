@@ -49,3 +49,9 @@ docker run -it -v $(pwd):/io pylovm2-build
 # ... or use `maturin build`
 $ maturin publish
 ```
+
+To build without SSL support:
+
+```
+maturin build --cargo-extra-args="--no-default-features --features lovm2/stdlib,lovm2/stdlib-net"
+```
