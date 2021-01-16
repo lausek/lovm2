@@ -4,3 +4,7 @@ _site
 .jekyll-metadata
 vendor
 **/pylovm2/*
+**/bench/*
+**/src/*
+**/target/*
+Cargo.lock
