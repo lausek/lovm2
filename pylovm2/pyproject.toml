@@ -8,4 +8,4 @@ build-backend = "maturin"
 [tool.maturin]
 #bindings = "cffi"
 bindings = "pyo3"
-manylinux = "off"
+#manylinux = "off"

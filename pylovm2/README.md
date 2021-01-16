@@ -50,7 +50,9 @@ docker run -it -v $(pwd):/io pylovm2-build
 $ maturin publish
 ```
 
-To build without SSL support:
+### Problems with SSL
+
+manylinux wheels are not allowed to link to TLS libraries dynamically. Building without SSL support can be done like this:
 
 ```
 maturin build --cargo-extra-args="--no-default-features --features lovm2/stdlib,lovm2/stdlib-net"

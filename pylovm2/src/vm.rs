@@ -26,6 +26,7 @@ impl Vm {
         }
     }
 
+    #[cfg(feature = "stdlib")]
     #[classmethod]
     pub fn with_std(_this: &PyAny) -> Self {
         Self {

@@ -17,10 +17,18 @@ crate-type = ["cdylib"]
 
 [dependencies]
 shrinkwraprs = "0.3.0"
-#lovm2 = { version = "0.4.8" }
-lovm2 = { git = "https://github.com/lausek/lovm2", branch = "v0.4.8" }
-#lovm2 = { path = "../" }
+
+[dependencies.lovm2]
+#version = "0.4.8"
+#path = "../"
+git = "https://github.com/lausek/lovm2"
+branch = "v0.4.8"
+default-features = false
 
 [dependencies.pyo3]
 version = "0.12.4"
 features = ["extension-module"]
+
+[features]
+default = ["stdlib", "lovm2/stdlib-net", "lovm2/stdlib-ssl"]
+stdlib = ["lovm2/stdlib"]
