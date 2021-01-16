@@ -38,4 +38,3 @@ test-utils = { path = "./tests/test-utils" }
 [features]
 default = ["stdlib"]
 stdlib = ["lovm2_std"]
-#stdlib = []

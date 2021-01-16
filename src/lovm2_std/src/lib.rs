@@ -1,14 +1,14 @@
-pub mod buffer;
-pub mod collection;
-pub mod data;
-pub mod fs;
-pub mod functional;
-pub mod json;
-pub mod math;
+pub(crate) mod buffer;
+pub(crate) mod collection;
+pub(crate) mod data;
+pub(crate) mod fs;
+pub(crate) mod functional;
+pub(crate) mod json;
+pub(crate) mod math;
 #[cfg(feature = "net")]
-pub mod net;
-pub mod regex;
-pub mod string;
+pub(crate) mod net;
+pub(crate) mod regex;
+pub(crate) mod string;
 
 pub use self::buffer::*;
 pub use self::collection::*;
