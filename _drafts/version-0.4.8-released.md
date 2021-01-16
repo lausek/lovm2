@@ -1,0 +1,35 @@
+---
+layout: post
+---
+
+## Changelog
+
+- Added a standard library that will be included by default introducing common functionality for buffers, math, json, net, fs, and more. See full reference here: [lovm2_std](https://github.com/lausek/lovm2/tree/master/src/lovm2_std).
+
+- Implemented a new iterator value for `Str`, `List`, and `Dict`. This allows us to replicate a `foreach` construct using a new repeat variant:
+
+``` rust
+gen::Repeat::repeat_iterating(<collection_expr>, <item_variable>)
+```
+
+- Implemented exclusive or, shift left and shift right:
+
+```
+Expr::xor(<op1>, <op2>)
+Expr::shl(<op>, <n>)
+Expr::shr(<op>, <n>)
+```
+
+- The project layout changed removing `lovm2_error` and `lovm2_internals` completely:
+
+```
+lovm2_core      - Bytecode, Vm, Errors
+lovm2_extend    - Functionality for writing lovm2 functions in Rust
+lovm2_std       - Implementation of the standard library
+```
+
+- Serialized modules now have a special four byte sequence at the start. This will improve correctness when loading modules from file.
+
+- Modules will be cached at `Vm` level.
+
+- Improved `HIR -> LIR` lowering performance significantly.
