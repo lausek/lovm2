@@ -180,7 +180,7 @@ impl FunctionArgs {
                 };
 
                 quote! {
-                    if let lovm2_extend::prelude::Value::Ref(r) = #first_name {
+                    if let lovm2_core::prelude::Value::Ref(r) = #first_name {
                         use std::ops::{Deref, DerefMut};
                         let #first_name = r.unref_to_value()?;
                         let #mut_kw #first_name = (*#first_name).#borrow();

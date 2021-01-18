@@ -1,14 +1,28 @@
-//! lovm2 is a lightweight virtual machine with a focus on simplicity and extendability.
+//! `lovm2` is a library for building your own programming language in the blink of an eye. It offers you easy to use constructs to generate bytecode for its virtual machine.
 //!
 //! ## Features
 //!
-//! - dynamic typing
-//! - generate bytecode using highlevel intermediate representation
-//! - call into shared objects: [lovm2_extend](lovm2_extend/README.md)
-//! - python bindings: [pylovm2](pylovm2/README.md)
-//! - define own callbacks for interrupts
+//! - Dynamic typing
+//! - Generate bytecode using a High-Level Intermediate Representation
+//! - Define own instructions as `Interrupt`s
+//! - Extend your programs with Rust: [lovm2 extend](README-extend.md)
+//! - Standard library included: [lovm2_std](src/lovm2_std/README.md)
+//! - Python bindings: [pylovm2](pylovm2/README.md)
 //!
-//! ## Example
+//! ## Examples
+//!
+//! Add this line to your `Cargo.toml`:
+//!
+//! ``` toml
+//! lovm2 = "0.4.8"
+//! ```
+//!
+//! ### Projects
+//!
+//! - [lol - a lisp language](https://github.com/lausek/lol)
+//! - [quasicode - the best language around](https://github.com/witling/quasicode)
+//!
+//! ### Generating Bytecode
 //!
 //! ``` rust
 //! use lovm2::create_vm_with_std;

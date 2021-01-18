@@ -2,7 +2,7 @@
 
 use test_utils::*;
 
-use lovm2_extend::prelude::*;
+use lovm2_core::extend::prelude::*;
 
 #[test]
 fn native_format() {

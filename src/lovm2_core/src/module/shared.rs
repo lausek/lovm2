@@ -4,7 +4,7 @@
 //! after `EXTERN_LOVM2_INITIALIZER`. It is responsible for registering the exported
 //! functions in the given `HashMap`.
 //!
-//! See [lovm2_extend](/lovm2_extend) for helper utilities and examples.
+//! See module [extend](crate::extend) for helper utilities and examples.
 
 use libloading::{Error, Library, Symbol};
 use std::collections::HashMap;

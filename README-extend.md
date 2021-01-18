@@ -1,6 +1,6 @@
-# lovm2_extend
+# lovm2_core::extend
 
-`lovm2_extend` is a library for writing `lovm2` extensions using Rust. You can either statically import functions or produce a shared object that can be loaded at runtime.
+`lovm2_core::extend` bundles functionality for writing `lovm2` extensions using Rust. You can either statically import functions or produce a shared object that can be loaded at runtime.
 
 Shared object libraries created using this crate can be imported by `lovm2` and used like regular modules. You just need to add the shared object to `lovm2`s module search path e.g. `~/.local/lib/lovm2/`. When searching for a module, the file extension is stripped. This means that a file named `libmymodule.so` will only be imported if you have a `Import("libmymodule")` instruction.
 
@@ -36,15 +36,14 @@ This crate exports three macros:
 
 ``` rust
 // Import all required types for writing a module
-use lovm2_extend::prelude::*;
+use lovm2_core::extend::prelude::*;
 
 #[lovm2_function(extern)]
 fn div(a: i64, b: i64) -> Lovm2Result<i64> {
     if b == 0 {
-        Err(Lovm2Error::from("div by zero"))
-    } else {
-        Ok(a / b)
+        return err_from_string("div by zero");
     }
+    Ok(a / b)
 }
 
 // This attribute generates wrapper code for Rust structures

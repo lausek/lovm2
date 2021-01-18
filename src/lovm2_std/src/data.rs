@@ -1,6 +1,6 @@
-use lovm2_extend::prelude::*;
-
 use std::collections::HashMap;
+
+use super::*;
 
 // buffer
 #[lovm2_object]
@@ -19,7 +19,7 @@ pub struct File {
 // regex
 #[lovm2_object]
 pub struct Regex {
-    pub inner: regex::Regex,
+    pub inner: ::regex::Regex,
 }
 
 // net

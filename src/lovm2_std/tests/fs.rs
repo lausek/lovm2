@@ -2,9 +2,9 @@
 
 use test_utils::*;
 
-use lovm2_extend::prelude::*;
-
 use tempfile::tempdir;
+
+use lovm2_core::extend::prelude::*;
 
 #[test]
 fn file_creation_deletion() {

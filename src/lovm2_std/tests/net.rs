@@ -2,9 +2,9 @@
 
 use test_utils::*;
 
-use lovm2_extend::prelude::*;
-
 use httptest::{all_of, matchers::request, responders::*, Expectation, ServerPool};
+
+use lovm2_core::extend::prelude::*;
 
 static SERVER_POOL: ServerPool = ServerPool::new(2);
 

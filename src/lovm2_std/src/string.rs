@@ -1,4 +1,4 @@
-use lovm2_extend::prelude::*;
+use super::*;
 
 #[lovm2_function]
 fn format(vm: &mut Vm) -> Lovm2Result<String> {

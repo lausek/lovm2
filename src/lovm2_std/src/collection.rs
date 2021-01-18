@@ -1,4 +1,4 @@
-use lovm2_extend::prelude::*;
+use super::*;
 
 #[lovm2_function]
 fn all(collection: &Value) -> Lovm2Result<bool> {

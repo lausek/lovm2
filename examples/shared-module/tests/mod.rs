@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use lovm2_extend::prelude::*;
+use lovm2_core::extend::prelude::*;
 
 fn create_caller(modder: fn(&mut Hir)) -> Vm {
     let mut builder = ModuleBuilder::new();

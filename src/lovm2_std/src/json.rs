@@ -1,10 +1,10 @@
-use json::{object::Object, JsonValue};
+use ::json::{object::Object, JsonValue};
 
-use lovm2_extend::prelude::*;
+use super::*;
 
 #[lovm2_function]
 fn decode(json: String) -> Lovm2Result<Value> {
-    json::parse(&json)
+    ::json::parse(&json)
         .or_else(err_from_string)
         .and_then(|val| from_json_value(&val))
 }
@@ -12,7 +12,7 @@ fn decode(json: String) -> Lovm2Result<Value> {
 #[lovm2_function]
 fn encode(val: Value) -> Lovm2Result<String> {
     let val = to_json_value(val)?;
-    Ok(json::stringify(val))
+    Ok(::json::stringify(val))
 }
 
 fn from_json_value(val: &JsonValue) -> Lovm2Result<Value> {
@@ -22,7 +22,7 @@ fn from_json_value(val: &JsonValue) -> Lovm2Result<Value> {
         JsonValue::Short(s) => Value::from(s.as_str().to_string()),
         JsonValue::String(s) => Value::from(s.to_string()),
         JsonValue::Number(n) => {
-            let iparse: Result<i64, json::number::NumberOutOfScope> = (*n).try_into();
+            let iparse: Result<i64, ::json::number::NumberOutOfScope> = (*n).try_into();
             if let Ok(n) = iparse {
                 Value::from(n)
             } else {

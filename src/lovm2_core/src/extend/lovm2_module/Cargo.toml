@@ -10,7 +10,6 @@ proc-macro = true
 
 [dependencies]
 lazy_static = "1.4.0"
-lovm2_core = { path = "../../lovm2_core" }
 proc-macro2 = "1.0.24"
 quote = "1.0.7"
 

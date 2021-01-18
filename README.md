@@ -7,18 +7,18 @@
 
 ## Features
 
-- [X] Dynamic typing
-- [X] Generate bytecode using a High-Level Intermediate Representation
-- [X] Define own instructions as `Interrupt`s
-- [X] Standard library included: [lovm2_std](src/lovm2_std/README.md)
-- [X] Extend your programs with Rust: [lovm2_extend](src/lovm2_extend/README.md)
-- [X] Python bindings: [pylovm2](pylovm2/README.md)
+- Dynamic typing
+- Generate bytecode using a High-Level Intermediate Representation
+- Define own instructions as `Interrupt`s
+- Extend your programs with Rust: [lovm2 extend](README-extend.md)
+- Standard library included: [lovm2_std](src/lovm2_std/README.md)
+- Python bindings: [pylovm2](pylovm2/README.md)
 
 ## Examples
 
 Add this line to your `Cargo.toml`:
 
-```
+``` toml
 lovm2 = "0.4.8"
 ```
 

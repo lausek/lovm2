@@ -1,4 +1,4 @@
-use lovm2_extend::prelude::*;
+use lovm2_core::extend::prelude::*;
 
 #[lovm2_function]
 fn minus(op1: i64, op2: i64) -> i64 {

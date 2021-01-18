@@ -15,7 +15,8 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 use syn::{Block, Ident, ItemFn, ReturnType};
 
-use lovm2_core::module::EXTERN_LOVM2_INITIALIZER;
+//use lovm2_core::module::EXTERN_LOVM2_INITIALIZER;
+const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
 
 use self::args::*;
 use self::func::*;

@@ -22,8 +22,6 @@ pushd src/lovm2_core
 cargo test
 popd
 
-# test the shared object extension
-pushd src/lovm2_extend
 for example in $(ls ./examples); do
     pushd ./examples/$example
     cargo build
@@ -37,7 +35,7 @@ for example in $(ls ./examples); do
 done
 
 cargo build
-popd
+cargo doc
 
 # test standard library
 pushd src/lovm2_std

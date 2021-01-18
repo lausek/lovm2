@@ -8,4 +8,4 @@ edition = "2018"
 name = "static_module"
 
 [dependencies]
-lovm2_extend = { path = "../../" }
+lovm2_core = { path = "../../src/lovm2_core" }

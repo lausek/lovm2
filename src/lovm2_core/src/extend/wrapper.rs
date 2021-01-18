@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
-use lovm2_core::code::{CallProtocol, CallableRef};
-use lovm2_core::prelude::*;
-use lovm2_core::vm::Vm;
+use crate::code::{CallProtocol, CallableRef};
+use crate::prelude::*;
+use crate::vm::Vm;
 
 struct StaticFunctionWrapper<T>(T);
 

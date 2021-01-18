@@ -1,4 +1,4 @@
-use lovm2_extend::prelude::*;
+use lovm2_core::extend::prelude::*;
 use lovm2_std::create_std_module;
 
 pub fn run_module_test(func: impl Fn(&mut ModuleBuilder)) -> Vm {
