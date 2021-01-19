@@ -26,12 +26,23 @@ impl Vm {
         }
     }
 
-    #[cfg(feature = "stdlib")]
     #[classmethod]
-    pub fn with_std(_this: &PyAny) -> Self {
-        Self {
-            inner: lovm2::create_vm_with_std(),
-        }
+    pub fn with_std(_this: &PyAny, py: Python) -> PyResult<Py<Self>> {
+        let vm = Py::new(py, Self::new())?;
+        let r = vm.as_ref(py);
+
+        pyo3::py_run!(py, r, r#"
+        try:
+            from pylovm2_stdlib import create_std_module
+            r.add_module_unnamespaced(create_std_module())
+        except ImportError:
+            print('Failed to create VM with standard library. Did you install with stdlib support?')
+            print('\tpip install pylovm2[stdlib]')
+            print('')
+            exit()
+        "#);
+
+        Ok(vm)
     }
 
     pub fn add_load_path(&mut self, path: String) -> PyResult<()> {
@@ -83,6 +94,16 @@ impl Vm {
             .expect("given module was already loaded");
         self.inner
             .add_module(module, true)
+            .map_err(err_to_exception)
+    }
+
+    pub fn add_module_unnamespaced(&mut self, module: &mut Module) -> PyResult<()> {
+        let module = module
+            .inner
+            .take()
+            .expect("given module was already loaded");
+        self.inner
+            .add_module(module, false)
             .map_err(err_to_exception)
     }
 

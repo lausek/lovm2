@@ -1,5 +1,5 @@
 [package]
-name = "pylovm2"
+name = "pylovm2_stdlib"
 version = "0.4.8"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
@@ -12,16 +12,21 @@ license-file = "LICENSE"
 description = "bindings for lausek's own virtual machine."
 
 [lib]
-name = "pylovm2"
-crate-type = ["cdylib", "rlib"]
+name = "pylovm2_stdlib"
+crate-type = ["cdylib"]
 
 [dependencies]
+#pylovm2 = { path = "./pylovm2" }
+#lovm2_std = { path = "../src/lovm2_std" }
 shrinkwraprs = "0.3.0"
+
+pylovm2 = { path = "/deps/pylovm2" }
+lovm2_std = { path = "/deps/src/lovm2_std" }
 
 [dependencies.lovm2]
 #version = "0.4.8"
-#path = "../"
 path = "/deps/"
+#path = "../"
 #git = "https://github.com/lausek/lovm2"
 #branch = "v0.4.8"
 default-features = false
@@ -29,7 +34,3 @@ default-features = false
 [dependencies.pyo3]
 version = "0.12.4"
 features = ["extension-module"]
-
-#[features]
-#default = ["stdlib", "lovm2/stdlib-net", "lovm2/stdlib-ssl"]
-#stdlib = ["lovm2/stdlib"]
