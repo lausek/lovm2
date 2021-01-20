@@ -27,20 +27,29 @@ impl Vm {
     }
 
     #[classmethod]
-    pub fn with_std(_this: &PyAny, py: Python) -> PyResult<Py<Self>> {
-        let vm = Py::new(py, Self::new())?;
-        let r = vm.as_ref(py);
+    pub fn with_std(_this: &PyAny, py: Python) -> PyResult<Self> {
+        let mut vm = Self::new();
 
-        pyo3::py_run!(py, r, r#"
-        try:
-            from pylovm2_stdlib import create_std_module
-            r.add_module_unnamespaced(create_std_module())
-        except ImportError:
-            print('Failed to create VM with standard library. Did you install with stdlib support?')
-            print('\tpip install pylovm2[stdlib]')
-            print('')
-            exit()
-        "#);
+        if let Err(_) = py.run("import pylovm2_stdlib", None, None) {
+            return Err(PyImportError::new_err("Failed to create VM with standard library. Did you install with stdlib support?\n\tpip install pylovm2[stdlib]\n"));
+        }
+
+        let module = py.eval("pylovm2_stdlib.create_std_module()", None, None)?;
+
+        if "Module" != module.get_type().name() {
+            return Err(PyTypeError::new_err("Created standard library is not a module"));
+        }
+
+        let module: &PyCell<Module> = unsafe {
+            // We cannot use `.extract()` here, because pyo3 relies
+            // on the PyTypeObjects to be identical i.e. having the same
+            // instance pointer. This will never be the case as
+            // pylovm2 and pylovm2_stdlib are compiled in different crates.
+            PyTryFrom::try_from_unchecked(module)
+        };
+        let mut module = module.try_borrow_mut()?;
+
+        vm.add_module_unnamespaced(&mut module)?;
 
         Ok(vm)
     }
@@ -146,7 +155,7 @@ impl Vm {
 
                 Ok(())
             })
-            .map_err(err_to_exception)?;
+        .map_err(err_to_exception)?;
 
         Ok(())
     }
