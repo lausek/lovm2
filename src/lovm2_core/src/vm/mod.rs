@@ -46,7 +46,7 @@ pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
 /// Function signature of interrupts.
 pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
 /// Function signature for `Callable` importing.
-pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> String;
+pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> Lovm2Result<Option<String>>;
 
 /// Structure containing relevant information for module resolvement.
 pub struct LoadRequest {
@@ -144,7 +144,8 @@ impl Vm {
     }
 
     /// Add a new function by name to the virtual machine.
-    pub fn add_function(&mut self, key: Variable, co: CallableRef) -> Lovm2Result<()> {
+    pub fn add_function<T: Into<Variable>>(&mut self, key: T, co: CallableRef) -> Lovm2Result<()> {
+        let key = key.into();
         // this overwrites the slot with the new function. maybe not so good
         if self.ctx.scope.insert(key.clone(), co).is_some() {
             return Err((Lovm2ErrorTy::ImportConflict, key).into());
@@ -169,14 +170,16 @@ impl Vm {
             let module = Rc::new(module);
             for (key, co) in module.slots().iter() {
                 // if `import` was set, all function names should be patched with the import_hook
-                let nfunc: Variable =
-                    (self.import_hook)(Some(module.name().as_ref()), key.as_ref()).into();
-                self.add_function(nfunc, co.clone())?;
+                if let Some(nfunc) = (self.import_hook)(Some(module.name().as_ref()), key.as_ref())?
+                {
+                    self.add_function(nfunc, co.clone())?;
 
-                // add unnamespaced function as well
-                if !namespaced {
-                    let func: Variable = (self.import_hook)(None, key.as_ref()).into();
-                    self.add_function(func, co.clone())?;
+                    // add unnamespaced function as well
+                    if !namespaced {
+                        if let Some(func) = (self.import_hook)(None, key.as_ref())? {
+                            self.add_function(func, co.clone())?;
+                        }
+                    }
                 }
             }
 
@@ -440,7 +443,7 @@ impl Vm {
     /// Register a new callback function that is used for patching function names.
     pub fn set_import_hook<T>(&mut self, hook: T)
     where
-        T: Fn(Option<&str>, &str) -> String + 'static,
+        T: Fn(Option<&str>, &str) -> Lovm2Result<Option<String>> + 'static,
     {
         self.import_hook = Rc::new(hook);
     }
@@ -521,9 +524,10 @@ pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
 }
 
 #[inline]
-fn default_import_hook(module: Option<&str>, name: &str) -> String {
-    match module {
+fn default_import_hook(module: Option<&str>, name: &str) -> Lovm2Result<Option<String>> {
+    let name = match module {
         Some(module) => format!("{}.{}", module, name),
         _ => name.to_string(),
-    }
+    };
+    Ok(Some(name))
 }

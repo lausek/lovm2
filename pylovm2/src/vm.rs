@@ -185,13 +185,20 @@ impl Vm {
             let guard = Python::acquire_gil();
             let py = guard.python();
             let args = PyTuple::new(py, vec![module.to_object(py), name.to_object(py)]);
-            func.call1(py, args)
-                .unwrap()
+            let result = func.call1(py, args).map_err(|e| exception_to_err(&e, py))?;
+
+            if result.is_none(py) {
+                return Ok(None);
+            }
+
+            let result = result
                 .as_ref(py)
                 .str()
                 .unwrap()
                 .to_string_lossy()
-                .to_string()
+                .to_string();
+
+            Ok(Some(result))
         };
         self.inner.set_import_hook(hook);
         Ok(())
