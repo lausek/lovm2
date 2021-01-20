@@ -37,7 +37,9 @@ impl Vm {
         let module = py.eval("pylovm2_stdlib.create_std_module()", None, None)?;
 
         if "Module" != module.get_type().name() {
-            return Err(PyTypeError::new_err("Created standard library is not a module"));
+            return Err(PyTypeError::new_err(
+                "Created standard library is not a module",
+            ));
         }
 
         let module: &PyCell<Module> = unsafe {
@@ -96,24 +98,19 @@ impl Vm {
         Ok(Context::new(self.inner.context_mut()))
     }
 
-    pub fn add_module(&mut self, module: &mut Module) -> PyResult<()> {
+    pub fn add_module(&mut self, module: &mut Module, namespaced: Option<bool>) -> PyResult<()> {
+        let namespaced = namespaced.unwrap_or(true);
         let module = module
             .inner
             .take()
             .expect("given module was already loaded");
         self.inner
-            .add_module(module, true)
+            .add_module(module, namespaced)
             .map_err(err_to_exception)
     }
 
     pub fn add_module_unnamespaced(&mut self, module: &mut Module) -> PyResult<()> {
-        let module = module
-            .inner
-            .take()
-            .expect("given module was already loaded");
-        self.inner
-            .add_module(module, false)
-            .map_err(err_to_exception)
+        self.add_module(module, Some(false))
     }
 
     pub fn add_main_module(&mut self, module: &mut Module) -> PyResult<()> {
@@ -155,7 +152,7 @@ impl Vm {
 
                 Ok(())
             })
-        .map_err(err_to_exception)?;
+            .map_err(err_to_exception)?;
 
         Ok(())
     }
@@ -164,12 +161,10 @@ impl Vm {
         let hook = move |req: &LoadRequest| {
             let guard = Python::acquire_gil();
             let py = guard.python();
-            let relative_to = if let Some(relative_to) = &req.relative_to {
-                relative_to.to_object(py)
-            } else {
-                py.None()
-            };
-            let args = PyTuple::new(py, vec![req.module.to_object(py), relative_to]);
+            let args = PyTuple::new(
+                py,
+                vec![req.module.to_object(py), req.relative_to.to_object(py)],
+            );
 
             let ret = func.call1(py, args).map_err(|e| exception_to_err(&e, py))?;
             if ret.is_none(py) {
@@ -182,6 +177,23 @@ impl Vm {
             }
         };
         self.inner.set_load_hook(hook);
+        Ok(())
+    }
+
+    pub fn set_import_hook(&mut self, func: PyObject) -> PyResult<()> {
+        let hook = move |module: Option<&str>, name: &str| {
+            let guard = Python::acquire_gil();
+            let py = guard.python();
+            let args = PyTuple::new(py, vec![module.to_object(py), name.to_object(py)]);
+            func.call1(py, args)
+                .unwrap()
+                .as_ref(py)
+                .str()
+                .unwrap()
+                .to_string_lossy()
+                .to_string()
+        };
+        self.inner.set_import_hook(hook);
         Ok(())
     }
 }
