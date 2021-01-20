@@ -139,7 +139,7 @@ fn custom_naming_scheme() {
             _ => key,
         };
         println!("{}", key);
-        key
+        Ok(Some(key))
     });
 
     vm.add_module(module, false).unwrap();

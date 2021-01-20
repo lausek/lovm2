@@ -11,7 +11,7 @@ impl CustomVm {
     pub fn new() -> Self {
         let mut inner = Vm::new();
         inner
-            .add_function("minus".into(), create_callable(minus))
+            .add_function("minus", create_callable(minus))
             .unwrap();
         Self(inner)
     }
