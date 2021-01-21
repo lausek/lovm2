@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../setup.html"><strong aria-hidden="true">1.1.</strong> Setup</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/introduction.html"><strong aria-hidden="true">2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/bytecode.html"><strong aria-hidden="true">2.1.</strong> Bytecode</a></li><li class="chapter-item expanded "><a href="../concepts/modules.html"><strong aria-hidden="true">2.2.</strong> Modules</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">2.3.</strong> Types</a></li></ol></li><li class="chapter-item expanded "><a href="../building/introduction.html"><strong aria-hidden="true">3.</strong> Building Programs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../building/expressions.html"><strong aria-hidden="true">3.1.</strong> Expressions</a></li><li class="chapter-item expanded "><a href="../building/assign.html"><strong aria-hidden="true">3.2.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../building/branch.html"><strong aria-hidden="true">3.3.</strong> Branching</a></li><li class="chapter-item expanded "><a href="../building/repeat.html"><strong aria-hidden="true">3.4.</strong> Repeating</a></li><li class="chapter-item expanded "><a href="../building/iterators.html"><strong aria-hidden="true">3.5.</strong> Iterators</a></li><li class="chapter-item expanded "><a href="../building/optimization.html"><strong aria-hidden="true">3.6.</strong> Optimization</a></li></ol></li><li class="chapter-item expanded "><a href="../vm/introduction.html" class="active"><strong aria-hidden="true">4.</strong> Virtual Machine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../vm/context.html"><strong aria-hidden="true">4.1.</strong> Context</a></li><li class="chapter-item expanded "><a href="../vm/hooks.html"><strong aria-hidden="true">4.2.</strong> Hooks</a></li><li class="chapter-item expanded "><a href="../vm/interrupt.html"><strong aria-hidden="true">4.3.</strong> Interrupt</a></li></ol></li><li class="chapter-item expanded "><a href="../examples/overview.html"><strong aria-hidden="true">5.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../setup.html"><strong aria-hidden="true">1.1.</strong> Setup</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/introduction.html"><strong aria-hidden="true">2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/bytecode.html"><strong aria-hidden="true">2.1.</strong> Bytecode</a></li><li class="chapter-item expanded "><a href="../concepts/modules.html"><strong aria-hidden="true">2.2.</strong> Modules</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">2.3.</strong> Types</a></li></ol></li><li class="chapter-item expanded "><a href="../building/introduction.html"><strong aria-hidden="true">3.</strong> Building Programs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../building/expressions.html"><strong aria-hidden="true">3.1.</strong> Expressions</a></li><li class="chapter-item expanded "><a href="../building/assign.html"><strong aria-hidden="true">3.2.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../building/branch.html"><strong aria-hidden="true">3.3.</strong> Branching</a></li><li class="chapter-item expanded "><a href="../building/repeat.html"><strong aria-hidden="true">3.4.</strong> Repeating</a></li><li class="chapter-item expanded "><a href="../building/iterators.html"><strong aria-hidden="true">3.5.</strong> Iterators</a></li><li class="chapter-item expanded "><a href="../building/optimization.html"><strong aria-hidden="true">3.6.</strong> Optimization</a></li></ol></li><li class="chapter-item expanded "><a href="../vm/introduction.html" class="active"><strong aria-hidden="true">4.</strong> Virtual Machine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../vm/hooks.html"><strong aria-hidden="true">4.1.</strong> Hooks</a></li><li class="chapter-item expanded "><a href="../vm/interrupt.html"><strong aria-hidden="true">4.2.</strong> Interrupt</a></li></ol></li><li class="chapter-item expanded "><a href="../examples/overview.html"><strong aria-hidden="true">5.</strong> Examples</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -165,6 +165,25 @@
                     <main>
                         <h1><a class="header" href="#virtual-machine" id="virtual-machine">Virtual Machine</a></h1>
 <p>The virtual machine is the heart of <code>lovm2</code> projects and thrives computation forward. It maintains the whole program state inside a <code>Context</code> and shares said data with every function and module interested in it.</p>
+<h2><a class="header" href="#context" id="context">Context</a></h2>
+<p>The context stores the programs state.</p>
+<pre><pre class="playground"><code class="language-rust no_run">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Context {
+    /// the module that will be run first
+    pub entry: Option&lt;Rc&lt;dyn CallProtocol&gt;&gt;,
+    /// available functions
+    scope: HashMap&lt;Variable, CallableRef&gt;,
+    /// global variables
+    globals: HashMap&lt;Variable, Value&gt;,
+    /// call stack with local variables
+    lstack: Vec&lt;Frame&gt;,
+    /// value stack
+    vstack: Vec&lt;Value&gt;,
+}
+<span class="boring">}
+</span></code></pre></pre>
 
                     </main>
 
@@ -177,7 +196,7 @@
                         
 
                         
-                            <a rel="next" href="../vm/context.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../vm/hooks.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -195,7 +214,7 @@
                 
 
                 
-                    <a rel="next" href="../vm/context.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../vm/hooks.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -203,6 +222,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

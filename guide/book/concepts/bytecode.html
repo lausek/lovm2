@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../setup.html"><strong aria-hidden="true">1.1.</strong> Setup</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/introduction.html"><strong aria-hidden="true">2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/bytecode.html" class="active"><strong aria-hidden="true">2.1.</strong> Bytecode</a></li><li class="chapter-item expanded "><a href="../concepts/modules.html"><strong aria-hidden="true">2.2.</strong> Modules</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">2.3.</strong> Types</a></li></ol></li><li class="chapter-item expanded "><a href="../building/introduction.html"><strong aria-hidden="true">3.</strong> Building Programs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../building/expressions.html"><strong aria-hidden="true">3.1.</strong> Expressions</a></li><li class="chapter-item expanded "><a href="../building/assign.html"><strong aria-hidden="true">3.2.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../building/branch.html"><strong aria-hidden="true">3.3.</strong> Branching</a></li><li class="chapter-item expanded "><a href="../building/repeat.html"><strong aria-hidden="true">3.4.</strong> Repeating</a></li><li class="chapter-item expanded "><a href="../building/iterators.html"><strong aria-hidden="true">3.5.</strong> Iterators</a></li><li class="chapter-item expanded "><a href="../building/optimization.html"><strong aria-hidden="true">3.6.</strong> Optimization</a></li></ol></li><li class="chapter-item expanded "><a href="../vm/introduction.html"><strong aria-hidden="true">4.</strong> Virtual Machine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../vm/context.html"><strong aria-hidden="true">4.1.</strong> Context</a></li><li class="chapter-item expanded "><a href="../vm/hooks.html"><strong aria-hidden="true">4.2.</strong> Hooks</a></li><li class="chapter-item expanded "><a href="../vm/interrupt.html"><strong aria-hidden="true">4.3.</strong> Interrupt</a></li></ol></li><li class="chapter-item expanded "><a href="../examples/overview.html"><strong aria-hidden="true">5.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../setup.html"><strong aria-hidden="true">1.1.</strong> Setup</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/introduction.html"><strong aria-hidden="true">2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/bytecode.html" class="active"><strong aria-hidden="true">2.1.</strong> Bytecode</a></li><li class="chapter-item expanded "><a href="../concepts/modules.html"><strong aria-hidden="true">2.2.</strong> Modules</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">2.3.</strong> Types</a></li></ol></li><li class="chapter-item expanded "><a href="../building/introduction.html"><strong aria-hidden="true">3.</strong> Building Programs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../building/expressions.html"><strong aria-hidden="true">3.1.</strong> Expressions</a></li><li class="chapter-item expanded "><a href="../building/assign.html"><strong aria-hidden="true">3.2.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../building/branch.html"><strong aria-hidden="true">3.3.</strong> Branching</a></li><li class="chapter-item expanded "><a href="../building/repeat.html"><strong aria-hidden="true">3.4.</strong> Repeating</a></li><li class="chapter-item expanded "><a href="../building/iterators.html"><strong aria-hidden="true">3.5.</strong> Iterators</a></li><li class="chapter-item expanded "><a href="../building/optimization.html"><strong aria-hidden="true">3.6.</strong> Optimization</a></li></ol></li><li class="chapter-item expanded "><a href="../vm/introduction.html"><strong aria-hidden="true">4.</strong> Virtual Machine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../vm/hooks.html"><strong aria-hidden="true">4.1.</strong> Hooks</a></li><li class="chapter-item expanded "><a href="../vm/interrupt.html"><strong aria-hidden="true">4.2.</strong> Interrupt</a></li></ol></li><li class="chapter-item expanded "><a href="../examples/overview.html"><strong aria-hidden="true">5.</strong> Examples</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -164,7 +164,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#bytecode" id="bytecode">Bytecode</a></h1>
-<p><code>lovm2</code> is centered around the value stack. This is where the actual computation happens, parameters are passed to functions and data is shared with interrupts. There are instructions that put values on top of the stack like <code>CPush</code>, <code>LPush</code>, and <code>GPush</code>. Some just take a value off and store it somewhere like <code>LMove</code>, <code>GMove</code>. Almost all other instructions will take a given amount of values from it and leave a return value in place.</p>
+<p><code>lovm2</code> is centered around the value stack. This is where the actual computation happens, parameters are passed to functions and data is shared with interrupts. There are instructions that put values on top of the stack like <code>CPush</code>, <code>LPush</code>, and <code>GPush</code>. Some just take a value off and store it somewhere like <code>LMove</code>, <code>GMove</code>. Almost all other instructions will take a given amount of values from it and leave a return value in place. You implement your own bytecode instructions (see <a href="../vm/interrupt.html">Interrupt</a> chapter for more).</p>
 <p>For example, the term <code>1 + (2 * 3)</code> will be compiled to this sequence:</p>
 <pre><code class="language-bytecode"> instruction    | stack
 ----------------------------
@@ -223,6 +223,21 @@ HIR -&gt; LIR
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

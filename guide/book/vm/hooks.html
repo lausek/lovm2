@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../setup.html"><strong aria-hidden="true">1.1.</strong> Setup</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/introduction.html"><strong aria-hidden="true">2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/bytecode.html"><strong aria-hidden="true">2.1.</strong> Bytecode</a></li><li class="chapter-item expanded "><a href="../concepts/modules.html"><strong aria-hidden="true">2.2.</strong> Modules</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">2.3.</strong> Types</a></li></ol></li><li class="chapter-item expanded "><a href="../building/introduction.html"><strong aria-hidden="true">3.</strong> Building Programs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../building/expressions.html"><strong aria-hidden="true">3.1.</strong> Expressions</a></li><li class="chapter-item expanded "><a href="../building/assign.html"><strong aria-hidden="true">3.2.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../building/branch.html"><strong aria-hidden="true">3.3.</strong> Branching</a></li><li class="chapter-item expanded "><a href="../building/repeat.html"><strong aria-hidden="true">3.4.</strong> Repeating</a></li><li class="chapter-item expanded "><a href="../building/iterators.html"><strong aria-hidden="true">3.5.</strong> Iterators</a></li><li class="chapter-item expanded "><a href="../building/optimization.html"><strong aria-hidden="true">3.6.</strong> Optimization</a></li></ol></li><li class="chapter-item expanded "><a href="../vm/introduction.html"><strong aria-hidden="true">4.</strong> Virtual Machine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../vm/context.html"><strong aria-hidden="true">4.1.</strong> Context</a></li><li class="chapter-item expanded "><a href="../vm/hooks.html" class="active"><strong aria-hidden="true">4.2.</strong> Hooks</a></li><li class="chapter-item expanded "><a href="../vm/interrupt.html"><strong aria-hidden="true">4.3.</strong> Interrupt</a></li></ol></li><li class="chapter-item expanded "><a href="../examples/overview.html"><strong aria-hidden="true">5.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../setup.html"><strong aria-hidden="true">1.1.</strong> Setup</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/introduction.html"><strong aria-hidden="true">2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/bytecode.html"><strong aria-hidden="true">2.1.</strong> Bytecode</a></li><li class="chapter-item expanded "><a href="../concepts/modules.html"><strong aria-hidden="true">2.2.</strong> Modules</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">2.3.</strong> Types</a></li></ol></li><li class="chapter-item expanded "><a href="../building/introduction.html"><strong aria-hidden="true">3.</strong> Building Programs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../building/expressions.html"><strong aria-hidden="true">3.1.</strong> Expressions</a></li><li class="chapter-item expanded "><a href="../building/assign.html"><strong aria-hidden="true">3.2.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../building/branch.html"><strong aria-hidden="true">3.3.</strong> Branching</a></li><li class="chapter-item expanded "><a href="../building/repeat.html"><strong aria-hidden="true">3.4.</strong> Repeating</a></li><li class="chapter-item expanded "><a href="../building/iterators.html"><strong aria-hidden="true">3.5.</strong> Iterators</a></li><li class="chapter-item expanded "><a href="../building/optimization.html"><strong aria-hidden="true">3.6.</strong> Optimization</a></li></ol></li><li class="chapter-item expanded "><a href="../vm/introduction.html"><strong aria-hidden="true">4.</strong> Virtual Machine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../vm/hooks.html" class="active"><strong aria-hidden="true">4.1.</strong> Hooks</a></li><li class="chapter-item expanded "><a href="../vm/interrupt.html"><strong aria-hidden="true">4.2.</strong> Interrupt</a></li></ol></li><li class="chapter-item expanded "><a href="../examples/overview.html"><strong aria-hidden="true">5.</strong> Examples</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -166,17 +166,18 @@
                         <h1><a class="header" href="#hooks" id="hooks">Hooks</a></h1>
 <h2><a class="header" href="#load-hook" id="load-hook">Load Hook</a></h2>
 <p><code>vm.set_load_hook(callback)</code></p>
-<p>The load hook is a special function bound to the <code>Vm</code> that will be consulted first whenever a module should be loaded into the <code>Context</code>. It returns an <code>Option</code> containing the module if the hook is able to resolve the requested name.</p>
+<p>The load hook is a special function bound to the <code>Vm</code> that will be consulted first whenever a module should be loaded into the <code>Vm</code>. It returns an <code>Option</code> containing the correct <code>Module</code> structure if the hook was able to resolve the requested name on its own.</p>
 <h2><a class="header" href="#import-hook" id="import-hook">Import Hook</a></h2>
 <p><code>vm.set_import_hook(callback)</code></p>
-<p>The import hook handles the naming of functions being imported into the scope. As such it can also be used to adjust the naming scheme of the <code>lovm2</code> standard library.</p>
+<p>The import hook handles naming of functions being imported into the scope. As such it can also be used to adjust the naming scheme of the <code>lovm2</code> standard library.</p>
+<p>The function signature expects the callback to return an <code>Option&lt;String&gt;</code> where <code>Some(&quot;name&quot;)</code> will proceed importing with a new identifier. Importing a function can be avoided by returning <code>None</code>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../vm/context.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../vm/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
@@ -194,7 +195,7 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../vm/context.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../vm/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
@@ -208,6 +209,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         
