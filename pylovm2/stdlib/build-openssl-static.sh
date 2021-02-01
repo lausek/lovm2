@@ -24,4 +24,4 @@ popd
 env OPENSSL_LIB_DIR=/usr/local/lib64 \
     OPENSSL_INCLUDE_DIR=/usr/local/include \
     OPENSSL_STATIC=yes \
-    maturin build
+    maturin build --release

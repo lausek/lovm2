@@ -30,11 +30,24 @@ impl Vm {
     pub fn with_std(_this: &PyAny, py: Python) -> PyResult<Self> {
         let mut vm = Self::new();
 
-        if let Err(_) = py.run("import pylovm2_stdlib", None, None) {
-            return Err(PyImportError::new_err("Failed to create VM with standard library. Did you install with stdlib support?\n\tpip install pylovm2[stdlib]\n"));
+        let stdlib = py.import("pylovm2_stdlib").map_err(|_| {
+            PyImportError::new_err("Failed to create VM with standard library. Did you install with stdlib support?\n\tpip install pylovm2[stdlib]\n")
+        })?;
+        let stdlib_version = stdlib.get("__version__")?;
+
+        // Check that stdlib has the same lovm2 version as this crate to ensure that `Module`
+        // has the same memory layout.
+        if stdlib_version.compare(crate::VERSION)? != std::cmp::Ordering::Equal {
+            return Err(PyTypeError::new_err(
+                format!(
+                    "Cannot load standard library: lovm2 version is {}, but stdlib version is {}. Consider upgrading.",
+                    crate::VERSION,
+                    stdlib_version
+                ),
+            ));
         }
 
-        let module = py.eval("pylovm2_stdlib.create_std_module()", None, None)?;
+        let module = stdlib.call_method("create_std_module", (), None)?;
 
         if "Module" != module.get_type().name() {
             return Err(PyTypeError::new_err(

@@ -16,8 +16,12 @@ pub use self::expr::Expr;
 pub use self::module::{Module, ModuleBuilder};
 pub use self::vm::Vm;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 #[pymodule]
 fn pylovm2(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add("__version__", crate::VERSION)?;
+
     m.add("ENTRY_POINT", lovm2::module::ENTRY_POINT)?;
     m.add_class::<Expr>()?;
     m.add_class::<Module>()?;
