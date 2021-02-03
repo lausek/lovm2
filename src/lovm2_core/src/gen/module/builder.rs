@@ -77,15 +77,12 @@ impl ModuleBuilder {
 
     /// Generate a module from the current data. This uses the default [CompileOptions] e.g.
     /// optimization is enabled.
-    pub fn build(&mut self) -> Lovm2CompileResult<Module> {
+    pub fn build(&self) -> Lovm2CompileResult<Module> {
         self.build_with_options(CompileOptions::default())
     }
 
     /// Generate a module from the current data but use custom compile options.
-    pub fn build_with_options(&mut self, options: CompileOptions) -> Lovm2CompileResult<Module> {
-        // This needs a mutable reference to `self` because hir may gets a return
-        // instruction appended. Maybe this could be done somewhere else?
-
+    pub fn build_with_options(&self, options: CompileOptions) -> Lovm2CompileResult<Module> {
         let mut ru = HirLoweringRuntime::new(self.meta.clone(), options);
 
         // Main entry point must be at start (offset 0)
