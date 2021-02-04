@@ -68,6 +68,7 @@ impl Value {
     pub fn as_any_inner(&self) -> Lovm2Result<AnyRef> {
         match self {
             Value::Any(r) => Ok(r.clone()),
+            Value::Ref(r) => r.borrow()?.as_any_inner(),
             _ => err_not_supported(),
         }
     }
