@@ -12,8 +12,7 @@ cargo publish
 
 if [[ "$@" != *"--skip-python"* ]]; then
     pushd ./pylovm2
-    docker build -t pylovm2-build .
-    docker run -it -v $(pwd):/io pylovm2-build maturin publish
+    ./build.sh release
     popd
 fi
 
