@@ -10,11 +10,11 @@ use crate::value::Value;
 use crate::Expr;
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
+    if let Ok(val) = any_to_value(any) {
+        return Ok(val.into());
+    }
+
     match any.get_type().name().as_ref() {
-        "str" | "bool" | "int" | "float" | "NoneType" => match any_to_value(any) {
-            Ok(val) => Ok(val.into()),
-            Err(e) => Err(e),
-        },
         "dict" => {
             let dict = any.downcast::<PyDict>()?;
             let mut obj = Initialize::dict();
@@ -109,6 +109,10 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
             Ok(map.into())
         }
         "NoneType" => Ok(Lovm2ValueRaw::Nil),
+        "Value" => {
+            let data = any.extract::<Value>()?;
+            Ok(lovm2::value::Value::Ref(data.inner))
+        }
         "Expr" => {
             let data = any.extract::<Expr>()?;
             match data.inner {

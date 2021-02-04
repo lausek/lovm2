@@ -72,22 +72,6 @@ class TestStdlib(Test):
         )
         self.assertEqual(0, complete.returncode)
 
-        # pylovm2_stdlib is not installed; this fails
-        complete = run_script()
-        self.assertEqual(1, complete.returncode)
-        error2 = complete.stdout
-
-        self.assertTrue(error1 != error2)
-
-        # install pylovm2_stdlib
-        complete = self.cmd(
-            'docker', 'run', '-t',
-            '-v', pylovm2_mount, '-v', pylovm2_stdlib_mount,
-            '-v', py_cache_mount,
-            img_name, install_script_for('pylovm2_stdlib')
-        )
-        self.assertEqual(0, complete.returncode)
-
         complete = run_script()
         self.assertEqual(0, complete.returncode)
         print(complete.stdout.decode('utf-8'))

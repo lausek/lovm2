@@ -46,7 +46,7 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Value {
-    inner: Lovm2Value,
+    pub(crate) inner: Lovm2Value,
 }
 
 impl Value {

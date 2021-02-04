@@ -30,6 +30,5 @@ default-features = false
 version = "0.12.4"
 features = ["extension-module"]
 
-#[features]
-#default = ["stdlib", "lovm2/stdlib-net", "lovm2/stdlib-ssl"]
-#stdlib = ["lovm2/stdlib"]
+[features]
+default = ["lovm2/stdlib", "lovm2/stdlib-net", "lovm2/stdlib-ssl"]

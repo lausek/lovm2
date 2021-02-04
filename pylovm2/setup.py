@@ -19,9 +19,6 @@ setup(
         'Operating System :: OS Independent',
     ],
     install_requires=[],
-    extras_require={
-        'stdlib': ['pylovm2_stdlib'],
-    },
     setup_requires = ['setuptools-rust>=0.10.1', 'wheel'],
     zip_safe=False,
     python_requires='>=3.5',
