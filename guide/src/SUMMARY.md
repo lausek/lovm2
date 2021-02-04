@@ -14,7 +14,6 @@
     - [Iterators](./building/iterators.md)
     - [Optimization](./building/optimization.md)
 - [Virtual Machine](./vm/introduction.md)
-    - [Context](./vm/context.md)
     - [Hooks](./vm/hooks.md)
     - [Interrupt](./vm/interrupt.md)
 - [Examples](./examples/overview.md)
