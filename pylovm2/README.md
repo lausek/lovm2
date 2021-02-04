@@ -1,6 +1,6 @@
 # pylovm2
 
-python bindings for [lovm2](https://github.com/lausek/lovm2).
+Create your own programming language in Python on top of [lovm2](https://github.com/lausek/lovm2).
 
 ``` bash
 pip3 install pylovm2

@@ -4,7 +4,7 @@ FROM konstin2/maturin
 RUN yum update
 RUN yum install perl-core
 
-# currently required
+# lovm2 currently requires nightly
 RUN rustup default nightly
 
 ENTRYPOINT ["/bin/bash"]
