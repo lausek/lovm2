@@ -3,17 +3,18 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList, PyTuple};
 
 use lovm2::prelude::*;
+use lovm2::Variable;
 
 use crate::lv2::*;
 use crate::value::Value;
 use crate::Expr;
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
+    if let Ok(val) = any_to_value(any) {
+        return Ok(val.into());
+    }
+
     match any.get_type().name().as_ref() {
-        "str" | "bool" | "int" | "float" | "NoneType" => match any_to_value(any) {
-            Ok(val) => Ok(val.into()),
-            Err(e) => Err(e),
-        },
         "dict" => {
             let dict = any.downcast::<PyDict>()?;
             let mut obj = Initialize::dict();
@@ -47,11 +48,11 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     }
 }
 
-pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::var::Variable> {
+pub fn any_to_ident(any: &PyAny) -> PyResult<Variable> {
     match any.get_type().name().as_ref() {
         "str" => {
             let name = any.str()?.to_string();
-            Ok(lovm2::var::Variable::from(name).into())
+            Ok(Variable::from(name).into())
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;
@@ -97,16 +98,21 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
             Ok(Lovm2ValueRaw::List(ls).into())
         }
         "dict" => {
-            use std::collections::HashMap;
-            let mut map = HashMap::new();
             let dict = any.downcast::<PyDict>()?;
+            let mut map = Lovm2ValueRaw::dict();
+
             for (key, value) in dict.iter() {
                 let (key, value) = (any_to_value(key)?, any_to_value(value)?);
-                map.insert(key, value);
+                map.set(&key, value).unwrap();
             }
-            Ok(Lovm2ValueRaw::Dict(map).into())
+
+            Ok(map.into())
         }
         "NoneType" => Ok(Lovm2ValueRaw::Nil),
+        "Value" => {
+            let data = any.extract::<Value>()?;
+            Ok(lovm2::value::Value::Ref(data.inner))
+        }
         "Expr" => {
             let data = any.extract::<Expr>()?;
             match data.inner {
@@ -124,7 +130,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
     }
 }
 
-pub fn any_to_ruvalue(any: &PyAny) -> PyResult<Value> {
+pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<Value> {
     let ty = any.get_type().name();
     match ty.as_ref() {
         "Value" => any.extract::<Value>(),

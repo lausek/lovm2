@@ -156,3 +156,51 @@ class TestBuilding(Test):
         result = internals.mod.build()
         internals.vm.add_module(result)
         self.assertEqual(4, int(internals.vm.call('main.powr', 2)))
+
+    def test_repeating_iterator(self, internals):
+        var = Expr.var('sum')
+
+        sum_hir = internals.mod.add('sum')
+        sum_hir.assign(var, 0)
+        sum_hir.repeat_iterating([1, 2, 3, 4], 'i').assign('sum', Expr.add(var, Expr.var('i')))
+        sum_hir.ret(var)
+
+        iter_sum_hir = internals.mod.add('iter_sum', ['collection'])
+        iter_sum_hir.assign(var, 0)
+        iter_sum_hir.assign('it', Expr.iter(Expr.var('collection')))
+        iter_sum_hir.repeat_iterating(Expr.var('it'), 'i').assign('sum', Expr.add(var, Expr.var('i')))
+        iter_sum_hir.ret(var)
+
+        result = internals.mod.build()
+        internals.vm.add_module(result)
+
+        self.assertEqual(10, int(internals.vm.call('main.sum')))
+        self.assertEqual(15, int(internals.vm.call('main.iter_sum', [1, 2, 3, 4, 5])))
+
+    def test_iterators(self, internals):
+        main_hir = internals.main
+        main_hir.assign_global('r1', Expr.range(5))
+        main_hir.assign_global('r2', Expr.range(-5, 0))
+        main_hir.assign_global('r3', Expr.range(5).reverse())
+
+        result = internals.mod.build()
+        vm = internals.vm
+        vm.add_main_module(result)
+        vm.run()
+
+        self.assertEqual([0, 1, 2, 3, 4], vm.ctx().globals('r1'))
+        self.assertEqual([-5, -4, -3, -2, -1], vm.ctx().globals('r2'))
+        self.assertEqual([4, 3, 2, 1, 0], vm.ctx().globals('r3'))
+
+    def test_shifting_value(self, internals):
+        main_hir = internals.main
+        main_hir.assign_global('a', Expr.shl(2, 2))
+        main_hir.assign_global('b', Expr.shr(16, 2))
+        main_hir.interrupt(10)
+        module = internals.mod.build()
+
+        def testfn(ctx):
+            assert 8 == int(ctx.globals('a'))
+            assert 4 == int(ctx.globals('b'))
+
+        self.run_module_test(module, testfn)

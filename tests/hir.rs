@@ -1,9 +1,8 @@
 #![allow(unused_parens)]
 
-use lovm2::context::Context;
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
-use lovm2::value::Value;
-use lovm2::vm::Vm;
+use lovm2::vm::{Context, Vm};
 
 use test_utils::*;
 
@@ -23,7 +22,7 @@ macro_rules! define_test {
             hir.step(Interrupt::new(10));
         )*
 
-        run_module_test(Vm::with_std(), builder.build().unwrap(), $ensure).unwrap();
+        run_module_test(create_vm_with_std(), builder.build().unwrap(), $ensure).unwrap();
     }};
 }
 
@@ -53,7 +52,27 @@ fn assign_local_add() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(4), *frame.value_of(&lv2_var!(n)).unwrap());
+            assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
+        })
+    }
+}
+
+#[test]
+fn assign_incremet_decrement() {
+    let (a, b) = &lv2_var!(a, b);
+    define_test! {
+        main {
+            Assign::local(a, 0);
+            Assign::global(b, 1);
+            Assign::increment(a);
+            Assign::decrement(b);
+        }
+
+        #ensure (|ctx: &mut Context| {
+            assert_eq!(Value::Int(0), *ctx.value_of("b").unwrap());
+
+            let frame = ctx.frame_mut().unwrap();
+            assert_eq!(Value::Int(1), *frame.value_of("a").unwrap());
         })
     }
 }
@@ -68,7 +87,7 @@ fn rem_lowering() {
 
         #ensure (|ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(1), *frame.value_of(&lv2_var!(rest)).unwrap());
+            assert_eq!(Value::Int(1), *frame.value_of("rest").unwrap());
         })
     }
 }
@@ -140,7 +159,7 @@ fn try_setting() {
         #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             let list = &frame.value_of(&list).unwrap();
-            assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap());
         })
     }
 }
@@ -169,7 +188,7 @@ fn try_casting() {
     let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(&n, Cast::to_integer(5.));
+            Assign::local(&n, Conv::to_integer(5.));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -197,7 +216,7 @@ fn true_branching() {
 
     hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
     })
@@ -225,12 +244,9 @@ fn multiple_branches() {
 
     hir.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(
-            Value::from("buzz"),
-            *frame.value_of(&lv2_var!(result)).unwrap()
-        );
+        assert_eq!(Value::from("buzz"), *frame.value_of("result").unwrap());
     })
     .unwrap();
 }
@@ -246,12 +262,27 @@ fn taking_parameters() {
 
     builder.entry().step(lv2_call!(called, 2, 7));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(2), *frame.value_of(&a).unwrap());
         assert_eq!(Value::Int(7), *frame.value_of(&b).unwrap());
     })
     .unwrap();
+}
+
+#[test]
+fn automatic_return() {
+    let mut vm = Vm::new();
+    let mut builder = ModuleBuilder::new();
+
+    builder.entry();
+    builder.add("no-return");
+
+    let module = builder.build().unwrap();
+
+    vm.add_main_module(module).unwrap();
+
+    assert_eq!(Value::Nil, vm.call("no-return", &[]).unwrap());
 }
 
 #[test]
@@ -266,7 +297,7 @@ fn return_values() {
         .step(Assign::local(&n, Call::new("returner")))
         .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::Int(10), *frame.value_of(&n).unwrap());
     })
@@ -284,8 +315,8 @@ fn drop_call_values() {
         .step(Call::new("returner"))
         .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), |ctx| {
-        assert!(ctx.vstack.is_empty());
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        assert!(ctx.last_value_mut().is_err());
     })
     .unwrap();
 }
@@ -296,13 +327,13 @@ fn cast_to_string() {
 
     let main = builder.entry();
     let (a, b, c, d) = lv2_var!(a, b, c, d);
-    main.step(Assign::local(&a, Cast::to_str(10)));
-    main.step(Assign::local(&b, Cast::to_str(10.1)));
-    main.step(Assign::local(&c, Cast::to_str("10")));
-    main.step(Assign::local(&d, Cast::to_str(true)));
+    main.step(Assign::local(&a, Conv::to_str(10)));
+    main.step(Assign::local(&b, Conv::to_str(10.1)));
+    main.step(Assign::local(&c, Conv::to_str("10")));
+    main.step(Assign::local(&d, Conv::to_str(true)));
     main.step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::from("10"), *frame.value_of(&a).unwrap());
         assert_eq!(Value::from("10.1"), *frame.value_of(&b).unwrap());
@@ -329,7 +360,7 @@ fn folding_expr() {
     ))
     .step(Interrupt::new(10));
 
-    run_module_test(Vm::with_std(), builder.build().unwrap(), move |ctx| {
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
         let n = ctx.value_of(&n).unwrap();
         assert_eq!(Value::Int(2), *a);
@@ -379,12 +410,10 @@ fn set_field_on_dict() {
                 Value::Int(37),
                 frame.value_of(&d1).unwrap()
                     .get(&Value::from("x")).unwrap()
-                    .deref().unwrap()
             );
             assert!(
-                !frame.value_of(&d2).unwrap()
+                frame.value_of(&d2).unwrap()
                     .get(&Value::from("x")).unwrap()
-                    .deref().unwrap()
                     .is_ref()
             );
             assert_eq!(
@@ -392,13 +421,11 @@ fn set_field_on_dict() {
                 frame.value_of(&d2).unwrap()
                     .get(&Value::from("x")).unwrap()
                     .get(&Value::from("y")).unwrap()
-                    .deref().unwrap()
             );
             assert_eq!(
                 Value::Int(67),
                 ctx.value_of(&g).unwrap()
                     .get(&Value::from("x")).unwrap()
-                    .deref().unwrap()
             );
         })
     }
@@ -415,6 +442,7 @@ fn is_constant() {
 #[test]
 fn call_into_vm() {
     let mut builder = ModuleBuilder::named("main");
+    builder.entry().step(lv2_call!(call_me, 10));
 
     builder
         .add_with_args("call_me", vec![lv2_var!(n)])
@@ -423,20 +451,11 @@ fn call_into_vm() {
     let module = builder.build().unwrap();
 
     // ensure that the interrupt has been called
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
-    let called_ref = called.clone();
-
-    let mut vm = Vm::with_std();
-    vm.set_interrupt(10, move |vm| {
-        let frame = vm.ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(10), *frame.value_of(&lv2_var!(n)).unwrap());
-        called_ref.set(true);
-        Ok(())
-    });
-    vm.add_module(module, false).unwrap();
-    vm.call("call_me", &[Value::Int(10)]).unwrap();
-
-    assert!(called.get());
+    run_module_test(create_vm_with_std(), module, |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
@@ -519,7 +538,7 @@ fn store_without_reference() {
         #ensure (move |ctx: &mut Context| {
             let frame = ctx.frame_mut().unwrap();
             assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
-            assert_eq!(Value::Int(7), frame.value_of(&y).unwrap().deref().unwrap());
+            assert_eq!(Value::Int(7), *frame.value_of(&y).unwrap());
         })
     }
 }
@@ -540,12 +559,124 @@ fn create_slice() {
             let s = frame.value_of(&s).unwrap();
             assert_eq!(
                 Value::Int(9),
-                s.get(&Value::Int(1)).unwrap().deref().unwrap()
+                s.get(&Value::Int(1)).unwrap()
             );
             assert_eq!(
                 Value::Int(9),
-                ls.get(&Value::Int(2)).unwrap().deref().unwrap()
+                ls.get(&Value::Int(2)).unwrap()
             );
         })
     }
+}
+
+#[test]
+fn iterating_repeat() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i, iter) = &lv2_var!(sum, i, iter);
+
+    let main_hir = builder.entry();
+
+    main_hir.step(Assign::global(sum, 0));
+    main_hir
+        .step(Assign::local(iter, Iter::create(lv2_list!(1, 2, 3, 4))))
+        .repeat_iterating(iter, i)
+        .step(Assign::global(sum, Expr::add(sum, i)));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
+}
+
+#[test]
+fn iterating_repeat_inplace() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
+        assert_eq!(ctx.value_of("orig").unwrap(), ctx.value_of("ls").unwrap());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i, ls, orig) = &lv2_var!(sum, i, ls, orig);
+
+    let main_hir = builder.entry();
+
+    main_hir.step(Assign::global(sum, 0));
+    main_hir.step(Assign::global(orig, lv2_list!(1, 2, 3, 4)));
+    main_hir.step(Assign::global(ls, lv2_list!(1, 2, 3, 4)));
+    main_hir
+        .repeat_iterating(ls, i)
+        .step(Assign::global(sum, Expr::add(sum, i)));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
+}
+
+#[test]
+fn iterating_repeat_ranged() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(45), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i) = &lv2_var!(sum, i);
+
+    let main_hir = builder.entry();
+
+    main_hir.step(Assign::global(sum, 0));
+    main_hir
+        .repeat_iterating(Iter::create_ranged(Value::Nil, 10), i)
+        .step(Assign::global(sum, Expr::add(sum, i)));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
+}
+
+#[test]
+fn iterating_repeat_nested() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(17199), ctx.value_of("sum").unwrap().clone());
+        assert!(ctx.last_value_mut().is_err());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (sum, i, j) = &lv2_var!(sum, i, j);
+
+    let main_hir = builder.entry();
+
+    main_hir.step(Assign::global(sum, 0));
+    main_hir
+        .repeat_iterating(Iter::create_ranged(0, 5), i)
+        .repeat_iterating(Iter::create_ranged(5, 10), j)
+        .step(Assign::global(sum, Expr::add(sum, Expr::pow(j, i))));
+    main_hir.step(Interrupt::new(10));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
+}
+
+#[test]
+fn shift_values() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(4), *ctx.value_of("a").unwrap());
+        assert_eq!(Value::from(8), *ctx.value_of("b").unwrap());
+        assert_eq!(Value::from(0b10100000), *ctx.value_of("c").unwrap());
+        assert_eq!(Value::from(0), *ctx.value_of("d").unwrap());
+    }
+
+    let (a, b, c, d) = &lv2_var!(a, b, c, d);
+    let mut builder = ModuleBuilder::new();
+
+    builder
+        .entry()
+        .step(Assign::global(a, Expr::shl(2, 1)))
+        .step(Assign::global(b, Expr::shr(16, 1)))
+        .step(Assign::global(c, Expr::shl(0b00001010, 4)))
+        .step(Assign::global(d, Expr::shr(0b0001010, 4)))
+        .step(Interrupt::new(10));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }

@@ -15,8 +15,8 @@ pub struct Module {
     pub inner: Option<Lovm2Module>,
 }
 
-impl Module {
-    pub fn from(inner: Lovm2Module) -> Self {
+impl From<Lovm2Module> for Module {
+    fn from(inner: Lovm2Module) -> Self {
         Self {
             inner: Some(inner.into()),
         }
@@ -67,7 +67,7 @@ impl Module {
 #[pyproto]
 impl pyo3::class::basic::PyObjectProtocol for Module {
     fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self.inner.as_ref().unwrap()))
+        Ok(format!("{}", self.inner.as_ref().unwrap()))
     }
 }
 

@@ -1,8 +1,9 @@
+pub mod module;
+
 mod code;
 mod context;
 mod expr;
 mod lv2;
-mod module;
 mod value;
 mod vm;
 
@@ -11,12 +12,16 @@ use pyo3::prelude::*;
 
 use lovm2::prelude::*;
 
-use self::expr::Expr;
-use self::module::{Module, ModuleBuilder};
-use self::vm::Vm;
+pub use self::expr::Expr;
+pub use self::module::{Module, ModuleBuilder};
+pub use self::vm::Vm;
+
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 #[pymodule]
 fn pylovm2(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add("__version__", crate::VERSION)?;
+
     m.add("ENTRY_POINT", lovm2::module::ENTRY_POINT)?;
     m.add_class::<Expr>()?;
     m.add_class::<Module>()?;

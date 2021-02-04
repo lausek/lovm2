@@ -1,24 +1,38 @@
-//! lovm2 is a lightweight virtual machine with a focus on simplicity and extendability.
+//! `lovm2` is a library for building your own programming language in the blink of an eye. It offers you easy to use constructs to generate bytecode for its virtual machine.
 //!
 //! ## Features
 //!
-//! - dynamic typing
-//! - generate bytecode using highlevel intermediate representation
-//! - call into shared objects: [lovm2_extend](lovm2_extend/README.md)
-//! - python bindings: [pylovm2](pylovm2/README.md)
-//! - define own callbacks for interrupts
+//! - Dynamic typing
+//! - Generate bytecode using a High-Level Intermediate Representation
+//! - Define own instructions as `Interrupt`s
+//! - Extend your programs with Rust: [lovm2 extend](README-extend.md)
+//! - Standard library included: [lovm2_std](src/lovm2_std/README.md)
+//! - Python bindings: [pylovm2](pylovm2/README.md)
 //!
-//! ## Example
+//! ## Examples
+//!
+//! Add this line to your `Cargo.toml`:
+//!
+//! ``` toml
+//! lovm2 = "0.4.8"
+//! ```
+//!
+//! ### Projects
+//!
+//! - [lol - a lisp language](https://github.com/lausek/lol)
+//! - [quasicode - the best language around](https://github.com/witling/quasicode)
+//!
+//! ### Generating Bytecode
 //!
 //! ``` rust
+//! use lovm2::create_vm_with_std;
 //! use lovm2::prelude::*;
-//! use lovm2::vm::Vm;
 //!
 //! let mut module = ModuleBuilder::new();
 //!
 //! // a module needs a code object called `main`
 //! // if you want to make it runnable
-//! let mut main_hir = module.entry();
+//! let main_hir = module.entry();
 //!
 //! // set the local variable n to 10
 //! main_hir.step(Assign::local(&lv2_var!(n), 10));
@@ -36,27 +50,18 @@
 //! println!("{}", module);
 //!
 //! // load the module and run it
-//! let mut vm = Vm::with_std();
+//! let mut vm = create_vm_with_std();
 //! vm.add_main_module(module).expect("load error");
 //! vm.run().expect("run error");
 //! ```
 
-#![allow(clippy::new_without_default)]
-#![allow(clippy::wrong_self_convention)]
+pub use lovm2_core::*;
 
-extern crate lovm2_internals;
-
-pub mod bytecode;
-pub mod code;
-pub mod context;
-pub mod frame;
-pub mod gen;
-pub mod module;
-pub mod prelude;
-pub mod util;
-pub mod value;
-pub mod var;
-pub mod vm;
-
-/// used for generating wrappers of statically linked functions to be called from lovm2
-pub use lovm2_internals::lovm2_builtin;
+/// Create a new instance with standard functions already imported
+#[cfg(feature = "stdlib")]
+pub fn create_vm_with_std() -> lovm2_core::vm::Vm {
+    let module = lovm2_std::create_std_module();
+    let mut vm = lovm2_core::vm::Vm::new();
+    vm.add_module(module, false).unwrap();
+    vm
+}

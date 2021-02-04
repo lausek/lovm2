@@ -1,0 +1,12 @@
+[package]
+name = "shared-module"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "shared_module"
+crate-type = ["cdylib"]
+
+[dependencies]
+lovm2_core = { path = "../../src/lovm2_core" }

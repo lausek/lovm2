@@ -8,9 +8,9 @@ if not exists(build_folder):
     print('./target/debug not found. build using project `cargo build` first')
     exit()
 
-if not exists(join(build_folder, 'libpylovm2.so')):
-    print('no shared object found. make sure to create a link named `libpylovm2.so` inside ./target/debug')
-    exit()
+if not exists(join(build_folder, 'pylovm2.so')):
+    import subprocess
+    subprocess.call(['ln', '-s', join(build_folder, 'libpylovm2.so'), join(build_folder, 'pylovm2.so')])
 
 sys.path.insert(0, build_folder)
 

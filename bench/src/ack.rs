@@ -28,6 +28,8 @@ pub fn ackermann(c: &mut Criterion) {
     let module = create_lol_module(
         "main",
         "
+        (def main ())
+
         (def ackr (n m)
             (if (eq n 0)
                 (ret (+ m 1))

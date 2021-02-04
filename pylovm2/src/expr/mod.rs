@@ -3,8 +3,8 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::prelude::{Cast, Operator2};
-use lovm2::var;
+use lovm2::prelude::{Conv, Iter, Operator2};
+use lovm2::Variable;
 
 pub use self::conv::*;
 use crate::lv2::*;
@@ -106,7 +106,7 @@ impl Expr {
     pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
         let name = arg.to_string();
         Ok(Self {
-            inner: Lovm2Expr::Variable(var::Variable::from(name)),
+            inner: Lovm2Expr::Variable(Variable::from(name)),
         })
     }
 }
@@ -135,6 +135,18 @@ impl Expr {
     #[args(args = "*")]
     pub fn div(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
         auto_wrapper!(Operator2::Div, args)
+    }
+
+    #[classmethod]
+    #[args(args = "*")]
+    pub fn shl(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Shl, args)
+    }
+
+    #[classmethod]
+    #[args(args = "*")]
+    pub fn shr(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
+        auto_wrapper!(Operator2::Shr, args)
     }
 
     #[classmethod]
@@ -204,29 +216,66 @@ impl Expr {
     }
 }
 
+// conversion methods
 #[pymethods]
 impl Expr {
     pub fn to_bool(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_bool(self.inner.clone()).into(),
+            inner: Conv::to_bool(self.inner.clone()).into(),
         })
     }
 
     pub fn to_int(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_integer(self.inner.clone()).into(),
+            inner: Conv::to_integer(self.inner.clone()).into(),
         })
     }
 
     pub fn to_float(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_float(self.inner.clone()).into(),
+            inner: Conv::to_float(self.inner.clone()).into(),
         })
     }
 
     pub fn to_str(&self) -> PyResult<Self> {
         Ok(Self {
-            inner: Cast::to_str(self.inner.clone()).into(),
+            inner: Conv::to_str(self.inner.clone()).into(),
         })
+    }
+}
+
+// iterator methods
+#[pymethods]
+impl Expr {
+    #[classmethod]
+    pub fn iter(_this: &PyAny, from: &PyAny) -> PyResult<Self> {
+        let from = any_to_expr(from)?;
+        Ok(Expr {
+            inner: Iter::create(from).into(),
+        })
+    }
+
+    #[classmethod]
+    pub fn range(_this: &PyAny, from: &PyAny, to: Option<&PyAny>) -> PyResult<Self> {
+        if let Some(to) = to {
+            let (from, to) = (any_to_expr(from)?, any_to_expr(to)?);
+            Ok(Expr {
+                inner: Iter::create_ranged(from, to).into(),
+            })
+        } else {
+            let to = any_to_expr(from)?;
+            Ok(Expr {
+                inner: Iter::create_ranged(Lovm2ValueRaw::Nil, to).into(),
+            })
+        }
+    }
+
+    pub fn reverse(&mut self) -> PyResult<Self> {
+        match &self.inner {
+            Lovm2Expr::Iter(it) => Ok(Expr {
+                inner: Iter::reverse(it.clone()).into(),
+            }),
+            _ => todo!(),
+        }
     }
 }

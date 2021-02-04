@@ -43,9 +43,17 @@ vm.run()
 **NOTE:** manylinux wheels are required for distribution
 
 ``` bash
-sudo docker build -t pylovm2-build .
-sudo docker run -it -v $(pwd):/io pylovm2-build
+docker build -t pylovm2-build .
+docker run -it -v $(pwd):/io pylovm2-build
 
 # ... or use `maturin build`
 $ maturin publish
+```
+
+### Problems with SSL
+
+manylinux wheels are not allowed to link to TLS libraries dynamically. Building without SSL support can be done like this:
+
+```
+maturin build --cargo-extra-args="--no-default-features --features lovm2/stdlib,lovm2/stdlib-net"
 ```

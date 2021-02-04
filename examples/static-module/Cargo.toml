@@ -1,0 +1,11 @@
+[package]
+name = "static-module"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "static_module"
+
+[dependencies]
+lovm2_core = { path = "../../src/lovm2_core" }

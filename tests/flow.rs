@@ -1,13 +1,39 @@
-use lovm2::bytecode::Instruction;
-use lovm2::define_code;
-use lovm2::gen::prelude::*;
+use lovm2::create_vm_with_std;
+use lovm2::prelude::*;
 use lovm2::value::Value;
-use lovm2::var::Variable;
-use lovm2::vm::Vm;
+use lovm2::Instruction;
+
+/// Define `CodeObject` on a low-level basis
+#[macro_export]
+macro_rules! define_code {
+    {
+        $(consts {$($cval:expr),*})?
+        $(idents {$($name:ident),*})?
+        {
+            $( $inx:ident $($args:expr),* ; )*
+        }
+    } => {{
+        let mut co = lovm2::code::CodeObject::new();
+        $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
+        $( co.consts = vec![$( Value::from($cval) ),*]; )?
+
+        let c = vec![
+            $(
+                define_code! { compile_inx $inx $(, $args)* },
+            )*
+        ];
+
+        co.code = c;
+        co
+    }};
+
+    { compile_inx $inx:ident } => { Instruction::$inx };
+    { compile_inx $inx:ident $(, $args:expr)+ } => { Instruction::$inx($($args),*) };
+}
 
 #[test]
 fn pushing_constant() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 2 }
 
@@ -24,7 +50,7 @@ fn pushing_constant() {
 
 #[test]
 fn store_global() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 42 }
         idents { globaln }
@@ -40,13 +66,13 @@ fn store_global() {
 
     assert_eq!(
         Value::Int(42),
-        *vm.context_mut().value_of(&lv2_var!(globaln)).unwrap()
+        *vm.context_mut().value_of("globaln").unwrap()
     );
 }
 
 #[test]
 fn calculation() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 2, 3 }
         idents { result_add, result_sub, result_mul, result_div }
@@ -80,25 +106,25 @@ fn calculation() {
 
     assert_eq!(
         Value::Int(5),
-        *vm.context_mut().value_of(&lv2_var!(result_add)).unwrap()
+        *vm.context_mut().value_of("result_add").unwrap()
     );
     assert_eq!(
         Value::Int(1),
-        *vm.context_mut().value_of(&lv2_var!(result_sub)).unwrap()
+        *vm.context_mut().value_of("result_sub").unwrap()
     );
     assert_eq!(
         Value::Int(6),
-        *vm.context_mut().value_of(&lv2_var!(result_mul)).unwrap()
+        *vm.context_mut().value_of("result_mul").unwrap()
     );
     assert_eq!(
         Value::Int(1),
-        *vm.context_mut().value_of(&lv2_var!(result_div)).unwrap()
+        *vm.context_mut().value_of("result_div").unwrap()
     );
 }
 
 #[test]
 fn jumping() {
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     let co = define_code! {
         consts { 0, 1, 10, "a" }
         idents { i, output }
@@ -136,6 +162,6 @@ fn jumping() {
 
     assert_eq!(
         Value::Str("aaaaaaaaaa".to_string()),
-        *vm.context_mut().value_of(&lv2_var!(output)).unwrap()
+        *vm.context_mut().value_of("output").unwrap()
     );
 }

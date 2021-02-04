@@ -31,11 +31,7 @@ impl Context {
 
     pub fn globals(&mut self, py: Python, name: String) -> Option<PyObject> {
         unsafe {
-            if let Some(val) = (*self.inner)
-                .globals
-                .get(&lovm2::var::Variable::from(name))
-                .cloned()
-            {
+            if let Some(val) = (*self.inner).value_of(name).ok() {
                 return Some(lovm2py(&val, py));
             }
         }
@@ -60,8 +56,8 @@ impl Frame {
     pub fn local(&self, py: Python, key: String) -> Option<PyObject> {
         unsafe {
             (*self.inner)
-                .locals
-                .get(&lovm2::var::Variable::from(key))
+                .value_of(key)
+                .ok()
                 .map(|val| lovm2py(&val, py))
         }
     }

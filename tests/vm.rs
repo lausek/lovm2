@@ -1,30 +1,9 @@
-use lovm2::context::Context;
-use lovm2::module::Module;
+use test_utils::*;
+
+use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::vm::Vm;
-
-fn run_module_test(
-    mut vm: Vm,
-    module: Module,
-    testfn: impl Fn(&mut Context) + 'static,
-) -> Lovm2Result<()> {
-    let called = std::rc::Rc::new(std::cell::Cell::new(false));
-
-    let called_ref = called.clone();
-    vm.set_interrupt(10, move |vm| {
-        called_ref.set(true);
-        testfn(&mut vm.ctx);
-        Ok(())
-    });
-
-    vm.add_main_module(module).unwrap();
-    vm.run()?;
-
-    assert!(called.get());
-
-    Ok(())
-}
 
 #[test]
 fn load_hook_none() {
@@ -35,7 +14,7 @@ fn load_hook_none() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|_name| Ok(None));
 
     assert!(run_module_test(vm, module, |_| ()).is_err());
@@ -54,7 +33,7 @@ fn load_custom_module() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
@@ -66,7 +45,7 @@ fn load_custom_module() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -84,7 +63,7 @@ fn import_global_scope() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
@@ -96,7 +75,7 @@ fn import_global_scope() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of(&lv2_var!(n)).unwrap());
+        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -120,7 +99,7 @@ fn import_vice_versa() {
 
     let module = builder.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
@@ -134,7 +113,7 @@ fn import_vice_versa() {
     });
 
     run_module_test(vm, module, |ctx| {
-        assert_eq!(PASSED_VALUE, *ctx.value_of(&lv2_var!(result)).unwrap());
+        assert_eq!(PASSED_VALUE, *ctx.value_of("result").unwrap());
     })
     .unwrap();
 }
@@ -150,17 +129,17 @@ fn custom_naming_scheme() {
     ex.add("call");
     let ex = ex.build().unwrap();
 
-    let mut vm = Vm::with_std();
+    let mut vm = create_vm_with_std();
 
     vm.set_import_hook(|module, name| {
-        let key = lovm2::util::to_lower_camel_case(name);
+        let key = to_lower_camel_case(name);
         let key = match module {
             // use dash as module name separator
             Some(module) => format!("{}-{}", module, key),
             _ => key,
         };
         println!("{}", key);
-        key
+        Ok(Some(key))
     });
 
     vm.add_module(module, false).unwrap();
@@ -177,7 +156,13 @@ fn main_has_no_entry_point() {
     let mut vm = Vm::new();
 
     let e = vm.add_main_module(module).err().unwrap();
-    assert!(matches!(e, Lovm2Error { ty: Lovm2ErrorTy::NoEntryPoint, .. }));
+    assert!(matches!(
+        e,
+        Lovm2Error {
+            ty: Lovm2ErrorTy::NoEntryPoint,
+            ..
+        }
+    ));
 }
 
 #[test]
@@ -213,4 +198,25 @@ fn namespaced_imports() {
     assert!(vm.call("ina", &[]).is_err());
     assert!(vm.call("b.inb", &[]).is_ok());
     assert!(vm.call("inb", &[]).is_ok());
+}
+
+#[test]
+fn setting_interrupts() {
+    let mut vm = Vm::new();
+
+    assert!(vm.set_interrupt(1, |_| { unreachable!() }).is_err());
+    assert!(vm.set_interrupt(10, |_| { unreachable!() }).is_ok());
+    assert!(vm.set_interrupt(11, |_| { unreachable!() }).is_err());
+    assert!(vm.set_interrupt(64, |_| { unreachable!() }).is_ok());
+}
+
+#[test]
+fn call_stdlib_functions() {
+    let mut vm = create_vm_with_std();
+
+    assert_eq!(
+        Value::from("a"),
+        vm.call("trim", &["    a ".into()]).unwrap(),
+    );
+    assert!(vm.call("new_request", &["".into()]).is_ok());
 }

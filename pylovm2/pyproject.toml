@@ -1,3 +1,11 @@
+#[build-system]
+#requires = ["setuptools", "wheel", "setuptools-rust"]
+
 [build-system]
 requires = ["maturin"]
 build-backend = "maturin"
+
+[tool.maturin]
+#bindings = "cffi"
+bindings = "pyo3"
+#manylinux = "off"

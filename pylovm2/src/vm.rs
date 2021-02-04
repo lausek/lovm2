@@ -27,10 +27,8 @@ impl Vm {
     }
 
     #[classmethod]
-    pub fn with_std(_this: &PyAny) -> Self {
-        Self {
-            inner: lovm2::vm::Vm::with_std(),
-        }
+    pub fn with_std(_this: &PyAny) -> PyResult<Self> {
+        Ok(Self { inner: lovm2::create_vm_with_std() })
     }
 
     pub fn add_load_path(&mut self, path: String) -> PyResult<()> {
@@ -59,7 +57,7 @@ impl Vm {
         let mut ruargs = vec![];
         for arg in args.iter() {
             let arg = any_to_expr(arg)?;
-            match arg.eval(&self.inner.ctx) {
+            match arg.eval(&self.inner.context_mut()) {
                 Ok(val) => ruargs.push(val),
                 Err(e) => return Err(err_to_exception(e)),
             }
@@ -75,14 +73,19 @@ impl Vm {
         Ok(Context::new(self.inner.context_mut()))
     }
 
-    pub fn add_module(&mut self, module: &mut Module) -> PyResult<()> {
+    pub fn add_module(&mut self, module: &mut Module, namespaced: Option<bool>) -> PyResult<()> {
+        let namespaced = namespaced.unwrap_or(true);
         let module = module
             .inner
             .take()
             .expect("given module was already loaded");
         self.inner
-            .add_module(module, true)
+            .add_module(module, namespaced)
             .map_err(err_to_exception)
+    }
+
+    pub fn add_module_unnamespaced(&mut self, module: &mut Module) -> PyResult<()> {
+        self.add_module(module, Some(false))
     }
 
     pub fn add_main_module(&mut self, module: &mut Module) -> PyResult<()> {
@@ -109,20 +112,22 @@ impl Vm {
 
         let func = func.to_object(py);
 
-        self.inner.set_interrupt(id, move |vm| {
-            let guard = Python::acquire_gil();
-            let py = guard.python();
+        self.inner
+            .set_interrupt(id, move |vm| {
+                let guard = Python::acquire_gil();
+                let py = guard.python();
 
-            let context_ref = &mut vm.ctx as *mut Lovm2Context;
-            let ctx = Py::new(py, Context::new(context_ref)).unwrap();
-            let args = PyTuple::new(py, vec![ctx]);
+                let context_ref = vm.context_mut() as *mut Lovm2Context;
+                let ctx = Py::new(py, Context::new(context_ref)).unwrap();
+                let args = PyTuple::new(py, vec![ctx]);
 
-            if let Err(e) = func.call1(py, args) {
-                return Err(Lovm2Error::from(exception_to_err(&e, py)));
-            }
+                if let Err(e) = func.call1(py, args) {
+                    return Err(Lovm2Error::from(exception_to_err(&e, py)));
+                }
 
-            Ok(())
-        });
+                Ok(())
+            })
+            .map_err(err_to_exception)?;
 
         Ok(())
     }
@@ -131,12 +136,10 @@ impl Vm {
         let hook = move |req: &LoadRequest| {
             let guard = Python::acquire_gil();
             let py = guard.python();
-            let relative_to = if let Some(relative_to) = &req.relative_to {
-                relative_to.to_object(py)
-            } else {
-                py.None()
-            };
-            let args = PyTuple::new(py, vec![req.module.to_object(py), relative_to]);
+            let args = PyTuple::new(
+                py,
+                vec![req.module.to_object(py), req.relative_to.to_object(py)],
+            );
 
             let ret = func.call1(py, args).map_err(|e| exception_to_err(&e, py))?;
             if ret.is_none(py) {
@@ -149,6 +152,30 @@ impl Vm {
             }
         };
         self.inner.set_load_hook(hook);
+        Ok(())
+    }
+
+    pub fn set_import_hook(&mut self, func: PyObject) -> PyResult<()> {
+        let hook = move |module: Option<&str>, name: &str| {
+            let guard = Python::acquire_gil();
+            let py = guard.python();
+            let args = PyTuple::new(py, vec![module.to_object(py), name.to_object(py)]);
+            let result = func.call1(py, args).map_err(|e| exception_to_err(&e, py))?;
+
+            if result.is_none(py) {
+                return Ok(None);
+            }
+
+            let result = result
+                .as_ref(py)
+                .str()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
+
+            Ok(Some(result))
+        };
+        self.inner.set_import_hook(hook);
         Ok(())
     }
 }

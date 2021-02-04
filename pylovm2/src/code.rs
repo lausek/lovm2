@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::types::*;
 
 use lovm2::code;
+use lovm2::error;
 use lovm2::prelude::Lovm2Result;
 use lovm2::vm;
 
@@ -26,10 +27,10 @@ impl code::CallProtocol for CodeObject {
                 let guard = Python::acquire_gil();
                 let py = guard.python();
 
-                let frame = vm.ctx.frame_mut()?;
+                let frame = vm.context_mut().frame_mut()?;
                 let mut args = vec![];
                 for _ in 0..frame.argn {
-                    let val = vm.ctx.pop_value()?;
+                    let val = vm.context_mut().pop_value()?;
                     let obj: PyObject = Value::from_struct(val).into_py(py);
                     args.insert(0, obj);
                 }
@@ -40,9 +41,9 @@ impl code::CallProtocol for CodeObject {
 
                 // convert result of call into ruvalue representation
                 let res = any_to_value(res.as_ref(py))
-                    .map_err(|_| "error in ruvalue conversion".to_string())?;
+                    .or_else(|_| error::err_from_string("error in ruvalue conversion"))?;
 
-                vm.ctx.push_value(res.clone());
+                vm.context_mut().push_value(res.clone());
 
                 Ok(())
             }

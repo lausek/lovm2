@@ -5,8 +5,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PyTuple};
 
-use lovm2::gen;
-use lovm2::module::{ModuleMeta, DEFAULT_MODULE_NAME};
+use lovm2::gen::{hir, HasBlock, ModuleMeta, DEFAULT_MODULE_NAME};
 
 use crate::code::CodeObject;
 use crate::expr::{any_to_access, any_to_expr, any_to_ident, Expr};
@@ -176,7 +175,7 @@ impl BlockBuilder {
 
     pub fn expr(&mut self, expr: &Expr) -> PyResult<()> {
         match &expr.inner {
-            gen::expr::Expr::Call(call) => unsafe {
+            hir::Expr::Call(call) => unsafe {
                 (*self.inner).step(call.clone());
                 Ok(())
             },
@@ -205,7 +204,7 @@ impl BlockBuilder {
     pub fn repeat(&mut self) -> PyResult<BlockBuilder> {
         unsafe {
             let repeat = (*self.inner).repeat();
-            let inner = &mut repeat.block as *mut Lovm2Block;
+            let inner = repeat.block_mut() as *mut Lovm2Block;
             Ok(BlockBuilder { inner })
         }
     }
@@ -230,7 +229,16 @@ impl BlockBuilder {
         let condition = any_to_expr(condition)?;
         unsafe {
             let repeat = (*self.inner).repeat_until(condition);
-            let inner = &mut repeat.block as *mut Lovm2Block;
+            let inner = repeat.block_mut() as *mut Lovm2Block;
+            Ok(BlockBuilder { inner })
+        }
+    }
+
+    pub fn repeat_iterating(&mut self, collection: &PyAny, item: String) -> PyResult<BlockBuilder> {
+        let collection = any_to_expr(collection)?;
+        unsafe {
+            let repeat = (*self.inner).repeat_iterating(collection, item);
+            let inner = repeat.block_mut() as *mut Lovm2Block;
             Ok(BlockBuilder { inner })
         }
     }

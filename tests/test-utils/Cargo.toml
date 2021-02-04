@@ -9,5 +9,4 @@ name = "test_utils"
 path = "src/lib.rs"
 
 [dependencies]
-lovm2 = { path = "../../" }
-lovm2_error = { path = "../../src/lovm2_error" }
+lovm2 = { path = "../../", default-features = false }
