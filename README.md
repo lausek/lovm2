@@ -19,7 +19,7 @@
 Add this line to your `Cargo.toml`:
 
 ``` toml
-lovm2 = "0.4.8"
+lovm2 = "0.4.9"
 ```
 
 ### Projects

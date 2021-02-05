@@ -165,3 +165,51 @@ fn jumping() {
         *vm.context_mut().value_of("output").unwrap()
     );
 }
+
+#[test]
+#[ignore]
+fn assign_segfault() {
+    use lovm2::value::box_value;
+    use lovm2::value::Value::*;
+
+    // this code creates a reference counted dict and tries setting itself as an
+    // attribute resulting in an endless deref cycle and eventually a stackoverflow.
+
+    let mut vm = create_vm_with_std();
+    let co = define_code! {
+        consts { Nil, box_value(Value::dict()), "b", 1, "sub", "a", 2 }
+        idents { main, ret, obj1 }
+
+        {
+        CPush(1);
+        LMove(2);
+        LPush(2);
+        CPush(2);
+        RGet;
+        CPush(3);
+        Set;
+
+        LPush(2);
+        CPush(4);
+        RGet;
+        CPush(1);
+            Set;
+
+        LPush(2);
+        CPush(4);
+        RGet;
+        CPush(5);
+        RGet;
+        CPush(6);
+            Set;
+
+        LPush(2);
+        Ret;
+        }
+    };
+
+    let result = vm.run_object(&co).unwrap();
+
+    assert!(vm.context_mut().stack_mut().is_empty());
+    assert_eq!(Value::Int(2), result);
+}

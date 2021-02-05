@@ -43,11 +43,12 @@ vm.run()
 **NOTE:** manylinux wheels are required for distribution
 
 ``` bash
-docker build -t pylovm2-build .
-docker run -it -v $(pwd):/io pylovm2-build
+# just build the python package in release mode
+# compiled wheels will be available inside ./target/wheels
+./build.sh 
 
-# ... or use `maturin build`
-$ maturin publish
+# attempt publishing package on pypi.org as well
+./build.sh release
 ```
 
 ### Problems with SSL

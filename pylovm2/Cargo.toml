@@ -1,6 +1,6 @@
 [package]
 name = "pylovm2"
-version = "0.4.8"
+version = "0.4.9"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
@@ -20,8 +20,8 @@ shrinkwraprs = "0.3.0"
 
 [dependencies.lovm2]
 #version = "0.4.8"
-path = "../"
-#path = "/deps/"
+#path = "../"
+path = "/deps/"
 #git = "https://github.com/lausek/lovm2"
 #branch = "v0.4.8"
 default-features = false

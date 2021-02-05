@@ -77,10 +77,14 @@ impl From<String> for Lovm2Error {
 impl std::fmt::Display for Lovm2Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "{}: {}", self.ty, self.msg)?;
-        writeln!(f, "Instruction trace (deepest first):")?;
-        for offset in self.inx_offsets.iter() {
-            writeln!(f, "\t{}", offset)?;
+
+        if !self.inx_offsets.is_empty() {
+            writeln!(f, "Instruction trace (deepest first):")?;
+            for offset in self.inx_offsets.iter() {
+                writeln!(f, "\t{}", offset)?;
+            }
         }
+
         //writeln!(f, "{:?}", self.trace)?;
         Ok(())
     }

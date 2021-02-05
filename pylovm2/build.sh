@@ -15,9 +15,12 @@ case "$1" in
         ;;
 esac
 
+echo "Building container now ..."
+docker build -t pylovm2-build .
+
 # Build pylovm2 with `maturin build`
-echo "Build pylovm2 now ..."
-docker run -ti --entrypoint "/io/build-pylovm2.sh" \
+echo "Building pylovm2 now ..."
+docker run -ti --entrypoint "/io/scripts/build-pylovm2.sh" \
     -v $PYLOVM2_DIR:/io -v $LOVM2_DIR/:/deps \
     -e MATURIN_RELEASE=$MATURIN_RELEASE \
     pylovm2-build

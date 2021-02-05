@@ -10,10 +10,6 @@ use crate::value::Value;
 use crate::Expr;
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
-    if let Ok(val) = any_to_value(any) {
-        return Ok(val.into());
-    }
-
     match any.get_type().name().as_ref() {
         "dict" => {
             let dict = any.downcast::<PyDict>()?;
@@ -41,10 +37,16 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
             let data = any.extract::<Expr>()?;
             Ok(data.inner)
         }
-        _ => Err(PyRuntimeError::new_err(format!(
-            "value {} cannot be converted to expression",
-            any
-        ))),
+        _ => {
+            if let Ok(val) = any_to_value(any) {
+                return Ok(val.into());
+            }
+
+            Err(PyRuntimeError::new_err(format!(
+                "value {} cannot be converted to expression",
+                any
+            )))
+        }
     }
 }
 
@@ -95,7 +97,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
                 let item = item?;
                 ls.push(any_to_value(item)?);
             }
-            Ok(lovm2::value::box_value(Lovm2ValueRaw::List(ls)).into())
+            Ok(Lovm2ValueRaw::List(ls))
         }
         "dict" => {
             let dict = any.downcast::<PyDict>()?;
@@ -106,7 +108,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
                 map.set(&key, value).unwrap();
             }
 
-            Ok(lovm2::value::box_value(map).into())
+            Ok(map)
         }
         "NoneType" => Ok(Lovm2ValueRaw::Nil),
         "Value" => {
