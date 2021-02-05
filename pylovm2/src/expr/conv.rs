@@ -95,7 +95,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
                 let item = item?;
                 ls.push(any_to_value(item)?);
             }
-            Ok(Lovm2ValueRaw::List(ls).into())
+            Ok(lovm2::value::box_value(Lovm2ValueRaw::List(ls)).into())
         }
         "dict" => {
             let dict = any.downcast::<PyDict>()?;
@@ -106,7 +106,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
                 map.set(&key, value).unwrap();
             }
 
-            Ok(map.into())
+            Ok(lovm2::value::box_value(map).into())
         }
         "NoneType" => Ok(Lovm2ValueRaw::Nil),
         "Value" => {

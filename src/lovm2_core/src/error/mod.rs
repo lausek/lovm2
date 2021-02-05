@@ -19,6 +19,7 @@ pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
 pub struct Lovm2Error {
     pub ty: Lovm2ErrorTy,
     pub msg: String,
+    pub inx_offsets: Vec<usize>,
     pub trace: backtrace::Backtrace,
 }
 
@@ -76,7 +77,11 @@ impl From<String> for Lovm2Error {
 impl std::fmt::Display for Lovm2Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "{}: {}", self.ty, self.msg)?;
-        writeln!(f, "{:?}", self.trace)?;
+        writeln!(f, "Instruction trace (deepest first):")?;
+        for offset in self.inx_offsets.iter() {
+            writeln!(f, "\t{}", offset)?;
+        }
+        //writeln!(f, "{:?}", self.trace)?;
         Ok(())
     }
 }
@@ -86,6 +91,7 @@ impl Default for Lovm2Error {
         Self {
             ty: Lovm2ErrorTy::Basic,
             msg: String::new(),
+            inx_offsets: vec![],
             trace: backtrace::Backtrace::new(),
         }
     }

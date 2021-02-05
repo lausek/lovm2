@@ -1,5 +1,7 @@
 use super::*;
 
+use crate::value::Value;
+
 /// The operation is not supported
 #[inline]
 pub fn err_not_supported<T>() -> Lovm2Result<T> {
@@ -22,6 +24,13 @@ pub fn err_reserved_interrupt<T>(n: u16) -> Lovm2Result<T> {
 #[inline]
 pub fn err_invalid_set_target<T, U: ToString>(target: U) -> Lovm2Result<T> {
     Err((Lovm2ErrorTy::InvalidSetTarget, target.to_string()).into())
+}
+
+/// The interrupt cannot be assigned from user code
+#[inline]
+pub fn err_key_not_found<T>(obj: &Value, key: &Value) -> Lovm2Result<T> {
+    let msg = format!("key {} not found on value {}", key, obj);
+    Err((Lovm2ErrorTy::KeyNotFound, msg).into())
 }
 
 /// Tried to operate on an empty reference

@@ -139,13 +139,13 @@ impl Value {
             Value::Str(_) => self.get_by_index(key.as_integer_inner()? as usize),
             Value::Dict(dict) => match dict.get(key) {
                 Some(val) => Ok(val.clone()),
-                None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
+                None => err_key_not_found(self, &key)?,
             },
             Value::List(list) => {
-                if let Value::Int(key) = key.as_integer()? {
-                    match list.get(key as usize) {
+                if let Value::Int(idx) = key.as_integer()? {
+                    match list.get(idx as usize) {
                         Some(val) => Ok(val.clone()),
-                        None => Err((Lovm2ErrorTy::KeyNotFound, key.to_string()).into()),
+                        None => err_key_not_found(self, &key)?,
                     }
                 } else {
                     unreachable!()

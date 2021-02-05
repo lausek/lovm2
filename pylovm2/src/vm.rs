@@ -28,7 +28,9 @@ impl Vm {
 
     #[classmethod]
     pub fn with_std(_this: &PyAny) -> PyResult<Self> {
-        Ok(Self { inner: lovm2::create_vm_with_std() })
+        Ok(Self {
+            inner: lovm2::create_vm_with_std(),
+        })
     }
 
     pub fn add_load_path(&mut self, path: String) -> PyResult<()> {

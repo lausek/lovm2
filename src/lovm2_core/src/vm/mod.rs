@@ -263,15 +263,10 @@ impl Vm {
         }
     }
 
-    /// implementation of lovm2 bytecode behavior
-    ///
-    /// **Note:** This function does not push a stack frame and could therefore mess up local variables
-    /// if not handled correctly. See [Vm::run_object].
-    pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
+    #[inline]
+    fn run_bytecode_inner(&mut self, co: &CodeObject, ip: &mut usize) -> Lovm2Result<()> {
         use crate::value::iter::*;
-
-        let mut ip = offset;
-        while let Some(inx) = co.code.get(ip) {
+        while let Some(inx) = co.code.get(*ip) {
             match inx {
                 Instruction::LPush(lidx) => {
                     let variable = &co.idents[*lidx as usize];
@@ -355,20 +350,20 @@ impl Vm {
                 Instruction::Le => value_compare!(self, le),
                 Instruction::Lt => value_compare!(self, lt),
                 Instruction::Jmp(addr) => {
-                    ip = *addr as usize;
+                    *ip = *addr as usize;
                     continue;
                 }
                 Instruction::Jt(addr) => {
                     let first = self.ctx.pop_value()?;
                     if first.as_bool_inner()? {
-                        ip = *addr as usize;
+                        *ip = *addr as usize;
                         continue;
                     }
                 }
                 Instruction::Jf(addr) => {
                     let first = self.ctx.pop_value()?;
                     if !first.as_bool_inner()? {
-                        ip = *addr as usize;
+                        *ip = *addr as usize;
                         continue;
                     }
                 }
@@ -434,7 +429,21 @@ impl Vm {
                 Instruction::IterReverse => vm_iter_reverse(self)?,
             }
 
-            ip += 1;
+            *ip += 1;
+        }
+        Ok(())
+    }
+
+    /// implementation of lovm2 bytecode behavior
+    ///
+    /// **Note:** This function does not push a stack frame and could therefore mess up local variables
+    /// if not handled correctly. See [Vm::run_object].
+    pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
+        let mut ip = offset;
+
+        if let Err(mut e) = self.run_bytecode_inner(co, &mut ip) {
+            e.inx_offsets.push(ip);
+            return Err(e);
         }
 
         Ok(())
