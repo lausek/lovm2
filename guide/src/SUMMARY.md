@@ -16,4 +16,5 @@
 - [Virtual Machine](./vm/introduction.md)
     - [Hooks](./vm/hooks.md)
     - [Interrupt](./vm/interrupt.md)
+    - [Standard Library](./vm/stdlib.md)
 - [Examples](./examples/overview.md)

@@ -16,7 +16,7 @@ title: lovm2
 - [X] Generate bytecode using a High-Level Intermediate Representation
 - [X] Define own instructions as `Interrupt`s
 - [X] Standard library included: [lovm2_std]({{ site.github_repository }}/tree/master/src/lovm2_std/README.md)
-- [X] Extend your programs with Rust: [lovm2_extend]({{ site.github_repository }}/tree/master/src/lovm2_extend/README.md)
+- [X] Extend your programs with Rust: [lovm2_extend]({{ site.github_repository }}/tree/master/README-extend.md)
 - [X] Python bindings: [pylovm2]({{ site.github_repository }}/tree/master/pylovm2/README.md)
 
 ## Examples
