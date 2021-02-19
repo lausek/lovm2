@@ -20,6 +20,8 @@ pub struct Lovm2Error {
     pub ty: Lovm2ErrorTy,
     pub msg: String,
     pub inx_offsets: Vec<usize>,
+
+    #[cfg(feature = "backtrace")]
     pub trace: backtrace::Backtrace,
 }
 
@@ -85,7 +87,9 @@ impl std::fmt::Display for Lovm2Error {
             }
         }
 
-        //writeln!(f, "{:?}", self.trace)?;
+        #[cfg(feature = "backtrace")]
+        writeln!(f, "{:?}", self.trace)?;
+
         Ok(())
     }
 }
@@ -96,6 +100,8 @@ impl Default for Lovm2Error {
             ty: Lovm2ErrorTy::Basic,
             msg: String::new(),
             inx_offsets: vec![],
+
+            #[cfg(feature = "backtrace")]
             trace: backtrace::Backtrace::new(),
         }
     }
