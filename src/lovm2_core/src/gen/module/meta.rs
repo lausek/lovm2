@@ -29,6 +29,7 @@ impl From<&Path> for ModuleMeta {
     fn from(path: &Path) -> Self {
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
         let loc = Some(path.display().to_string());
+
         Self {
             loc,
             name,

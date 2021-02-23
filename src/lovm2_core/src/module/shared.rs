@@ -36,7 +36,9 @@ fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
         match lookup {
             Ok(initializer) => {
                 let mut slots = HashMap::new();
+
                 initializer(lib.clone(), &mut slots);
+
                 Ok(Slots::from(slots))
             }
             Err(_) => Err(Lovm2ErrorTy::Basic.into()),

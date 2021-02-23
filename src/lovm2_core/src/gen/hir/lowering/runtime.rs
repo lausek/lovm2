@@ -14,7 +14,7 @@ pub struct HirLoweringRuntime<'lir> {
     code: Vec<LirElement<'lir>>,
     counter: LabelCounterRef,
     meta: ModuleMeta,
-    optimizer: Box<dyn Optimizer>,
+    optimizer: &'lir mut dyn Optimizer,
 
     branch_stack: Vec<HirLoweringBranch>,
     locals: Vec<&'lir Variable>,
@@ -22,13 +22,11 @@ pub struct HirLoweringRuntime<'lir> {
 }
 
 impl<'lir> HirLoweringRuntime<'lir> {
-    pub fn new(meta: ModuleMeta, options: CompileOptions) -> Self {
-        let optimizer = if options.optimize {
-            Box::new(StandardOptimizer::new()) as Box<dyn Optimizer>
-        } else {
-            Box::new(NoOptimizer) as Box<dyn Optimizer>
-        };
-
+    pub fn new(
+        meta: ModuleMeta,
+        _options: CompileOptions,
+        optimizer: &'lir mut impl Optimizer,
+    ) -> Self {
         Self {
             code: vec![],
             counter: Rc::new(RefCell::new(LabelCounter::default())),

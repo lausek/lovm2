@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 use crate::code::CodeObjectFunction;
 use crate::error::*;
+use crate::gen::opt::Optimizer;
 use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement, ModuleMeta};
 use crate::module::{Module, ENTRY_POINT};
 use crate::var::Variable;
@@ -85,8 +86,21 @@ impl ModuleBuilder {
 
     /// Generate a module from the current data but use custom compile options.
     pub fn build_with_options(&self, options: CompileOptions) -> Lovm2CompileResult<Module> {
-        // TODO: optimizer could be allocated here
-        let mut ru = HirLoweringRuntime::new(self.meta.clone(), options);
+        use crate::gen::{NoOptimizer, StandardOptimizer};
+
+        if options.optimize {
+            self.build_with_options_and_optimizer(options, StandardOptimizer::new())
+        } else {
+            self.build_with_options_and_optimizer(options, NoOptimizer)
+        }
+    }
+
+    fn build_with_options_and_optimizer(
+        &self,
+        options: CompileOptions,
+        mut optimizer: impl Optimizer,
+    ) -> Lovm2CompileResult<Module> {
+        let mut ru = HirLoweringRuntime::new(self.meta.clone(), options, &mut optimizer);
 
         // Main entry point must be at start (offset 0)
         let entry_key = Variable::from(ENTRY_POINT);
@@ -112,6 +126,7 @@ impl ModuleBuilder {
         for (iidx, offset) in module.code_object.entries.iter() {
             let key = &module.code_object.idents[*iidx];
             let func = CodeObjectFunction::from(module.code_object.clone(), *offset);
+
             module.slots.insert(key.clone(), Rc::new(func));
         }
 

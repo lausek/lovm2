@@ -61,6 +61,7 @@ impl Module {
             Ok(shared::module_from_library(path, lib)?)
         } else {
             let co = CodeObject::load_from_file(path)?;
+
             Ok(co.into())
         }
     }
@@ -113,6 +114,7 @@ impl From<CodeObject> for Module {
         for (iidx, offset) in code_object.entries.iter() {
             let var = &code_object.idents[*iidx];
             let func = CodeObjectFunction::from(code_object.clone(), *offset);
+
             slots.insert(var.clone(), Rc::new(func));
         }
 
@@ -166,7 +168,9 @@ impl std::fmt::Display for Module {
                 match entry_current {
                     Some(current) if current.1 == off => {
                         let entry_name = &self.code_object.idents[current.0];
+
                         writeln!(f, "{}:", entry_name)?;
+
                         entry_current = entry_iter.next();
                     }
                     _ => {}
