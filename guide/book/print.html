@@ -224,10 +224,8 @@ HIR -&gt; LIR    -&gt; CodeObject -&gt; Module
 HIR -&gt; LIR 
 </code></pre>
 <h1><a class="header" href="#modules" id="modules">Modules</a></h1>
-<p>While you are already familiar with the &quot;lovm2 native&quot; representation of executable code, <code>Modules</code> are far more abstract under the hood. <code>lovm2</code> is able to load specifically compiled shared objects at runtime and execute real native functions as well.</p>
-<p>And that's not all. As long as your structure implements the <code>CallProtocol</code> trait you are free to even implement native functions inside your own compiler.</p>
-<h2><a class="header" href="#shared-libraries" id="shared-libraries">Shared Libraries</a></h2>
-<p>You can use <a href="concepts/..">lovm2_extend</a> to write your own modules in Rust.</p>
+<p>While you are already familiar with the &quot;lovm2 native&quot; representation of executable code, <code>Modules</code> are far more abstract under the hood. <code>lovm2</code> is able to load specifically compiled shared objects - or dlls as you would call them in the Windows world - at runtime and execute real native functions as well.</p>
+<p>And that's not all. As long as your structure implements the <code>CallProtocol</code> trait you are free to even implement native functions inside your own compiler or runtime. This job can be done using the <a href="concepts/..">lovm2_extend</a> module which allows you to write your own modules in Rust.</p>
 <h1><a class="header" href="#types" id="types">Types</a></h1>
 <p><code>lovm2</code> embraces dynamic typing. The most basic ones are <code>Bool</code>, <code>Int</code>, <code>Float</code>, <code>String</code>.</p>
 <p><code>Nil</code> is the default return type of functions that do not have return values. You can also use it to mark the absence of a value.</p>
@@ -568,7 +566,7 @@ main_hir
 <span class="boring">}
 </span></code></pre></pre>
 <h1><a class="header" href="#optimization" id="optimization">Optimization</a></h1>
-<p>A rudimentary bytecode optimizer is enabled by default. It acts upon the generated <code>LIR</code>. If you want to disable optimization at all, use the method <code>build_with_options</code> and set the attribute <code>optimize</code> to false.</p>
+<p>A rudimentary peephole optimizer is enabled by default. It acts upon the generated <code>LIR</code>. If you want to disable optimization at all, use the method <code>build_with_options</code> and set the attribute <code>optimize</code> to false.</p>
 <p><code>lovm2</code> gives you a guarantee that your <code>HIR</code> will not be unexpectedly altered when lowering.</p>
 <h2><a class="header" href="#dead-code-elimination" id="dead-code-elimination">Dead Code elimination</a></h2>
 <p>After lowering the <code>LIR</code>, the optimizer will eliminate code that is not reachable.</p>
@@ -589,10 +587,10 @@ Add
 </blockquote>
 <h2><a class="header" href="#logical-short-curcuit" id="logical-short-curcuit">Logical short-curcuit</a></h2>
 <p>It is common for languages to avoid evaluating the second operand of <code>Or</code>/<code>And</code> operations if the first term is already sufficient for the expressions outcome.</p>
-<h2><a class="header" href="#small-adjustments" id="small-adjustments">Small adjustments</a></h2>
+<h2><a class="header" href="#logical-negation" id="logical-negation">Logical negation</a></h2>
 <p>The optimizer will merge instruction sequences like this:</p>
 <pre><code class="language-bytecode">...
-Not   =&gt;   Jt
+Not   =&gt;   Jf
 Jt
 </code></pre>
 <h1><a class="header" href="#virtual-machine" id="virtual-machine">Virtual Machine</a></h1>

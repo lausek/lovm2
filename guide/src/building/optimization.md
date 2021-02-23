@@ -1,6 +1,6 @@
 # Optimization
 
-A rudimentary bytecode optimizer is enabled by default. It acts upon the generated `LIR`. If you want to disable optimization at all, use the method `build_with_options` and set the attribute `optimize` to false.
+A rudimentary peephole optimizer is enabled by default. It acts upon the generated `LIR`. If you want to disable optimization at all, use the method `build_with_options` and set the attribute `optimize` to false.
 
 `lovm2` gives you a guarantee that your `HIR` will not be unexpectedly altered when lowering.
 
@@ -32,12 +32,12 @@ Add
 
 It is common for languages to avoid evaluating the second operand of `Or`/`And` operations if the first term is already sufficient for the expressions outcome.
 
-## Small adjustments
+## Logical negation
 
 The optimizer will merge instruction sequences like this:
 
 ``` bytecode
 ...
-Not   =>   Jt
+Not   =>   Jf
 Jt
 ```

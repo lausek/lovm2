@@ -164,7 +164,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#optimization" id="optimization">Optimization</a></h1>
-<p>A rudimentary bytecode optimizer is enabled by default. It acts upon the generated <code>LIR</code>. If you want to disable optimization at all, use the method <code>build_with_options</code> and set the attribute <code>optimize</code> to false.</p>
+<p>A rudimentary peephole optimizer is enabled by default. It acts upon the generated <code>LIR</code>. If you want to disable optimization at all, use the method <code>build_with_options</code> and set the attribute <code>optimize</code> to false.</p>
 <p><code>lovm2</code> gives you a guarantee that your <code>HIR</code> will not be unexpectedly altered when lowering.</p>
 <h2><a class="header" href="#dead-code-elimination" id="dead-code-elimination">Dead Code elimination</a></h2>
 <p>After lowering the <code>LIR</code>, the optimizer will eliminate code that is not reachable.</p>
@@ -185,10 +185,10 @@ Add
 </blockquote>
 <h2><a class="header" href="#logical-short-curcuit" id="logical-short-curcuit">Logical short-curcuit</a></h2>
 <p>It is common for languages to avoid evaluating the second operand of <code>Or</code>/<code>And</code> operations if the first term is already sufficient for the expressions outcome.</p>
-<h2><a class="header" href="#small-adjustments" id="small-adjustments">Small adjustments</a></h2>
+<h2><a class="header" href="#logical-negation" id="logical-negation">Logical negation</a></h2>
 <p>The optimizer will merge instruction sequences like this:</p>
 <pre><code class="language-bytecode">...
-Not   =&gt;   Jt
+Not   =&gt;   Jf
 Jt
 </code></pre>
 
