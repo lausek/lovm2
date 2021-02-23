@@ -29,11 +29,14 @@ impl code::CallProtocol for CodeObject {
 
                 let frame = vm.context_mut().frame_mut()?;
                 let mut args = vec![];
+
                 for _ in 0..frame.argn {
                     let val = vm.context_mut().pop_value()?;
                     let obj: PyObject = Value::from_struct(val).into_py(py);
+
                     args.insert(0, obj);
                 }
+
                 let args = PyTuple::new(py, args.into_iter());
 
                 // call python function, catch exceptions

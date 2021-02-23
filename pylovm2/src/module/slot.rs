@@ -22,11 +22,11 @@ impl ModuleBuilderSlot {
     }
 
     pub fn with_args(args: &PyList) -> Self {
-        let mut vars = vec![];
-        for arg in args.iter() {
-            let name = arg.str().unwrap().to_string();
-            vars.push(Variable::from(name));
-        }
+        let vars = args
+            .iter()
+            .map(|arg| arg.str().unwrap().to_string())
+            .map(Variable::from)
+            .collect();
 
         Self::Lovm2Hir(Hir::with_args(vars))
     }
@@ -38,6 +38,7 @@ impl ModuleBuilderSlot {
     pub fn code(&mut self) -> PyResult<BlockBuilder> {
         if let Self::Lovm2Hir(ref mut hir) = self {
             let inner = hir.block_mut() as *mut Lovm2Block;
+
             Ok(BlockBuilder { inner })
         } else {
             Err(err_to_exception(err_custom("slot is not a hir")))

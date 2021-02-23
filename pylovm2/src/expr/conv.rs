@@ -17,6 +17,7 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
 
             for (key, val) in dict.iter() {
                 let (key, val) = (any_to_expr(key)?, any_to_expr(val)?);
+
                 obj.add_by_key(key, val);
             }
 
@@ -28,6 +29,7 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
 
             for val in list.iter() {
                 let val = any_to_expr(val)?;
+
                 obj.add(val);
             }
 
@@ -35,6 +37,7 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;
+
             Ok(data.inner)
         }
         _ => {
@@ -54,10 +57,12 @@ pub fn any_to_ident(any: &PyAny) -> PyResult<Variable> {
     match any.get_type().name().as_ref() {
         "str" => {
             let name = any.str()?.to_string();
+
             Ok(Variable::from(name).into())
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;
+
             match &data.inner {
                 Lovm2Expr::Variable(var) => Ok(var.clone()),
                 _ => Err(PyRuntimeError::new_err(
@@ -77,26 +82,31 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
     match ty.as_ref() {
         "str" => {
             let data = any.str()?.to_string();
+
             Ok(Lovm2ValueRaw::Str(data))
         }
         "bool" => {
             let data = any.extract::<bool>()?;
+
             Ok(Lovm2ValueRaw::Bool(data))
         }
         "int" => {
             let data = any.extract::<i64>()?;
+
             Ok(Lovm2ValueRaw::Int(data))
         }
         "float" => {
             let data = any.extract::<f64>()?;
+
             Ok(Lovm2ValueRaw::Float(data))
         }
         "list" => {
             let mut ls = vec![];
+
             for item in any.iter()? {
-                let item = item?;
-                ls.push(any_to_value(item)?);
+                ls.push(any_to_value(item?)?);
             }
+
             Ok(Lovm2ValueRaw::List(ls))
         }
         "dict" => {
@@ -105,6 +115,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
 
             for (key, value) in dict.iter() {
                 let (key, value) = (any_to_value(key)?, any_to_value(value)?);
+
                 map.set(&key, value).unwrap();
             }
 
@@ -113,10 +124,12 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
         "NoneType" => Ok(Lovm2ValueRaw::Nil),
         "Value" => {
             let data = any.extract::<Value>()?;
+
             Ok(lovm2::value::Value::Ref(data.inner))
         }
         "Expr" => {
             let data = any.extract::<Expr>()?;
+
             match data.inner {
                 Lovm2Expr::Value { val, .. } => Ok(val),
                 _ => Err(PyRuntimeError::new_err(format!(
@@ -134,12 +147,10 @@ pub fn any_to_value(any: &PyAny) -> PyResult<Lovm2ValueRaw> {
 
 pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<Value> {
     let ty = any.get_type().name();
+
     match ty.as_ref() {
         "Value" => any.extract::<Value>(),
-        _ => {
-            let val = any_to_value(any)?;
-            Ok(Value::from_struct(val.clone()))
-        }
+        _ => any_to_value(any).map(Value::from_struct),
     }
 }
 
@@ -147,20 +158,17 @@ pub fn any_to_access(any: &PyAny) -> PyResult<Lovm2Access> {
     match any.get_type().name().as_ref() {
         "Expr" => {
             let data = any.extract::<Expr>()?;
+
             if let Lovm2Expr::Access(var) = &data.inner {
                 Ok(var.clone().into())
             } else {
-                any_to_ident(any).map(|i| i.into())
+                any_to_ident(any).map(Lovm2Access::from)
             }
         }
-        _ => any_to_ident(any).map(|i| i.into()),
+        _ => any_to_ident(any).map(Lovm2Access::from),
     }
 }
 
 pub fn pyargs_to_exprs(args: &PyTuple) -> PyResult<Vec<Lovm2Expr>> {
-    let mut v = vec![];
-    for arg in args.iter() {
-        v.push(any_to_expr(arg)?);
-    }
-    Ok(v)
+    args.iter().map(any_to_expr).collect()
 }

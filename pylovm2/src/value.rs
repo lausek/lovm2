@@ -14,10 +14,13 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
         Lovm2ValueRaw::Str(s) => s.into_py(py),
         Lovm2ValueRaw::Dict(dict) => {
             let map = PyDict::new(py);
+
             for (key, val) in dict.iter() {
                 let (key, val) = (lovm2py(key, py), lovm2py(val, py));
+
                 map.set_item(key, val).unwrap();
             }
+
             map.to_object(py)
         }
         Lovm2ValueRaw::List(list) => list
@@ -36,6 +39,7 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
         Lovm2ValueRaw::Iter(it) => {
             let vals = it.borrow().clone().collect();
             let ls = lovm2::value::box_value(Lovm2ValueRaw::List(vals));
+
             lovm2py(&ls, py)
         }
         Lovm2ValueRaw::Any(_) => todo!(),
@@ -81,6 +85,7 @@ impl pyo3::class::basic::PyObjectProtocol for Value {
             Lovm2ValueRaw::Ref(_) => false,
             _ => todo!(),
         };
+
         Ok(result)
     }
 
@@ -94,6 +99,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
     fn __int__(&self) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
+
         match self
             .inner
             .borrow()
@@ -111,6 +117,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
     fn __float__(&self) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
+
         match self
             .inner
             .borrow()
@@ -131,7 +138,9 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
     fn __delitem__(&mut self, key: &PyAny) -> PyResult<()> {
         let key = any_to_pylovm2_value(key)?;
         let key = key.inner.borrow().unwrap();
+
         self.inner.borrow_mut().unwrap().delete(&key).unwrap();
+
         Ok(())
     }
 
@@ -140,10 +149,12 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
         let py = gil.python();
         let key = any_to_pylovm2_value(key)?;
         let key = key.inner.borrow().unwrap();
+
         // TODO: avoid clone here
         match self.inner.borrow().unwrap().get(&key) {
             Ok(val) => {
                 let val = lovm2::value::box_value(val);
+
                 Ok(Value::from_struct(val).to_py(py))
             }
             Err(_) => Err(PyRuntimeError::new_err(format!(
@@ -168,6 +179,7 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
             key.inner.borrow().unwrap(),
             val.inner.borrow().unwrap().clone(),
         );
+
         self.inner
             .borrow_mut()
             .unwrap()

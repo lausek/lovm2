@@ -28,6 +28,7 @@ impl Module {
     #[classmethod]
     pub fn load(_this: &PyAny, path: &PyAny) -> PyResult<Self> {
         let path = path.str()?.to_str()?;
+
         match Lovm2Module::load_from_file(path) {
             Ok(inner) => Ok(Self { inner: Some(inner) }),
             Err(err) => Err(PyRuntimeError::new_err(err.to_string())),
@@ -41,6 +42,7 @@ impl Module {
                 Err(err) => Err(PyRuntimeError::new_err(err.to_string())),
             };
         }
+
         Err(PyRuntimeError::new_err("inner module not loaded"))
     }
 
@@ -48,6 +50,7 @@ impl Module {
         if let Some(inner) = self.inner.as_ref() {
             return Ok(inner.name().to_string());
         }
+
         Err(PyRuntimeError::new_err("inner module not loaded"))
     }
 
@@ -57,10 +60,10 @@ impl Module {
     }
 
     pub fn location(&self) -> PyResult<Option<&String>> {
-        if let Some(inner) = self.inner.as_ref() {
-            return Ok(inner.location());
-        }
-        Err(PyRuntimeError::new_err("inner module not loaded"))
+        self.inner
+            .as_ref()
+            .ok_or_else(|| PyRuntimeError::new_err("inner module not loaded"))
+            .map(Lovm2Module::location)
     }
 }
 
@@ -75,6 +78,7 @@ impl pyo3::class::basic::PyObjectProtocol for Module {
 impl pyo3::class::sequence::PySequenceProtocol for Module {
     fn __contains__(&self, key: &PyAny) -> PyResult<bool> {
         let key = key.str()?.to_str()?;
+
         Ok(match &self.inner {
             Some(m) => m.slot(&key.into()).is_some(),
             _ => false,

@@ -50,5 +50,6 @@ pub(crate) fn err_to_exception(e: Lovm2Error) -> PyErr {
 pub(crate) fn exception_to_err(e: &PyErr, py: Python) -> Lovm2Error {
     let ty = e.ptype(py).name().to_string();
     let msg = e.pvalue(py).to_string();
+
     (ty, msg).into()
 }

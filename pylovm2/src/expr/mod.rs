@@ -19,9 +19,11 @@ macro_rules! auto_wrapper {
     };
     ($op:path, $args:expr) => {{
         let mut args = vec![];
+
         for arg in $args.iter() {
             args.push(any_to_expr(arg)?)
         }
+
         Ok(Self {
             inner: Lovm2Expr::from_opn(
                 $op,
@@ -51,6 +53,7 @@ impl Expr {
             Lovm2Expr::Access(_) => "access",
             _ => "none",
         };
+
         Ok(name.to_string())
     }
 }
@@ -61,8 +64,10 @@ impl Expr {
     #[args(args = "*")]
     pub fn access(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
         use lovm2::prelude::*;
+
         let name = any_to_ident(name)?;
         let args = pyargs_to_exprs(args)?;
+
         Ok(Self {
             inner: Lovm2Expr::Access(Access::new(name, args)),
         })
@@ -72,8 +77,10 @@ impl Expr {
     #[args(args = "*")]
     pub fn call(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
         use lovm2::prelude::*;
+
         let name = Variable::from(name.str()?.to_string());
         let args = pyargs_to_exprs(args)?;
+
         Ok(Self {
             inner: Lovm2Expr::Call(Call::with_args(name, args)),
         })
@@ -82,14 +89,18 @@ impl Expr {
     #[classmethod]
     pub fn slice(_this: &PyAny, target: &PyAny, start: &PyAny, end: &PyAny) -> PyResult<Self> {
         use lovm2::prelude::*;
+
         let target = any_to_expr(target)?;
         let mut slice = Slice::new(target);
+
         if !start.is_none() {
             slice = slice.start(any_to_expr(start)?);
         }
+
         if !end.is_none() {
             slice = slice.end(any_to_expr(end)?);
         }
+
         Ok(Self {
             inner: slice.into(),
         })
@@ -105,6 +116,7 @@ impl Expr {
     #[classmethod]
     pub fn var(_this: &PyAny, arg: &PyAny) -> PyResult<Self> {
         let name = arg.to_string();
+
         Ok(Self {
             inner: Lovm2Expr::Variable(Variable::from(name)),
         })
@@ -250,6 +262,7 @@ impl Expr {
     #[classmethod]
     pub fn iter(_this: &PyAny, from: &PyAny) -> PyResult<Self> {
         let from = any_to_expr(from)?;
+
         Ok(Expr {
             inner: Iter::create(from).into(),
         })
@@ -259,11 +272,13 @@ impl Expr {
     pub fn range(_this: &PyAny, from: &PyAny, to: Option<&PyAny>) -> PyResult<Self> {
         if let Some(to) = to {
             let (from, to) = (any_to_expr(from)?, any_to_expr(to)?);
+
             Ok(Expr {
                 inner: Iter::create_ranged(from, to).into(),
             })
         } else {
             let to = any_to_expr(from)?;
+
             Ok(Expr {
                 inner: Iter::create_ranged(Lovm2ValueRaw::Nil, to).into(),
             })

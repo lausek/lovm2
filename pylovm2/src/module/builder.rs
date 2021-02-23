@@ -39,6 +39,7 @@ impl ModuleBuilder {
         };
 
         self.slots.insert(name.clone(), slot);
+
         let block = self.slots.get_mut(&name).unwrap().code().unwrap();
 
         Py::new(py, block).unwrap()
@@ -46,6 +47,7 @@ impl ModuleBuilder {
 
     pub fn add_pyfn(&mut self, name: String, pyfn: PyObject) -> PyResult<()> {
         self.slots.insert(name, ModuleBuilderSlot::pyfn(pyfn));
+
         Ok(())
     }
 
@@ -70,6 +72,7 @@ impl ModuleBuilder {
                 }
                 ModuleBuilderSlot::PyFn(ref mut pyfn) => {
                     let func = CodeObject::from(pyfn.clone());
+
                     slots.insert(key, Rc::new(func));
                 }
             }
@@ -91,6 +94,7 @@ impl ModuleBuilder {
             self.add(py, name, None)
         } else {
             let block = self.slots.get_mut(&name).unwrap().code().unwrap();
+
             Py::new(py, block).unwrap()
         }
     }
@@ -105,8 +109,10 @@ pub struct BranchBuilder {
 impl BranchBuilder {
     pub fn add_condition(&mut self, condition: &PyAny) -> PyResult<BlockBuilder> {
         let condition = any_to_expr(condition)?;
+
         unsafe {
             let inner = (*self.inner).add_condition(condition) as *mut Lovm2Block;
+
             Ok(BlockBuilder { inner })
         }
     }
@@ -114,6 +120,7 @@ impl BranchBuilder {
     pub fn default_condition(&mut self) -> PyResult<BlockBuilder> {
         unsafe {
             let inner = (*self.inner).default_condition() as *mut Lovm2Block;
+
             Ok(BlockBuilder { inner })
         }
     }
@@ -129,33 +136,40 @@ impl BlockBuilder {
     pub fn assign(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Assign::local(&any_to_ident(n)?, any_to_expr(expr)?));
         }
+
         Ok(())
     }
 
     pub fn assign_global(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Assign::global(&any_to_ident(n)?, any_to_expr(expr)?));
         }
+
         Ok(())
     }
 
     pub fn set(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
         // TODO: allow usage of Expr::Variable here
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Assign::set(&any_to_access(n)?, any_to_expr(expr)?));
         }
+
         Ok(())
     }
 
     pub fn branch(&mut self) -> PyResult<BranchBuilder> {
         unsafe {
             let inner = (*self.inner).branch() as *mut Lovm2Branch;
+
             Ok(BranchBuilder { inner })
         }
     }
@@ -163,13 +177,17 @@ impl BlockBuilder {
     #[args(args = "*")]
     pub fn call(&mut self, name: String, args: &PyTuple) -> PyResult<()> {
         use lovm2::prelude::*;
+
         let mut call = Call::new(name);
+
         for arg in args.into_iter() {
             call = call.arg(any_to_expr(arg)?);
         }
+
         unsafe {
             (*self.inner).step(call);
         }
+
         Ok(())
     }
 
@@ -187,17 +205,21 @@ impl BlockBuilder {
 
     pub fn load(&mut self, name: &Expr) -> PyResult<()> {
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Include::import(name.inner.clone()));
         }
+
         Ok(())
     }
 
     pub fn interrupt(&mut self, id: u16) -> PyResult<()> {
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Interrupt::new(id));
         }
+
         Ok(())
     }
 
@@ -205,50 +227,62 @@ impl BlockBuilder {
         unsafe {
             let repeat = (*self.inner).repeat();
             let inner = repeat.block_mut() as *mut Lovm2Block;
+
             Ok(BlockBuilder { inner })
         }
     }
 
     pub fn repeat_break(&mut self) -> PyResult<()> {
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Break::new());
         }
+
         Ok(())
     }
 
     pub fn repeat_continue(&mut self) -> PyResult<()> {
         use lovm2::prelude::*;
+
         unsafe {
             (*self.inner).step(Continue::new());
         }
+
         Ok(())
     }
 
     pub fn repeat_until(&mut self, condition: &PyAny) -> PyResult<BlockBuilder> {
         let condition = any_to_expr(condition)?;
+
         unsafe {
             let repeat = (*self.inner).repeat_until(condition);
             let inner = repeat.block_mut() as *mut Lovm2Block;
+
             Ok(BlockBuilder { inner })
         }
     }
 
     pub fn repeat_iterating(&mut self, collection: &PyAny, item: String) -> PyResult<BlockBuilder> {
         let collection = any_to_expr(collection)?;
+
         unsafe {
             let repeat = (*self.inner).repeat_iterating(collection, item);
             let inner = repeat.block_mut() as *mut Lovm2Block;
+
             Ok(BlockBuilder { inner })
         }
     }
 
     pub fn ret(&mut self, val: &PyAny) -> PyResult<()> {
         use lovm2::prelude::*;
+
         unsafe {
             let val = any_to_expr(val)?;
+
             (*self.inner).step(Return::value(val));
         }
+
         Ok(())
     }
 }

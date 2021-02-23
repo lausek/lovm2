@@ -37,6 +37,7 @@ impl Vm {
         if !self.inner.load_paths.contains(&path) {
             self.inner.load_paths.push(path);
         }
+
         Ok(())
     }
 
@@ -49,26 +50,21 @@ impl Vm {
     }
 
     #[args(args = "*")]
-    pub fn call(
-        &mut self,
-        /* py: Python, */ name: &PyString,
-        args: &PyTuple,
-    ) -> PyResult<Value> {
+    pub fn call(&mut self, name: &PyString, args: &PyTuple) -> PyResult<Value> {
         let name = name.to_str()?.to_string();
+        let ruargs: PyResult<Vec<Lovm2ValueRaw>> = args
+            .iter()
+            .map(|arg| {
+                any_to_expr(arg)?
+                    .eval(&self.inner.context_mut())
+                    .map_err(err_to_exception)
+            })
+            .collect();
 
-        let mut ruargs = vec![];
-        for arg in args.iter() {
-            let arg = any_to_expr(arg)?;
-            match arg.eval(&self.inner.context_mut()) {
-                Ok(val) => ruargs.push(val),
-                Err(e) => return Err(err_to_exception(e)),
-            }
-        }
-
-        match self.inner.call(&name, ruargs.as_slice()) {
-            Ok(val) => Ok(Value::from_struct(val)),
-            Err(e) => Err(err_to_exception(e)),
-        }
+        self.inner
+            .call(&name, ruargs?.as_slice())
+            .map(Value::from_struct)
+            .map_err(err_to_exception)
     }
 
     pub fn ctx(&mut self) -> PyResult<Context> {
@@ -81,6 +77,7 @@ impl Vm {
             .inner
             .take()
             .expect("given module was already loaded");
+
         self.inner
             .add_module(module, namespaced)
             .map_err(err_to_exception)
@@ -95,14 +92,12 @@ impl Vm {
             .inner
             .take()
             .expect("given module was already loaded");
+
         self.inner.add_main_module(module).map_err(err_to_exception)
     }
 
     pub fn run(&mut self) -> PyResult<()> {
-        match self.inner.run() {
-            Ok(_) => Ok(()),
-            Err(e) => Err(err_to_exception(e)),
-        }
+        self.inner.run().map(|_| ()).map_err(err_to_exception)
     }
 
     pub fn add_interrupt(&mut self, py: Python, id: u16, func: &PyAny) -> PyResult<()> {
@@ -129,9 +124,8 @@ impl Vm {
 
                 Ok(())
             })
-            .map_err(err_to_exception)?;
-
-        Ok(())
+            .map(|_| ())
+            .map_err(err_to_exception)
     }
 
     pub fn set_load_hook(&mut self, func: PyObject) -> PyResult<()> {
@@ -144,6 +138,7 @@ impl Vm {
             );
 
             let ret = func.call1(py, args).map_err(|e| exception_to_err(&e, py))?;
+
             if ret.is_none(py) {
                 return Ok(None);
             }
@@ -153,7 +148,9 @@ impl Vm {
                 Err(e) => Err(exception_to_err(&e, py).into()),
             }
         };
+
         self.inner.set_load_hook(hook);
+
         Ok(())
     }
 
@@ -177,7 +174,9 @@ impl Vm {
 
             Ok(Some(result))
         };
+
         self.inner.set_import_hook(hook);
+
         Ok(())
     }
 }

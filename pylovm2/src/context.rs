@@ -22,6 +22,7 @@ impl Context {
                 Ok(frame) => {
                     let frame_ref = frame as *mut Lovm2Frame;
                     let obj = Py::new(py, Frame::new(frame_ref))?.to_object(py);
+
                     Ok(obj)
                 }
                 Err(_) => Ok(py.None()),
@@ -35,6 +36,7 @@ impl Context {
                 return Some(lovm2py(&val, py));
             }
         }
+
         None
     }
 }
