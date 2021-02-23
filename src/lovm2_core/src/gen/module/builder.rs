@@ -52,6 +52,7 @@ impl ModuleBuilder {
         T: ToString,
     {
         let name = name.to_string();
+
         if !self.meta.uses.contains(&name) {
             self.meta.uses.push(name);
         }
@@ -71,6 +72,7 @@ impl ModuleBuilder {
         T: Into<Variable>,
     {
         let name: Variable = name.into();
+
         self.hirs.insert(name.clone(), Hir::with_args(args));
         self.hirs.get_mut(&name).unwrap()
     }
@@ -83,6 +85,7 @@ impl ModuleBuilder {
 
     /// Generate a module from the current data but use custom compile options.
     pub fn build_with_options(&self, options: CompileOptions) -> Lovm2CompileResult<Module> {
+        // TODO: optimizer could be allocated here
         let mut ru = HirLoweringRuntime::new(self.meta.clone(), options);
 
         // Main entry point must be at start (offset 0)
@@ -118,9 +121,11 @@ impl ModuleBuilder {
     /// Create a new function handle with the [ENTRY_POINT] name.
     pub fn entry(&mut self) -> &mut Hir {
         let name = Variable::from(ENTRY_POINT);
+
         if !self.hirs.contains_key(&name) {
             self.hirs.insert(name.clone(), Hir::new());
         }
+
         self.hirs.get_mut(&name).unwrap()
     }
 }

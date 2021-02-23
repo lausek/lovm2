@@ -47,16 +47,19 @@ fn contains(haystack: &Value, needle: Value) -> Lovm2Result<bool> {
         Value::Dict(_) => Ok(haystack.get(&needle).is_ok()),
         Value::List(ls) => {
             let mut found = false;
+
             for item in ls.iter() {
                 if *item == needle {
                     found = true;
                     break;
                 }
             }
+
             Ok(found)
         }
         Value::Str(s) => {
             let needle = needle.as_str_inner()?;
+
             Ok(s.contains(&needle))
         }
         _ => err_method_not_supported("contains"),
@@ -80,6 +83,7 @@ fn filter(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Val
 
     while it.has_next() {
         let item = it.next()?;
+
         if vm
             .call(func_name.as_ref(), &[item.clone()])?
             .as_bool_inner()?
@@ -104,6 +108,7 @@ fn map(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Value>
     while it.has_next() {
         let item = it.next()?;
         let result = vm.call(func_name.as_ref(), &[item])?;
+
         ls.push(result);
     }
 
@@ -120,18 +125,25 @@ fn sort(collection: &Value) -> Lovm2Result<Value> {
     let sorted = match collection {
         Value::Str(s) => {
             let mut cs: Vec<char> = s.chars().collect();
+
             cs.sort_unstable();
+
             let sorted: String = cs.into_iter().collect();
+
             Value::from(sorted)
         }
         Value::List(ls) => {
             let mut ls: Vec<Value> = ls.iter().map(Value::deep_clone).collect();
+
             ls.sort();
+
             box_value(Value::from(ls))
         }
         Value::Dict(_) => {
             let mut d = collection.deep_clone();
+
             d.unref_inplace()?;
+
             if let Value::Dict(mut d) = d {
                 d.sort_keys();
                 box_value(Value::Dict(d))

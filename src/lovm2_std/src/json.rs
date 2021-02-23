@@ -12,17 +12,20 @@ fn decode(json: String) -> Lovm2Result<Value> {
 #[lovm2_function]
 fn encode(val: Value) -> Lovm2Result<String> {
     let val = to_json_value(val)?;
+
     Ok(::json::stringify(val))
 }
 
 fn from_json_value(val: &JsonValue) -> Lovm2Result<Value> {
     use std::convert::TryInto;
+
     let val = match val {
         JsonValue::Null => Value::Nil,
         JsonValue::Short(s) => Value::from(s.as_str().to_string()),
         JsonValue::String(s) => Value::from(s.to_string()),
         JsonValue::Number(n) => {
             let iparse: Result<i64, ::json::number::NumberOutOfScope> = (*n).try_into();
+
             if let Ok(n) = iparse {
                 Value::from(n)
             } else {
@@ -33,22 +36,29 @@ fn from_json_value(val: &JsonValue) -> Lovm2Result<Value> {
         JsonValue::Boolean(b) => Value::from(*b),
         JsonValue::Object(obj) => {
             let mut dict = box_value(Value::dict());
+
             for (key, val) in obj.iter() {
                 let key = Value::from(key);
                 let val = from_json_value(val)?;
+
                 dict.set(&key, val)?;
             }
+
             dict
         }
         JsonValue::Array(ls) => {
             let mut list = vec![];
+
             for val in ls.iter() {
                 let val = from_json_value(val)?;
+
                 list.push(val);
             }
+
             box_value(Value::List(list))
         }
     };
+
     Ok(val)
 }
 
@@ -62,22 +72,28 @@ fn to_json_value(val: Value) -> Lovm2Result<JsonValue> {
         Value::Str(s) => JsonValue::String(s),
         Value::Dict(d) => {
             let mut obj = Object::new();
+
             for (key, val) in d.into_iter() {
                 let key = key.as_str_inner()?;
                 let val = to_json_value(val)?;
+
                 obj.insert(&key, val);
             }
+
             obj.into()
         }
         Value::List(ls) => {
             let mut json_ls = vec![];
+
             for val in ls.into_iter() {
                 json_ls.push(to_json_value(val)?);
             }
+
             json_ls.into()
         }
         Value::Ref(r) => to_json_value(r.unref_to_value()?.borrow().clone())?,
         _ => return err_from_string(format!("{:?} not supported for json", val)),
     };
+
     Ok(json)
 }

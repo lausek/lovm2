@@ -113,9 +113,11 @@ impl From<u8> for Lovm2CError {
 pub fn create_test_vm() -> Vm {
     let cargo_root = std::env::var("CARGO_MANIFEST_DIR").expect("no cargo manifest");
     let build_dir = format!("{}/target/debug", cargo_root);
+
     assert!(std::path::Path::new(&build_dir).exists());
 
     let mut vm = Vm::new();
+
     vm.add_load_path(build_dir);
 
     vm

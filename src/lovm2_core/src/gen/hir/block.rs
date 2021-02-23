@@ -28,6 +28,7 @@ impl Block {
 
     pub fn branch(&mut self) -> &mut Branch {
         self.step(Branch::new());
+
         match self.last_mut().unwrap() {
             HirElement::Branch(ref mut r) => r,
             _ => unreachable!(),
@@ -36,6 +37,7 @@ impl Block {
 
     pub fn repeat(&mut self) -> &mut Repeat {
         self.step(Repeat::endless());
+
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
@@ -44,6 +46,7 @@ impl Block {
 
     pub fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
         self.step(Repeat::until(condition));
+
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
@@ -56,6 +59,7 @@ impl Block {
         T: Into<Variable>,
     {
         self.step(Repeat::iterating(collection, item));
+
         match self.last_mut().unwrap() {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),

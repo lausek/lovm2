@@ -126,6 +126,7 @@ fn until_lower<'hir, 'lir>(
     prelude(runtime);
 
     let repeat_end = runtime.loop_mut().unwrap().end();
+
     condition.lower(runtime);
     // if the condition is met, jump to end of repeat
     // which is equal to a break. the instruction will
@@ -192,6 +193,7 @@ impl HirLowering for Continue {
         'hir: 'lir,
     {
         let repeat_start = runtime.loop_mut().unwrap().start();
+
         runtime.emit(LirElement::jump(repeat_start));
     }
 }

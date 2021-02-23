@@ -154,8 +154,10 @@ impl CodeObject {
     {
         use std::fs::File;
         use std::io::Write;
+
         let mut file = File::create(path).or_else(err_from_string)?;
         let bytes = self.to_bytes()?;
+
         file.write_all(&bytes).or_else(err_from_string)
     }
 }

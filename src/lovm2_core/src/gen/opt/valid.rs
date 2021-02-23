@@ -10,7 +10,9 @@ pub(super) struct ValidPath {
 impl ValidPath {
     pub fn scan(code: &[LirElement]) -> Self {
         let mut vp = ValidPath::default();
+
         vp.update(code, 0, false);
+
         vp
     }
 

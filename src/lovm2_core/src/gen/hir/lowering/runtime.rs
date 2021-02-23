@@ -71,7 +71,9 @@ impl<'lir> HirLoweringRuntime<'lir> {
 
     pub fn complete(mut self) -> Lovm2CompileResult<CodeObject> {
         let lir_runtime = LirLoweringRuntime::from(self.meta);
+
         self.optimizer.postprocess(&mut self.code);
+
         lir_runtime.lower(self.code)
     }
 
@@ -87,7 +89,6 @@ impl<'lir> HirLoweringRuntime<'lir> {
         }
 
         self.code.push(elem);
-
         self.optimizer.transform(&mut self.code);
     }
 

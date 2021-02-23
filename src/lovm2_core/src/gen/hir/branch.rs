@@ -20,7 +20,9 @@ impl Branch {
     /// Expects a condition that evaluates to boolean `true`
     pub fn add_condition(&mut self, condition: Expr) -> &mut Block {
         self.branches.push((condition, Block::new()));
+
         let (_, block) = self.branches.last_mut().unwrap();
+
         block
     }
 

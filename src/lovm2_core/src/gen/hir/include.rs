@@ -41,6 +41,7 @@ impl HirLowering for Include {
         let elem = LirElement::Import {
             namespaced: self.namespaced,
         };
+
         runtime.emit(elem);
     }
 }

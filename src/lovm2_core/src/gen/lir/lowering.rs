@@ -15,8 +15,10 @@ fn patch_addrs(
     coff: usize,
 ) -> Lovm2CompileResult<()> {
     let coff = coff as u16;
+
     for joff in joffs.into_iter() {
         let jmp = &mut code[joff];
+
         match jmp {
             Instruction::Jf(off) => *off = coff,
             Instruction::Jt(off) => *off = coff,
@@ -90,12 +92,14 @@ impl LirLoweringRuntime {
         match lir_element {
             LirElement::Call { argn, ident } => {
                 let iidx = self.index_ident(&ident) as u16;
+
                 self.code.push(Instruction::Call(iidx, argn));
             }
             LirElement::Conv { tyid } => self.code.push(Instruction::Conv(tyid as u16)),
             LirElement::Entry { ident } => {
                 let iidx = self.index_ident(&ident);
                 let off = self.code.len();
+
                 self.entries.push((iidx, off));
             }
             LirElement::Jump { condition, label } => {
@@ -154,14 +158,17 @@ impl LirLoweringRuntime {
                         Operator1::Not => Instruction::Not,
                     },
                 };
+
                 self.code.push(inx);
             }
             LirElement::PushConstant { value } => {
                 let cidx = self.index_const(&value) as u16;
+
                 self.code.push(Instruction::CPush(cidx));
             }
             LirElement::PushDynamic { ident, scope } => {
                 let iidx = self.index_ident(&ident) as u16;
+
                 match scope {
                     Scope::Global => self.code.push(Instruction::GPush(iidx)),
                     Scope::Local => self.code.push(Instruction::LPush(iidx)),
@@ -169,6 +176,7 @@ impl LirLoweringRuntime {
             }
             LirElement::StoreDynamic { ident, scope } => {
                 let iidx = self.index_ident(&ident) as u16;
+
                 match scope {
                     Scope::Global => self.code.push(Instruction::GMove(iidx)),
                     Scope::Local => self.code.push(Instruction::LMove(iidx)),

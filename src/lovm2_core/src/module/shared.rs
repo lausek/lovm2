@@ -27,15 +27,11 @@ pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variab
 
 fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
     unsafe {
-        //let named_initializer = format!("{}_{}", EXTERN_LOVM2_INITIALIZER, name);
-
         let lib = Rc::new(lib);
 
         // try to lookup named initializer first, fallback to initializer without name
         let lookup: Result<Symbol<ExternInitializer>, Error> =
             lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
-        //.get(named_initializer.as_bytes());
-        //.or_else(|_| lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes()));
 
         match lookup {
             Ok(initializer) => {
@@ -100,8 +96,10 @@ impl SharedObjectSlot {
         T: AsRef<str>,
     {
         let name = name.as_ref();
+
         unsafe {
             let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
+
             match lookup {
                 Ok(symbol) => Ok(Self(lib.clone(), symbol.into_raw())),
                 Err(_) => err_symbol_not_found(name),

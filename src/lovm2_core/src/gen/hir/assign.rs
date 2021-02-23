@@ -30,6 +30,7 @@ impl Assign {
         T: Into<Expr>,
     {
         let var: Variable = var.clone().into();
+
         Self {
             expr: expr.into(),
             access: var.into(),
@@ -44,6 +45,7 @@ impl Assign {
         T: Into<Expr>,
     {
         let var: Variable = var.clone().into();
+
         Self {
             expr: expr.into(),
             access: var.into(),
@@ -70,6 +72,7 @@ impl Assign {
         T: Into<Variable> + Clone,
     {
         let var: Variable = var.clone().into();
+
         Self {
             expr: Expr::add(var.clone(), 1),
             access: var.into(),
@@ -83,6 +86,7 @@ impl Assign {
         T: Into<Variable> + Clone,
     {
         let var: Variable = var.clone().into();
+
         Self {
             expr: Expr::sub(var.clone(), 1),
             access: var.into(),
@@ -156,6 +160,7 @@ impl Assign {
         }
 
         let mut key_it = self.access.keys.iter().peekable();
+
         // push key onto stack
         if let Some(key) = key_it.next() {
             key.lower(runtime);
@@ -178,9 +183,10 @@ impl Assign {
     where
         'hir: 'lir,
     {
+        let target = &self.access.target;
+
         self.expr.lower(runtime);
 
-        let target = &self.access.target;
         match self.ty {
             AssignType::StaticLocal => {
                 runtime.emit(LirElement::store(Scope::Local, target));
@@ -196,9 +202,10 @@ impl Assign {
     where
         'hir: 'lir,
     {
+        let target = &self.access.target;
+
         self.expr.lower(runtime);
 
-        let target = &self.access.target;
         if runtime.has_local(&target) {
             runtime.emit(LirElement::store(Scope::Local, target));
         } else {

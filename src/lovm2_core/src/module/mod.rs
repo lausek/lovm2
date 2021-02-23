@@ -109,6 +109,7 @@ impl From<CodeObject> for Module {
         let code_object = Rc::new(code_object);
         let mut slots = Slots::new();
 
+        // make code object functions available in module
         for (iidx, offset) in code_object.entries.iter() {
             let var = &code_object.idents[*iidx];
             let func = CodeObjectFunction::from(code_object.clone(), *offset);
@@ -126,16 +127,21 @@ impl std::fmt::Display for Module {
             "module({:?}, {:?}):",
             self.code_object.name, self.code_object.loc
         )?;
+
+        // print static dependencies
         if !self.code_object.uses.is_empty() {
             writeln!(f, "- uses: {:?}", self.code_object.uses)?;
         }
 
+        // print constants
         if !self.code_object.consts.is_empty() {
             writeln!(f, "- consts: {:?}", self.code_object.consts)?;
         }
 
+        // print identifiers
         if !self.code_object.idents.is_empty() {
             write!(f, "- idents: [")?;
+
             for (i, ident) in self.code_object.idents.iter().enumerate() {
                 if i == 0 {
                     write!(f, "{}", ident)?;
@@ -143,9 +149,11 @@ impl std::fmt::Display for Module {
                     write!(f, ", {}", ident)?;
                 }
             }
+
             writeln!(f, "]")?;
         }
 
+        // print bytecode
         if !self.code_object.code.is_empty() {
             use crate::bytecode::Instruction::*;
 
@@ -153,6 +161,7 @@ impl std::fmt::Display for Module {
             let mut entry_current = entry_iter.next();
 
             writeln!(f, "- code:")?;
+
             for (off, inx) in self.code_object.code.iter().enumerate() {
                 match entry_current {
                     Some(current) if current.1 == off => {
@@ -169,7 +178,7 @@ impl std::fmt::Display for Module {
                     LPush(idx) | GPush(idx) | LMove(idx) | GMove(idx) => {
                         write!(f, "{}", self.code_object.idents[*idx as usize])?;
                     }
-                    Call(_, idx) => {
+                    LCall(idx, _) | Call(idx, _) => {
                         write!(f, "{}", self.code_object.idents[*idx as usize])?;
                     }
                     CPush(idx) => {

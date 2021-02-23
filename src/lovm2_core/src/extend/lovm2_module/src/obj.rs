@@ -24,6 +24,7 @@ impl Object {
                 }
             }
         };
+
         result
     }
 }

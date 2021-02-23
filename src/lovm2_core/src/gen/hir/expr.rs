@@ -77,8 +77,10 @@ impl Expr {
         if args.len() < 2 {
             unimplemented!();
         }
+
         let mut it = args.into_iter();
         let expr = Self::from_op(&op, it.next().unwrap(), it.next().unwrap());
+
         it.fold(expr, |left, right| Self::from_op(&op, left, right))
     }
 
@@ -279,8 +281,9 @@ impl HirLowering for Expr {
                     key.lower(runtime);
 
                     while key_it.peek().is_some() {
-                        runtime.emit(LirElement::Get);
                         let key = key_it.next().unwrap();
+
+                        runtime.emit(LirElement::Get);
                         key.lower(runtime);
                     }
 

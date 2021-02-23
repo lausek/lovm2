@@ -39,7 +39,9 @@ impl Initialize {
                 Expr::Value { val, .. } => list.push(val),
                 val => {
                     let key = list.len() as i64;
+
                     list.push(Value::Nil);
+
                     self.slots.push((key.into(), val));
                 }
             }

@@ -52,6 +52,7 @@ impl Optimizer for StandardOptimizer {
                     ..
                 }] => {
                     let bval: bool = value.as_ref().clone().into();
+
                     if bval == cond.unwrap() {
                         // always jump
                         *cond = None;

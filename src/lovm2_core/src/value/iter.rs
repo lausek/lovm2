@@ -120,6 +120,7 @@ impl Iter {
                 } else {
                     panic!("iterator was moved")
                 };
+
                 Self {
                     current,
                     ty: self.ty,
@@ -156,6 +157,7 @@ impl TryFrom<Value> for Iter {
 
         // values supporting len tend to support iteration as well
         let _ = value.len()?;
+
         Ok(Self {
             ty: IterType::Over(value),
             ..Self::default()
@@ -224,14 +226,18 @@ pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> Lovm2Result<()> {
 pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
     let it = get_iter(vm)?;
     let it = it.borrow();
+
     vm.context_mut().push_value(it.has_next().into());
+
     Ok(())
 }
 
 pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
     let it = get_iter(vm)?;
     let mut it = it.borrow_mut();
+
     vm.context_mut().push_value(it.next()?);
+
     Ok(())
 }
 
@@ -239,7 +245,9 @@ pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> Lovm2Result<()> {
     let it = get_iter(vm)?;
     let it = it.borrow();
     let reversed = it.clone().reverse();
+
     vm.context_mut().push_value(Value::from(reversed));
+
     Ok(())
 }
 

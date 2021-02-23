@@ -17,19 +17,24 @@ fn open_file(path: String) -> Lovm2Result<File> {
 #[lovm2_function]
 fn read_all(file: &mut File) -> Lovm2Result<String> {
     use std::io::Read;
+
     let mut buffer = String::new();
+
     file.inner
         .read_to_string(&mut buffer)
         .map_err(Lovm2Error::from)?;
+
     Ok(buffer)
 }
 
 #[lovm2_function]
 fn write_all(file: &mut File, content: String) -> Lovm2Result<bool> {
     use std::io::Write;
+
     file.inner
         .write_all(content.as_bytes())
         .map_err(Lovm2Error::from)?;
+
     Ok(true)
 }
 
@@ -80,6 +85,7 @@ fn list_dir(path: String) -> Lovm2Result<Value> {
 
     for entry in std::fs::read_dir(path).map_err(Lovm2Error::from)? {
         let entry = entry?;
+
         if let Some(entry) = entry.path().to_str() {
             entries.push(Value::from(entry));
         } else {
@@ -98,5 +104,6 @@ fn unlink(path: String) -> bool {
 #[lovm2_function]
 fn rename(from: String, to: String) -> Lovm2Result<bool> {
     std::fs::rename(from, to).map_err(Lovm2Error::from)?;
+
     Ok(true)
 }

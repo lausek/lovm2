@@ -17,6 +17,7 @@ pub fn box_value(value: Value) -> Value {
     let outer = match value {
         Value::Dict(d) => {
             let mut hm = IndexMap::new();
+
             for (key, val) in d.into_iter() {
                 if val.is_ref() {
                     hm.insert(key, val);
@@ -24,6 +25,7 @@ pub fn box_value(value: Value) -> Value {
                     hm.insert(key, box_value(val));
                 }
             }
+
             Value::Dict(hm)
         }
         Value::List(l) => Value::List(
@@ -33,6 +35,7 @@ pub fn box_value(value: Value) -> Value {
         ),
         value => value,
     };
+
     Value::Ref(Reference::from(outer))
 }
 
@@ -103,13 +106,16 @@ impl Value {
         match self {
             Value::Dict(d) => {
                 let mut dc = Value::dict();
+
                 for (key, val) in d.iter() {
                     dc.set(&key.clone(), val.clone()).unwrap();
                 }
+
                 box_value(dc)
             }
             Value::List(ls) => {
                 let ls = ls.iter().map(Self::deep_clone).collect();
+
                 box_value(Value::List(ls))
             }
             Value::Ref(r) => Value::Ref(r.deep_clone()),
@@ -125,6 +131,7 @@ impl Value {
             }
             Value::List(list) => {
                 let key = key.as_integer_inner()?;
+
                 list.remove(key as usize);
             }
             Value::Ref(r) => r.borrow_mut()?.delete(key)?,
@@ -201,11 +208,13 @@ impl Value {
             }
             Value::List(list) => {
                 let idx = key.as_integer_inner()?;
+
                 if list.len() == idx as usize {
                     list.push(val);
                 } else {
                     list[idx as usize] = val;
                 }
+
                 Ok(())
             }
             Value::Ref(r) => r.borrow_mut()?.set(key, val),

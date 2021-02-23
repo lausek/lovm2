@@ -5,7 +5,9 @@ fn inner_readn(buffer: &mut Buffer, n: usize) -> Lovm2Result<String> {
     let upto = buffer.roff + n;
     let upto = std::cmp::min(upto, buffer.inner.len());
     let s = String::from_utf8_lossy(&buffer.inner[buffer.roff..upto]).to_string();
+
     buffer.roff = upto;
+
     Ok(s)
 }
 

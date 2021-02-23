@@ -37,10 +37,12 @@ impl FunctionRet {
             Self::Ident(name) => quote! { #name },
             Self::Maybe(ty) => {
                 let ty = ty.as_tokens();
+
                 quote! { Option<#ty> }
             }
             Self::Result(ty) => {
                 let ty = ty.as_tokens();
+
                 quote! { Lovm2Result<#ty> }
             }
         }
@@ -66,6 +68,7 @@ impl FunctionRet {
             }
             Self::Maybe(_) => {
                 let ident = format_ident!("_lv2_return_value");
+
                 quote! {
                     if let Some(val) = #ident {
                         let val: Value = val.into();
@@ -98,11 +101,11 @@ impl std::fmt::Display for FunctionRet {
 }
 
 pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<FunctionRet> {
+    use syn::{AngleBracketedGenericArguments, GenericArgument, PathArguments};
+
     match ty {
         syn::Type::Path(ty_path) => {
             if let Some(segment) = ty_path.path.segments.first() {
-                use syn::{AngleBracketedGenericArguments, GenericArgument, PathArguments};
-
                 let ty_arg =
                     if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                         args,

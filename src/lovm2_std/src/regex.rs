@@ -3,6 +3,7 @@ use super::*;
 #[lovm2_function]
 fn new_regex(pat: String) -> Lovm2Result<Regex> {
     let inner = ::regex::Regex::new(&pat).or_else(err_from_string)?;
+
     Ok(Regex { inner })
 }
 
@@ -10,6 +11,7 @@ fn new_regex(pat: String) -> Lovm2Result<Regex> {
 fn captures(regex: &Regex, text: String) -> Option<Value> {
     regex.inner.captures(&text).map(|c| {
         let mut vals = vec![];
+
         for i in 0..c.len() {
             if let Some(m) = c.get(i) {
                 vals.push(Value::from(m.as_str()));
@@ -17,6 +19,7 @@ fn captures(regex: &Regex, text: String) -> Option<Value> {
                 vals.push(Value::Nil);
             }
         }
+
         box_value(Value::List(vals))
     })
 }

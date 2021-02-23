@@ -36,10 +36,12 @@ impl FunctionArgs {
                         }) => match elem {
                             syn::Type::Path(tp) => {
                                 let ty_name = tp.path.get_ident().unwrap();
+
                                 if "Vm" == ty_name.to_string() {
                                     if vm.is_some() {
                                         return Err(format!("vm reference declared twice."));
                                     }
+
                                     vm = Some(name);
                                 } else {
                                     simple.push(FunctionArg {
@@ -54,6 +56,7 @@ impl FunctionArgs {
                         },
                         syn::Type::Path(tp) => {
                             let ty_name = tp.path.get_ident().unwrap().clone();
+
                             simple.push(FunctionArg {
                                 name,
                                 ty_name,
@@ -72,6 +75,7 @@ impl FunctionArgs {
 
     pub fn as_tokens(&self) -> impl quote::ToTokens {
         use crate::quote::ToTokens;
+
         let mut parts = vec![];
 
         if let Some(vm) = &self.vm {
@@ -86,6 +90,8 @@ impl FunctionArgs {
     }
 
     pub fn as_tokens_call_position(&self, pass_as_reference: bool) -> impl quote::ToTokens {
+        use crate::quote::ToTokens;
+
         let mut parts = vec![];
 
         if let Some(vm) = &self.vm {
@@ -93,7 +99,6 @@ impl FunctionArgs {
         }
 
         for arg in self.simple.iter() {
-            use crate::quote::ToTokens;
             parts.push(
                 arg.as_tokens_call_position(pass_as_reference)
                     .to_token_stream(),
@@ -136,6 +141,7 @@ impl FunctionArgs {
                 } else {
                     quote! {}
                 };
+
                 quote! { let #mutability #name: #ty_name = vm.context_mut().pop_value()?.into(); }
             };
             stackops.push(code);
@@ -173,6 +179,7 @@ impl FunctionArgs {
                 } else {
                     quote! {borrow}
                 };
+
                 let deref = if first.is_mut {
                     quote! { deref_mut }
                 } else {

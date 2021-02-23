@@ -56,6 +56,7 @@ fn ord(c: String) -> Lovm2Result<i64> {
     }
 
     let mut n: i64 = 0;
+
     for codepoint in c.as_bytes().iter() {
         n <<= 8;
         n |= *codepoint as i64;
@@ -73,6 +74,7 @@ fn replace(base: String, pat: String, repl: String) -> String {
 fn split(base: String, sep: String) -> Lovm2Result<Value> {
     let ls = base.split(&sep).map(Value::from).collect::<Vec<_>>();
     let val = Value::List(ls);
+
     Ok(box_value(val))
 }
 

@@ -120,13 +120,17 @@ impl Vm {
         let co = self.ctx.lookup_code_object(&name)?;
 
         let mut argn: u8 = 0;
+
+        // move given arguments onto stack and remember amount
         for arg in args.iter() {
             argn += 1;
+
             let arg = arg.clone();
             let arg = match arg {
                 Value::Dict(_) | Value::List(_) => box_value(arg),
                 _ => arg,
             };
+
             self.ctx.push_value(arg);
         }
 
@@ -135,6 +139,7 @@ impl Vm {
         self.ctx.pop_frame();
 
         let val = self.context_mut().pop_value()?;
+
         Ok(val)
     }
 
@@ -146,10 +151,12 @@ impl Vm {
     /// Add a new function by name to the virtual machine.
     pub fn add_function<T: Into<Variable>>(&mut self, key: T, co: CallableRef) -> Lovm2Result<()> {
         let key = key.into();
+
         // this overwrites the slot with the new function. maybe not so good
         if self.ctx.scope.insert(key.clone(), co).is_some() {
             return Err((Lovm2ErrorTy::ImportConflict, key).into());
         }
+
         Ok(())
     }
 
@@ -168,6 +175,7 @@ impl Vm {
             }
 
             let module = Rc::new(module);
+
             for (key, co) in module.slots().iter() {
                 // if `import` was set, all function names should be patched with the import_hook
                 if let Some(nfunc) = (self.import_hook)(Some(module.name().as_ref()), key.as_ref())?
@@ -208,6 +216,7 @@ impl Vm {
                 module: name.to_string(),
                 relative_to: relative_to.clone(),
             };
+
             module = load_hook(&load_request)?;
         }
 
@@ -217,6 +226,7 @@ impl Vm {
                 // module name
                 let path = std::path::Path::new(&relative_to);
                 let relative_to = path.parent().unwrap().to_str().unwrap();
+
                 if let Ok(path) = find_module(name, &[relative_to.to_string()]) {
                     module = Some(Module::load_from_file(path)?);
                 }
@@ -237,6 +247,7 @@ impl Vm {
         T: Into<Module>,
     {
         let module = module.into();
+
         if let Some(co) = module.slots.get(&crate::module::ENTRY_POINT.into()) {
             self.ctx.entry = Some(co.clone());
             self.add_module(module, false)
@@ -266,30 +277,36 @@ impl Vm {
     #[inline]
     fn run_bytecode_inner(&mut self, co: &CodeObject, ip: &mut usize) -> Lovm2Result<()> {
         use crate::value::iter::*;
+
         while let Some(inx) = co.code.get(*ip) {
             match inx {
                 Instruction::LPush(lidx) => {
                     let variable = &co.idents[*lidx as usize];
                     let local = self.ctx.frame_mut()?.value_of(variable).map(Value::clone)?;
+
                     self.ctx.push_value(local);
                 }
                 Instruction::GPush(gidx) => {
                     let variable = &co.idents[*gidx as usize];
                     let global = self.ctx.value_of(variable).map(Value::clone)?;
+
                     self.ctx.push_value(global);
                 }
                 Instruction::CPush(cidx) => {
                     let value = &co.consts[*cidx as usize];
+
                     self.ctx.push_value(value.clone());
                 }
                 Instruction::LMove(lidx) => {
                     let variable = &co.idents[*lidx as usize];
                     let value = self.ctx.pop_value()?;
+
                     self.ctx.frame_mut()?.set_local(variable, value);
                 }
                 Instruction::GMove(gidx) => {
                     let variable = &co.idents[*gidx as usize];
                     let value = self.ctx.pop_value()?;
+
                     self.ctx.set_global(variable, value);
                 }
                 Instruction::Drop => {
@@ -297,12 +314,14 @@ impl Vm {
                 }
                 Instruction::Dup => {
                     let last = self.ctx.last_value_mut().map(|v| v.clone())?;
+
                     self.ctx.push_value(last);
                 }
                 Instruction::Get => {
                     let key = self.ctx.pop_value()?;
                     let obj = self.ctx.pop_value()?;
                     let val = obj.get(&key)?;
+
                     self.ctx.push_value(val.clone_inner()?);
                 }
                 Instruction::RGet => {
@@ -313,10 +332,12 @@ impl Vm {
                         if Lovm2ErrorTy::KeyNotFound != e.ty {
                             return Err(e);
                         }
+
                         obj.set(&key, box_value(Value::Nil))?;
                     }
 
                     let val = obj.get(&key)?;
+
                     self.ctx.push_value(val);
                 }
                 Instruction::Set => {
@@ -341,6 +362,7 @@ impl Vm {
                 Instruction::XOr => value_operation!(self, xor_inplace),
                 Instruction::Not => {
                     let first = self.ctx.pop_value()?;
+
                     self.ctx.push_value(first.not()?);
                 }
                 Instruction::Eq => value_compare!(self, eq),
@@ -355,6 +377,7 @@ impl Vm {
                 }
                 Instruction::Jt(addr) => {
                     let first = self.ctx.pop_value()?;
+
                     if first.as_bool_inner()? {
                         *ip = *addr as usize;
                         continue;
@@ -362,6 +385,7 @@ impl Vm {
                 }
                 Instruction::Jf(addr) => {
                     let first = self.ctx.pop_value()?;
+
                     if !first.as_bool_inner()? {
                         *ip = *addr as usize;
                         continue;
@@ -370,6 +394,7 @@ impl Vm {
                 Instruction::Call(gidx, argn) => {
                     let func = &co.idents[*gidx as usize];
                     let other_co = self.ctx.lookup_code_object(func)?;
+
                     self.ctx.push_frame(*argn);
                     other_co.run(self)?;
                     self.ctx.pop_frame();
@@ -380,6 +405,7 @@ impl Vm {
                         .iter()
                         .find(|(iidx, _)| *iidx == *gidx as usize)
                         .unwrap_or_else(|| todo!());
+
                     self.ctx.push_frame(*argn);
                     self.run_bytecode(co, *off)?;
                     self.ctx.pop_frame();
@@ -392,6 +418,7 @@ impl Vm {
                 }
                 Instruction::Conv(tid) => {
                     let ty = ValueType::from_raw(*tid)?;
+
                     self.ctx.last_value_mut()?.cast_inplace(ty)?;
                 }
                 Instruction::Import | Instruction::NImport => {
@@ -412,6 +439,7 @@ impl Vm {
                 }
                 Instruction::Box => {
                     let value = self.ctx.pop_value()?;
+
                     self.ctx.push_value(box_value(value));
                 }
                 Instruction::Slice => {
@@ -419,9 +447,9 @@ impl Vm {
                     let start = self.ctx.pop_value()?;
                     let target = self.ctx.pop_value()?;
                     let slice = create_slice(target, start, end)?;
+
                     self.ctx.push_value(slice);
                 }
-
                 Instruction::IterCreate => vm_iter_create(self)?,
                 Instruction::IterCreateRanged => vm_iter_create_ranged(self)?,
                 Instruction::IterHasNext => vm_iter_has_next(self)?,
@@ -473,7 +501,9 @@ impl Vm {
         if n != LOVM2_INT_DEBUG && n <= LOVM2_RESERVED_INTERRUPTS {
             return err_reserved_interrupt(n);
         }
+
         self.interrupts[n as usize] = Some(Rc::new(func));
+
         Ok(())
     }
 }
@@ -483,10 +513,12 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
         Value::Nil => 0,
         _ => start.as_integer_inner()?,
     };
+
     let end_idx = match end {
         Value::Nil => target.len()? as i64,
         _ => end.as_integer_inner()?,
     };
+
     let mut slice = vec![];
 
     for idx in start_idx..end_idx {
@@ -500,20 +532,24 @@ fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
 /// and compares the file stem.
 pub fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
     use std::fs::read_dir;
+
     for path in load_paths.iter() {
         if let Ok(dir) = read_dir(path) {
             for entry in dir {
                 if let Ok(entry) = entry {
                     let fname = entry.path();
+
                     if fname.file_stem().unwrap() == name && Module::is_loadable(&fname)? {
                         let abspath = std::fs::canonicalize(fname).unwrap();
                         let abspath = abspath.to_string_lossy();
+
                         return Ok(abspath.into_owned());
                     }
                 }
             }
         }
     }
+
     Err((Lovm2ErrorTy::ModuleNotFound, name).into())
 }
 
@@ -526,6 +562,7 @@ pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
             .unwrap()
             .display()
             .to_string();
+
         find_module(&req.module, &[path])
     } else {
         Err((Lovm2ErrorTy::ModuleNotFound, &req.module).into())
@@ -538,5 +575,6 @@ fn default_import_hook(module: Option<&str>, name: &str) -> Lovm2Result<Option<S
         Some(module) => format!("{}.{}", module, name),
         _ => name.to_string(),
     };
+
     Ok(Some(name))
 }
