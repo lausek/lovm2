@@ -175,7 +175,7 @@
     ...
 </code></pre>
 <h2><a class="header" href="#constant-evaluation" id="constant-evaluation">Constant evaluation</a></h2>
-<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>CodeObject</code> overall therefore reducing its size. Bytecode sequences like will be tranformed like this:</p>
+<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>CodeObject</code> reducing its size. Bytecode sequences will be tranformed like this:</p>
 <pre><code class="language-bytecode">CPush(0)
 CPush(1)   =&gt;   CPush(2)
 Add

@@ -577,7 +577,7 @@ main_hir
     ...
 </code></pre>
 <h2><a class="header" href="#constant-evaluation" id="constant-evaluation">Constant evaluation</a></h2>
-<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>CodeObject</code> overall therefore reducing its size. Bytecode sequences like will be tranformed like this:</p>
+<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>CodeObject</code> reducing its size. Bytecode sequences will be tranformed like this:</p>
 <pre><code class="language-bytecode">CPush(0)
 CPush(1)   =&gt;   CPush(2)
 Add
@@ -633,7 +633,7 @@ Jt
 <tr><td align="center">64 - 255</td><td align="center"><em>free</em></td></tr>
 </tbody></table>
 <h1><a class="header" href="#standard-library" id="standard-library">Standard Library</a></h1>
-<p><code>lovm2</code> comes with batteries included. See <a href="https://docs.rs/lovm2_std/latest/lovm2_std/">lovm2_std</a>.</p>
+<p>lovm2 comes with batteries included. See <a href="https://docs.rs/lovm2_std/latest/lovm2_std/">lovm2_std</a>.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {

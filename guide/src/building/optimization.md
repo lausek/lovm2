@@ -18,7 +18,7 @@ main:
 
 ## Constant evaluation
 
-Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the `CodeObject` overall therefore reducing its size. Bytecode sequences like will be tranformed like this:
+Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the `CodeObject` reducing its size. Bytecode sequences will be tranformed like this:
 
 ``` bytecode
 CPush(0)
