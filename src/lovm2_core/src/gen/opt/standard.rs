@@ -61,6 +61,13 @@ impl Optimizer for StandardOptimizer {
                     code.pop();
                 }
 
+                // if `Not` follows `Not`, eliminate both
+                [LirElement::Operation(Operator::Operator1(Operator1::Not)), LirElement::Operation(Operator::Operator1(Operator1::Not))] =>
+                {
+                    code.pop();
+                    code.pop();
+                }
+
                 // if a constant is pushed before a conditional jump, change condition
                 // and remove constant
                 [LirElement::PushConstant { value }, LirElement::Jump {

@@ -210,3 +210,10 @@ fn flip_comparison_operator() {
     check_instruction_elimination(Expr::not(Expr::lt(x, 5)));
     check_instruction_elimination(Expr::not(Expr::le(x, 5)));
 }
+
+#[test]
+fn eliminate_double_not() {
+    let x = &lv2_var!(x);
+
+    check_instruction_elimination(Expr::not(Expr::not(x)));
+}
