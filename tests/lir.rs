@@ -3,6 +3,20 @@ use lovm2::prelude::*;
 use lovm2::value::Value;
 use lovm2::Instruction;
 
+fn check_instruction_elimination(expr: Expr) {
+    let mut builder = ModuleBuilder::new();
+    let hir = builder.entry();
+
+    hir.step(Return::value(expr));
+
+    let module = builder.clone().build().unwrap();
+    let module_noop = builder
+        .build_with_options(CompileOptions { optimize: false })
+        .unwrap();
+
+    assert!(module.code_object.code.len() < module_noop.code_object.code.len());
+}
+
 #[test]
 fn merge_not_jump_false() {
     let mut builder = ModuleBuilder::new();
@@ -182,15 +196,17 @@ fn dead_code_elimination_else_branche() {
 
 #[test]
 fn compile_options() {
-    let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
+    check_instruction_elimination(Expr::add(Expr::mul(3, 2), 2));
+}
 
-    hir.step(Return::value(Expr::add(Expr::mul(3, 2), 2)));
+#[test]
+fn flip_comparison_operator() {
+    let x = &lv2_var!(x);
 
-    let module = builder.clone().build().unwrap();
-    let module_noop = builder
-        .build_with_options(CompileOptions { optimize: false })
-        .unwrap();
-
-    assert!(module.code_object.code.len() < module_noop.code_object.code.len());
+    check_instruction_elimination(Expr::not(Expr::eq(x, 5)));
+    check_instruction_elimination(Expr::not(Expr::ne(x, 5)));
+    check_instruction_elimination(Expr::not(Expr::gt(x, 5)));
+    check_instruction_elimination(Expr::not(Expr::ge(x, 5)));
+    check_instruction_elimination(Expr::not(Expr::lt(x, 5)));
+    check_instruction_elimination(Expr::not(Expr::le(x, 5)));
 }

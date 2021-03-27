@@ -45,6 +45,22 @@ impl Optimizer for StandardOptimizer {
                     code.pop();
                 }
 
+                // if `Not` follows a comparison operator, negate comparison
+                [LirElement::Operation(Operator::Operator2(op)), LirElement::Operation(Operator::Operator1(Operator1::Not))] =>
+                {
+                    match op {
+                        Operator2::Equal => *op = Operator2::NotEqual,
+                        Operator2::NotEqual => *op = Operator2::Equal,
+                        Operator2::GreaterEqual => *op = Operator2::LessThan,
+                        Operator2::GreaterThan => *op = Operator2::LessEqual,
+                        Operator2::LessEqual => *op = Operator2::GreaterThan,
+                        Operator2::LessThan => *op = Operator2::GreaterEqual,
+                        _ => continue,
+                    }
+
+                    code.pop();
+                }
+
                 // if a constant is pushed before a conditional jump, change condition
                 // and remove constant
                 [LirElement::PushConstant { value }, LirElement::Jump {
@@ -121,6 +137,7 @@ impl Optimizer for StandardOptimizer {
         match lir_element {
             LirElement::Jump { .. } => 2,
             LirElement::Operation(Operator::Operator2(_)) => 3,
+            LirElement::Operation(Operator::Operator1(_)) => 2,
             LirElement::IterCreate => 2,
             //LirElement::Label(_) => 2,
             _ => 0,
