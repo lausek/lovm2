@@ -5,9 +5,8 @@ use lovm2::Instruction;
 
 fn check_instruction_elimination(expr: Expr) {
     let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
 
-    hir.step(Return::value(expr));
+    builder.entry().step(Return::value(expr));
 
     let module = builder.clone().build().unwrap();
     let module_noop = builder
