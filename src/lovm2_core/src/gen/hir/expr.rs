@@ -32,6 +32,7 @@ macro_rules! auto_implement {
 #[derive(Clone, Debug)]
 pub enum Expr {
     Access(Access),
+    Branch(Box<ExprBranch>),
     Call(Call),
     Conv(Conv),
     DynamicValue(Initialize),
@@ -117,6 +118,10 @@ impl Expr {
         self
     }
 
+    pub fn branch() -> ExprBranchIncomplete {
+        ExprBranchIncomplete::new()
+    }
+
     pub fn is_const(&self) -> bool {
         match self {
             Expr::Operation1(_, item) => item.is_const(),
@@ -129,6 +134,7 @@ impl Expr {
     pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
         match self {
             Expr::Access(_) => todo!(),
+            Expr::Branch(_) => todo!(),
             Expr::Call(_) => todo!(),
             Expr::Conv(_) => todo!(),
             Expr::DynamicValue(init) => {
@@ -202,6 +208,12 @@ impl Expr {
 impl From<Access> for Expr {
     fn from(access: Access) -> Expr {
         Expr::Access(access)
+    }
+}
+
+impl From<ExprBranch> for Expr {
+    fn from(branch: ExprBranch) -> Expr {
+        Expr::Branch(Box::new(branch))
     }
 }
 
@@ -290,6 +302,7 @@ impl HirLowering for Expr {
                     runtime.emit(LirElement::Get);
                 }
             }
+            Expr::Branch(branch) => branch.lower(runtime),
             Expr::Call(call) => call.lower(runtime),
             Expr::Conv(conv) => conv.lower(runtime),
             Expr::DynamicValue(init) => init.lower(runtime),
@@ -340,5 +353,68 @@ impl HirLowering for Expr {
                 }
             }
         }
+    }
+}
+
+pub struct ExprBranchIncomplete {
+    branches: Vec<(Expr, Expr)>,
+}
+
+impl ExprBranchIncomplete {
+    pub fn new() -> Self {
+        Self { branches: vec![] }
+    }
+
+    pub fn add_condition<T, U>(mut self, condition: T, value: U) -> Self
+    where
+        T: Into<Expr>,
+        U: Into<Expr>,
+    {
+        self.branches.push((condition.into(), value.into()));
+        self
+    }
+
+    pub fn default_value<T>(self, default: T) -> ExprBranch
+    where
+        T: Into<Expr>,
+    {
+        ExprBranch {
+            branches: self.branches,
+            default: Some(default.into()),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ExprBranch {
+    branches: Vec<(Expr, Expr)>,
+    default: Option<Expr>,
+}
+
+impl ExprBranch {
+    pub fn add_condition<T, U>(mut self, condition: T, value: U) -> Self
+    where
+        T: Into<Expr>,
+        U: Into<Expr>,
+    {
+        self.branches.push((condition.into(), value.into()));
+        self
+    }
+
+    pub fn default_value<T>(mut self, default: T) -> Self
+    where
+        T: Into<Expr>,
+    {
+        self.default = Some(default.into());
+        self
+    }
+}
+
+impl HirLowering for ExprBranch {
+    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    where
+        'hir: 'lir,
+    {
+        super::branch::lower_map_structure(runtime, &self.branches, &self.default);
     }
 }

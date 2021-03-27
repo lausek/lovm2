@@ -680,3 +680,33 @@ fn shift_values() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
+
+#[test]
+fn conditional_expression() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(true), *ctx.value_of("x").unwrap());
+        assert_eq!(Value::from(false), *ctx.value_of("y").unwrap());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let (x, y, z) = &lv2_var!(x, y, z);
+
+    builder
+        .entry()
+        .step(Assign::local(z, 2))
+        .step(Assign::global(
+            x,
+            Expr::branch()
+                .add_condition(Expr::eq(z, 1), false)
+                .default_value(true),
+        ))
+        .step(Assign::global(
+            y,
+            Expr::branch()
+                .add_condition(Expr::eq(z, 2), false)
+                .default_value(true),
+        ))
+        .step(Interrupt::new(10));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
+}

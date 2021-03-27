@@ -67,6 +67,12 @@ impl Block {
     }
 }
 
+impl Default for Block {
+    fn default() -> Self {
+        Block::new()
+    }
+}
+
 impl std::iter::IntoIterator for Block {
     type Item = HirElement;
     type IntoIter = std::vec::IntoIter<Self::Item>;
