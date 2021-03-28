@@ -10,6 +10,8 @@ pub enum Expr {
     Value,
     // variable in read position
     Variable,
+    // a branch that evaluates expressions conditionally
+    Branch,
     // call to a function
     Call,
     // operations with one operand

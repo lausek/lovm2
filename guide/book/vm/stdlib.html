@@ -164,13 +164,6 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#standard-library" id="standard-library">Standard Library</a></h1>
-<p>lovm2 comes with batteries included. See <a href="https://docs.rs/lovm2_std/latest/lovm2_std/">lovm2_std</a>.</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let vm = lovm2::create_vm_with_std();
-<span class="boring">}
-</span></code></pre></pre>
 
                     </main>
 
@@ -209,21 +202,6 @@
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         

@@ -183,6 +183,24 @@ equal_check
     .step(...);
 <span class="boring">}
 </span></code></pre></pre>
+<h2><a class="header" href="#expression-branches" id="expression-branches">Expression Branches</a></h2>
+<p>Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant <code>Expr::branch()</code> that lets you create the adhoc version of a ternary operator.</p>
+<pre><pre class="playground"><code class="language-rust no_run">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// f(n) = n == 2 ? &quot;a&quot; : &quot;b&quot;
+
+let n = lv2_var!(n);
+let f_body = Expr::branch().add_condition(Expr::eq(n, 2), &quot;a&quot;).default_value(&quot;b&quot;);
+
+builder
+    .add_with_args(&quot;f&quot;, vec![n])
+    .step(Return::value(f_body));
+<span class="boring">}
+</span></code></pre></pre>
+<blockquote>
+<p><strong>Note:</strong> <code>ExprBranch</code> must always return a value meaning that you have to call the <code>default_value</code> method at least once. Otherwise the compiler will complain that a structure of type <code>ExprBranchIncomplete</code> cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.</p>
+</blockquote>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
 <p>Let's implement a function that returns <em>1</em> if the given value is equal to 2 and <em>0</em> otherwise. From a Rust perspective, we could generate the function like this:</p>
 <pre><pre class="playground"><code class="language-rust no_run">
@@ -254,21 +272,6 @@ branch
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         

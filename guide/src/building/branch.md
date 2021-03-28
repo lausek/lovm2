@@ -18,6 +18,23 @@ equal_check
     .step(...);
 ```
 
+## Expression Branches
+
+Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant `Expr::branch()` that lets you create the adhoc version of a ternary operator.
+
+``` rust,no_run
+// f(n) = n == 2 ? "a" : "b"
+
+let n = lv2_var!(n);
+let f_body = Expr::branch().add_condition(Expr::eq(n, 2), "a").default_value("b");
+
+builder
+    .add_with_args("f", vec![n])
+    .step(Return::value(f_body));
+```
+
+> **Note:** `ExprBranch` must always return a value meaning that you have to call the `default_value` method at least once. Otherwise the compiler will complain that a structure of type `ExprBranchIncomplete` cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.
+
 ## Example
 
 Let's implement a function that returns *1* if the given value is equal to 2 and *0* otherwise. From a Rust perspective, we could generate the function like this:
