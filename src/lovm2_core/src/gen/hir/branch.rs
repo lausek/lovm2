@@ -51,11 +51,6 @@ pub(crate) fn lower_map_structure<'hir, 'lir, T>(
     T: HirLowering,
     'hir: 'lir,
 {
-    // branches without conditions but a default block make no sense
-    if branches.is_empty() && default.is_some() {
-        panic!("cannot lower branch: no conditions");
-    }
-
     // push a new branch section. the stack is not really
     // required (?) but it's quite handy to always have access
     // to the current branch
