@@ -134,30 +134,7 @@ impl LirLoweringRuntime {
                 }
             }
             LirElement::Operation(op) => {
-                let inx = match op {
-                    Operator::Operator2(op) => match op {
-                        Operator2::Add => Instruction::Add,
-                        Operator2::Sub => Instruction::Sub,
-                        Operator2::Mul => Instruction::Mul,
-                        Operator2::Div => Instruction::Div,
-                        Operator2::Pow => Instruction::Pow,
-                        Operator2::Rem => Instruction::Rem,
-                        Operator2::Shl => Instruction::Shl,
-                        Operator2::Shr => Instruction::Shr,
-                        Operator2::And => Instruction::And,
-                        Operator2::Or => Instruction::Or,
-                        Operator2::XOr => Instruction::XOr,
-                        Operator2::Equal => Instruction::Eq,
-                        Operator2::NotEqual => Instruction::Ne,
-                        Operator2::GreaterEqual => Instruction::Ge,
-                        Operator2::GreaterThan => Instruction::Gt,
-                        Operator2::LessEqual => Instruction::Le,
-                        Operator2::LessThan => Instruction::Lt,
-                    },
-                    Operator::Operator1(op) => match op {
-                        Operator1::Not => Instruction::Not,
-                    },
-                };
+                let inx = Instruction::from(op);
 
                 self.code.push(inx);
             }
@@ -238,6 +215,35 @@ impl LirLoweringRuntime {
                 self.idents.push(var.clone());
                 self.idents.len() - 1
             }
+        }
+    }
+}
+
+impl From<Operator> for Instruction {
+    fn from(op: Operator) -> Self {
+        match op {
+            Operator::Operator2(op) => match op {
+                Operator2::Add => Instruction::Add,
+                Operator2::Sub => Instruction::Sub,
+                Operator2::Mul => Instruction::Mul,
+                Operator2::Div => Instruction::Div,
+                Operator2::Pow => Instruction::Pow,
+                Operator2::Rem => Instruction::Rem,
+                Operator2::Shl => Instruction::Shl,
+                Operator2::Shr => Instruction::Shr,
+                Operator2::And => Instruction::And,
+                Operator2::Or => Instruction::Or,
+                Operator2::XOr => Instruction::XOr,
+                Operator2::Equal => Instruction::Eq,
+                Operator2::NotEqual => Instruction::Ne,
+                Operator2::GreaterEqual => Instruction::Ge,
+                Operator2::GreaterThan => Instruction::Gt,
+                Operator2::LessEqual => Instruction::Le,
+                Operator2::LessThan => Instruction::Lt,
+            },
+            Operator::Operator1(op) => match op {
+                Operator1::Not => Instruction::Not,
+            },
         }
     }
 }

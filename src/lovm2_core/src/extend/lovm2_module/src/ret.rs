@@ -134,5 +134,6 @@ pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<FunctionRet> {
         }
         _ => {}
     }
+
     Err(format!("unexpected type {:?}", ty))
 }
