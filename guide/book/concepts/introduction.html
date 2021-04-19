@@ -164,11 +164,11 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#concepts" id="concepts">Concepts</a></h1>
-<p>This chapter aims to give you a brief overview of the internal workings. Even though <code>lovm2</code> is designed to be as simple as possible, it is still quite important to grasp the implementation concepts behind it.</p>
-<p>The general steps of coming to a runnable program are roughly:</p>
+<p>This chapter aims to give you a brief overview of the internal principles. Even though <code>lovm2</code> is designed to be as simple as possible, it is still quite important to grasp the implementation concepts behind it.</p>
+<p>The general steps of producing a runnable program are roughly:</p>
 <ul>
 <li>Create a new <code>ModuleBuilder</code> and populate it with functions aka. <code>HIR</code> data</li>
-<li>Call <code>module_builder.build()</code> returning a runnable <code>Module</code> from the current state</li>
+<li>Call <code>module_builder.build()</code> constructing a runnable <code>Module</code> from the current state</li>
 <li>Load the module into an instance of a virtual machine <code>Vm</code> using <code>add_main_module()</code></li>
 <li>Start the program by calling <code>run</code> on the virtual machine</li>
 </ul>

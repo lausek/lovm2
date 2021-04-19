@@ -37,7 +37,7 @@ While lowering, the runtime keeps track of locally assigned identifiers. This is
 
 ## Example
 
-We want to transform the formula `(1 + 2) * f(2)` to `lovm2` bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that `lovm2` does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your ast should look something like this:
+We want to transform the formula `(1 + 2) * f(2)` to `lovm2` bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that `lovm2` does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your AST should look something like this:
 
 ```
 Value(1)

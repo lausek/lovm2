@@ -164,7 +164,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#bytecode" id="bytecode">Bytecode</a></h1>
-<p><code>lovm2</code> is centered around the value stack. This is where the actual computation happens, parameters are passed to functions and data is shared with interrupts. There are instructions that put values on top of the stack like <code>CPush</code>, <code>LPush</code>, and <code>GPush</code>. Some just take a value off and store it somewhere like <code>LMove</code>, <code>GMove</code>. Almost all other instructions will take a given amount of values from it and leave a return value in place. You implement your own bytecode instructions (see <a href="../vm/interrupt.html">Interrupt</a> chapter for more).</p>
+<p><code>lovm2</code> is centered around the value stack. This data structure has a variety of tasks such as passing parameters to functions or acting as a computation buffer for operations. There are instructions that put values on top of the stack like <code>CPush</code>, <code>LPush</code>, and <code>GPush</code>. Some just take a value off and store it somewhere like <code>LMove</code>, <code>GMove</code>. Almost all other instructions will take a given amount of values from it and leave a return value in place. You can also implement your own bytecode instructions (see <a href="../vm/interrupt.html">Interrupt</a> chapter for more).</p>
 <p>For example, the term <code>1 + (2 * 3)</code> will be compiled to this sequence:</p>
 <pre><code class="language-bytecode"> instruction    | stack
 ----------------------------
@@ -174,14 +174,14 @@
  Mul            | [1, 6]
  Add            | [7]
 </code></pre>
-<p>You do not need to micromanage the bytecode itself. There are common language constructs with which you can built pretty much everything. These constructs are composed on a function level as <code>HIR</code> so every new function gets its own <strong>h</strong>igh-level <strong>i</strong>ntermediate <strong>r</strong>epresentation. Below you can see the transformation process of a function into a runnable <code>CodeObject</code> where each arrow means &quot;lowering&quot; to the next level.</p>
+<p>You do not need to micromanage the bytecode itself. There are common language constructs with which you can built pretty much everything. These constructs are composed into a <strong>h</strong>igh-level <strong>i</strong>ntermediate <strong>r</strong>epresentation so every new function gets its own <code>HIR</code> structure. Below you can see the transformation process of a function into a runnable <code>CodeObject</code> where each arrow means &quot;lowering&quot; to the next level.</p>
 <pre><code>HIR -&gt; LIR -&gt; CodeObject
 </code></pre>
 <p><code>LIR</code> or <strong>l</strong>ow-level <strong>i</strong>ntermediate <strong>r</strong>epresentation is not directly exposed to the user but it is quite crucial if you want to understand how the bytecode generator works under the hood.</p>
-<p><code>CodeObject</code>'s on their own are already valid programs, but - as usual in every language - functions can be bundled together and exposed to the virtual machine in a collection called <code>Module</code>.</p>
+<p><code>CodeObject</code>'s on their own are already valid programs bundling together instructions, constants and variables. As usual in every language, functions can be grouped together and exposed to the virtual machine in a construct called <code>Module</code>. Introducing this module level abstraction makes sense as we will later work with collections that are not backed by <code>lovm2</code> bytecode but native functions.</p>
 <pre><code>HIR -&gt; LIR 
             \
-HIR -&gt; LIR    -&gt; CodeObject -&gt; Module
+HIR -&gt; LIR    -&gt; CodeObject -&gt; Module --&gt; load into VM
             /
 HIR -&gt; LIR 
 </code></pre>

@@ -197,7 +197,7 @@
 <p>While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.</p>
 <p><code>Expr</code> variants relying on this functionality are <code>Variable</code> and <code>Access</code>. As such, their macro helper functions <code>lv2_var!</code> and <code>lv2_access!</code> follow the same rules.</p>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
-<p>We want to transform the formula <code>(1 + 2) * f(2)</code> to <code>lovm2</code> bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that <code>lovm2</code> does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your ast should look something like this:</p>
+<p>We want to transform the formula <code>(1 + 2) * f(2)</code> to <code>lovm2</code> bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that <code>lovm2</code> does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your AST should look something like this:</p>
 <pre><code>Value(1)
         \
          -- Operation(+)
