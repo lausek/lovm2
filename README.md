@@ -3,7 +3,7 @@
 
 # lovm2
 
-`lovm2` is a library for building your own programming language in the blink of an eye. It offers you easy to use constructs to generate bytecode for its virtual machine. [Read the Guide](https://lausek.eu/lovm2/guide/book/) to get started!
+`lovm2` is a library for building your own programming language in the blink of an eye. It offers you easy to use constructs to generate bytecode for its virtual machine.
 
 ## Features
 
@@ -21,6 +21,10 @@ Add this line to your `Cargo.toml`:
 ``` toml
 lovm2 = "0.4.9"
 ```
+
+### Resources
+
+- [The lovm2 Guide](https://lausek.eu/lovm2/guide/book/)
 
 ### Projects
 
