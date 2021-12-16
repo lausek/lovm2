@@ -50,7 +50,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         // read in code object parameters from value stack
         // read this in reverse, because last parameter is top of stack
         for arg in hir.args.iter().rev() {
-            self.emit(LirElement::store(Scope::Local, arg));
+            self.emit(LirElement::store(arg));
         }
 
         hir.block.lower(self);
@@ -76,6 +76,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
     }
 
     pub fn emit(&mut self, elem: LirElement<'lir>) {
+        /*
         if let LirElement::StoreDynamic {
             ident,
             scope: Scope::Local,
@@ -85,6 +86,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
                 self.locals.push(ident);
             }
         }
+        */
 
         self.code.push(elem);
         self.optimizer.transform(&mut self.code);

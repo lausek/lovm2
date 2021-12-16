@@ -728,7 +728,8 @@ fn variable_scoping() {
         .global(x)
         .step(Assign::var(x, 1))
         .local(x)
-        .step(Assign::var(x, 2));
+        .step(Assign::var(x, 2))
+        .step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }

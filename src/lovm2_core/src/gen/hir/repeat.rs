@@ -109,7 +109,7 @@ fn iterating_lower<'hir, 'lir>(
 
     runtime.emit(LirElement::Duplicate);
     runtime.emit(LirElement::IterNext);
-    runtime.emit(LirElement::store(Scope::Local, &item));
+    runtime.emit(LirElement::store(&item));
 
     postlude(runtime, block);
 

@@ -168,12 +168,7 @@ impl Assign {
     {
         let target = &self.access.target;
 
-        // push (initial) target onto stack
-        if runtime.has_local(target) {
-            runtime.emit(LirElement::push_dynamic(Scope::Local, target));
-        } else {
-            runtime.emit(LirElement::push_dynamic(Scope::Global, target));
-        }
+        runtime.emit(LirElement::push_dynamic(target));
 
         let mut key_it = self.access.keys.iter().peekable();
 
@@ -206,14 +201,14 @@ impl Assign {
         match self.ty {
             AssignType::StaticLocal => {
                 runtime.emit(LirElement::ScopeLocal { ident: target });
-                runtime.emit(LirElement::store(Scope::Local, target));
+                runtime.emit(LirElement::store(target));
             }
             AssignType::StaticGlobal => {
                 runtime.emit(LirElement::ScopeGlobal { ident: target });
-                runtime.emit(LirElement::store(Scope::Global, target));
+                runtime.emit(LirElement::store(target));
             }
             AssignType::StaticVar => {
-                runtime.emit(LirElement::store(Scope::Local, target));
+                runtime.emit(LirElement::store(target));
             }
             _ => unreachable!(),
         }
@@ -227,11 +222,7 @@ impl Assign {
 
         self.expr.lower(runtime);
 
-        if runtime.has_local(&target) {
-            runtime.emit(LirElement::store(Scope::Local, target));
-        } else {
-            runtime.emit(LirElement::store(Scope::Global, target));
-        }
+        runtime.emit(LirElement::store(target));
     }
 }
 

@@ -41,12 +41,10 @@ pub enum LirElement<'hir> {
     // LPush(u16), GPush(u16),
     PushDynamic {
         ident: &'hir Variable,
-        scope: Scope,
     },
     // LMove(u16), GMove(u16)
     StoreDynamic {
         ident: &'hir Variable,
-        scope: Scope,
     },
     Import {
         namespaced: bool,
@@ -108,8 +106,8 @@ impl<'hir> LirElement<'hir> {
         }
     }
 
-    pub fn push_dynamic(scope: Scope, ident: &'hir Variable) -> Self {
-        Self::PushDynamic { ident, scope }
+    pub fn push_dynamic(ident: &'hir Variable) -> Self {
+        Self::PushDynamic { ident }
     }
 
     pub fn operation<T>(op: T) -> Self
@@ -119,8 +117,8 @@ impl<'hir> LirElement<'hir> {
         Self::Operation(op.into())
     }
 
-    pub fn store(scope: Scope, ident: &'hir Variable) -> Self {
-        Self::StoreDynamic { ident, scope }
+    pub fn store(ident: &'hir Variable) -> Self {
+        Self::StoreDynamic { ident }
     }
 }
 
@@ -138,8 +136,8 @@ impl std::fmt::Display for LirElement<'_> {
             Self::Label(label) => write!(f, ".{}:", label),
             Self::Operation(operator) => write!(f, "\t{:?}", operator),
             Self::PushConstant { value } => write!(f, "\tCPush({})", value),
-            Self::PushDynamic { ident, scope } => write!(f, "\tPush{:?}({})", scope, ident),
-            Self::StoreDynamic { ident, scope } => write!(f, "\tStore{:?}({})", scope, ident),
+            Self::PushDynamic { ident } => write!(f, "\tPush({})", ident),
+            Self::StoreDynamic { ident } => write!(f, "\tStore({})", ident),
             Self::Interrupt(n) => write!(f, "\tInterrupt({})", n),
             _ => write!(f, "\t{:?}", self),
         }

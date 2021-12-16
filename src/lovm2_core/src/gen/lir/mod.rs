@@ -8,7 +8,6 @@ use super::*;
 pub use self::element::LirElement;
 pub use self::lowering::LirLoweringRuntime;
 
-/// Scope of an operation
 #[derive(Clone, Debug, PartialEq)]
 pub enum Scope {
     Global,

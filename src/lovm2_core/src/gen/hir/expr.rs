@@ -281,12 +281,7 @@ impl HirLowering for Expr {
                 let variable = &access.target;
                 let mut key_it = access.keys.iter().peekable();
 
-                // push (initial) target onto stack
-                if runtime.has_local(&variable) {
-                    runtime.emit(LirElement::push_dynamic(Scope::Local, variable));
-                } else {
-                    runtime.emit(LirElement::push_dynamic(Scope::Global, variable));
-                }
+                runtime.emit(LirElement::push_dynamic(variable));
 
                 // push key onto stack
                 if let Some(key) = key_it.next() {
@@ -346,11 +341,7 @@ impl HirLowering for Expr {
                 }
             }
             Expr::Variable(ref var) => {
-                if runtime.has_local(var) {
-                    runtime.emit(LirElement::push_dynamic(Scope::Local, var));
-                } else {
-                    runtime.emit(LirElement::push_dynamic(Scope::Global, var));
-                }
+                runtime.emit(LirElement::push_dynamic(var));
             }
         }
     }
