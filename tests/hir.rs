@@ -350,15 +350,17 @@ fn folding_expr() {
     let main = builder.entry();
     let (a, n) = lv2_var!(a, n);
 
-    main.step(Assign::global(
-        &a,
-        Expr::from_opn(Operator2::Div, vec![8.into(), 4.into()]),
-    ))
-    .step(Assign::global(
-        &n,
-        Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
-    ))
-    .step(Interrupt::new(10));
+    main.global(&a)
+        .step(Assign::var(
+            &a,
+            Expr::from_opn(Operator2::Div, vec![8.into(), 4.into()]),
+        ))
+        .global(&n)
+        .step(Assign::var(
+            &n,
+            Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
+        ))
+        .step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
@@ -581,11 +583,12 @@ fn iterating_repeat() {
 
     let main_hir = builder.entry();
 
-    main_hir.step(Assign::global(sum, 0));
+    main_hir.global(sum).step(Assign::var(sum, 0));
     main_hir
         .step(Assign::var(iter, Iter::create(lv2_list!(1, 2, 3, 4))))
         .repeat_iterating(iter, i)
-        .step(Assign::global(sum, Expr::add(sum, i)));
+        .global(sum)
+        .step(Assign::var(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -604,12 +607,17 @@ fn iterating_repeat_inplace() {
 
     let main_hir = builder.entry();
 
-    main_hir.step(Assign::global(sum, 0));
-    main_hir.step(Assign::global(orig, lv2_list!(1, 2, 3, 4)));
-    main_hir.step(Assign::global(ls, lv2_list!(1, 2, 3, 4)));
+    main_hir.global(sum).step(Assign::var(sum, 0));
+    main_hir
+        .global(orig)
+        .step(Assign::var(orig, lv2_list!(1, 2, 3, 4)));
+    main_hir
+        .global(ls)
+        .step(Assign::var(ls, lv2_list!(1, 2, 3, 4)));
     main_hir
         .repeat_iterating(ls, i)
-        .step(Assign::global(sum, Expr::add(sum, i)));
+        .global(sum)
+        .step(Assign::var(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -627,10 +635,11 @@ fn iterating_repeat_ranged() {
 
     let main_hir = builder.entry();
 
-    main_hir.step(Assign::global(sum, 0));
+    main_hir.global(sum).step(Assign::var(sum, 0));
     main_hir
         .repeat_iterating(Iter::create_ranged(Value::Nil, 10), i)
-        .step(Assign::global(sum, Expr::add(sum, i)));
+        .global(sum)
+        .step(Assign::var(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -648,11 +657,12 @@ fn iterating_repeat_nested() {
 
     let main_hir = builder.entry();
 
-    main_hir.step(Assign::global(sum, 0));
+    main_hir.global(sum).step(Assign::var(sum, 0));
     main_hir
         .repeat_iterating(Iter::create_ranged(0, 5), i)
         .repeat_iterating(Iter::create_ranged(5, 10), j)
-        .step(Assign::global(sum, Expr::add(sum, Expr::pow(j, i))));
+        .global(sum)
+        .step(Assign::var(sum, Expr::add(sum, Expr::pow(j, i))));
     main_hir.step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -672,10 +682,14 @@ fn shift_values() {
 
     builder
         .entry()
-        .step(Assign::global(a, Expr::shl(2, 1)))
-        .step(Assign::global(b, Expr::shr(16, 1)))
-        .step(Assign::global(c, Expr::shl(0b00001010, 4)))
-        .step(Assign::global(d, Expr::shr(0b0001010, 4)))
+        .global(a)
+        .step(Assign::var(a, Expr::shl(2, 1)))
+        .global(b)
+        .step(Assign::var(b, Expr::shr(16, 1)))
+        .global(c)
+        .step(Assign::var(c, Expr::shl(0b00001010, 4)))
+        .global(d)
+        .step(Assign::var(d, Expr::shr(0b0001010, 4)))
         .step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -694,13 +708,15 @@ fn conditional_expression() {
     builder
         .entry()
         .step(Assign::var(z, 2))
-        .step(Assign::global(
+        .global(x)
+        .step(Assign::var(
             x,
             Expr::branch()
                 .add_condition(Expr::eq(z, 1), false)
                 .default_value(true),
         ))
-        .step(Assign::global(
+        .global(y)
+        .step(Assign::var(
             y,
             Expr::branch()
                 .add_condition(Expr::eq(z, 2), false)

@@ -90,7 +90,7 @@ fn run_module() {
     builder
         .entry()
         .step(Include::import_global("libshared_module"))
-        .step(Assign::global(s, lv2_call!(new)));
+        .global(s).step(Assign::var(s, lv2_call!(new)));
     builder
         .add("name")
         .step(Return::value(lv2_call!(get_name, s)));

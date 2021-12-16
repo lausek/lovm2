@@ -30,7 +30,7 @@ fn deserialize_module() {
     let n = &lv2_var!(n);
 
     let main_hir = builder.entry();
-    main_hir.step(Assign::global(n, 10));
+    main_hir.global(n).step(Assign::var(n, 10));
 
     builder
         .build()
@@ -59,8 +59,8 @@ fn global_uses() {
     let mut builder = ModuleBuilder::new();
     builder.add_dependency(PRELOADED);
 
-    let main_hir = builder.entry();
-    main_hir.step(Assign::global(&lv2_var!(n), 10));
+    let n = &lv2_var!(n);
+    builder.entry().global(n).step(Assign::var(n, 10));
 
     let module = builder.build().unwrap();
 

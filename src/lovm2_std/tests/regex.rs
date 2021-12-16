@@ -11,7 +11,7 @@ fn native_is_match() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .step(Assign::global(re, lv2_call!(new_regex, "\\d{2}")));
+            .global(re).step(Assign::var(re, lv2_call!(new_regex, "\\d{2}")));
     });
 
     vm.call("init", &[]).unwrap();
@@ -39,7 +39,7 @@ fn native_captures() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .step(Assign::global(re, lv2_call!(new_regex, "(\\d)?(\\S+)")));
+            .global(re).step(Assign::var(re, lv2_call!(new_regex, "(\\d)?(\\S+)")));
     });
 
     vm.call("init", &[]).unwrap();

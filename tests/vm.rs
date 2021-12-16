@@ -94,7 +94,8 @@ fn import_vice_versa() {
 
     builder
         .add_with_args("callmain", vec![n.clone()])
-        .step(Assign::global(result, n))
+        .global(result)
+        .step(Assign::var(result, n))
         .step(Return::value(2));
 
     let module = builder.build().unwrap();
