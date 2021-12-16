@@ -19,6 +19,14 @@ impl Block {
         self.0.last_mut()
     }
 
+    pub fn global(&mut self, var: &Variable) {
+
+    }
+
+    pub fn local(&mut self, var: &Variable) {
+
+    }
+
     pub fn step<T>(&mut self, hir: T)
     where
         T: Into<HirElement>,

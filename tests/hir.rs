@@ -710,3 +710,25 @@ fn conditional_expression() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
+
+#[test]
+fn variable_scoping() {
+    fn check(ctx: &mut Context) {
+        assert_eq!(Value::from(1), *ctx.value_of("x").unwrap());
+
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::from(2), *frame.value_of("x").unwrap());
+    }
+
+    let mut builder = ModuleBuilder::new();
+    let x = &lv2_var!(x);
+
+    builder
+        .entry()
+        .global(x)
+        .step(Assign::var(x, 1))
+        .local(x)
+        .step(Assign::var(x, 2));
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
+}

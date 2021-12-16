@@ -85,6 +85,20 @@ pub trait HasBlock {
     fn block_mut(&mut self) -> &mut Block;
 
     #[inline]
+    fn global(&mut self, var: &Variable) -> &mut Self
+    {
+        self.block_mut().global(var);
+        self
+    }
+
+    #[inline]
+    fn local(&mut self, var: &Variable) -> &mut Self
+    {
+        self.block_mut().local(var);
+        self
+    }
+
+    #[inline]
     fn step<T>(&mut self, element: T) -> &mut Self
     where
         T: Into<HirElement>,
