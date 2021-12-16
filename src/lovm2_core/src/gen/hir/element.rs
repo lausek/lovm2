@@ -14,6 +14,12 @@ pub enum HirElement {
     Interrupt(Interrupt),
     Repeat(Repeat),
     Return(Return),
+    ScopeGlobal {
+        ident: Variable,
+    },
+    ScopeLocal {
+        ident: Variable,
+    },
 }
 
 impl HirLowering for HirElement {
@@ -31,6 +37,12 @@ impl HirLowering for HirElement {
             HirElement::Interrupt(interrupt) => interrupt.lower(runtime),
             HirElement::Repeat(repeat) => repeat.lower(runtime),
             HirElement::Return(ret) => ret.lower(runtime),
+            HirElement::ScopeGlobal { ident } => {
+                runtime.emit(LirElement::ScopeGlobal { ident });
+            }
+            HirElement::ScopeLocal { ident } => {
+                runtime.emit(LirElement::ScopeLocal { ident });
+            }
         }
     }
 }

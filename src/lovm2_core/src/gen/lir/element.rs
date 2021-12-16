@@ -32,6 +32,12 @@ pub enum LirElement<'hir> {
     PushConstant {
         value: Cow<'hir, Value>,
     },
+    ScopeGlobal {
+        ident: &'hir Variable,
+    },
+    ScopeLocal {
+        ident: &'hir Variable,
+    },
     // LPush(u16), GPush(u16),
     PushDynamic {
         ident: &'hir Variable,

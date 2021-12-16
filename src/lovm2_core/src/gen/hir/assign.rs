@@ -8,6 +8,8 @@ pub enum AssignType {
     StaticLocal,
     /// Assign a global variable
     StaticGlobal,
+    /// Assign a variable
+    StaticVar,
     /// Assign to a reference
     Dynamic,
     /// Overwrite a variable with the scope resolved while lowering
@@ -50,6 +52,20 @@ impl Assign {
             expr: expr.into(),
             access: var.into(),
             ty: AssignType::StaticGlobal,
+        }
+    }
+
+    pub fn var<U, T>(var: &U, expr: T) -> Self
+    where
+        U: Into<Variable> + Clone,
+        T: Into<Expr>,
+    {
+        let var: Variable = var.clone().into();
+
+        Self {
+            expr: expr.into(),
+            access: var.into(),
+            ty: AssignType::StaticVar,
         }
     }
 
@@ -189,10 +205,15 @@ impl Assign {
 
         match self.ty {
             AssignType::StaticLocal => {
+                runtime.emit(LirElement::ScopeLocal { ident: target });
                 runtime.emit(LirElement::store(Scope::Local, target));
             }
             AssignType::StaticGlobal => {
+                runtime.emit(LirElement::ScopeGlobal { ident: target });
                 runtime.emit(LirElement::store(Scope::Global, target));
+            }
+            AssignType::StaticVar => {
+                runtime.emit(LirElement::store(Scope::Local, target));
             }
             _ => unreachable!(),
         }
@@ -220,7 +241,7 @@ impl HirLowering for Assign {
         'hir: 'lir,
     {
         match &self.ty {
-            AssignType::StaticLocal | AssignType::StaticGlobal => self.lower_static(runtime),
+            AssignType::StaticLocal | AssignType::StaticGlobal | AssignType::StaticVar => self.lower_static(runtime),
             AssignType::Dynamic => self.lower_dynamic(runtime),
             AssignType::Update => self.lower_update(runtime),
         }

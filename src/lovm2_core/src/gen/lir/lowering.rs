@@ -1,6 +1,6 @@
 //! Information for the process of lowering LIR to bytecode
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
@@ -43,6 +43,7 @@ pub struct LirLoweringRuntime {
     idents: Vec<Variable>,
     code: Vec<Instruction>,
 
+    globals: HashSet<Variable>,
     offsets: HashMap<Label, Offset>,
 }
 
@@ -55,6 +56,7 @@ impl LirLoweringRuntime {
             idents: vec![],
             code: vec![],
 
+            globals: HashSet::new(),
             offsets: HashMap::new(),
         }
     }
@@ -143,20 +145,28 @@ impl LirLoweringRuntime {
 
                 self.code.push(Instruction::CPush(cidx));
             }
-            LirElement::PushDynamic { ident, scope } => {
+            LirElement::ScopeGlobal { ident } => {
+                self.globals.insert(ident.clone());
+            }
+            LirElement::ScopeLocal { ident } => {
+                self.globals.remove(ident);
+            }
+            LirElement::PushDynamic { ident, .. } => {
                 let iidx = self.index_ident(&ident) as u16;
 
-                match scope {
-                    Scope::Global => self.code.push(Instruction::GPush(iidx)),
-                    Scope::Local => self.code.push(Instruction::LPush(iidx)),
+                if self.globals.contains(ident) {
+                    self.code.push(Instruction::GPush(iidx));
+                } else {
+                    self.code.push(Instruction::LPush(iidx));
                 }
             }
-            LirElement::StoreDynamic { ident, scope } => {
+            LirElement::StoreDynamic { ident, .. } => {
                 let iidx = self.index_ident(&ident) as u16;
 
-                match scope {
-                    Scope::Global => self.code.push(Instruction::GMove(iidx)),
-                    Scope::Local => self.code.push(Instruction::LMove(iidx)),
+                if self.globals.contains(ident) {
+                    self.code.push(Instruction::GMove(iidx));
+                } else {
+                    self.code.push(Instruction::LMove(iidx));
                 }
             }
 

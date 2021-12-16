@@ -19,12 +19,12 @@ impl Block {
         self.0.last_mut()
     }
 
-    pub fn global(&mut self, var: &Variable) {
-
+    pub fn global(&mut self, ident: &Variable) {
+        self.0.push(HirElement::ScopeGlobal { ident: ident.clone() });
     }
 
-    pub fn local(&mut self, var: &Variable) {
-
+    pub fn local(&mut self, ident: &Variable) {
+        self.0.push(HirElement::ScopeLocal { ident: ident.clone() });
     }
 
     pub fn step<T>(&mut self, hir: T)
