@@ -25,6 +25,7 @@ pub struct Assign {
 }
 
 impl Assign {
+    #[deprecated]
     /// Assign data to a local variable
     pub fn local<U, T>(var: &U, expr: T) -> Self
     where
@@ -40,6 +41,7 @@ impl Assign {
         }
     }
 
+    #[deprecated]
     /// Assign data to a global variable
     pub fn global<U, T>(var: &U, expr: T) -> Self
     where

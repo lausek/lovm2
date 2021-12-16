@@ -718,13 +718,15 @@ fn variable_scoping() {
 
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(Value::from(2), *frame.value_of("x").unwrap());
+        assert_eq!(Value::from(true), *frame.value_of("y").unwrap());
     }
 
     let mut builder = ModuleBuilder::new();
-    let x = &lv2_var!(x);
+    let (x, y) = &lv2_var!(x, y);
 
     builder
         .entry()
+        .step(Assign::var(y, true))
         .global(x)
         .step(Assign::var(x, 1))
         .local(x)
