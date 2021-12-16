@@ -14,7 +14,7 @@ fn serialize_module() {
     let mut builder = ModuleBuilder::new();
 
     let main_hir = builder.entry();
-    main_hir.step(Assign::local(&lv2_var!(msg), "hello world"));
+    main_hir.step(Assign::var(&lv2_var!(msg), "hello world"));
     main_hir.step(lv2_call!(print, msg));
 
     let module = builder.build().unwrap();

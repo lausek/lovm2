@@ -32,7 +32,7 @@ fn native_add() {
 #[test]
 fn native_negate() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::local(&lv2_var!(b), false));
+        hir.step(Assign::var(&lv2_var!(b), false));
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(negate, b)));
     });
 
@@ -43,8 +43,8 @@ fn native_negate() {
 #[test]
 fn native_to_string() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::local(&lv2_var!(f), 5.));
-        hir.step(Assign::local(&lv2_var!(ext), "so"));
+        hir.step(Assign::var(&lv2_var!(f), 5.));
+        hir.step(Assign::var(&lv2_var!(ext), "so"));
         hir.step(Assign::global(&lv2_var!(n), lv2_call!(to_string, f, ext)));
     });
 

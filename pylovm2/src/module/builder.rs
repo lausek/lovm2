@@ -138,7 +138,7 @@ impl BlockBuilder {
         use lovm2::prelude::*;
 
         unsafe {
-            (*self.inner).step(Assign::local(&any_to_ident(n)?, any_to_expr(expr)?));
+            (*self.inner).step(Assign::var(&any_to_ident(n)?, any_to_expr(expr)?));
         }
 
         Ok(())

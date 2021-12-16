@@ -31,7 +31,7 @@ fn assign_local() {
     let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(&n, 4);
+            Assign::var(&n, 4);
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -46,8 +46,8 @@ fn assign_local_add() {
     let n = &lv2_var!(n);
     define_test! {
         main {
-            Assign::local(n, 2);
-            Assign::local(n, Expr::add(n, 2));
+            Assign::var(n, 2);
+            Assign::var(n, Expr::add(n, 2));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -62,7 +62,7 @@ fn assign_incremet_decrement() {
     let (a, b) = &lv2_var!(a, b);
     define_test! {
         main {
-            Assign::local(a, 0);
+            Assign::var(a, 0);
             Assign::global(b, 1);
             Assign::increment(a);
             Assign::decrement(b);
@@ -82,7 +82,7 @@ fn rem_lowering() {
     let rest = &lv2_var!(rest);
     define_test! {
         main {
-            Assign::local(rest, Expr::rem(1, 2));
+            Assign::var(rest, Expr::rem(1, 2));
         }
 
         #ensure (|ctx: &mut Context| {
@@ -97,10 +97,10 @@ fn easy_loop() {
     let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(&n, 0);
+            Assign::var(&n, 0);
             Repeat::until(Expr::eq(&n, 10))
                 .step(lv2_call!(print, n))
-                .step(Assign::local(&n, Expr::add(&n, 1)));
+                .step(Assign::var(&n, Expr::add(&n, 1)));
             }
 
         #ensure (move |ctx: &mut Context| {
@@ -115,9 +115,9 @@ fn explicit_break() {
     let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(&n, 0);
+            Assign::var(&n, 0);
             Repeat::endless()
-                .step(Assign::local(&n, Expr::add(&n, 1)))
+                .step(Assign::var(&n, Expr::add(&n, 1)))
                 .step(Break::new());
             }
 
@@ -133,10 +133,10 @@ fn try_getting() {
     let (dict, dat0, list, lat0) = lv2_var!(dict, dat0, list, lat0);
     define_test! {
         main {
-            Assign::local(&dict, lv2_dict!(0 => 6, 1 => 7));
-            Assign::local(&dat0, lv2_access!(dict, 1));
-            Assign::local(&list, lv2_list!("a", 10, 20., true));
-            Assign::local(&lat0, lv2_access!(list, 1));
+            Assign::var(&dict, lv2_dict!(0 => 6, 1 => 7));
+            Assign::var(&dat0, lv2_access!(dict, 1));
+            Assign::var(&list, lv2_list!("a", 10, 20., true));
+            Assign::var(&lat0, lv2_access!(list, 1));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -152,7 +152,7 @@ fn try_setting() {
     let list = lv2_var!(list);
     define_test! {
         main {
-            Assign::local(&list, lv2_list!("a", 10, 20., true));
+            Assign::var(&list, lv2_list!("a", 10, 20., true));
             Assign::set(&lv2_access!(list, 1), 7);
         }
 
@@ -169,10 +169,10 @@ fn try_retrieving_len() {
     let (dict, ls, lendict, lenls) = lv2_var!(dict, ls, lendict, lenls);
     define_test! {
         main {
-            Assign::local(&dict, lv2_dict!(0 => 6, 1 => 7));
-            Assign::local(&ls, lv2_list!(1, 2, 3));
-            Assign::local(&lendict, lv2_call!(len, dict));
-            Assign::local(&lenls, lv2_call!(len, ls));
+            Assign::var(&dict, lv2_dict!(0 => 6, 1 => 7));
+            Assign::var(&ls, lv2_list!(1, 2, 3));
+            Assign::var(&lendict, lv2_call!(len, dict));
+            Assign::var(&lenls, lv2_call!(len, ls));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -188,7 +188,7 @@ fn try_casting() {
     let n = lv2_var!(n);
     define_test! {
         main {
-            Assign::local(&n, Conv::to_integer(5.));
+            Assign::var(&n, Conv::to_integer(5.));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -204,15 +204,15 @@ fn true_branching() {
     let hir = builder.entry();
     let n = lv2_var!(n);
 
-    hir.step(Assign::local(&n, Value::Int(0)));
+    hir.step(Assign::var(&n, Value::Int(0)));
 
     let branch = hir.branch();
     branch
         .add_condition(Expr::not(Value::Bool(false)))
-        .step(Assign::local(&n, Value::Int(2)));
+        .step(Assign::var(&n, Value::Int(2)));
     branch
         .default_condition()
-        .step(Assign::local(&n, Value::Int(1)));
+        .step(Assign::var(&n, Value::Int(1)));
 
     hir.step(Interrupt::new(10));
 
@@ -229,18 +229,18 @@ fn multiple_branches() {
     let hir = builder.entry();
     let (result, n) = &lv2_var!(result, n);
 
-    hir.step(Assign::local(n, Value::Int(5)));
+    hir.step(Assign::var(n, Value::Int(5)));
 
     let branch = hir.branch();
     branch
         .add_condition(Expr::eq(Expr::rem(n, Value::Int(3)), Value::Int(0)))
-        .step(Assign::local(result, Value::Str("fizz".to_string())));
+        .step(Assign::var(result, Value::Str("fizz".to_string())));
     branch
         .add_condition(Expr::eq(Expr::rem(n, Value::Int(5)), Value::Int(0)))
-        .step(Assign::local(result, Value::Str("buzz".to_string())));
+        .step(Assign::var(result, Value::Str("buzz".to_string())));
     branch
         .default_condition()
-        .step(Assign::local(result, Value::Str("none".to_string())));
+        .step(Assign::var(result, Value::Str("none".to_string())));
 
     hir.step(Interrupt::new(10));
 
@@ -294,7 +294,7 @@ fn return_values() {
 
     builder
         .entry()
-        .step(Assign::local(&n, Call::new("returner")))
+        .step(Assign::var(&n, Call::new("returner")))
         .step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
@@ -327,10 +327,10 @@ fn cast_to_string() {
 
     let main = builder.entry();
     let (a, b, c, d) = lv2_var!(a, b, c, d);
-    main.step(Assign::local(&a, Conv::to_str(10)));
-    main.step(Assign::local(&b, Conv::to_str(10.1)));
-    main.step(Assign::local(&c, Conv::to_str("10")));
-    main.step(Assign::local(&d, Conv::to_str(true)));
+    main.step(Assign::var(&a, Conv::to_str(10)));
+    main.step(Assign::var(&b, Conv::to_str(10.1)));
+    main.step(Assign::var(&c, Conv::to_str("10")));
+    main.step(Assign::var(&d, Conv::to_str(true)));
     main.step(Interrupt::new(10));
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
@@ -374,12 +374,12 @@ fn get_field_from_dict() {
     let (x, y, z, d1, d2, g) = lv2_var!(x, y, z, d1, d2, g);
     define_test! {
         main {
-            Assign::local(&d1, lv2_dict!("x" => 37));
-            Assign::local(&d2, lv2_dict!("x" => lv2_dict!("y" => 42)));
+            Assign::var(&d1, lv2_dict!("x" => 37));
+            Assign::var(&d2, lv2_dict!("x" => lv2_dict!("y" => 42)));
             Assign::global(&g, lv2_dict!("x" => 67));
-            Assign::local(&x, lv2_access!(d1, "x"));
-            Assign::local(&y, lv2_access!(d2, "x", "y"));
-            Assign::local(&z, lv2_access!(g, "x"));
+            Assign::var(&x, lv2_access!(d1, "x"));
+            Assign::var(&y, lv2_access!(d2, "x", "y"));
+            Assign::var(&z, lv2_access!(g, "x"));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -396,8 +396,8 @@ fn set_field_on_dict() {
     let (d1, d2, g) = lv2_var!(d1, d2, g);
     define_test! {
         main {
-            Assign::local(&d1, lv2_dict!());
-            Assign::local(&d2, lv2_dict!("x" => lv2_dict!()));
+            Assign::var(&d1, lv2_dict!());
+            Assign::var(&d2, lv2_dict!("x" => lv2_dict!()));
             Assign::global(&g, lv2_dict!());
             Assign::set(&lv2_access!(d1, "x"), 37);
             Assign::set(&lv2_access!(d2, "x", "y"), 42);
@@ -463,12 +463,12 @@ fn comparison() {
     let (lt, le1, le2, gt, ge1, ge2) = lv2_var!(lt, le1, le2, gt, ge1, ge2);
     define_test! {
         main {
-            Assign::local(&lt, Expr::lt(2, 3));
-            Assign::local(&le1, Expr::le(2, 3));
-            Assign::local(&le2, Expr::le(2, 2));
-            Assign::local(&gt, Expr::gt(3, 2));
-            Assign::local(&ge1, Expr::ge(3, 2));
-            Assign::local(&ge2, Expr::ge(3, 3));
+            Assign::var(&lt, Expr::lt(2, 3));
+            Assign::var(&le1, Expr::le(2, 3));
+            Assign::var(&le2, Expr::le(2, 2));
+            Assign::var(&gt, Expr::gt(3, 2));
+            Assign::var(&ge1, Expr::ge(3, 2));
+            Assign::var(&ge2, Expr::ge(3, 3));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -488,8 +488,8 @@ fn raise_to_power() {
     let (a, b) = lv2_var!(a, b);
     define_test! {
         main {
-            Assign::local(&a, Expr::pow(2, 3));
-            Assign::local(&b, Expr::pow(3., 3.));
+            Assign::var(&a, Expr::pow(2, 3));
+            Assign::var(&b, Expr::pow(3., 3.));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -505,11 +505,11 @@ fn initialize_objects() {
     let (n, ae, ag, be, bg) = lv2_var!(n, ae, ag, be, bg);
     define_test! {
         main {
-            Assign::local(&n, 2);
-            Assign::local(&ae, lv2_list!(1, 2, 3));
-            Assign::local(&ag, lv2_list!(1, &n, 3));
-            Assign::local(&be, lv2_dict!(1 => 2, 2 => 2, 4 => 4));
-            Assign::local(&bg, lv2_dict!(1 => 2, &n => &n, 4 => 4));
+            Assign::var(&n, 2);
+            Assign::var(&ae, lv2_list!(1, 2, 3));
+            Assign::var(&ag, lv2_list!(1, &n, 3));
+            Assign::var(&be, lv2_dict!(1 => 2, 2 => 2, 4 => 4));
+            Assign::var(&bg, lv2_dict!(1 => 2, &n => &n, 4 => 4));
         }
 
         #ensure (move |ctx: &mut Context| {
@@ -529,9 +529,9 @@ fn store_without_reference() {
     let (n, x, y) = lv2_var!(n, x, y);
     define_test! {
         main {
-            Assign::local(&n, 2);
-            Assign::local(&x, Expr::from(5).boxed());
-            Assign::local(&y, &x);
+            Assign::var(&n, 2);
+            Assign::var(&x, Expr::from(5).boxed());
+            Assign::var(&y, &x);
             Assign::set(&y, 7);
         }
 
@@ -548,8 +548,8 @@ fn create_slice() {
     let (ls, s) = lv2_var!(ls, s);
     define_test! {
         main {
-            Assign::local(&ls, lv2_list!(1, 2, 3, 4, 5));
-            Assign::local(&s, Slice::new(&ls).start(1).end(4));
+            Assign::var(&ls, lv2_list!(1, 2, 3, 4, 5));
+            Assign::var(&s, Slice::new(&ls).start(1).end(4));
             Assign::set(&lv2_access!(s, 1), 9);
         }
 
@@ -583,7 +583,7 @@ fn iterating_repeat() {
 
     main_hir.step(Assign::global(sum, 0));
     main_hir
-        .step(Assign::local(iter, Iter::create(lv2_list!(1, 2, 3, 4))))
+        .step(Assign::var(iter, Iter::create(lv2_list!(1, 2, 3, 4))))
         .repeat_iterating(iter, i)
         .step(Assign::global(sum, Expr::add(sum, i)));
     main_hir.step(Interrupt::new(10));
@@ -693,7 +693,7 @@ fn conditional_expression() {
 
     builder
         .entry()
-        .step(Assign::local(z, 2))
+        .step(Assign::var(z, 2))
         .step(Assign::global(
             x,
             Expr::branch()

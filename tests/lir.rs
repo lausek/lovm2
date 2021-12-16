@@ -22,7 +22,7 @@ fn merge_not_jump_false() {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.step(Assign::local(n, Value::Int(0)));
+    hir.step(Assign::var(n, Value::Int(0)));
 
     let branch = hir.branch();
     branch
@@ -88,7 +88,7 @@ fn short_circuit_and() {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.step(Assign::local(n, Value::Int(0)));
+    hir.step(Assign::var(n, Value::Int(0)));
     hir.step(Return::value(Expr::and(
         Expr::eq(n, Value::Int(1)),
         Expr::div(Value::Int(1), n),
@@ -110,7 +110,7 @@ fn short_circuit_or() {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.step(Assign::local(n, Value::Int(0)));
+    hir.step(Assign::var(n, Value::Int(0)));
     hir.step(Return::value(Expr::or(
         Expr::eq(n, Value::Int(0)),
         Expr::div(Value::Int(1), n),
@@ -162,20 +162,20 @@ fn dead_code_elimination_else_branche() {
     let hir = builder.entry();
     let (n, y) = &lv2_var!(n, y);
 
-    hir.step(Assign::local(n, 3));
+    hir.step(Assign::var(n, 3));
 
     let branch = hir.branch();
     branch
         .add_condition(Expr::eq(Expr::rem(n, 2), 0))
-        .step(Assign::local(y, 0));
+        .step(Assign::var(y, 0));
 
     // this condition will always be met
     branch
         .add_condition(Expr::not(false))
-        .step(Assign::local(y, 1));
+        .step(Assign::var(y, 1));
 
     // this code will never be reached
-    branch.default_condition().step(Assign::local(y, 7));
+    branch.default_condition().step(Assign::var(y, 7));
 
     hir.step(Return::value(y));
 

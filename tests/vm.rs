@@ -28,7 +28,7 @@ fn load_custom_module() {
     builder
         .entry()
         .step(Include::import("extern"))
-        .step(Assign::local(n, Call::new("extern.calc")))
+        .step(Assign::var(n, Call::new("extern.calc")))
         .step(Interrupt::new(10));
 
     let module = builder.build().unwrap();
@@ -58,7 +58,7 @@ fn import_global_scope() {
     builder
         .entry()
         .step(Include::import_global("extern"))
-        .step(Assign::local(n, Call::new("calc")))
+        .step(Assign::var(n, Call::new("calc")))
         .step(Interrupt::new(10));
 
     let module = builder.build().unwrap();

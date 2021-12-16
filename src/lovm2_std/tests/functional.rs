@@ -10,12 +10,12 @@ fn dynamic_varargs() {
     let mut vm = run_module_test(|builder| {
         let hir = builder
             .add("sum")
-            .step(Assign::local(args, lv2_call!(argn)))
-            .step(Assign::local(result, 0));
+            .step(Assign::var(args, lv2_call!(argn)))
+            .step(Assign::var(result, 0));
 
         hir.repeat_until(Expr::eq(args, 0))
-            .step(Assign::local(arg, lv2_call!(pop_vstack)))
-            .step(Assign::local(result, Expr::add(result, arg)))
+            .step(Assign::var(arg, lv2_call!(pop_vstack)))
+            .step(Assign::var(result, Expr::add(result, arg)))
             .step(Assign::decrement(args));
 
         hir.step(Return::value(result));
@@ -40,9 +40,9 @@ fn dynamic_call() {
     let mut vm = run_module_test(|builder| {
         let hir = builder
             .add("return_argn")
-            .step(Assign::local(n, lv2_call!(argn)));
+            .step(Assign::var(n, lv2_call!(argn)));
 
-        hir.step(Assign::local(i, n))
+        hir.step(Assign::var(i, n))
             .repeat_until(Expr::eq(i, 0))
             .step(lv2_call!(pop_vstack))
             .step(Assign::decrement(i));

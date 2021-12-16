@@ -35,7 +35,7 @@
 //! let main_hir = module.entry();
 //!
 //! // set the local variable n to 10
-//! main_hir.step(Assign::local(&lv2_var!(n), 10));
+//! main_hir.step(Assign::var(&lv2_var!(n), 10));
 //!
 //! // `print` is a builtin function. the `lv2_var!` macro
 //! // ensures that the given identifier is not confused

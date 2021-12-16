@@ -25,16 +25,16 @@ fn fibonacci(c: &mut Criterion) {
         .step(Return::value(n));
 
     fib_hir
-        .step(Assign::local(l, 0))
-        .step(Assign::local(r, 1))
-        .step(Assign::local(n, Expr::sub(n, 1)));
+        .step(Assign::var(l, 0))
+        .step(Assign::var(r, 1))
+        .step(Assign::var(n, Expr::sub(n, 1)));
 
     fib_hir
         .repeat_until(Expr::eq(n, 0))
-        .step(Assign::local(h, r))
-        .step(Assign::local(r, Expr::add(l, r)))
-        .step(Assign::local(l, h))
-        .step(Assign::local(n, Expr::sub(n, 1)));
+        .step(Assign::var(h, r))
+        .step(Assign::var(r, Expr::add(l, r)))
+        .step(Assign::var(l, h))
+        .step(Assign::var(n, Expr::sub(n, 1)));
 
     fib_hir.step(Return::value(r));
 

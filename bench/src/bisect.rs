@@ -38,15 +38,15 @@ fn calc_hir(module: &mut ModuleBuilder) {
     let (coeffs, x, factor, i, sigma) = &lv2_var!(coeffs, x, factor, i, sigma);
     let hir = module.add_with_args("calc", vec![coeffs.clone(), x.clone()]);
 
-    hir.step(Assign::local(sigma, 0))
-        .step(Assign::local(i, 0))
-        .step(Assign::local(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
+    hir.step(Assign::var(sigma, 0))
+        .step(Assign::var(i, 0))
+        .step(Assign::var(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
 
     let delta = Expr::mul(lv2_access!(coeffs, i), Expr::pow(x, factor));
     hir.repeat_until(Expr::not(Expr::le(0, factor)))
-        .step(Assign::local(sigma, Expr::add(sigma, delta)))
-        .step(Assign::local(i, Expr::add(i, 1)))
-        .step(Assign::local(factor, Expr::sub(factor, 1)));
+        .step(Assign::var(sigma, Expr::add(sigma, delta)))
+        .step(Assign::var(i, Expr::add(i, 1)))
+        .step(Assign::var(factor, Expr::sub(factor, 1)));
 
     hir.step(Return::value(sigma));
 }
@@ -55,17 +55,17 @@ fn derive_hir(module: &mut ModuleBuilder) {
     let (coeffs, i, factor, d) = &lv2_var!(coeffs, i, factor, d);
     let hir = module.add_with_args("derive", vec![coeffs.clone()]);
 
-    hir.step(Assign::local(d, lv2_list!()))
-        .step(Assign::local(i, 0))
-        .step(Assign::local(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
+    hir.step(Assign::var(d, lv2_list!()))
+        .step(Assign::var(i, 0))
+        .step(Assign::var(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
 
     hir.repeat_until(Expr::not(Expr::lt(0, factor)))
         .step(Assign::set(
             &lv2_access!(d, i),
             Expr::mul(lv2_access!(coeffs, i), factor),
         ))
-        .step(Assign::local(i, Expr::add(i, 1)))
-        .step(Assign::local(factor, Expr::sub(factor, 1)));
+        .step(Assign::var(i, Expr::add(i, 1)))
+        .step(Assign::var(factor, Expr::sub(factor, 1)));
 
     hir.step(Return::value(d));
 }
@@ -76,23 +76,23 @@ pub fn bisect_hir(module: &mut ModuleBuilder) {
     let hir = module.add_with_args("bisect", vec![coeffs.clone(), startx.clone()]);
 
     // function setup
-    hir.step(Assign::local(x, Conv::to_float(startx)))
-        .step(Assign::local(dcoeffs, lv2_call!(derive, coeffs)))
-        .step(Assign::local(prev, Value::Nil));
+    hir.step(Assign::var(x, Conv::to_float(startx)))
+        .step(Assign::var(dcoeffs, lv2_call!(derive, coeffs)))
+        .step(Assign::var(prev, Value::Nil));
 
     let computation_loop = hir.repeat();
-    computation_loop.step(Assign::local(d2, lv2_call!(calc, dcoeffs, x)));
+    computation_loop.step(Assign::var(d2, lv2_call!(calc, dcoeffs, x)));
     computation_loop
         .branch()
         .add_condition(Expr::eq(d2, 0.))
-        .step(Assign::local(d2, 0.001));
-    computation_loop.step(Assign::local(d1, lv2_call!(calc, coeffs, x)));
-    computation_loop.step(Assign::local(x, Expr::sub(x, Expr::div(d1, d2))));
+        .step(Assign::var(d2, 0.001));
+    computation_loop.step(Assign::var(d1, lv2_call!(calc, coeffs, x)));
+    computation_loop.step(Assign::var(x, Expr::sub(x, Expr::div(d1, d2))));
     computation_loop
         .branch()
         .add_condition(Expr::eq(prev, x))
         .step(Break::new());
-    computation_loop.step(Assign::local(prev, x));
+    computation_loop.step(Assign::var(prev, x));
 
     hir.step(Return::value(x));
 }
