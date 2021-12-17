@@ -583,7 +583,7 @@ fn iterating_repeat() {
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .assign(iter, Expr::iter(lv2_list!(1, 2, 3, 4)))
+        .assign(iter, lv2_list!(1, 2, 3, 4).to_iter())
         .repeat_iterating(iter, i)
         .global(sum)
         .assign(sum, Expr::add(sum, i));
