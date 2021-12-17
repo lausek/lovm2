@@ -47,7 +47,7 @@ Translating it to `HIR` one by one could look like this:
 let i = &lv2_var!(i);
 
 // i = 0
-main_hir.step(Assign::local(i, 0));
+main_hir.assign(i, 0);
 
 let repeat = main_hir.repeat();
 
