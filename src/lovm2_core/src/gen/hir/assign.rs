@@ -4,59 +4,21 @@ use super::*;
 
 #[derive(Clone)]
 pub enum AssignType {
-    /// Assign a local variable
-    StaticLocal,
-    /// Assign a global variable
-    StaticGlobal,
-    /// Assign a variable
-    StaticVar,
     /// Assign to a reference
-    Dynamic,
-    /// Overwrite a variable with the scope resolved while lowering
-    Update,
+    Reference,
+    /// Assign a variable
+    Variable,
 }
 
 /// Storing data in various locations
 #[derive(Clone)]
 pub struct Assign {
-    expr: Expr,
     access: Access,
+    expr: Expr,
     ty: AssignType,
 }
 
 impl Assign {
-    #[deprecated]
-    /// Assign data to a local variable
-    pub fn local<U, T>(var: &U, expr: T) -> Self
-    where
-        U: Into<Variable> + Clone,
-        T: Into<Expr>,
-    {
-        let var: Variable = var.clone().into();
-
-        Self {
-            expr: expr.into(),
-            access: var.into(),
-            ty: AssignType::StaticLocal,
-        }
-    }
-
-    #[deprecated]
-    /// Assign data to a global variable
-    pub fn global<U, T>(var: &U, expr: T) -> Self
-    where
-        U: Into<Variable> + Clone,
-        T: Into<Expr>,
-    {
-        let var: Variable = var.clone().into();
-
-        Self {
-            expr: expr.into(),
-            access: var.into(),
-            ty: AssignType::StaticGlobal,
-        }
-    }
-
     pub fn var<U, T>(var: &U, expr: T) -> Self
     where
         U: Into<Variable> + Clone,
@@ -65,9 +27,9 @@ impl Assign {
         let var: Variable = var.clone().into();
 
         Self {
-            expr: expr.into(),
             access: var.into(),
-            ty: AssignType::StaticVar,
+            expr: expr.into(),
+            ty: AssignType::Variable,
         }
     }
 
@@ -78,39 +40,9 @@ impl Assign {
         T: Into<Expr>,
     {
         Self {
-            expr: expr.into(),
             access: access.clone().into(),
-            ty: AssignType::Dynamic,
-        }
-    }
-
-    #[deprecated]
-    /// Increment a variable by one
-    pub fn increment<T>(var: &T) -> Self
-    where
-        T: Into<Variable> + Clone,
-    {
-        let var: Variable = var.clone().into();
-
-        Self {
-            expr: Expr::add(var.clone(), 1),
-            access: var.into(),
-            ty: AssignType::Update,
-        }
-    }
-
-    #[deprecated]
-    /// Decrement a variable by one
-    pub fn decrement<T>(var: &T) -> Self
-    where
-        T: Into<Variable> + Clone,
-    {
-        let var: Variable = var.clone().into();
-
-        Self {
-            expr: Expr::sub(var.clone(), 1),
-            access: var.into(),
-            ty: AssignType::Update,
+            expr: expr.into(),
+            ty: AssignType::Reference,
         }
     }
 }
@@ -166,7 +98,7 @@ impl From<Expr> for Access {
 }
 
 impl Assign {
-    fn lower_dynamic<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    fn lower_reference<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     where
         'hir: 'lir,
     {
@@ -194,7 +126,7 @@ impl Assign {
         runtime.emit(LirElement::Set);
     }
 
-    fn lower_static<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
+    fn lower_variable<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     where
         'hir: 'lir,
     {
@@ -203,30 +135,11 @@ impl Assign {
         self.expr.lower(runtime);
 
         match self.ty {
-            AssignType::StaticLocal => {
-                runtime.emit(LirElement::ScopeLocal { ident: target });
-                runtime.emit(LirElement::store(target));
-            }
-            AssignType::StaticGlobal => {
-                runtime.emit(LirElement::ScopeGlobal { ident: target });
-                runtime.emit(LirElement::store(target));
-            }
-            AssignType::StaticVar => {
+            AssignType::Variable => {
                 runtime.emit(LirElement::store(target));
             }
             _ => unreachable!(),
         }
-    }
-
-    fn lower_update<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
-    {
-        let target = &self.access.target;
-
-        self.expr.lower(runtime);
-
-        runtime.emit(LirElement::store(target));
     }
 }
 
@@ -236,9 +149,8 @@ impl HirLowering for Assign {
         'hir: 'lir,
     {
         match &self.ty {
-            AssignType::StaticLocal | AssignType::StaticGlobal | AssignType::StaticVar => self.lower_static(runtime),
-            AssignType::Dynamic => self.lower_dynamic(runtime),
-            AssignType::Update => self.lower_update(runtime),
+            AssignType::Reference => self.lower_reference(runtime),
+            AssignType::Variable => self.lower_variable(runtime),
         }
     }
 }
