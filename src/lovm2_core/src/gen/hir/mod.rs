@@ -2,7 +2,6 @@
 
 mod lowering;
 
-mod assign;
 mod block;
 mod branch;
 mod call;
@@ -15,7 +14,6 @@ use crate::var::Variable;
 
 use super::*;
 
-pub use self::assign::Assign;
 pub use self::block::Block;
 pub use self::branch::Branch;
 pub use self::call::Call;
@@ -169,6 +167,12 @@ pub trait HasBlock {
     #[inline]
     fn return_value<T: Into<Expr>>(&mut self, value: T) -> &mut Self {
         self.block_mut().return_value(value);
+        self
+    }
+
+    #[inline]
+    fn set<T: Into<Expr>, U: Into<Expr>>(&mut self, target: T, source: U) -> &mut Self {
+        self.block_mut().set(target, source);
         self
     }
 

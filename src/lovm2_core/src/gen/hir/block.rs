@@ -11,12 +11,12 @@ impl Block {
         Self(vec![])
     }
 
-    pub fn assign<U, T>(&mut self, var: &U, expr: T)
+    pub fn assign<U, T>(&mut self, target: &U, source: T)
     where
         U: Into<Variable> + Clone,
         T: Into<Expr>,
     {
-        self.step(Assign::var(var, expr));
+        self.step(HirElement::AssignVariable { target: target.clone().into(), source: source.into() });
     }
 
     pub fn branch(&mut self) -> &mut Branch {
@@ -36,8 +36,8 @@ impl Block {
         self.0.push(HirElement::Continue);
     }
 
-    pub fn decrement(&mut self, ident: &Variable) {
-        self.0.push(Assign::var(ident, Expr::sub(ident, 1)).into());
+    pub fn decrement(&mut self, target: &Variable) {
+        self.0.push(HirElement::AssignVariable { target: target.clone(), source: Expr::sub(target, 1).into() });
     }
 
     pub fn extend(&mut self, block: Block) {
@@ -62,8 +62,8 @@ impl Block {
         self.0.push(HirElement::Import { name: name.into(), namespaced: false});
     }
 
-    pub fn increment(&mut self, ident: &Variable) {
-        self.0.push(Assign::var(ident, Expr::add(ident, 1)).into());
+    pub fn increment(&mut self, target: &Variable) {
+        self.0.push(HirElement::AssignVariable { target: target.clone(), source: Expr::add(target, 1).into() });
     }
 
     pub fn last_mut(&mut self) -> Option<&mut HirElement> {
@@ -111,6 +111,10 @@ impl Block {
 
     pub fn return_value<T: Into<Expr>>(&mut self, expr: T) {
         self.0.push(HirElement::Return { expr: expr.into() });
+    }
+
+    pub fn set<T: Into<Expr>, U: Into<Expr>>(&mut self, target: T, source: U) {
+        self.0.push(HirElement::AssignReference { target: target.into(), source: source.into() });
     }
 
     pub fn step<T>(&mut self, hir: T)
