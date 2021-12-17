@@ -51,7 +51,7 @@ impl Block {
         self.0.push(HirElement::Import { name: name.into(), namespaced: true});
     }
 
-    pub fn import_global<T>(&mut self, name: T)
+    pub fn import_from<T>(&mut self, name: T)
     where
         T: Into<Expr>,
     {

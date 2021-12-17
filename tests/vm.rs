@@ -50,13 +50,13 @@ fn load_custom_module() {
 }
 
 #[test]
-fn import_global_scope() {
+fn import_from_scope() {
     let mut builder = ModuleBuilder::named("main");
     let n = &lv2_var!(n);
 
     builder
         .entry()
-        .import_global("extern")
+        .import_from("extern")
         .assign(n, Call::new("calc"))
         .trigger(10);
 

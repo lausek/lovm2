@@ -116,11 +116,11 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn import_global<T>(&mut self, name: T) -> &mut Self
+    fn import_from<T>(&mut self, name: T) -> &mut Self
     where
         T: Into<Expr>,
     {
-        self.block_mut().import_global(name);
+        self.block_mut().import_from(name);
         self
     }
 
