@@ -41,7 +41,24 @@ pub enum Expr {
         expr: Box<Expr>,
     },
     DynamicValue(Initialize),
-    Iter(Iter),
+    /// Create an iterator from some collection
+    IterCreate {
+        expr: Box<Expr>,
+    },
+    /// Create an iterator for a range
+    IterCreateRanged {
+        from: Box<Expr>,
+        to: Box<Expr>,
+    },
+    IterHasNext {
+        expr: Box<Expr>,
+    },
+    IterNext {
+        expr: Box<Expr>,
+    },
+    IterReverse {
+        expr: Box<Expr>,
+    },
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Slice(Slice),
@@ -112,7 +129,13 @@ impl Expr {
                 }
                 Ok(base)
             }
-            Expr::Iter(_) => todo!(),
+            Expr::IterCreate { .. } |
+            Expr::IterCreateRanged { .. } |
+            Expr::IterHasNext { .. } |
+            Expr::IterNext { .. } |
+            Expr::IterReverse { .. } => {
+                todo!()
+            }
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
 
@@ -166,6 +189,15 @@ impl Expr {
         }
     }
 
+    #[deprecated]
+    pub fn iter<T: Into<Expr>>(expr: T) -> Self {
+        Self::IterCreate { expr: Box::new(expr.into()) }
+    }
+
+    pub fn iter_ranged<T: Into<Expr>, U: Into<Expr>>(from: T, to: U) -> Self {
+        Self::IterCreateRanged { from: Box::new(from.into()), to: Box::new(to.into()) }
+    }
+
     pub fn list() -> Self {
         Expr::Value {
             val: Value::list(),
@@ -205,6 +237,12 @@ impl Expr {
     {
         Self::Conv {
             ty: ValueType::Int,
+            expr: Box::new(self),
+        }
+    }
+
+    pub fn to_iter(self) -> Self {
+        Self::IterCreate {
             expr: Box::new(self),
         }
     }
@@ -261,12 +299,6 @@ impl From<Call> for Expr {
 impl From<Initialize> for Expr {
     fn from(init: Initialize) -> Expr {
         Expr::DynamicValue(init)
-    }
-}
-
-impl From<Iter> for Expr {
-    fn from(it: Iter) -> Expr {
-        Expr::Iter(it)
     }
 }
 
@@ -333,7 +365,27 @@ impl HirLowering for Expr {
                 runtime.emit(LirElement::Conv { ty: ty.clone() });
             }
             Expr::DynamicValue(init) => init.lower(runtime),
-            Expr::Iter(it) => it.lower(runtime),
+            Expr::IterCreate { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterCreate);
+            }
+            Expr::IterCreateRanged { from, to } => {
+                from.lower(runtime);
+                to.lower(runtime);
+                runtime.emit(LirElement::IterCreateRanged);
+            }
+            Expr::IterHasNext { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterHasNext);
+            }
+            Expr::IterNext { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterNext);
+            }
+            Expr::IterReverse { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::IterReverse);
+            }
             Expr::Operation1(op, expr) => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::operation(op));
