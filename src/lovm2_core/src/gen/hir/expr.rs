@@ -225,13 +225,6 @@ impl Expr {
         }
     }
 
-    #[deprecated]
-    pub fn iter<T: Into<Expr>>(expr: T) -> Self {
-        Self::IterCreate {
-            expr: Box::new(expr.into()),
-        }
-    }
-
     pub fn iter_ranged<T: Into<Expr>, U: Into<Expr>>(from: T, to: U) -> Self {
         Self::IterCreateRanged {
             from: Box::new(from.into()),
