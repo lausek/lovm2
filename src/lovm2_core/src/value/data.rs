@@ -60,6 +60,21 @@ pub enum Value {
 }
 
 impl Value {
+    /// Append a new item to the value.
+    pub fn append(&mut self, mut val: Value) -> Lovm2Result<()> {
+        if !val.is_ref() {
+            val = box_value(val);
+        }
+
+        match self {
+            Value::List(list) => {
+                list.push(val);
+                Ok(())
+            }
+            Value::Ref(r) => r.borrow_mut()?.append(val),
+            _ => Err((Lovm2ErrorTy::OperationNotSupported, "append").into()),
+        }
+    }
     /// Create a `Handle` to the given value.
     pub fn create_any<T>(from: T) -> Self
     where
