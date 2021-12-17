@@ -38,7 +38,7 @@ fn load_custom_module() {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
 
-        builder.add("calc").step(Return::value(Expr::add(1, 1)));
+        builder.add("calc").return_value(Expr::add(1, 1));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -68,7 +68,7 @@ fn import_global_scope() {
         assert_eq!("extern", req.module);
         let mut builder = ModuleBuilder::named("extern");
 
-        builder.add("calc").step(Return::value(Expr::add(1, 1)));
+        builder.add("calc").return_value(Expr::add(1, 1));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -96,7 +96,7 @@ fn import_vice_versa() {
         .add_with_args("callmain", vec![n.clone()])
         .global(result)
         .step(Assign::var(result, n))
-        .step(Return::value(2));
+        .return_value(2);
 
     let module = builder.build().unwrap();
 

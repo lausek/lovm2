@@ -140,6 +140,18 @@ pub trait HasBlock {
     }
 
     #[inline]
+    fn return_nil(&mut self) -> &mut Self {
+        self.block_mut().return_nil();
+        self
+    }
+
+    #[inline]
+    fn return_value<T: Into<Expr>>(&mut self, value: T) -> &mut Self {
+        self.block_mut().return_value(value);
+        self
+    }
+
+    #[inline]
     fn step<T>(&mut self, element: T) -> &mut Self
     where
         T: Into<HirElement>,

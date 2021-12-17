@@ -19,6 +19,14 @@ impl Block {
         self.0.last_mut()
     }
 
+    pub fn return_nil(&mut self) {
+        self.0.push(Return::nil().into());
+    }
+
+    pub fn return_value<T: Into<Expr>>(&mut self, value: T) {
+        self.0.push(Return::value(value).into());
+    }
+
     pub fn global(&mut self, ident: &Variable) {
         self.0.push(HirElement::ScopeGlobal { ident: ident.clone() });
     }

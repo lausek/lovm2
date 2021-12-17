@@ -6,7 +6,7 @@ use lovm2::Instruction;
 fn check_instruction_elimination(expr: Expr) {
     let mut builder = ModuleBuilder::new();
 
-    builder.entry().step(Return::value(expr));
+    builder.entry().return_value(expr);
 
     let module = builder.clone().build().unwrap();
     let module_noop = builder
@@ -22,15 +22,13 @@ fn merge_not_jump_false() {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.step(Assign::var(n, Value::Int(0)));
+    hir.assign(n, 0);
 
     let branch = hir.branch();
     branch
-        .add_condition(Expr::not(Expr::eq(n, Value::Int(2))))
-        .step(Return::value(Value::Int(1)));
-    branch
-        .default_condition()
-        .step(Return::value(Value::Int(2)));
+        .add_condition(Expr::not(Expr::eq(n, 2)))
+        .return_value(1);
+    branch.default_condition().return_value(2);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -54,12 +52,8 @@ fn merge_constant_jump() {
     let hir = builder.entry();
 
     let branch = hir.branch();
-    branch
-        .add_condition(Expr::not(Value::Bool(false)))
-        .step(Return::value(Value::Int(1)));
-    branch
-        .default_condition()
-        .step(Return::value(Value::Int(2)));
+    branch.add_condition(Expr::not(false)).return_value(1);
+    branch.default_condition().return_value(2);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -88,11 +82,8 @@ fn short_circuit_and() {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.step(Assign::var(n, Value::Int(0)));
-    hir.step(Return::value(Expr::and(
-        Expr::eq(n, Value::Int(1)),
-        Expr::div(Value::Int(1), n),
-    )));
+    hir.assign(n, 0);
+    hir.return_value(Expr::and(Expr::eq(n, 1), Expr::div(1, n)));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -110,11 +101,8 @@ fn short_circuit_or() {
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
-    hir.step(Assign::var(n, Value::Int(0)));
-    hir.step(Return::value(Expr::or(
-        Expr::eq(n, Value::Int(0)),
-        Expr::div(Value::Int(1), n),
-    )));
+    hir.assign(n, 0);
+    hir.return_value(Expr::or(Expr::eq(n, 0), Expr::div(1, n)));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -131,10 +119,10 @@ fn compute_constants() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
 
-    hir.step(Return::value(Expr::rem(
+    hir.return_value(Expr::rem(
         Expr::mul(Expr::add(Expr::sub(6, 1), 2), Expr::div(4, 2)),
         5,
-    )));
+    ));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -177,7 +165,7 @@ fn dead_code_elimination_else_branche() {
     // this code will never be reached
     branch.default_condition().step(Assign::var(y, 7));
 
-    hir.step(Return::value(y));
+    hir.return_value(y);
 
     let module = builder.build().unwrap();
     println!("{}", module);
