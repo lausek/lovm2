@@ -583,7 +583,7 @@ fn iterating_repeat() {
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .assign(iter, Iter::create(lv2_list!(1, 2, 3, 4)))
+        .assign(iter, Expr::iter(lv2_list!(1, 2, 3, 4)))
         .repeat_iterating(iter, i)
         .global(sum)
         .assign(sum, Expr::add(sum, i));
@@ -631,7 +631,7 @@ fn iterating_repeat_ranged() {
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .repeat_iterating(Iter::create_ranged(Value::Nil, 10), i)
+        .repeat_iterating(Expr::iter_ranged(Value::Nil, 10), i)
         .global(sum)
         .assign(sum, Expr::add(sum, i));
     main_hir.trigger(10);
@@ -653,8 +653,8 @@ fn iterating_repeat_nested() {
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .repeat_iterating(Iter::create_ranged(0, 5), i)
-        .repeat_iterating(Iter::create_ranged(5, 10), j)
+        .repeat_iterating(Expr::iter_ranged(0, 5), i)
+        .repeat_iterating(Expr::iter_ranged(5, 10), j)
         .global(sum)
         .assign(sum, Expr::add(sum, Expr::pow(j, i)));
     main_hir.trigger(10);
