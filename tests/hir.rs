@@ -316,13 +316,14 @@ fn drop_call_values() {
 fn cast_to_string() {
     let mut builder = ModuleBuilder::new();
 
-    let main = builder.entry();
     let (a, b, c, d) = lv2_var!(a, b, c, d);
-    main.assign(&a, Conv::to_str(10));
-    main.assign(&b, Conv::to_str(10.1));
-    main.assign(&c, Conv::to_str("10"));
-    main.assign(&d, Conv::to_str(true));
-    main.trigger(10);
+    builder
+        .entry()
+        .assign(&a, Conv::to_str(10))
+        .assign(&b, Conv::to_str(10.1))
+        .assign(&c, Conv::to_str("10"))
+        .assign(&d, Conv::to_str(true))
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
