@@ -13,9 +13,10 @@ const DESERIALIZE_PATH: &str = "/tmp/assign-global.lovm2c";
 fn serialize_module() {
     let mut builder = ModuleBuilder::new();
 
-    let main_hir = builder.entry();
-    main_hir.assign(&lv2_var!(msg), "hello world");
-    main_hir.step(lv2_call!(print, msg));
+    builder
+        .entry()
+        .assign(&lv2_var!(msg), "hello world")
+        .step(lv2_call!(print, msg));
 
     let module = builder.build().unwrap();
 
@@ -29,8 +30,7 @@ fn deserialize_module() {
     let mut builder = ModuleBuilder::new();
     let n = &lv2_var!(n);
 
-    let main_hir = builder.entry();
-    main_hir.global(n).assign(n, 10);
+    builder.entry().global(n).assign(n, 10);
 
     builder
         .build()

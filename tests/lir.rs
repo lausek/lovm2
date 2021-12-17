@@ -18,13 +18,10 @@ fn check_instruction_elimination(expr: Expr) {
 
 #[test]
 fn merge_not_jump_false() {
-    let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
     let n = &lv2_var!(n);
+    let mut builder = ModuleBuilder::new();
+    let branch = builder.entry().assign(n, 0).branch();
 
-    hir.assign(n, 0);
-
-    let branch = hir.branch();
     branch
         .add_condition(Expr::not(Expr::eq(n, 2)))
         .return_value(1);
@@ -49,9 +46,8 @@ fn merge_not_jump_false() {
 #[test]
 fn merge_constant_jump() {
     let mut builder = ModuleBuilder::named("main");
-    let hir = builder.entry();
+    let branch = builder.entry().branch();
 
-    let branch = hir.branch();
     branch.add_condition(Expr::not(false)).return_value(1);
     branch.default_condition().return_value(2);
 
@@ -78,12 +74,13 @@ fn merge_constant_jump() {
 
 #[test]
 fn short_circuit_and() {
-    let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
     let n = &lv2_var!(n);
+    let mut builder = ModuleBuilder::new();
 
-    hir.assign(n, 0);
-    hir.return_value(Expr::and(Expr::eq(n, 1), Expr::div(1, n)));
+    builder
+        .entry()
+        .assign(n, 0)
+        .return_value(Expr::and(Expr::eq(n, 1), Expr::div(1, n)));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -97,12 +94,12 @@ fn short_circuit_and() {
 
 #[test]
 fn short_circuit_or() {
-    let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
     let n = &lv2_var!(n);
-
-    hir.assign(n, 0);
-    hir.return_value(Expr::or(Expr::eq(n, 0), Expr::div(1, n)));
+    let mut builder = ModuleBuilder::new();
+    builder
+        .entry()
+        .assign(n, 0)
+        .return_value(Expr::or(Expr::eq(n, 0), Expr::div(1, n)));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -117,9 +114,7 @@ fn short_circuit_or() {
 #[test]
 fn compute_constants() {
     let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
-
-    hir.return_value(Expr::rem(
+    builder.entry().return_value(Expr::rem(
         Expr::mul(Expr::add(Expr::sub(6, 1), 2), Expr::div(4, 2)),
         5,
     ));
@@ -146,24 +141,21 @@ fn compute_constants() {
 
 #[test]
 fn dead_code_elimination_else_branche() {
-    let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
     let (n, y) = &lv2_var!(n, y);
+    let mut builder = ModuleBuilder::new();
 
-    hir.step(Assign::var(n, 3));
+    let hir = builder.entry().assign(n, 3);
 
     let branch = hir.branch();
     branch
         .add_condition(Expr::eq(Expr::rem(n, 2), 0))
-        .step(Assign::var(y, 0));
+        .assign(y, 0);
 
     // this condition will always be met
-    branch
-        .add_condition(Expr::not(false))
-        .step(Assign::var(y, 1));
+    branch.add_condition(Expr::not(false)).assign(y, 1);
 
     // this code will never be reached
-    branch.default_condition().step(Assign::var(y, 7));
+    branch.default_condition().assign(y, 7);
 
     hir.return_value(y);
 
