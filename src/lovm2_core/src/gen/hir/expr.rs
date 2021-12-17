@@ -2,6 +2,7 @@
 
 use super::*;
 
+use crate::value::ValueType;
 use crate::vm::Context;
 
 macro_rules! auto_implement {
@@ -34,7 +35,11 @@ pub enum Expr {
     Access(Access),
     Branch(Box<ExprBranch>),
     Call(Call),
-    Conv(Conv),
+    /// Do type conversion on a lowered `Expr` at runtime
+    Conv {
+        ty: ValueType,
+        expr: Box<Expr>,
+    },
     DynamicValue(Initialize),
     Iter(Iter),
     Operation1(Operator1, Box<Expr>),
@@ -74,6 +79,50 @@ pub enum Operator1 {
 }
 
 impl Expr {
+    pub fn boxed(mut self) -> Self {
+        match &mut self {
+            Expr::Value { boxed, .. } => *boxed = true,
+            _ => unimplemented!(),
+        }
+        self
+    }
+
+    pub fn branch() -> ExprBranchIncomplete {
+        ExprBranchIncomplete::new()
+    }
+
+    pub fn dict() -> Self {
+        Expr::Value {
+            val: Value::dict(),
+            boxed: false,
+        }
+    }
+
+    pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
+        match self {
+            Expr::Access(_) => todo!(),
+            Expr::Branch(_) => todo!(),
+            Expr::Call(_) => todo!(),
+            Expr::Conv { .. } => todo!(),
+            Expr::DynamicValue(init) => {
+                let mut base = init.base.clone();
+                for (key, val) in init.slots.iter() {
+                    let (key, val) = (key.eval(ctx)?, val.eval(ctx)?);
+                    base.set(&key, val)?;
+                }
+                Ok(base)
+            }
+            Expr::Iter(_) => todo!(),
+            Expr::Operation1(_, _) => todo!(),
+            Expr::Operation2(_, _, _) => todo!(),
+
+            Expr::Slice(_) => todo!(),
+            Expr::Value { val, .. } => Ok(val.clone()),
+            // TODO: wait until `result_cloned` is stabilized
+            Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
+        }
+    }
+
     pub fn from_opn(op: Operator2, args: Vec<Expr>) -> Self {
         if args.len() < 2 {
             unimplemented!();
@@ -107,20 +156,6 @@ impl Expr {
             Operator2::LessThan => Self::lt(left, right),
         }
     }
-}
-
-impl Expr {
-    pub fn boxed(mut self) -> Self {
-        match &mut self {
-            Expr::Value { boxed, .. } => *boxed = true,
-            _ => unimplemented!(),
-        }
-        self
-    }
-
-    pub fn branch() -> ExprBranchIncomplete {
-        ExprBranchIncomplete::new()
-    }
 
     pub fn is_const(&self) -> bool {
         match self {
@@ -128,38 +163,6 @@ impl Expr {
             Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
             Expr::Value { .. } => true,
             _ => false,
-        }
-    }
-
-    pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
-        match self {
-            Expr::Access(_) => todo!(),
-            Expr::Branch(_) => todo!(),
-            Expr::Call(_) => todo!(),
-            Expr::Conv(_) => todo!(),
-            Expr::DynamicValue(init) => {
-                let mut base = init.base.clone();
-                for (key, val) in init.slots.iter() {
-                    let (key, val) = (key.eval(ctx)?, val.eval(ctx)?);
-                    base.set(&key, val)?;
-                }
-                Ok(base)
-            }
-            Expr::Iter(_) => todo!(),
-            Expr::Operation1(_, _) => todo!(),
-            Expr::Operation2(_, _, _) => todo!(),
-
-            Expr::Slice(_) => todo!(),
-            Expr::Value { val, .. } => Ok(val.clone()),
-            // TODO: wait until `result_cloned` is stabilized
-            Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
-        }
-    }
-
-    pub fn dict() -> Self {
-        Expr::Value {
-            val: Value::dict(),
-            boxed: false,
         }
     }
 
@@ -180,6 +183,38 @@ impl Expr {
             Box::new(left.into()),
             Box::new(right.into()),
         )
+    }
+
+    pub fn to_bool(self) -> Self
+    {
+        Self::Conv {
+            ty: ValueType::Bool,
+            expr: Box::new(self),
+        }
+    }
+
+    pub fn to_float(self) -> Self
+    {
+        Self::Conv {
+            ty: ValueType::Float,
+            expr: Box::new(self),
+        }
+    }
+
+    pub fn to_integer(self) -> Self
+    {
+        Self::Conv {
+            ty: ValueType::Int,
+            expr: Box::new(self),
+        }
+    }
+
+    pub fn to_str(self) -> Self
+    {
+        Self::Conv {
+            ty: ValueType::Str,
+            expr: Box::new(self),
+        }
     }
 }
 
@@ -220,12 +255,6 @@ impl From<ExprBranch> for Expr {
 impl From<Call> for Expr {
     fn from(call: Call) -> Expr {
         Expr::Call(call)
-    }
-}
-
-impl From<Conv> for Expr {
-    fn from(conv: Conv) -> Expr {
-        Expr::Conv(conv)
     }
 }
 
@@ -299,7 +328,10 @@ impl HirLowering for Expr {
             }
             Expr::Branch(branch) => branch.lower(runtime),
             Expr::Call(call) => call.lower(runtime),
-            Expr::Conv(conv) => conv.lower(runtime),
+            Expr::Conv { ty, expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::Conv { ty: ty.clone() });
+            }
             Expr::DynamicValue(init) => init.lower(runtime),
             Expr::Iter(it) => it.lower(runtime),
             Expr::Operation1(op, expr) => {

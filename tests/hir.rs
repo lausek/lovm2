@@ -178,7 +178,10 @@ fn try_casting() {
     let n = &lv2_var!(n);
     let mut builder = ModuleBuilder::new();
 
-    builder.entry().assign(n, Conv::to_integer(5.)).trigger(10);
+    builder
+        .entry()
+        .assign(n, Expr::from(5.).to_integer())
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -303,23 +306,23 @@ fn drop_call_values() {
 
 #[test]
 fn cast_to_string() {
+    let (a, b, c, d) = &lv2_var!(a, b, c, d);
     let mut builder = ModuleBuilder::new();
 
-    let (a, b, c, d) = lv2_var!(a, b, c, d);
     builder
         .entry()
-        .assign(&a, Conv::to_str(10))
-        .assign(&b, Conv::to_str(10.1))
-        .assign(&c, Conv::to_str("10"))
-        .assign(&d, Conv::to_str(true))
+        .assign(a, Expr::from(10).to_str())
+        .assign(b, Expr::from(10.1).to_str())
+        .assign(c, Expr::from("10").to_str())
+        .assign(d, Expr::from(true).to_str())
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::from("10"), *frame.value_of(&a).unwrap());
-        assert_eq!(Value::from("10.1"), *frame.value_of(&b).unwrap());
-        assert_eq!(Value::from("10"), *frame.value_of(&c).unwrap());
-        assert_eq!(Value::from("true"), *frame.value_of(&d).unwrap());
+        assert_eq!(Value::from("10"), *frame.value_of("a").unwrap());
+        assert_eq!(Value::from("10.1"), *frame.value_of("b").unwrap());
+        assert_eq!(Value::from("10"), *frame.value_of("c").unwrap());
+        assert_eq!(Value::from("true"), *frame.value_of("d").unwrap());
     })
     .unwrap();
 }
