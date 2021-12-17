@@ -15,7 +15,7 @@ use crate::var::Variable;
 
 use super::*;
 
-pub use self::assign::{Access, Assign};
+pub use self::assign::Assign;
 pub use self::block::Block;
 pub use self::branch::Branch;
 pub use self::call::Call;

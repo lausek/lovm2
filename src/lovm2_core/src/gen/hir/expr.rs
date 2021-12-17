@@ -32,7 +32,6 @@ macro_rules! auto_implement {
 /// Expressions and operations that produce `Values`
 #[derive(Clone, Debug)]
 pub enum Expr {
-    Access(Access),
     Append {
         base: Box<Expr>,
         value: Box<Expr>,
@@ -44,7 +43,11 @@ pub enum Expr {
         ty: ValueType,
         expr: Box<Expr>,
     },
-    //DynamicValue(Initialize),
+    /// Consecutive read on a `List` or `Dict`
+    Get {
+        target: Box<Expr>,
+        key: Box<Expr>,
+    },
     // TODO: change name to `Set`
     Insert {
         base: Box<Expr>,
@@ -139,9 +142,15 @@ impl Expr {
         }
     }
 
+    pub fn get<T: Into<Expr>>(self, key: T) -> Self {
+        Expr::Get {
+            key: Box::new(key.into()),
+            target: Box::new(self),
+        }
+    }
+
     pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
         match self {
-            Expr::Access(_) => todo!(),
             Expr::Append { base, value } => {
                 let mut base = base.eval(ctx)?;
                 let (key, value) = (base.len()? as i64, value.eval(ctx)?);
@@ -151,6 +160,7 @@ impl Expr {
             Expr::Branch(_) => todo!(),
             Expr::Call(_) => todo!(),
             Expr::Conv { .. } => todo!(),
+            Expr::Get { .. } => todo!(),
             Expr::Insert { base, key, value } => {
                 let mut base = base.eval(ctx)?;
                 let (key, value) = (key.eval(ctx)?, value.eval(ctx)?);
@@ -320,12 +330,6 @@ impl Expr {
     auto_implement!(1, Not, not);
 }
 
-impl From<Access> for Expr {
-    fn from(access: Access) -> Expr {
-        Expr::Access(access)
-    }
-}
-
 impl From<ExprBranch> for Expr {
     fn from(branch: ExprBranch) -> Expr {
         Expr::Branch(Box::new(branch))
@@ -368,26 +372,6 @@ impl HirLowering for Expr {
         'hir: 'lir,
     {
         match self {
-            Expr::Access(ref access) => {
-                let variable = &access.target;
-                let mut key_it = access.keys.iter().peekable();
-
-                runtime.emit(LirElement::push_dynamic(variable));
-
-                // push key onto stack
-                if let Some(key) = key_it.next() {
-                    key.lower(runtime);
-
-                    while key_it.peek().is_some() {
-                        let key = key_it.next().unwrap();
-
-                        runtime.emit(LirElement::Get);
-                        key.lower(runtime);
-                    }
-
-                    runtime.emit(LirElement::Get);
-                }
-            }
             Expr::Append { base, value } => {
                 base.lower(runtime);
                 runtime.emit(LirElement::Duplicate);
@@ -399,6 +383,11 @@ impl HirLowering for Expr {
             Expr::Conv { ty, expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Conv { ty: ty.clone() });
+            }
+            Expr::Get { target, key } => {
+                target.lower(runtime);
+                key.lower(runtime);
+                runtime.emit(LirElement::RGet);
             }
             Expr::Insert { base, key, value } => {
                 lower_insert(runtime, base, key, value);

@@ -3,11 +3,11 @@
 /// Creates an `Access` expression
 #[macro_export]
 macro_rules! lv2_access {
-    ($name:ident, $key:expr $(, $rest:expr)* $(,)?) => {{
-        Access::target(stringify!($name).into())
-            .at($key)
+    ($name:expr, $key:expr $(, $rest:expr)* $(,)?) => {{
+        Expr::from($name)
+            .get($key)
             $(
-                .at($rest)
+                .get($rest)
             )*
     }};
 }
