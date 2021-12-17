@@ -45,6 +45,7 @@ pub enum Expr {
         expr: Box<Expr>,
     },
     //DynamicValue(Initialize),
+    // TODO: change name to `Set`
     Insert {
         base: Box<Expr>,
         key: Box<Expr>,
@@ -390,6 +391,7 @@ impl HirLowering for Expr {
             }
             Expr::Append { base, value } => {
                 base.lower(runtime);
+                runtime.emit(LirElement::Duplicate);
                 value.lower(runtime);
                 runtime.emit(LirElement::Append);
             }

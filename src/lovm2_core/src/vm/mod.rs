@@ -352,8 +352,7 @@ impl Vm {
                 Instruction::Append => {
                     let val = self.ctx.pop_value()?;
                     let mut target = self.ctx.pop_value()?;
-                    let key = val.len()? as i64;
-                    target.set(&key.into(), val)?;
+                    target.append(val)?;
                 }
                 Instruction::Add => value_operation!(self, add_inplace),
                 Instruction::Sub => value_operation!(self, sub_inplace),
