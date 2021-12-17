@@ -76,18 +76,6 @@ impl<'lir> HirLoweringRuntime<'lir> {
     }
 
     pub fn emit(&mut self, elem: LirElement<'lir>) {
-        /*
-        if let LirElement::StoreDynamic {
-            ident,
-            scope: Scope::Local,
-        } = &elem
-        {
-            if !self.has_local(ident) {
-                self.locals.push(ident);
-            }
-        }
-        */
-
         self.code.push(elem);
         self.optimizer.transform(&mut self.code);
     }
