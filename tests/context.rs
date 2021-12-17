@@ -10,7 +10,7 @@ fn load_avoid_sigabrt() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
     hir.step(Include::import("io"));
-    hir.step(Interrupt::new(10));
+    hir.trigger(10);
 
     let module = builder.build().unwrap();
 
@@ -31,7 +31,7 @@ fn avoid_double_import() {
         .entry()
         .step(Include::import("abc"))
         .step(Include::import("abc"))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     let module = builder.build().unwrap();
 

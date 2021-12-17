@@ -19,7 +19,7 @@ macro_rules! define_test {
             $(
                 hir.step($inx);
             )*
-            hir.step(Interrupt::new(10));
+            hir.trigger(10);
         )*
 
         run_module_test(create_vm_with_std(), builder.build().unwrap(), $ensure).unwrap();
@@ -214,7 +214,7 @@ fn true_branching() {
         .default_condition()
         .step(Assign::var(&n, Value::Int(1)));
 
-    hir.step(Interrupt::new(10));
+    hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -242,7 +242,7 @@ fn multiple_branches() {
         .default_condition()
         .step(Assign::var(result, Value::Str("none".to_string())));
 
-    hir.step(Interrupt::new(10));
+    hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -258,7 +258,7 @@ fn taking_parameters() {
 
     builder
         .add_with_args("called", vec![a.clone(), b.clone()])
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     builder.entry().step(lv2_call!(called, 2, 7));
 
@@ -295,7 +295,7 @@ fn return_values() {
     builder
         .entry()
         .step(Assign::var(&n, Call::new("returner")))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -310,10 +310,7 @@ fn drop_call_values() {
 
     let _ = builder.add("returner");
 
-    builder
-        .entry()
-        .step(Call::new("returner"))
-        .step(Interrupt::new(10));
+    builder.entry().step(Call::new("returner")).trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         assert!(ctx.last_value_mut().is_err());
@@ -331,7 +328,7 @@ fn cast_to_string() {
     main.step(Assign::var(&b, Conv::to_str(10.1)));
     main.step(Assign::var(&c, Conv::to_str("10")));
     main.step(Assign::var(&d, Conv::to_str(true)));
-    main.step(Interrupt::new(10));
+    main.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -360,7 +357,7 @@ fn folding_expr() {
             &n,
             Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
         ))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
@@ -448,7 +445,7 @@ fn call_into_vm() {
 
     builder
         .add_with_args("call_me", vec![lv2_var!(n)])
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     let module = builder.build().unwrap();
 
@@ -589,7 +586,7 @@ fn iterating_repeat() {
         .repeat_iterating(iter, i)
         .global(sum)
         .step(Assign::var(sum, Expr::add(sum, i)));
-    main_hir.step(Interrupt::new(10));
+    main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
@@ -618,7 +615,7 @@ fn iterating_repeat_inplace() {
         .repeat_iterating(ls, i)
         .global(sum)
         .step(Assign::var(sum, Expr::add(sum, i)));
-    main_hir.step(Interrupt::new(10));
+    main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
@@ -640,7 +637,7 @@ fn iterating_repeat_ranged() {
         .repeat_iterating(Iter::create_ranged(Value::Nil, 10), i)
         .global(sum)
         .step(Assign::var(sum, Expr::add(sum, i)));
-    main_hir.step(Interrupt::new(10));
+    main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
@@ -663,7 +660,7 @@ fn iterating_repeat_nested() {
         .repeat_iterating(Iter::create_ranged(5, 10), j)
         .global(sum)
         .step(Assign::var(sum, Expr::add(sum, Expr::pow(j, i))));
-    main_hir.step(Interrupt::new(10));
+    main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
@@ -690,7 +687,7 @@ fn shift_values() {
         .step(Assign::var(c, Expr::shl(0b00001010, 4)))
         .global(d)
         .step(Assign::var(d, Expr::shr(0b0001010, 4)))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
@@ -722,7 +719,7 @@ fn conditional_expression() {
                 .add_condition(Expr::eq(z, 2), false)
                 .default_value(true),
         ))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
@@ -747,7 +744,7 @@ fn variable_scoping() {
         .step(Assign::var(x, 1))
         .local(x)
         .step(Assign::var(x, 2))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }

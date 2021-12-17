@@ -85,9 +85,21 @@ pub trait HasBlock {
     fn block_mut(&mut self) -> &mut Block;
 
     #[inline]
+    fn branch(&mut self) -> &mut Branch {
+        self.block_mut().branch()
+    }
+
+    #[inline]
     fn global(&mut self, var: &Variable) -> &mut Self
     {
         self.block_mut().global(var);
+        self
+    }
+
+    #[inline]
+    fn trigger(&mut self, n: u16) -> &mut Self
+    {
+        self.block_mut().step(Interrupt::new(n));
         self
     }
 
@@ -96,20 +108,6 @@ pub trait HasBlock {
     {
         self.block_mut().local(var);
         self
-    }
-
-    #[inline]
-    fn step<T>(&mut self, element: T) -> &mut Self
-    where
-        T: Into<HirElement>,
-    {
-        self.block_mut().step(element);
-        self
-    }
-
-    #[inline]
-    fn branch(&mut self) -> &mut Branch {
-        self.block_mut().branch()
     }
 
     #[inline]
@@ -129,5 +127,14 @@ pub trait HasBlock {
         T: Into<Variable>,
     {
         self.block_mut().repeat_iterating(collection, item)
+    }
+
+    #[inline]
+    fn step<T>(&mut self, element: T) -> &mut Self
+    where
+        T: Into<HirElement>,
+    {
+        self.block_mut().step(element);
+        self
     }
 }
