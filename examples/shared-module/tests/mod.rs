@@ -6,7 +6,7 @@ fn create_caller(modder: fn(&mut Hir)) -> Vm {
     let mut builder = ModuleBuilder::new();
 
     let hir = builder.entry();
-    hir.step(Include::import_global("libshared_module"));
+    hir.step(Include::import_from("libshared_module"));
     modder(hir);
 
     let module = builder.build().unwrap();
@@ -89,7 +89,7 @@ fn run_module() {
     let mut builder = ModuleBuilder::new();
     builder
         .entry()
-        .step(Include::import_global("libshared_module"))
+        .step(Include::import_from("libshared_module"))
         .global(s).step(Assign::var(s, lv2_call!(new)));
     builder
         .add("name")
