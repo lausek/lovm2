@@ -37,7 +37,7 @@ impl Block {
     }
 
     pub fn decrement(&mut self, ident: &Variable) {
-        self.0.push(Assign::decrement(ident).into());
+        self.0.push(Assign::var(ident, Expr::sub(ident, 1)).into());
     }
 
     pub fn extend(&mut self, block: Block) {
@@ -63,7 +63,7 @@ impl Block {
     }
 
     pub fn increment(&mut self, ident: &Variable) {
-        self.0.push(Assign::increment(ident).into());
+        self.0.push(Assign::var(ident, Expr::add(ident, 1)).into());
     }
 
     pub fn last_mut(&mut self) -> Option<&mut HirElement> {
