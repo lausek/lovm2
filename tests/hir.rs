@@ -739,11 +739,11 @@ fn variable_scoping() {
 
     builder
         .entry()
-        .step(Assign::var(y, true))
+        .assign(y, true)
         .global(x)
-        .step(Assign::var(x, 1))
+        .assign(x, 1)
         .local(x)
-        .step(Assign::var(x, 2))
+        .assign(x, 2)
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
