@@ -175,7 +175,7 @@ impl LirLoweringRuntime {
             LirElement::Duplicate => self.code.push(Instruction::Dup),
             LirElement::Get => self.code.push(Instruction::Get),
             LirElement::RGet => self.code.push(Instruction::RGet),
-            LirElement::Interrupt(n) => self.code.push(Instruction::Interrupt(n)),
+            LirElement::Interrupt { n } => self.code.push(Instruction::Interrupt(n)),
             LirElement::Import { namespaced } => {
                 if namespaced {
                     self.code.push(Instruction::NImport);

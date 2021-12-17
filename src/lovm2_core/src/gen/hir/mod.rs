@@ -11,7 +11,6 @@ mod element;
 mod expr;
 mod include;
 mod initialize;
-mod interrupt;
 mod iter;
 mod repeat;
 mod r#return;
@@ -31,7 +30,6 @@ pub use self::element::HirElement;
 pub use self::expr::{Expr, Operator1, Operator2};
 pub use self::include::Include;
 pub use self::initialize::Initialize;
-pub use self::interrupt::Interrupt;
 pub use self::iter::Iter;
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 pub use self::r#return::Return;
@@ -174,7 +172,7 @@ pub trait HasBlock {
     #[inline]
     fn trigger(&mut self, n: u16) -> &mut Self
     {
-        self.block_mut().step(Interrupt::new(n));
+        self.block_mut().trigger(n);
         self
     }
 }
