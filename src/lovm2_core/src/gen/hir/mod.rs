@@ -90,7 +90,7 @@ pub trait HasBlock {
         U: Into<Variable> + Clone,
         T: Into<Expr>,
     {
-        self.block_mut().step(Assign::var(var, expr));
+        self.block_mut().assign(var, expr);
         self
     }
 
