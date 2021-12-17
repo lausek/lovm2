@@ -218,6 +218,12 @@ impl Expr {
         }
     }
 
+    pub fn has_next(self) -> Self {
+        Expr::IterHasNext {
+            expr: Box::new(self),
+        }
+    }
+
     pub fn is_const(&self) -> bool {
         match self {
             Expr::Operation1(_, item) => item.is_const(),
@@ -253,6 +259,12 @@ impl Expr {
         }
     }
 
+    pub fn next(self) -> Self {
+        Expr::IterNext {
+            expr: Box::new(self),
+        }
+    }
+
     pub fn pow<T, U>(left: T, right: U) -> Self
     where
         T: Into<Expr>,
@@ -263,6 +275,12 @@ impl Expr {
             Box::new(left.into()),
             Box::new(right.into()),
         )
+    }
+
+    pub fn reverse(self) -> Self {
+        Expr::IterReverse {
+            expr: Box::new(self),
+        }
     }
 
     pub fn slice<T: Into<Expr>, U: Into<Expr>>(self, start: T, end: U) -> Self {

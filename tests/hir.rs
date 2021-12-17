@@ -745,3 +745,69 @@ fn variable_scoping() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
 }
+
+#[test]
+fn iterator_has_next() {
+    let mut builder = ModuleBuilder::new();
+    let (y, n, it) = &lv2_var!(y, n, it);
+
+    builder
+        .entry()
+        .assign(it, Expr::iter_ranged(0, 1))
+        .global(y)
+        .assign(y, Expr::from(it).has_next())
+        .step(Expr::from(it).next())
+        .global(n)
+        .assign(n, Expr::from(it).has_next())
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        assert_eq!(Value::from(true), *ctx.value_of("y").unwrap());
+        assert_eq!(Value::from(false), *ctx.value_of("n").unwrap());
+    })
+    .unwrap();
+}
+
+#[test]
+fn iterator_reverse() {
+    let mut builder = ModuleBuilder::new();
+    let (y, n, it) = &lv2_var!(y, n, it);
+
+    builder
+        .entry()
+        .assign(it, Expr::iter_ranged(0, 2).reverse())
+        .global(y)
+        .assign(y, Expr::from(it).next())
+        .global(n)
+        .assign(n, Expr::from(it).next())
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        assert_eq!(Value::from(1), *ctx.value_of("y").unwrap());
+        assert_eq!(Value::from(0), *ctx.value_of("n").unwrap());
+    })
+    .unwrap();
+}
+
+#[test]
+fn iterators() {
+    let mut builder = ModuleBuilder::new();
+    let (x, y, it) = &lv2_var!(x, y, it);
+
+    builder
+        .entry()
+        .assign(x, Expr::list().append(1).append(2).append(3))
+        .global(y)
+        .assign(y, Expr::list())
+        .assign(it, Expr::from(x).to_iter().reverse())
+        .repeat_until(Expr::not(Expr::from(it).has_next()))
+        .step(Expr::from(y).append(Expr::from(it).next()));
+
+    builder.entry().trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let expected = vec![3, 2, 1];
+        assert_eq!(Value::from(expected), *ctx.value_of("y").unwrap());
+    })
+    .unwrap();
+}

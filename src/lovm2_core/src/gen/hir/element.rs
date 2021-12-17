@@ -19,6 +19,9 @@ pub enum HirElement {
     Call(Call),
     /// Highlevel `continue` statement
     Continue,
+    Drop {
+        expr: Expr
+    },
     Import {
         name: Expr,
         namespaced: bool,
@@ -61,6 +64,10 @@ impl HirLowering for HirElement {
                 let repeat_start = runtime.loop_mut().unwrap().start();
                 runtime.emit(LirElement::jump(repeat_start));
             }
+            HirElement::Drop { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::Drop);
+            }
             HirElement::Import { name, namespaced} => {
                 name.lower(runtime);
                 let elem = LirElement::Import { namespaced: *namespaced };
@@ -93,6 +100,12 @@ impl From<Branch> for HirElement {
 impl From<Call> for HirElement {
     fn from(call: Call) -> Self {
         HirElement::Call(call)
+    }
+}
+
+impl From<Expr> for HirElement {
+    fn from(expr: Expr) -> Self {
+        HirElement::Drop { expr }
     }
 }
 
