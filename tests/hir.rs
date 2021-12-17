@@ -6,196 +6,188 @@ use lovm2::vm::{Context, Vm};
 
 use test_utils::*;
 
-#[macro_export]
-macro_rules! define_test {
-    {
-        $( $fname:ident { $( $inx:expr ; )* } )*
-            #ensure $ensure:tt
-    } => {{
-        let mut builder = ModuleBuilder::new();
-
-        $(
-            let hir = builder.add(stringify!($fname));
-            $(
-                hir.step($inx);
-            )*
-            hir.trigger(10);
-        )*
-
-        run_module_test(create_vm_with_std(), builder.build().unwrap(), $ensure).unwrap();
-    }};
-}
-
 #[test]
 fn assign_local() {
-    let n = lv2_var!(n);
-    define_test! {
-        main {
-            Assign::var(&n, 4);
-        }
+    let n = &lv2_var!(n);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(4), *frame.value_of(&n).unwrap());
-        })
-    }
+    builder.entry().assign(n, 4).trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn assign_local_add() {
     let n = &lv2_var!(n);
-    define_test! {
-        main {
-            Assign::var(n, 2);
-            Assign::var(n, Expr::add(n, 2));
-        }
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (|ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(n, 2)
+        .assign(n, Expr::add(n, 2))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn assign_incremet_decrement() {
     let (a, b) = &lv2_var!(a, b);
-    define_test! {
-        main {
-            Assign::var(a, 0);
-            Assign::global(b, 1);
-            Assign::increment(a);
-            Assign::decrement(b);
-        }
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (|ctx: &mut Context| {
-            assert_eq!(Value::Int(0), *ctx.value_of("b").unwrap());
+    builder
+        .entry()
+        .assign(a, 0)
+        .global(b)
+        .assign(b, 1)
+        .step(Assign::increment(a))
+        .step(Assign::decrement(b))
+        .trigger(10);
 
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(1), *frame.value_of("a").unwrap());
-        })
-    }
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        assert_eq!(Value::Int(0), *ctx.value_of("b").unwrap());
+
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(1), *frame.value_of("a").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn rem_lowering() {
     let rest = &lv2_var!(rest);
-    define_test! {
-        main {
-            Assign::var(rest, Expr::rem(1, 2));
-        }
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (|ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(1), *frame.value_of("rest").unwrap());
-        })
-    }
+    builder.entry().assign(rest, Expr::rem(1, 2)).trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(1), *frame.value_of("rest").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn easy_loop() {
-    let n = lv2_var!(n);
-    define_test! {
-        main {
-            Assign::var(&n, 0);
-            Repeat::until(Expr::eq(&n, 10))
-                .step(lv2_call!(print, n))
-                .step(Assign::var(&n, Expr::add(&n, 1)));
-            }
+    let n = &lv2_var!(n);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(10), *frame.value_of(&n).unwrap());
-        })
-    }
+    let main_hir = builder.entry();
+    main_hir.assign(n, 0);
+    main_hir
+        .repeat_until(Expr::eq(n, 10))
+        .step(lv2_call!(print, n))
+        .assign(n, Expr::add(n, 1));
+    main_hir.trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn explicit_break() {
-    let n = lv2_var!(n);
-    define_test! {
-        main {
-            Assign::var(&n, 0);
-            Repeat::endless()
-                .step(Assign::var(&n, Expr::add(&n, 1)))
-                .step(Break::new());
-            }
+    let n = &lv2_var!(n);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(1), *frame.value_of(&n).unwrap());
-        })
-    }
+    let main_hir = builder.entry();
+    main_hir.assign(n, 0);
+    main_hir
+        .repeat()
+        .assign(n, Expr::add(n, 1))
+        .step(Break::new());
+    main_hir.trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(1), *frame.value_of("n").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn try_getting() {
-    let (dict, dat0, list, lat0) = lv2_var!(dict, dat0, list, lat0);
-    define_test! {
-        main {
-            Assign::var(&dict, lv2_dict!(0 => 6, 1 => 7));
-            Assign::var(&dat0, lv2_access!(dict, 1));
-            Assign::var(&list, lv2_list!("a", 10, 20., true));
-            Assign::var(&lat0, lv2_access!(list, 1));
-        }
+    let (dict, dat0, list, lat0) = &lv2_var!(dict, dat0, list, lat0);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(7), *frame.value_of(&dat0).unwrap());
-            assert_eq!(Value::Int(10), *frame.value_of(&lat0).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(dict, lv2_dict!(0 => 6, 1 => 7))
+        .assign(dat0, lv2_access!(dict, 1))
+        .assign(list, lv2_list!("a", 10, 20., true))
+        .assign(lat0, lv2_access!(list, 1))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(7), *frame.value_of("dat0").unwrap());
+        assert_eq!(Value::Int(10), *frame.value_of("lat0").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn try_setting() {
-    let list = lv2_var!(list);
-    define_test! {
-        main {
-            Assign::var(&list, lv2_list!("a", 10, 20., true));
-            Assign::set(&lv2_access!(list, 1), 7);
-        }
+    let list = &lv2_var!(list);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            let list = &frame.value_of(&list).unwrap();
-            assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(list, lv2_list!("a", 10, 20., true))
+        .step(Assign::set(&lv2_access!(list, 1), 7))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        let list = &frame.value_of("list").unwrap();
+        assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn try_retrieving_len() {
-    let (dict, ls, lendict, lenls) = lv2_var!(dict, ls, lendict, lenls);
-    define_test! {
-        main {
-            Assign::var(&dict, lv2_dict!(0 => 6, 1 => 7));
-            Assign::var(&ls, lv2_list!(1, 2, 3));
-            Assign::var(&lendict, lv2_call!(len, dict));
-            Assign::var(&lenls, lv2_call!(len, ls));
-        }
+    let (dict, ls, lendict, lenls) = &lv2_var!(dict, ls, lendict, lenls);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(2), *frame.value_of(&lendict).unwrap());
-            assert_eq!(Value::Int(3), *frame.value_of(&lenls).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(dict, lv2_dict!(0 => 6, 1 => 7))
+        .assign(ls, lv2_list!(1, 2, 3))
+        .assign(lendict, lv2_call!(len, dict))
+        .assign(lenls, lv2_call!(len, ls))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(2), *frame.value_of("lendict").unwrap());
+        assert_eq!(Value::Int(3), *frame.value_of("lenls").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn try_casting() {
-    let n = lv2_var!(n);
-    define_test! {
-        main {
-            Assign::var(&n, Conv::to_integer(5.));
-        }
+    let n = &lv2_var!(n);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(5), *frame.value_of(&n).unwrap());
-        })
-    }
+    builder.entry().assign(n, Conv::to_integer(5.)).trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(5), *frame.value_of("n").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
@@ -362,64 +354,77 @@ fn folding_expr() {
 
 #[test]
 fn get_field_from_dict() {
-    let (x, y, z, d1, d2, g) = lv2_var!(x, y, z, d1, d2, g);
-    define_test! {
-        main {
-            Assign::var(&d1, lv2_dict!("x" => 37));
-            Assign::var(&d2, lv2_dict!("x" => lv2_dict!("y" => 42)));
-            Assign::global(&g, lv2_dict!("x" => 67));
-            Assign::var(&x, lv2_access!(d1, "x"));
-            Assign::var(&y, lv2_access!(d2, "x", "y"));
-            Assign::var(&z, lv2_access!(g, "x"));
-        }
+    let (x, y, z, d1, d2, g) = &lv2_var!(x, y, z, d1, d2, g);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(37), *frame.value_of(&x).unwrap());
-            assert_eq!(Value::Int(42), *frame.value_of(&y).unwrap());
-            assert_eq!(Value::Int(67), *frame.value_of(&z).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(d1, lv2_dict!("x" => 37))
+        .assign(d2, lv2_dict!("x" => lv2_dict!("y" => 42)))
+        .global(g)
+        .assign(g, lv2_dict!("x" => 67))
+        .assign(x, lv2_access!(d1, "x"))
+        .assign(y, lv2_access!(d2, "x", "y"))
+        .assign(z, lv2_access!(g, "x"))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(37), *frame.value_of("x").unwrap());
+        assert_eq!(Value::Int(42), *frame.value_of("y").unwrap());
+        assert_eq!(Value::Int(67), *frame.value_of("z").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn set_field_on_dict() {
-    let (d1, d2, g) = lv2_var!(d1, d2, g);
-    define_test! {
-        main {
-            Assign::var(&d1, lv2_dict!());
-            Assign::var(&d2, lv2_dict!("x" => lv2_dict!()));
-            Assign::global(&g, lv2_dict!());
-            Assign::set(&lv2_access!(d1, "x"), 37);
-            Assign::set(&lv2_access!(d2, "x", "y"), 42);
-            Assign::set(&lv2_access!(g, "x"), 67);
-        }
+    let (d1, d2, g) = &lv2_var!(d1, d2, g);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(
-                Value::Int(37),
-                frame.value_of(&d1).unwrap()
-                    .get(&Value::from("x")).unwrap()
-            );
-            assert!(
-                frame.value_of(&d2).unwrap()
-                    .get(&Value::from("x")).unwrap()
-                    .is_ref()
-            );
-            assert_eq!(
-                Value::Int(42),
-                frame.value_of(&d2).unwrap()
-                    .get(&Value::from("x")).unwrap()
-                    .get(&Value::from("y")).unwrap()
-            );
-            assert_eq!(
-                Value::Int(67),
-                ctx.value_of(&g).unwrap()
-                    .get(&Value::from("x")).unwrap()
-            );
-        })
-    }
+    builder
+        .entry()
+        .assign(d1, lv2_dict!())
+        .assign(d2, lv2_dict!("x" => lv2_dict!()))
+        .global(g)
+        .assign(g, lv2_dict!())
+        .step(Assign::set(&lv2_access!(d1, "x"), 37))
+        .step(Assign::set(&lv2_access!(d2, "x", "y"), 42))
+        .step(Assign::set(&lv2_access!(g, "x"), 67))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(
+            Value::Int(37),
+            frame
+                .value_of("d1")
+                .unwrap()
+                .get(&Value::from("x"))
+                .unwrap()
+        );
+        assert!(frame
+            .value_of("d2")
+            .unwrap()
+            .get(&Value::from("x"))
+            .unwrap()
+            .is_ref());
+        assert_eq!(
+            Value::Int(42),
+            frame
+                .value_of("d2")
+                .unwrap()
+                .get(&Value::from("x"))
+                .unwrap()
+                .get(&Value::from("y"))
+                .unwrap()
+        );
+        assert_eq!(
+            Value::Int(67),
+            ctx.value_of("g").unwrap().get(&Value::from("x")).unwrap()
+        );
+    })
+    .unwrap();
 }
 
 #[test]
@@ -451,113 +456,117 @@ fn call_into_vm() {
 
 #[test]
 fn comparison() {
-    let (lt, le1, le2, gt, ge1, ge2) = lv2_var!(lt, le1, le2, gt, ge1, ge2);
-    define_test! {
-        main {
-            Assign::var(&lt, Expr::lt(2, 3));
-            Assign::var(&le1, Expr::le(2, 3));
-            Assign::var(&le2, Expr::le(2, 2));
-            Assign::var(&gt, Expr::gt(3, 2));
-            Assign::var(&ge1, Expr::ge(3, 2));
-            Assign::var(&ge2, Expr::ge(3, 3));
-        }
+    let (lt, le1, le2, gt, ge1, ge2) = &lv2_var!(lt, le1, le2, gt, ge1, ge2);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Bool(true), *frame.value_of(&lt).unwrap());
-            assert_eq!(Value::Bool(true), *frame.value_of(&le1).unwrap());
-            assert_eq!(Value::Bool(true), *frame.value_of(&le2).unwrap());
-            assert_eq!(Value::Bool(true), *frame.value_of(&gt).unwrap());
-            assert_eq!(Value::Bool(true), *frame.value_of(&ge1).unwrap());
-            assert_eq!(Value::Bool(true), *frame.value_of(&ge2).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(lt, Expr::lt(2, 3))
+        .assign(le1, Expr::le(2, 3))
+        .assign(le2, Expr::le(2, 2))
+        .assign(gt, Expr::gt(3, 2))
+        .assign(ge1, Expr::ge(3, 2))
+        .assign(ge2, Expr::ge(3, 3))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Bool(true), *frame.value_of("lt").unwrap());
+        assert_eq!(Value::Bool(true), *frame.value_of("le1").unwrap());
+        assert_eq!(Value::Bool(true), *frame.value_of("le2").unwrap());
+        assert_eq!(Value::Bool(true), *frame.value_of("gt").unwrap());
+        assert_eq!(Value::Bool(true), *frame.value_of("ge1").unwrap());
+        assert_eq!(Value::Bool(true), *frame.value_of("ge2").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn raise_to_power() {
-    let (a, b) = lv2_var!(a, b);
-    define_test! {
-        main {
-            Assign::var(&a, Expr::pow(2, 3));
-            Assign::var(&b, Expr::pow(3., 3.));
-        }
+    let (a, b) = &lv2_var!(a, b);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(8), *frame.value_of(&a).unwrap());
-            assert_eq!(Value::Float(27.), *frame.value_of(&b).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(a, Expr::pow(2, 3))
+        .assign(b, Expr::pow(3., 3.))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(8), *frame.value_of("a").unwrap());
+        assert_eq!(Value::Float(27.), *frame.value_of("b").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn initialize_objects() {
-    let (n, ae, ag, be, bg) = lv2_var!(n, ae, ag, be, bg);
-    define_test! {
-        main {
-            Assign::var(&n, 2);
-            Assign::var(&ae, lv2_list!(1, 2, 3));
-            Assign::var(&ag, lv2_list!(1, &n, 3));
-            Assign::var(&be, lv2_dict!(1 => 2, 2 => 2, 4 => 4));
-            Assign::var(&bg, lv2_dict!(1 => 2, &n => &n, 4 => 4));
-        }
+    let (n, ae, ag, be, bg) = &lv2_var!(n, ae, ag, be, bg);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            let ae = frame.value_of(&ae).unwrap();
-            let ag = frame.value_of(&ag).unwrap();
-            let be = frame.value_of(&be).unwrap();
-            let bg = frame.value_of(&bg).unwrap();
-            assert_eq!(ae, ag);
-            assert_eq!(be, bg);
-        })
-    }
+    builder
+        .entry()
+        .assign(n, 2)
+        .assign(ae, lv2_list!(1, 2, 3))
+        .assign(ag, lv2_list!(1, n, 3))
+        .assign(be, lv2_dict!(1 => 2, 2 => 2, 4 => 4))
+        .assign(bg, lv2_dict!(1 => 2, n => n, 4 => 4))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        let ae = frame.value_of("ae").unwrap();
+        let ag = frame.value_of("ag").unwrap();
+        let be = frame.value_of("be").unwrap();
+        let bg = frame.value_of("bg").unwrap();
+        assert_eq!(ae, ag);
+        assert_eq!(be, bg);
+    })
+    .unwrap();
 }
 
 #[test]
 fn store_without_reference() {
-    let (n, x, y) = lv2_var!(n, x, y);
-    define_test! {
-        main {
-            Assign::var(&n, 2);
-            Assign::var(&x, Expr::from(5).boxed());
-            Assign::var(&y, &x);
-            Assign::set(&y, 7);
-        }
+    let (n, x, y) = &lv2_var!(n, x, y);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
-            assert_eq!(Value::Int(7), *frame.value_of(&y).unwrap());
-        })
-    }
+    builder
+        .entry()
+        .assign(n, 2)
+        .assign(x, Expr::from(5).boxed())
+        .assign(y, x)
+        .step(Assign::set(y, 7))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
+        assert_eq!(Value::Int(7), *frame.value_of("y").unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
 fn create_slice() {
-    let (ls, s) = lv2_var!(ls, s);
-    define_test! {
-        main {
-            Assign::var(&ls, lv2_list!(1, 2, 3, 4, 5));
-            Assign::var(&s, Slice::new(&ls).start(1).end(4));
-            Assign::set(&lv2_access!(s, 1), 9);
-        }
+    let (ls, s) = &lv2_var!(ls, s);
+    let mut builder = ModuleBuilder::new();
 
-        #ensure (move |ctx: &mut Context| {
-            let frame = ctx.frame_mut().unwrap();
-            let ls = frame.value_of(&ls).unwrap();
-            let s = frame.value_of(&s).unwrap();
-            assert_eq!(
-                Value::Int(9),
-                s.get(&Value::Int(1)).unwrap()
-            );
-            assert_eq!(
-                Value::Int(9),
-                ls.get(&Value::Int(2)).unwrap()
-            );
-        })
-    }
+    builder
+        .entry()
+        .assign(ls, lv2_list!(1, 2, 3, 4, 5))
+        .assign(s, Slice::new(ls).start(1).end(4))
+        .step(Assign::set(&lv2_access!(s, 1), 9))
+        .trigger(10);
+
+    run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
+        let frame = ctx.frame_mut().unwrap();
+        let ls = frame.value_of("ls").unwrap();
+        let s = frame.value_of("s").unwrap();
+        assert_eq!(Value::Int(9), s.get(&Value::Int(1)).unwrap());
+        assert_eq!(Value::Int(9), ls.get(&Value::Int(2)).unwrap());
+    })
+    .unwrap();
 }
 
 #[test]
