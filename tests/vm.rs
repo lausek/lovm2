@@ -10,7 +10,7 @@ fn load_hook_none() {
     let mut builder = ModuleBuilder::new();
     let hir = builder.entry();
     hir.step(Include::import("notfound"));
-    hir.step(Interrupt::new(10));
+    hir.trigger(10);
 
     let module = builder.build().unwrap();
 
@@ -29,7 +29,7 @@ fn load_custom_module() {
         .entry()
         .step(Include::import("extern"))
         .step(Assign::var(n, Call::new("extern.calc")))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     let module = builder.build().unwrap();
 
@@ -59,7 +59,7 @@ fn import_global_scope() {
         .entry()
         .step(Include::import_global("extern"))
         .step(Assign::var(n, Call::new("calc")))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     let module = builder.build().unwrap();
 
@@ -90,7 +90,7 @@ fn import_vice_versa() {
         .entry()
         .step(Include::import("extern"))
         .step(Call::new("extern.callextern"))
-        .step(Interrupt::new(10));
+        .trigger(10);
 
     builder
         .add_with_args("callmain", vec![n.clone()])

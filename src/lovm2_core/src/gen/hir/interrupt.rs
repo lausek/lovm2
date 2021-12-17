@@ -9,6 +9,7 @@ pub struct Interrupt {
 }
 
 impl Interrupt {
+    #[deprecated]
     pub fn new(n: u16) -> Self {
         Self { n }
     }
