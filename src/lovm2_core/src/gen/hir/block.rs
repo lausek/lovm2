@@ -40,14 +40,14 @@ impl Block {
     where
         T: Into<Expr>,
     {
-        self.step(Include::import(name));
+        self.0.push(HirElement::Import { name: name.into(), namespaced: true});
     }
 
     pub fn import_global<T>(&mut self, name: T)
     where
         T: Into<Expr>,
     {
-        self.step(Include::import_global(name));
+        self.0.push(HirElement::Import { name: name.into(), namespaced: false});
     }
 
     pub fn last_mut(&mut self) -> Option<&mut HirElement> {

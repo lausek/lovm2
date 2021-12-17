@@ -10,7 +10,10 @@ pub enum HirElement {
     Break(Break),
     Call(Call),
     Continue(Continue),
-    Include(Include),
+    Import {
+        name: Expr,
+        namespaced: bool,
+    },
     Interrupt {
         n: u16,
     },
@@ -37,7 +40,11 @@ impl HirLowering for HirElement {
             HirElement::Break(cmd) => cmd.lower(runtime),
             HirElement::Call(call) => call.lower(runtime),
             HirElement::Continue(cmd) => cmd.lower(runtime),
-            HirElement::Include(include) => include.lower(runtime),
+            HirElement::Import { name, namespaced} => {
+                name.lower(runtime);
+                let elem = LirElement::Import { namespaced: *namespaced };
+                runtime.emit(elem);
+            },
             HirElement::Interrupt { n} => {
                 runtime.emit(LirElement::Interrupt { n: *n });
             }
@@ -83,12 +90,6 @@ impl From<Call> for HirElement {
 impl From<Continue> for HirElement {
     fn from(cmd: Continue) -> Self {
         HirElement::Continue(cmd)
-    }
-}
-
-impl From<Include> for HirElement {
-    fn from(include: Include) -> Self {
-        HirElement::Include(include)
     }
 }
 
