@@ -15,7 +15,9 @@ pub enum HirElement {
         n: u16,
     },
     Repeat(Repeat),
-    Return(Return),
+    Return {
+        expr: Expr,
+    },
     ScopeGlobal {
         ident: Variable,
     },
@@ -40,7 +42,10 @@ impl HirLowering for HirElement {
                 runtime.emit(LirElement::Interrupt { n: *n });
             }
             HirElement::Repeat(repeat) => repeat.lower(runtime),
-            HirElement::Return(ret) => ret.lower(runtime),
+            HirElement::Return { expr} => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::Ret);
+            },
             HirElement::ScopeGlobal { ident } => {
                 runtime.emit(LirElement::ScopeGlobal { ident });
             }
@@ -96,11 +101,5 @@ impl From<Repeat> for HirElement {
 impl From<&mut Repeat> for HirElement {
     fn from(repeat: &mut Repeat) -> Self {
         HirElement::Repeat(repeat.clone())
-    }
-}
-
-impl From<Return> for HirElement {
-    fn from(ret: Return) -> Self {
-        HirElement::Return(ret)
     }
 }
