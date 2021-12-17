@@ -48,8 +48,8 @@ fn assign_incremet_decrement() {
         .assign(a, 0)
         .global(b)
         .assign(b, 1)
-        .step(Assign::increment(a))
-        .step(Assign::decrement(b))
+        .increment(a)
+        .decrement(b)
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {

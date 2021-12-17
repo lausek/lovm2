@@ -36,6 +36,10 @@ impl Block {
         self.0.push(HirElement::Continue);
     }
 
+    pub fn decrement(&mut self, ident: &Variable) {
+        self.0.push(Assign::decrement(ident).into());
+    }
+
     pub fn extend(&mut self, block: Block) {
         self.0.extend(block.0);
     }
@@ -56,6 +60,10 @@ impl Block {
         T: Into<Expr>,
     {
         self.0.push(HirElement::Import { name: name.into(), namespaced: false});
+    }
+
+    pub fn increment(&mut self, ident: &Variable) {
+        self.0.push(Assign::increment(ident).into());
     }
 
     pub fn last_mut(&mut self) -> Option<&mut HirElement> {

@@ -100,6 +100,12 @@ pub trait HasBlock {
     }
 
     #[inline]
+    fn decrement(&mut self, ident: &Variable) -> &mut Self {
+        self.block_mut().decrement(ident);
+        self
+    }
+
+    #[inline]
     fn global(&mut self, var: &Variable) -> &mut Self
     {
         self.block_mut().global(var);
@@ -121,6 +127,12 @@ pub trait HasBlock {
         T: Into<Expr>,
     {
         self.block_mut().import_from(name);
+        self
+    }
+
+    #[inline]
+    fn increment(&mut self, ident: &Variable) -> &mut Self {
+        self.block_mut().increment(ident);
         self
     }
 
