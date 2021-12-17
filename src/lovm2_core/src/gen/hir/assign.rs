@@ -84,6 +84,7 @@ impl Assign {
         }
     }
 
+    #[deprecated]
     /// Increment a variable by one
     pub fn increment<T>(var: &T) -> Self
     where
@@ -98,6 +99,7 @@ impl Assign {
         }
     }
 
+    #[deprecated]
     /// Decrement a variable by one
     pub fn decrement<T>(var: &T) -> Self
     where
