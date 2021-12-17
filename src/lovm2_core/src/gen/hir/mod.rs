@@ -8,7 +8,6 @@ mod branch;
 mod call;
 mod element;
 mod expr;
-mod initialize;
 mod repeat;
 mod slice;
 
@@ -23,7 +22,6 @@ pub use self::branch::Branch;
 pub use self::call::Call;
 pub use self::element::HirElement;
 pub use self::expr::{Expr, Operator1, Operator2};
-pub use self::initialize::Initialize;
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 pub use self::repeat::Repeat;
 pub use self::slice::Slice;

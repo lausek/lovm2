@@ -10,6 +10,7 @@ use super::{Label, Operator};
 /// Sum type for every LIR element.
 #[derive(Clone, Debug)]
 pub enum LirElement<'hir> {
+    Append,
     Call {
         argn: u8,
         ident: &'hir Variable,
