@@ -146,9 +146,7 @@ impl std::iter::IntoIterator for Block {
 }
 
 impl HirLowering for Block {
-    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         for element in self.0.iter() {
             // every call has to leave a return value on stack.

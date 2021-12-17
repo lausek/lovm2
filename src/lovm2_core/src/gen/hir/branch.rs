@@ -34,9 +34,7 @@ impl Branch {
 }
 
 impl HirLowering for Branch {
-    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         lower_map_structure(runtime, &self.branches, &self.default);
     }
