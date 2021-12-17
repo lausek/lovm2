@@ -11,6 +11,14 @@ impl Block {
         Self(vec![])
     }
 
+    pub fn assign<U, T>(&mut self, var: &U, expr: T)
+    where
+        U: Into<Variable> + Clone,
+        T: Into<Expr>,
+    {
+        self.step(Assign::var(var, expr));
+    }
+
     pub fn branch(&mut self) -> &mut Branch {
         self.step(Branch::new());
 

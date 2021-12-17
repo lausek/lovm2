@@ -8,9 +8,7 @@ fn load_avoid_sigabrt() {
     use std::path::Path;
 
     let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
-    hir.import("io");
-    hir.trigger(10);
+    builder.entry().import("io").trigger(10);
 
     let module = builder.build().unwrap();
 
