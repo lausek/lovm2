@@ -367,9 +367,7 @@ impl From<&Variable> for Expr {
 }
 
 impl HirLowering for Expr {
-    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         match self {
             Expr::Append { base, value } => {
@@ -513,21 +511,18 @@ impl ExprBranch {
 }
 
 impl HirLowering for ExprBranch {
-    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         super::branch::lower_map_structure(runtime, &self.branches, &self.default);
     }
 }
 
-fn lower_insert<'hir, 'lir>(
+fn lower_insert<'lir, 'hir: 'lir>(
     runtime: &mut HirLoweringRuntime<'lir>,
     base: &'hir Expr,
     key: &'hir Expr,
     value: &'hir Expr,
-) where
-    'hir: 'lir,
+)
 {
     base.lower(runtime);
 
@@ -539,14 +534,12 @@ fn lower_insert<'hir, 'lir>(
     runtime.emit(LirElement::Set);
 }
 
-// TODO: 'lir, 'hir : 'lir instead of where clause
-fn lower_slice<'hir, 'lir>(
+fn lower_slice<'lir, 'hir: 'lir>(
     runtime: &mut HirLoweringRuntime<'lir>,
     target: &'hir Expr,
     start: &'hir Expr,
     end: &'hir Expr,
-) where
-    'hir: 'lir,
+)
 {
     target.lower(runtime);
     start.lower(runtime);

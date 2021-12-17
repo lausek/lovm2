@@ -39,9 +39,7 @@ pub enum HirElement {
 }
 
 impl HirLowering for HirElement {
-    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         match self {
             HirElement::AssignReference { target, source } => {

@@ -40,9 +40,7 @@ impl Call {
 }
 
 impl HirLowering for Call {
-    fn lower<'hir, 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    where
-        'hir: 'lir,
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         // calling convention is pascal-style i.e. f(a, b)
         // will be lowered as:
