@@ -37,20 +37,19 @@ lovm2 = "0.4.9"
 use lovm2::prelude::*;
 
 let mut module = ModuleBuilder::new();
+let n = &lv2_var!(n);
 
 // a module needs a code object called `main`
 // if you want to make it runnable
 let main_hir = module.entry();
 
 // set the local variable n to 10
-main_hir.step(Assign::var(&lv2_var!(n), 10));
+main_hir.assign(n, 10);
 
 // `print` is a builtin function. the `lv2_var!` macro
 // ensures that the given identifier is not confused
 // with a string.
-main_hir.step(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
-// ... this is equivalent to the developer-friendly version:
-main_hir.step(lv2_call!(print, n, "Hello World"));
+main_hir.step(Call::new("print").arg(n).arg("Hello World"));
 
 // creates a `Module` from the `ModuleBuilder`
 let module = module.build().unwrap();
