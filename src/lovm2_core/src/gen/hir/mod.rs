@@ -107,9 +107,20 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn trigger(&mut self, n: u16) -> &mut Self
+    fn import<T>(&mut self, name: T) -> &mut Self
+    where
+        T: Into<Expr>,
     {
-        self.block_mut().step(Interrupt::new(n));
+        self.block_mut().import(name);
+        self
+    }
+
+    #[inline]
+    fn import_global<T>(&mut self, name: T) -> &mut Self
+    where
+        T: Into<Expr>,
+    {
+        self.block_mut().import_global(name);
         self
     }
 
@@ -157,6 +168,13 @@ pub trait HasBlock {
         T: Into<HirElement>,
     {
         self.block_mut().step(element);
+        self
+    }
+
+    #[inline]
+    fn trigger(&mut self, n: u16) -> &mut Self
+    {
+        self.block_mut().step(Interrupt::new(n));
         self
     }
 }
