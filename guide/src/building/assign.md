@@ -3,13 +3,28 @@
 Whenever a function is called, the call stack is adjusted guaranteeing that no local variables will interfere each other. To create or change a local variable, it is sufficient to use this construct:
 
 ``` rust,no_run
-Assign::local(&lv2_var!(n), expr)
+use lovm2::prelude::*;
+
+#fn main() {
+    let n = &lv2_var!(n);
+    builder
+        .entry()
+        .assign(n, expr)
+#}
 ```
 
 It is possible to store data in the global scope allowing values to live across function calls. This requires usage of the following assignment variant:
 
 ``` rust,no_run
-Assign::global(&lv2_var!(n), expr)
+use lovm2::prelude::*;
+
+#fn main() {
+    let n = &lv2_var!(n);
+    builder
+        .entry()
+        .global(n)
+        .assign(n, expr)
+#}
 ```
 
 `Assign::increment(n)` and `Assign::decrement(n)` are also quite handy for updating variable values.

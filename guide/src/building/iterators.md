@@ -40,9 +40,9 @@ If you want to control the iterator more granularly, feel free to use `Iter::has
 ``` rust,no_run
 let (it, item) = &lv2_var!(it, item);
 
-main_hir.step(Assign::local(it, Iter::create(lv2_list!(1, 2, 3, 4))));
+main_hir.assign(it, Iter::create(lv2_list!(1, 2, 3, 4)));
 
 main_hir
     .repeat_until(Expr::not(Iter::has_next(it)))
-    .step(Assign::local(item, Iter::next(it)));
+    .assign(item, Iter::next(it));
 ```

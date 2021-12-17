@@ -30,7 +30,7 @@ let f_body = Expr::branch().add_condition(Expr::eq(n, 2), "a").default_value("b"
 
 builder
     .add_with_args("f", vec![n])
-    .step(Return::value(f_body));
+    .return_value(f_body);
 ```
 
 > **Note:** `ExprBranch` must always return a value meaning that you have to call the `default_value` method at least once. Otherwise the compiler will complain that a structure of type `ExprBranchIncomplete` cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.
@@ -45,11 +45,11 @@ let branch = main.branch();
 
 branch
     .add_condition(Expr::eq(n, 2))
-    .step(Return::value(1));
+    .return_value(1);
 
 branch
     .default_condition()
-    .step(Return::value(0));
+    .return_value(0);
 ```
 
 The representation will be translated temporarily to the following optimized LIR. As you can see, a lot of labels (prefixed with a `.`) got involved right now. Everything between `.cond_0`'s start and end label is derived from our first conditions predicate and body. The `JumpIfFalse` instruction separates them by making sure that the body will be skipped if the expression evaluates to false. As usual, whenever we hit a return instruction, the function will terminate assuring that we will not fall through into our default branch.

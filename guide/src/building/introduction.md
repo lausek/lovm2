@@ -8,13 +8,11 @@ use lovm2::prelude::*;
 #fn main() {
 let mut builder = ModuleBuilder::new();
 
-// creates the entry point `HIR` and returns a mutable reference.
+// creates the entry point `HIR` and trigger a debug interrupt
 // this is actually a shortcut for builder.add(ENTRY_POINT)
-let main_hir = builder.entry();
-
-// modify `main_hir` with statements
-// if in doubt, just call the `step` method and pass it the hir element
-main_hir.step(Interrupt::new(10));
+builder
+    .entry()
+    .trigger(10);
 
 let module = builder.build().except("compile error");
 println!("{}", module);
@@ -26,6 +24,9 @@ The main generation functionality is exposed via `Block` and every structure tha
 - `step(..)` append a new statement to the block.
 - `branch()` create a new branch at the current position. This returns a `BranchBuilder`.
 - `repeat()` and `repeat_until(..)` which return a mutable reference to a new block. The first variant is an endless loop, while the latter supports breaking once a condition is met.
+- `return_nil()`, `return_value(<expr>)` return early from a block.
+- `assign(<var>, <expr>)` stores an evaluated expression in `<var>`.
+- `global(<var>)`, `local(<var>)` change scope of `<var>` .
 
 ## Functions
 
