@@ -29,7 +29,7 @@ pub use self::expr::{Expr, Operator1, Operator2};
 pub use self::initialize::Initialize;
 pub use self::iter::Iter;
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
-pub use self::repeat::{Break, Continue, Repeat};
+pub use self::repeat::Repeat;
 pub use self::slice::Slice;
 
 /// Highlevel representation of a function
@@ -91,6 +91,18 @@ pub trait HasBlock {
     #[inline]
     fn branch(&mut self) -> &mut Branch {
         self.block_mut().branch()
+    }
+
+    #[inline]
+    fn break_repeat(&mut self) -> &mut Self {
+        self.block_mut().break_repeat();
+        self
+    }
+
+    #[inline]
+    fn continue_repeat(&mut self) -> &mut Self {
+        self.block_mut().continue_repeat();
+        self
     }
 
     #[inline]

@@ -7,9 +7,11 @@ use super::*;
 pub enum HirElement {
     Assign(Assign),
     Branch(Branch),
-    Break(Break),
+    /// Highlevel `break` statement
+    Break,
     Call(Call),
-    Continue(Continue),
+    /// Highlevel `continue` statement
+    Continue,
     Import {
         name: Expr,
         namespaced: bool,
@@ -37,14 +39,20 @@ impl HirLowering for HirElement {
         match self {
             HirElement::Assign(assign) => assign.lower(runtime),
             HirElement::Branch(branch) => branch.lower(runtime),
-            HirElement::Break(cmd) => cmd.lower(runtime),
+            HirElement::Break => {
+                let repeat_end = runtime.loop_mut().unwrap().end();
+                runtime.emit(LirElement::jump(repeat_end));
+            }
             HirElement::Call(call) => call.lower(runtime),
-            HirElement::Continue(cmd) => cmd.lower(runtime),
+            HirElement::Continue => {
+                let repeat_start = runtime.loop_mut().unwrap().start();
+                runtime.emit(LirElement::jump(repeat_start));
+            }
             HirElement::Import { name, namespaced} => {
                 name.lower(runtime);
                 let elem = LirElement::Import { namespaced: *namespaced };
                 runtime.emit(elem);
-            },
+            }
             HirElement::Interrupt { n} => {
                 runtime.emit(LirElement::Interrupt { n: *n });
             }
@@ -75,21 +83,9 @@ impl From<Branch> for HirElement {
     }
 }
 
-impl From<Break> for HirElement {
-    fn from(cmd: Break) -> Self {
-        HirElement::Break(cmd)
-    }
-}
-
 impl From<Call> for HirElement {
     fn from(call: Call) -> Self {
         HirElement::Call(call)
-    }
-}
-
-impl From<Continue> for HirElement {
-    fn from(cmd: Continue) -> Self {
-        HirElement::Continue(cmd)
     }
 }
 

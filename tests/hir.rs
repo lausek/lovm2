@@ -102,10 +102,7 @@ fn explicit_break() {
 
     let main_hir = builder.entry();
     main_hir.assign(n, 0);
-    main_hir
-        .repeat()
-        .assign(n, Expr::add(n, 1))
-        .step(Break::new());
+    main_hir.repeat().assign(n, Expr::add(n, 1)).break_repeat();
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {

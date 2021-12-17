@@ -28,6 +28,14 @@ impl Block {
         }
     }
 
+    pub fn break_repeat(&mut self) {
+        self.0.push(HirElement::Break);
+    }
+
+    pub fn continue_repeat(&mut self) {
+        self.0.push(HirElement::Continue);
+    }
+
     pub fn extend(&mut self, block: Block) {
         self.0.extend(block.0);
     }
