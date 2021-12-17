@@ -103,6 +103,11 @@ impl Block {
     {
         self.0.push(hir.into());
     }
+
+    pub fn trigger(&mut self, n: u16)
+    {
+        self.0.push(HirElement::Interrupt { n });
+    }
 }
 
 impl Default for Block {

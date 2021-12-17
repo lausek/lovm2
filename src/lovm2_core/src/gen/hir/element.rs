@@ -11,7 +11,9 @@ pub enum HirElement {
     Call(Call),
     Continue(Continue),
     Include(Include),
-    Interrupt(Interrupt),
+    Interrupt {
+        n: u16,
+    },
     Repeat(Repeat),
     Return(Return),
     ScopeGlobal {
@@ -34,7 +36,9 @@ impl HirLowering for HirElement {
             HirElement::Call(call) => call.lower(runtime),
             HirElement::Continue(cmd) => cmd.lower(runtime),
             HirElement::Include(include) => include.lower(runtime),
-            HirElement::Interrupt(interrupt) => interrupt.lower(runtime),
+            HirElement::Interrupt { n} => {
+                runtime.emit(LirElement::Interrupt { n: *n });
+            }
             HirElement::Repeat(repeat) => repeat.lower(runtime),
             HirElement::Return(ret) => ret.lower(runtime),
             HirElement::ScopeGlobal { ident } => {
@@ -80,12 +84,6 @@ impl From<Continue> for HirElement {
 impl From<Include> for HirElement {
     fn from(include: Include) -> Self {
         HirElement::Include(include)
-    }
-}
-
-impl From<Interrupt> for HirElement {
-    fn from(interrupt: Interrupt) -> Self {
-        HirElement::Interrupt(interrupt)
     }
 }
 
