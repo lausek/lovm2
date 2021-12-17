@@ -92,6 +92,7 @@ impl LirLoweringRuntime {
 
     fn emit(&mut self, lir_element: LirElement) -> Lovm2CompileResult<()> {
         match lir_element {
+            LirElement::Append => self.code.push(Instruction::Append),
             LirElement::Call { argn, ident } => {
                 let iidx = self.index_ident(&ident) as u16;
 

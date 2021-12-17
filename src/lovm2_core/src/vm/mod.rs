@@ -349,6 +349,12 @@ impl Vm {
                         _ => return err_invalid_set_target(target),
                     }
                 }
+                Instruction::Append => {
+                    let val = self.ctx.pop_value()?;
+                    let mut target = self.ctx.pop_value()?;
+                    let key = val.len()? as i64;
+                    target.set(&key.into(), val)?;
+                }
                 Instruction::Add => value_operation!(self, add_inplace),
                 Instruction::Sub => value_operation!(self, sub_inplace),
                 Instruction::Mul => value_operation!(self, mul_inplace),

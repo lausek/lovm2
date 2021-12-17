@@ -33,6 +33,10 @@ macro_rules! auto_implement {
 #[derive(Clone, Debug)]
 pub enum Expr {
     Access(Access),
+    Append {
+        base: Box<Expr>,
+        value: Box<Expr>,
+    },
     Branch(Box<ExprBranch>),
     Call(Call),
     /// Do type conversion on a lowered `Expr` at runtime
@@ -40,7 +44,12 @@ pub enum Expr {
         ty: ValueType,
         expr: Box<Expr>,
     },
-    DynamicValue(Initialize),
+    //DynamicValue(Initialize),
+    Insert {
+        base: Box<Expr>,
+        key: Box<Expr>,
+        value: Box<Expr>,
+    },
     /// Create an iterator from some collection
     IterCreate {
         expr: Box<Expr>,
@@ -62,7 +71,10 @@ pub enum Expr {
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
     Slice(Slice),
-    Value { val: Value, boxed: bool },
+    Value {
+        val: Value,
+        boxed: bool,
+    },
     Variable(Variable),
 }
 
@@ -96,10 +108,17 @@ pub enum Operator1 {
 }
 
 impl Expr {
+    pub fn append<T: Into<Expr>>(self, value: T) -> Self {
+        Self::Append {
+            base: Box::new(self.boxed()),
+            value: Box::new(value.into()),
+        }
+    }
+
     pub fn boxed(mut self) -> Self {
         match &mut self {
             Expr::Value { boxed, .. } => *boxed = true,
-            _ => unimplemented!(),
+            _ => {},
         }
         self
     }
@@ -118,22 +137,26 @@ impl Expr {
     pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
         match self {
             Expr::Access(_) => todo!(),
+            Expr::Append { base, value } => {
+                let mut base = base.eval(ctx)?;
+                let (key, value) = (base.len()? as i64, value.eval(ctx)?);
+                base.set(&key.into(), value)?;
+                Ok(base)
+            }
             Expr::Branch(_) => todo!(),
             Expr::Call(_) => todo!(),
             Expr::Conv { .. } => todo!(),
-            Expr::DynamicValue(init) => {
-                let mut base = init.base.clone();
-                for (key, val) in init.slots.iter() {
-                    let (key, val) = (key.eval(ctx)?, val.eval(ctx)?);
-                    base.set(&key, val)?;
-                }
+            Expr::Insert { base, key, value } => {
+                let mut base = base.eval(ctx)?;
+                let (key, value) = (key.eval(ctx)?, value.eval(ctx)?);
+                base.set(&key, value)?;
                 Ok(base)
             }
-            Expr::IterCreate { .. } |
-            Expr::IterCreateRanged { .. } |
-            Expr::IterHasNext { .. } |
-            Expr::IterNext { .. } |
-            Expr::IterReverse { .. } => {
+            Expr::IterCreate { .. }
+            | Expr::IterCreateRanged { .. }
+            | Expr::IterHasNext { .. }
+            | Expr::IterNext { .. }
+            | Expr::IterReverse { .. } => {
                 todo!()
             }
             Expr::Operation1(_, _) => todo!(),
@@ -189,13 +212,30 @@ impl Expr {
         }
     }
 
+    pub fn insert<T: Into<Expr>, U: Into<Expr>>(mut self, key: T, value: U) -> Self {
+        if let Expr::Value { val: Value::Dict(_) | Value::List(_), boxed} = &mut self {
+            *boxed = true;
+        }
+
+        Self::Insert {
+            base: Box::new(self),
+            key: Box::new(key.into()),
+            value: Box::new(value.into()),
+        }
+    }
+
     #[deprecated]
     pub fn iter<T: Into<Expr>>(expr: T) -> Self {
-        Self::IterCreate { expr: Box::new(expr.into()) }
+        Self::IterCreate {
+            expr: Box::new(expr.into()),
+        }
     }
 
     pub fn iter_ranged<T: Into<Expr>, U: Into<Expr>>(from: T, to: U) -> Self {
-        Self::IterCreateRanged { from: Box::new(from.into()), to: Box::new(to.into()) }
+        Self::IterCreateRanged {
+            from: Box::new(from.into()),
+            to: Box::new(to.into()),
+        }
     }
 
     pub fn list() -> Self {
@@ -217,24 +257,21 @@ impl Expr {
         )
     }
 
-    pub fn to_bool(self) -> Self
-    {
+    pub fn to_bool(self) -> Self {
         Self::Conv {
             ty: ValueType::Bool,
             expr: Box::new(self),
         }
     }
 
-    pub fn to_float(self) -> Self
-    {
+    pub fn to_float(self) -> Self {
         Self::Conv {
             ty: ValueType::Float,
             expr: Box::new(self),
         }
     }
 
-    pub fn to_integer(self) -> Self
-    {
+    pub fn to_integer(self) -> Self {
         Self::Conv {
             ty: ValueType::Int,
             expr: Box::new(self),
@@ -247,8 +284,7 @@ impl Expr {
         }
     }
 
-    pub fn to_str(self) -> Self
-    {
+    pub fn to_str(self) -> Self {
         Self::Conv {
             ty: ValueType::Str,
             expr: Box::new(self),
@@ -293,12 +329,6 @@ impl From<ExprBranch> for Expr {
 impl From<Call> for Expr {
     fn from(call: Call) -> Expr {
         Expr::Call(call)
-    }
-}
-
-impl From<Initialize> for Expr {
-    fn from(init: Initialize) -> Expr {
-        Expr::DynamicValue(init)
     }
 }
 
@@ -358,13 +388,20 @@ impl HirLowering for Expr {
                     runtime.emit(LirElement::Get);
                 }
             }
+            Expr::Append { base, value } => {
+                base.lower(runtime);
+                value.lower(runtime);
+                runtime.emit(LirElement::Append);
+            }
             Expr::Branch(branch) => branch.lower(runtime),
             Expr::Call(call) => call.lower(runtime),
             Expr::Conv { ty, expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Conv { ty: ty.clone() });
             }
-            Expr::DynamicValue(init) => init.lower(runtime),
+            Expr::Insert { base, key, value } => {
+                lower_insert(runtime, base, key, value);
+            }
             Expr::IterCreate { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::IterCreate);
@@ -420,7 +457,7 @@ impl HirLowering for Expr {
             Expr::Value { ref val, boxed } => {
                 runtime.emit(LirElement::push_constant(val));
 
-                if *boxed {
+                if *boxed || matches!(val, Value::Dict(_) | Value::List(_)) {
                     runtime.emit(LirElement::Box);
                 }
             }
@@ -492,4 +529,31 @@ impl HirLowering for ExprBranch {
     {
         super::branch::lower_map_structure(runtime, &self.branches, &self.default);
     }
+}
+
+fn lower_insert<'hir, 'lir>(
+    runtime: &mut HirLoweringRuntime<'lir>,
+    base: &'hir Expr,
+    key: &'hir Expr,
+    value: &'hir Expr,
+) where
+    'hir: 'lir,
+{
+    //let requires_box = matches!(&base, Value::Dict(_) | Value::List(_));
+
+    base.lower(runtime);
+    //runtime.emit(LirElement::push_constant(&base));
+
+    /*
+    if requires_box {
+        runtime.emit(LirElement::Box);
+    }
+    */
+
+    // slots are only allowed on `Dict` and `List`
+    runtime.emit(LirElement::Duplicate);
+    key.lower(runtime);
+    runtime.emit(LirElement::RGet);
+    value.lower(runtime);
+    runtime.emit(LirElement::Set);
 }

@@ -29,9 +29,9 @@ macro_rules! lv2_call {
 #[macro_export]
 macro_rules! lv2_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
-        let mut dict = Initialize::dict();
+        let mut dict = Expr::dict();
         $(
-            dict.add_by_key($key, $val);
+            dict = dict.insert($key, $val);
         )*
         dict
     }};
@@ -41,9 +41,9 @@ macro_rules! lv2_dict {
 #[macro_export]
 macro_rules! lv2_list {
     ($($val:expr),* $(,)?) => {{
-        let mut list = Initialize::list();
+        let mut list = Expr::list();
         $(
-            list.add($val);
+            list = list.append($val);
         )*
         list
     }};
