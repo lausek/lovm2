@@ -555,7 +555,7 @@ fn create_slice() {
     builder
         .entry()
         .assign(ls, lv2_list!(1, 2, 3, 4, 5))
-        .assign(s, Slice::new(ls).start(1).end(4))
+        .assign(s, Expr::from(ls).slice(1, 4))
         .step(Assign::set(&lv2_access!(s, 1), 9))
         .trigger(10);
 

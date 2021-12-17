@@ -9,7 +9,6 @@ mod call;
 mod element;
 mod expr;
 mod repeat;
-mod slice;
 
 use crate::value::Value;
 use crate::var::Variable;
@@ -24,7 +23,6 @@ pub use self::element::HirElement;
 pub use self::expr::{Expr, Operator1, Operator2};
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 pub use self::repeat::Repeat;
-pub use self::slice::Slice;
 
 /// Highlevel representation of a function
 #[derive(Clone)]
