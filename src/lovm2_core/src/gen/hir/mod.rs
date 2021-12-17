@@ -13,7 +13,6 @@ mod include;
 mod initialize;
 mod iter;
 mod repeat;
-mod r#return;
 mod slice;
 
 use crate::value::Value;
@@ -32,7 +31,6 @@ pub use self::include::Include;
 pub use self::initialize::Initialize;
 pub use self::iter::Iter;
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
-pub use self::r#return::Return;
 pub use self::repeat::{Break, Continue, Repeat};
 pub use self::slice::Slice;
 

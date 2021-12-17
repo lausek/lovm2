@@ -90,11 +90,11 @@ impl Block {
     }
 
     pub fn return_nil(&mut self) {
-        self.0.push(Return::nil().into());
+        self.0.push(HirElement::Return { expr: Value::Nil.into() });
     }
 
-    pub fn return_value<T: Into<Expr>>(&mut self, value: T) {
-        self.0.push(Return::value(value).into());
+    pub fn return_value<T: Into<Expr>>(&mut self, expr: T) {
+        self.0.push(HirElement::Return { expr: expr.into() });
     }
 
     pub fn step<T>(&mut self, hir: T)
