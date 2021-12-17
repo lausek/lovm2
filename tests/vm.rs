@@ -8,9 +8,8 @@ use lovm2::vm::Vm;
 #[test]
 fn load_hook_none() {
     let mut builder = ModuleBuilder::new();
-    let hir = builder.entry();
-    hir.step(Include::import("notfound"));
-    hir.trigger(10);
+
+    builder.entry().import("notfound").trigger(10);
 
     let module = builder.build().unwrap();
 
@@ -27,8 +26,8 @@ fn load_custom_module() {
 
     builder
         .entry()
-        .step(Include::import("extern"))
-        .step(Assign::var(n, Call::new("extern.calc")))
+        .import("extern")
+        .assign(n, Call::new("extern.calc"))
         .trigger(10);
 
     let module = builder.build().unwrap();
@@ -57,8 +56,8 @@ fn import_global_scope() {
 
     builder
         .entry()
-        .step(Include::import_global("extern"))
-        .step(Assign::var(n, Call::new("calc")))
+        .import_global("extern")
+        .assign(n, Call::new("calc"))
         .trigger(10);
 
     let module = builder.build().unwrap();
@@ -88,14 +87,14 @@ fn import_vice_versa() {
     let mut builder = ModuleBuilder::named("main");
     builder
         .entry()
-        .step(Include::import("extern"))
+        .import("extern")
         .step(Call::new("extern.callextern"))
         .trigger(10);
 
     builder
         .add_with_args("callmain", vec![n.clone()])
         .global(result)
-        .step(Assign::var(result, n))
+        .assign(result, n)
         .return_value(2);
 
     let module = builder.build().unwrap();
@@ -107,7 +106,7 @@ fn import_vice_versa() {
 
         builder
             .add("callextern")
-            .step(Include::import("main"))
+            .import("main")
             .step(Call::new("main.callmain").arg(PASSED_VALUE));
 
         Ok(Some(builder.build().unwrap().into()))

@@ -11,37 +11,6 @@ impl Block {
         Self(vec![])
     }
 
-    pub fn extend(&mut self, block: Block) {
-        self.0.extend(block.0);
-    }
-
-    pub fn last_mut(&mut self) -> Option<&mut HirElement> {
-        self.0.last_mut()
-    }
-
-    pub fn return_nil(&mut self) {
-        self.0.push(Return::nil().into());
-    }
-
-    pub fn return_value<T: Into<Expr>>(&mut self, value: T) {
-        self.0.push(Return::value(value).into());
-    }
-
-    pub fn global(&mut self, ident: &Variable) {
-        self.0.push(HirElement::ScopeGlobal { ident: ident.clone() });
-    }
-
-    pub fn local(&mut self, ident: &Variable) {
-        self.0.push(HirElement::ScopeLocal { ident: ident.clone() });
-    }
-
-    pub fn step<T>(&mut self, hir: T)
-    where
-        T: Into<HirElement>,
-    {
-        self.0.push(hir.into());
-    }
-
     pub fn branch(&mut self) -> &mut Branch {
         self.step(Branch::new());
 
@@ -49,6 +18,36 @@ impl Block {
             HirElement::Branch(ref mut r) => r,
             _ => unreachable!(),
         }
+    }
+
+    pub fn extend(&mut self, block: Block) {
+        self.0.extend(block.0);
+    }
+
+    pub fn global(&mut self, ident: &Variable) {
+        self.0.push(HirElement::ScopeGlobal { ident: ident.clone() });
+    }
+
+    pub fn import<T>(&mut self, name: T)
+    where
+        T: Into<Expr>,
+    {
+        self.step(Include::import(name));
+    }
+
+    pub fn import_global<T>(&mut self, name: T)
+    where
+        T: Into<Expr>,
+    {
+        self.step(Include::import_global(name));
+    }
+
+    pub fn last_mut(&mut self) -> Option<&mut HirElement> {
+        self.0.last_mut()
+    }
+
+    pub fn local(&mut self, ident: &Variable) {
+        self.0.push(HirElement::ScopeLocal { ident: ident.clone() });
     }
 
     pub fn repeat(&mut self) -> &mut Repeat {
@@ -80,6 +79,21 @@ impl Block {
             HirElement::Repeat(ref mut r) => r,
             _ => unreachable!(),
         }
+    }
+
+    pub fn return_nil(&mut self) {
+        self.0.push(Return::nil().into());
+    }
+
+    pub fn return_value<T: Into<Expr>>(&mut self, value: T) {
+        self.0.push(Return::value(value).into());
+    }
+
+    pub fn step<T>(&mut self, hir: T)
+    where
+        T: Into<HirElement>,
+    {
+        self.0.push(hir.into());
     }
 }
 

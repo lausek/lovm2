@@ -10,6 +10,7 @@ pub struct Include {
 }
 
 impl Include {
+    #[deprecated]
     pub fn import<T>(name: T) -> Self
     where
         T: Into<Expr>,
@@ -20,6 +21,7 @@ impl Include {
         }
     }
 
+    #[deprecated]
     pub fn import_global<T>(name: T) -> Self
     where
         T: Into<Expr>,
