@@ -5,7 +5,14 @@ use super::*;
 /// Sum type for every HIR element
 #[derive(Clone)]
 pub enum HirElement {
-    Assign(Assign),
+    AssignReference {
+        target: Expr,
+        source: Expr,
+    },
+    AssignVariable {
+        target: Variable,
+        source: Expr,
+    },
     Branch(Branch),
     /// Highlevel `break` statement
     Break,
@@ -37,7 +44,15 @@ impl HirLowering for HirElement {
         'hir: 'lir,
     {
         match self {
-            HirElement::Assign(assign) => assign.lower(runtime),
+            HirElement::AssignReference { target, source } => {
+                target.lower(runtime);
+                source.lower(runtime);
+                runtime.emit(LirElement::Set);
+            }
+            HirElement::AssignVariable { target, source } => {
+                source.lower(runtime);
+                runtime.emit(LirElement::store(target));
+            }
             HirElement::Branch(branch) => branch.lower(runtime),
             HirElement::Break => {
                 let repeat_end = runtime.loop_mut().unwrap().end();
@@ -68,12 +83,6 @@ impl HirLowering for HirElement {
                 runtime.emit(LirElement::ScopeLocal { ident });
             }
         }
-    }
-}
-
-impl From<Assign> for HirElement {
-    fn from(assign: Assign) -> Self {
-        HirElement::Assign(assign)
     }
 }
 

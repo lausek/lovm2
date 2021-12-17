@@ -1,6 +1,5 @@
 #![allow(clippy::new_without_default)]
 #![allow(clippy::wrong_self_convention)]
-//#![feature(result_cloned)]
 
 pub mod code;
 pub mod error;

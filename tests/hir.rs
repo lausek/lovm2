@@ -141,7 +141,7 @@ fn try_setting() {
     builder
         .entry()
         .assign(list, lv2_list!("a", 10, 20., true))
-        .step(Assign::set(&lv2_access!(list, 1), 7))
+        .set(lv2_access!(list, 1), 7)
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -388,9 +388,9 @@ fn set_field_on_dict() {
         .assign(d2, lv2_dict!("x" => lv2_dict!()))
         .global(g)
         .assign(g, lv2_dict!())
-        .step(Assign::set(&lv2_access!(d1, "x"), 37))
-        .step(Assign::set(&lv2_access!(d2, "x", "y"), 42))
-        .step(Assign::set(&lv2_access!(g, "x"), 67))
+        .set(lv2_access!(d1, "x"), 37)
+        .set(lv2_access!(d2, "x", "y"), 42)
+        .set(lv2_access!(g, "x"), 67)
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -536,7 +536,7 @@ fn store_without_reference() {
         .assign(n, 2)
         .assign(x, Expr::from(5).boxed())
         .assign(y, x)
-        .step(Assign::set(y, 7))
+        .set(y, 7)
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -556,7 +556,7 @@ fn create_slice() {
         .entry()
         .assign(ls, lv2_list!(1, 2, 3, 4, 5))
         .assign(s, Expr::from(ls).slice(1, 4))
-        .step(Assign::set(&lv2_access!(s, 1), 9))
+        .set(lv2_access!(s, 1), 9)
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
