@@ -11,12 +11,14 @@ pub struct Return {
 }
 
 impl Return {
+    #[deprecated]
     pub fn nil() -> Self {
         Self {
             expr: Value::Nil.into(),
         }
     }
 
+    #[deprecated]
     pub fn value<T>(expr: T) -> Self
     where
         T: Into<Expr>,

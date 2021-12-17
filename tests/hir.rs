@@ -290,7 +290,7 @@ fn return_values() {
     let mut builder = ModuleBuilder::new();
     let n = lv2_var!(n);
 
-    builder.add("returner").step(Return::value(10));
+    builder.add("returner").return_value(10);
 
     builder
         .entry()
