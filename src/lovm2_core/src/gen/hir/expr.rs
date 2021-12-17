@@ -71,7 +71,11 @@ pub enum Expr {
     },
     Operation1(Operator1, Box<Expr>),
     Operation2(Operator2, Box<Expr>, Box<Expr>),
-    Slice(Slice),
+    Slice {
+        target: Box<Expr>,
+        start: Box<Expr>,
+        end: Box<Expr>,
+    },
     Value {
         val: Value,
         boxed: bool,
@@ -110,7 +114,7 @@ pub enum Operator1 {
 
 impl Expr {
     pub fn append<T: Into<Expr>>(self, value: T) -> Self {
-        Self::Append {
+        Expr::Append {
             base: Box::new(self.boxed()),
             value: Box::new(value.into()),
         }
@@ -163,7 +167,7 @@ impl Expr {
             Expr::Operation1(_, _) => todo!(),
             Expr::Operation2(_, _, _) => todo!(),
 
-            Expr::Slice(_) => todo!(),
+            Expr::Slice { .. } => todo!(),
             Expr::Value { val, .. } => Ok(val.clone()),
             // TODO: wait until `result_cloned` is stabilized
             Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
@@ -218,7 +222,7 @@ impl Expr {
             *boxed = true;
         }
 
-        Self::Insert {
+        Expr::Insert {
             base: Box::new(self),
             key: Box::new(key.into()),
             value: Box::new(value.into()),
@@ -226,7 +230,7 @@ impl Expr {
     }
 
     pub fn iter_ranged<T: Into<Expr>, U: Into<Expr>>(from: T, to: U) -> Self {
-        Self::IterCreateRanged {
+        Expr::IterCreateRanged {
             from: Box::new(from.into()),
             to: Box::new(to.into()),
         }
@@ -251,35 +255,43 @@ impl Expr {
         )
     }
 
+    pub fn slice<T: Into<Expr>, U: Into<Expr>>(self, start: T, end: U) -> Self {
+        Expr::Slice {
+            target: Box::new(self),
+            start: Box::new(start.into()),
+            end: Box::new(end.into()),
+        }
+    }
+
     pub fn to_bool(self) -> Self {
-        Self::Conv {
+        Expr::Conv {
             ty: ValueType::Bool,
             expr: Box::new(self),
         }
     }
 
     pub fn to_float(self) -> Self {
-        Self::Conv {
+        Expr::Conv {
             ty: ValueType::Float,
             expr: Box::new(self),
         }
     }
 
     pub fn to_integer(self) -> Self {
-        Self::Conv {
+        Expr::Conv {
             ty: ValueType::Int,
             expr: Box::new(self),
         }
     }
 
     pub fn to_iter(self) -> Self {
-        Self::IterCreate {
+        Expr::IterCreate {
             expr: Box::new(self),
         }
     }
 
     pub fn to_str(self) -> Self {
-        Self::Conv {
+        Expr::Conv {
             ty: ValueType::Str,
             expr: Box::new(self),
         }
@@ -323,12 +335,6 @@ impl From<ExprBranch> for Expr {
 impl From<Call> for Expr {
     fn from(call: Call) -> Expr {
         Expr::Call(call)
-    }
-}
-
-impl From<Slice> for Expr {
-    fn from(slice: Slice) -> Expr {
-        Expr::Slice(slice)
     }
 }
 
@@ -448,7 +454,7 @@ impl HirLowering for Expr {
                     runtime.emit(LirElement::Label(sc_label));
                 }
             }
-            Expr::Slice(slice) => slice.lower(runtime),
+            Expr::Slice { target, start, end } => lower_slice(runtime, target, start, end),
             Expr::Value { ref val, boxed } => {
                 runtime.emit(LirElement::push_constant(val));
 
@@ -534,21 +540,27 @@ fn lower_insert<'hir, 'lir>(
 ) where
     'hir: 'lir,
 {
-    //let requires_box = matches!(&base, Value::Dict(_) | Value::List(_));
-
     base.lower(runtime);
-    //runtime.emit(LirElement::push_constant(&base));
 
-    /*
-    if requires_box {
-        runtime.emit(LirElement::Box);
-    }
-    */
-
-    // slots are only allowed on `Dict` and `List`
     runtime.emit(LirElement::Duplicate);
     key.lower(runtime);
     runtime.emit(LirElement::RGet);
+
     value.lower(runtime);
     runtime.emit(LirElement::Set);
+}
+
+// TODO: 'lir, 'hir : 'lir instead of where clause
+fn lower_slice<'hir, 'lir>(
+    runtime: &mut HirLoweringRuntime<'lir>,
+    target: &'hir Expr,
+    start: &'hir Expr,
+    end: &'hir Expr,
+) where
+    'hir: 'lir,
+{
+    target.lower(runtime);
+    start.lower(runtime);
+    end.lower(runtime);
+    runtime.emit(LirElement::Slice);
 }
