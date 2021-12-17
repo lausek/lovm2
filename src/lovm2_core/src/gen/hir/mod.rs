@@ -85,6 +85,16 @@ pub trait HasBlock {
     fn block_mut(&mut self) -> &mut Block;
 
     #[inline]
+    fn assign<U, T>(&mut self, var: &U, expr: T) -> &mut Self
+    where
+        U: Into<Variable> + Clone,
+        T: Into<Expr>,
+    {
+        self.block_mut().step(Assign::var(var, expr));
+        self
+    }
+
+    #[inline]
     fn branch(&mut self) -> &mut Branch {
         self.block_mut().branch()
     }
