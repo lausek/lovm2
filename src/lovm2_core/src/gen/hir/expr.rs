@@ -2,7 +2,7 @@
 
 use super::*;
 
-use crate::value::ValueType;
+use crate::value::LV2ValueType;
 use crate::vm::Context;
 
 macro_rules! auto_implement {
@@ -33,7 +33,7 @@ pub enum LV2Expr {
     Call(LV2Call),
     /// Do type conversion on a lowered `Expr` at runtime
     Conv {
-        ty: ValueType,
+        ty: LV2ValueType,
         expr: Box<LV2Expr>,
     },
     /// Consecutive read on a `List` or `Dict`
@@ -278,21 +278,21 @@ impl LV2Expr {
 
     pub fn to_bool(self) -> Self {
         LV2Expr::Conv {
-            ty: ValueType::Bool,
+            ty: LV2ValueType::Bool,
             expr: Box::new(self),
         }
     }
 
     pub fn to_float(self) -> Self {
         LV2Expr::Conv {
-            ty: ValueType::Float,
+            ty: LV2ValueType::Float,
             expr: Box::new(self),
         }
     }
 
     pub fn to_integer(self) -> Self {
         LV2Expr::Conv {
-            ty: ValueType::Int,
+            ty: LV2ValueType::Int,
             expr: Box::new(self),
         }
     }
@@ -305,7 +305,7 @@ impl LV2Expr {
 
     pub fn to_str(self) -> Self {
         LV2Expr::Conv {
-            ty: ValueType::Str,
+            ty: LV2ValueType::Str,
             expr: Box::new(self),
         }
     }
@@ -370,8 +370,8 @@ impl From<&LV2Variable> for LV2Expr {
     }
 }
 
-impl HirLowering for LV2Expr {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
+impl LV2HirLowering for LV2Expr {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         match self {
             LV2Expr::Append { base, value } => {
                 base.lower(runtime);
@@ -513,14 +513,14 @@ impl ExprBranch {
     }
 }
 
-impl HirLowering for ExprBranch {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
+impl LV2HirLowering for ExprBranch {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         super::branch::lower_map_structure(runtime, &self.branches, &self.default);
     }
 }
 
 fn lower_insert<'lir, 'hir: 'lir>(
-    runtime: &mut HirLoweringRuntime<'lir>,
+    runtime: &mut LV2HirLoweringRuntime<'lir>,
     base: &'hir LV2Expr,
     key: &'hir LV2Expr,
     value: &'hir LV2Expr,
@@ -536,7 +536,7 @@ fn lower_insert<'lir, 'hir: 'lir>(
 }
 
 fn lower_slice<'lir, 'hir: 'lir>(
-    runtime: &mut HirLoweringRuntime<'lir>,
+    runtime: &mut LV2HirLoweringRuntime<'lir>,
     target: &'hir LV2Expr,
     start: &'hir LV2Expr,
     end: &'hir LV2Expr,

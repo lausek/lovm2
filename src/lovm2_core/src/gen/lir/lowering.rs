@@ -3,7 +3,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::bytecode::Instruction;
-use crate::code::CodeObject;
+use crate::code::LV2CodeObject;
 use crate::value::LV2Value;
 use crate::var::LV2Variable;
 
@@ -61,7 +61,7 @@ impl LirLoweringRuntime {
         }
     }
 
-    pub fn lower(mut self, code: Vec<LirElement>) -> LV2CompileResult<CodeObject> {
+    pub fn lower(mut self, code: Vec<LirElement>) -> LV2CompileResult<LV2CodeObject> {
         if cfg!(debug_assertions) {
             println!(">>> LIR");
             for lir_element in code.iter() {
@@ -76,7 +76,7 @@ impl LirLoweringRuntime {
 
         self.postprocess();
 
-        let mut co = CodeObject::new();
+        let mut co = LV2CodeObject::new();
 
         co.name = self.meta.name;
         co.loc = self.meta.loc;

@@ -15,17 +15,17 @@ enum IterType {
 
 /// Runtime iterator implementation
 #[derive(Clone, Debug)]
-pub struct Iter {
+pub struct LV2Iter {
     current: i64,
     reversed: bool,
     ty: IterType,
 }
 
-impl Iter {
+impl LV2Iter {
     /// Create a number generator where `from` is inclusive and `to` is exclusive.
     pub fn ranged(from: i64, to: i64) -> Self {
         if to < from {
-            Iter::ranged(to, from).reverse()
+            LV2Iter::ranged(to, from).reverse()
         } else {
             Self {
                 current: from,
@@ -142,12 +142,12 @@ impl Iter {
     }
 }
 
-impl TryFrom<LV2Value> for Iter {
+impl TryFrom<LV2Value> for LV2Iter {
     type Error = LV2Error;
     fn try_from(value: LV2Value) -> Result<Self, Self::Error> {
         match &value {
             LV2Value::Any(any) => {
-                if let Some(value) = any.borrow().0.downcast_ref::<Iter>() {
+                if let Some(value) = any.borrow().0.downcast_ref::<LV2Iter>() {
                     return Ok(value.clone());
                 }
             }
@@ -165,7 +165,7 @@ impl TryFrom<LV2Value> for Iter {
     }
 }
 
-impl std::default::Default for Iter {
+impl std::default::Default for LV2Iter {
     fn default() -> Self {
         Self {
             current: 0,
@@ -176,7 +176,7 @@ impl std::default::Default for Iter {
 }
 
 #[inline]
-fn get_iter(vm: &mut Vm) -> LV2Result<Rc<RefCell<Iter>>> {
+fn get_iter(vm: &mut Vm) -> LV2Result<Rc<RefCell<LV2Iter>>> {
     match vm.context_mut().pop_value()? {
         LV2Value::Iter(it) => Ok(it),
         val => return Err(err_ty_unexpected("iterator", format!("{:?}", val))),
@@ -206,15 +206,15 @@ pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> LV2Result<()> {
         (LV2Value::Nil, LV2Value::Nil) => unimplemented!(),
         (LV2Value::Nil, to) => {
             let to = to.as_integer_inner()?;
-            Iter::ranged_to(to)
+            LV2Iter::ranged_to(to)
         }
         (from, LV2Value::Nil) => {
             let from = from.as_integer_inner()?;
-            Iter::ranged_from(from)
+            LV2Iter::ranged_from(from)
         }
         (from, to) => {
             let (from, to) = (from.as_integer_inner()?, to.as_integer_inner()?);
-            Iter::ranged(from, to)
+            LV2Iter::ranged(from, to)
         }
     };
 
@@ -251,7 +251,7 @@ pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> LV2Result<()> {
     Ok(())
 }
 
-impl std::fmt::Display for Iter {
+impl std::fmt::Display for LV2Iter {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "iterator")
     }

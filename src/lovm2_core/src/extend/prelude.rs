@@ -2,7 +2,7 @@ pub use libloading::Library;
 pub use std::collections::HashMap;
 pub use std::rc::Rc;
 
-pub use crate::code::CallableRef;
+pub use crate::code::LV2CallableRef;
 pub use crate::error::{LV2Error, LV2ErrorTy, LV2Result};
 pub use crate::module::SharedObjectSlot;
 pub use crate::prelude::*;

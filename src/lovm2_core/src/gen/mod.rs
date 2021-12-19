@@ -10,17 +10,17 @@ use crate::error::*;
 
 pub use self::hir::*;
 pub(crate) use self::lir::*;
-pub use self::module::{LV2ModuleBuilder, LV2ModuleMeta, DEFAULT_MODULE_NAME};
+pub use self::module::{LV2ModuleBuilder, LV2ModuleMeta, LV2_DEFAULT_MODULE_NAME};
 pub(crate) use self::opt::*;
 
 /// Settings for lowering to bytecode
 #[derive(Clone, Debug)]
-pub struct CompileOptions {
+pub struct LV2CompileOptions {
     /// If this is `false`, do not run any optimization.
     pub optimize: bool,
 }
 
-impl std::default::Default for CompileOptions {
+impl std::default::Default for LV2CompileOptions {
     fn default() -> Self {
         Self { optimize: true }
     }

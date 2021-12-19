@@ -4,7 +4,7 @@ pub struct HirLoweringRepeat {
     id: usize,
 }
 
-impl Jumpable for HirLoweringRepeat {
+impl LV2HirJumpable for HirLoweringRepeat {
     fn new(counter: LabelCounterRef) -> Self {
         Self {
             id: counter.borrow_mut().create_repeat_id(),

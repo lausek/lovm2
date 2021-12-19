@@ -6,13 +6,13 @@ use super::*;
 
 /// Reference to another value
 #[derive(Clone, Deserialize, Serialize)]
-pub struct Reference(
+pub struct LV2Reference(
     #[serde(serialize_with = "serialize_value_ref")]
     #[serde(deserialize_with = "deserialize_value_ref")]
     pub(crate) Option<Rc<RefCell<LV2Value>>>,
 );
 
-impl Reference {
+impl LV2Reference {
     /// Returns true if the reference is bound to a value.
     pub fn is_empty(&self) -> bool {
         self.0.is_none()
@@ -60,7 +60,7 @@ impl Reference {
     }
 }
 
-impl From<LV2Value> for Reference {
+impl From<LV2Value> for LV2Reference {
     fn from(val: LV2Value) -> Self {
         Self(Some(Rc::new(RefCell::new(val))))
     }
@@ -80,7 +80,7 @@ where
     Ok(None)
 }
 
-impl std::cmp::PartialEq for Reference {
+impl std::cmp::PartialEq for LV2Reference {
     fn eq(&self, rhs: &Self) -> bool {
         self.unref_to_value().map_or(false, |lhs| {
             rhs.unref_to_value().map_or(false, |rhs| lhs == rhs)
@@ -88,7 +88,7 @@ impl std::cmp::PartialEq for Reference {
     }
 }
 
-impl std::cmp::PartialEq<LV2Value> for Reference {
+impl std::cmp::PartialEq<LV2Value> for LV2Reference {
     fn eq(&self, rhs: &LV2Value) -> bool {
         if let LV2Value::Ref(rhs) = rhs {
             self == rhs
@@ -99,7 +99,7 @@ impl std::cmp::PartialEq<LV2Value> for Reference {
     }
 }
 
-impl std::fmt::Display for Reference {
+impl std::fmt::Display for LV2Reference {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(r) = &self.0 {
             write!(f, "{}", r.borrow())
@@ -109,7 +109,7 @@ impl std::fmt::Display for Reference {
     }
 }
 
-impl std::fmt::Debug for Reference {
+impl std::fmt::Debug for LV2Reference {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(r) = &self.0 {
             write!(f, "Ref({:?})", r.borrow())

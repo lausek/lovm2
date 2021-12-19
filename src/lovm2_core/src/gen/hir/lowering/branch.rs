@@ -22,7 +22,7 @@ impl HirLoweringBranch {
     }
 }
 
-impl Jumpable for HirLoweringBranch {
+impl LV2HirJumpable for HirLoweringBranch {
     fn new(counter: LabelCounterRef) -> Self {
         Self {
             counter: counter.clone(),
@@ -43,7 +43,7 @@ pub struct HirLoweringCondition {
     id: usize,
 }
 
-impl Jumpable for HirLoweringCondition {
+impl LV2HirJumpable for HirLoweringCondition {
     fn new(counter: LabelCounterRef) -> Self {
         Self {
             id: counter.borrow_mut().create_condition_id(),

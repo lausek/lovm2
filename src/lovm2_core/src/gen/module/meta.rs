@@ -1,7 +1,7 @@
 use std::path::Path;
 
 /// If a module was not assigned a name, take this instead.
-pub const DEFAULT_MODULE_NAME: &str = "_unknown_";
+pub const LV2_DEFAULT_MODULE_NAME: &str = "_unknown_";
 
 /// Meta information required on native and shared object modules.
 #[derive(Clone, Debug)]
@@ -51,7 +51,7 @@ impl std::default::Default for LV2ModuleMeta {
     fn default() -> Self {
         Self {
             loc: None,
-            name: DEFAULT_MODULE_NAME.to_string(),
+            name: LV2_DEFAULT_MODULE_NAME.to_string(),
             uses: vec![],
         }
     }

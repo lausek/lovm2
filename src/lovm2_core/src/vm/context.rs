@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::code::{CallProtocol, CallableRef};
+use crate::code::{LV2CallProtocol, LV2CallableRef};
 use crate::value::LV2Value;
 use crate::var::LV2Variable;
 
@@ -19,11 +19,11 @@ pub const DEFAULT_VSTACK_SIZE: usize = 256;
 #[derive(Debug)]
 pub struct Context {
     /// Starting point of execution.
-    pub(super) entry: Option<Rc<dyn CallProtocol>>,
+    pub(super) entry: Option<Rc<dyn LV2CallProtocol>>,
     /// Global variables that can be altered from every object.
     pub(super) globals: HashMap<String, LV2Value>,
     /// Entries in this map can directly be called from `lovm2` bytecode.
-    pub(super) scope: HashMap<LV2Variable, CallableRef>,
+    pub(super) scope: HashMap<LV2Variable, LV2CallableRef>,
     /// Call stack that contains local variables and the amount of arguments passed.
     pub(super) lstack: Vec<Frame>,
     /// Value stack. This is where the computation happens.
@@ -42,7 +42,7 @@ impl Context {
     }
 
     /// Try to resolve the given name to a callable
-    pub fn lookup_code_object(&self, name: &LV2Variable) -> LV2Result<CallableRef> {
+    pub fn lookup_code_object(&self, name: &LV2Variable) -> LV2Result<LV2CallableRef> {
         self.scope
             .get(name)
             .cloned()

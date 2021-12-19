@@ -11,20 +11,20 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use crate::code::{CallProtocol, CallableRef, CodeObject};
+use crate::code::{LV2CallProtocol, LV2CallableRef, LV2CodeObject};
 use crate::error::*;
 use crate::module::{LV2Module, Slots};
 use crate::var::LV2Variable;
 use crate::vm::Vm;
 
 /// Name of the unmangled function name to call when initializing module slots.
-pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
+pub const LV2_EXTERN_INITIALIZER: &str = "lovm2_module_initialize";
 
 /// Definition for dynamically linked function.
 pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> LV2Result<()>;
 /// Function signature of the extern module initializer.
 pub type ExternInitializer =
-    extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, CallableRef>);
+    extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, LV2CallableRef>);
 
 fn load_slots(_name: &str, lib: Library) -> LV2Result<Slots> {
     unsafe {
@@ -32,7 +32,7 @@ fn load_slots(_name: &str, lib: Library) -> LV2Result<Slots> {
 
         // try to lookup named initializer first, fallback to initializer without name
         let lookup: Result<Symbol<ExternInitializer>, Error> =
-            lib.get(EXTERN_LOVM2_INITIALIZER.as_bytes());
+            lib.get(LV2_EXTERN_INITIALIZER.as_bytes());
 
         match lookup {
             Ok(initializer) => {
@@ -72,10 +72,10 @@ where
 {
     let name = path.as_ref().file_stem().unwrap().to_str().unwrap();
 
-    let code_object = CodeObject {
+    let code_object = LV2CodeObject {
         name: name.to_string(),
         loc: Some(path.as_ref().display().to_string()),
-        ..CodeObject::default()
+        ..LV2CodeObject::default()
     };
 
     Ok(LV2Module {
@@ -111,7 +111,7 @@ impl SharedObjectSlot {
     }
 }
 
-impl CallProtocol for SharedObjectSlot {
+impl LV2CallProtocol for SharedObjectSlot {
     fn run(&self, vm: &mut Vm) -> LV2Result<()> {
         unsafe { self.1(vm) }
     }

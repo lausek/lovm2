@@ -13,7 +13,7 @@ macro_rules! define_code {
             $( $inx:ident $($args:expr),* ; )*
         }
     } => {{
-        let mut co = lovm2::code::CodeObject::new();
+        let mut co = lovm2::code::LV2CodeObject::new();
         $( co.idents = vec![$( LV2Variable::from(stringify!($name)) ),*]; )?
         $( co.consts = vec![$( LV2Value::from($cval) ),*]; )?
 

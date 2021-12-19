@@ -5,10 +5,10 @@ use std::ops::*;
 use std::rc::Rc;
 
 use crate::bytecode::Instruction;
-use crate::code::{CallProtocol, CallableRef, CodeObject};
+use crate::code::{LV2CallProtocol, LV2CallableRef, LV2CodeObject};
 use crate::error::*;
 use crate::module::LV2Module;
-use crate::value::{box_value, LV2Value, ValueType};
+use crate::value::{box_value, LV2Value, LV2ValueType};
 use crate::var::LV2Variable;
 
 mod context;
@@ -149,7 +149,11 @@ impl Vm {
     }
 
     /// Add a new function by name to the virtual machine.
-    pub fn add_function<T: Into<LV2Variable>>(&mut self, key: T, co: CallableRef) -> LV2Result<()> {
+    pub fn add_function<T: Into<LV2Variable>>(
+        &mut self,
+        key: T,
+        co: LV2CallableRef,
+    ) -> LV2Result<()> {
         let key = key.into();
 
         // this overwrites the slot with the new function. maybe not so good
@@ -248,7 +252,7 @@ impl Vm {
     {
         let module = module.into();
 
-        if let Some(co) = module.slots.get(&crate::module::ENTRY_POINT.into()) {
+        if let Some(co) = module.slots.get(&crate::module::LV2_ENTRY_POINT.into()) {
             self.ctx.entry = Some(co.clone());
             self.add_module(module, false)
         } else {
@@ -257,7 +261,7 @@ impl Vm {
     }
 
     /// A wrapper for `run_bytecode` that handles pushing and popping stack frames.
-    pub fn run_object(&mut self, co: &dyn CallProtocol) -> LV2Result<LV2Value> {
+    pub fn run_object(&mut self, co: &dyn LV2CallProtocol) -> LV2Result<LV2Value> {
         self.ctx.push_frame(0);
         co.run(self)?;
         self.ctx.pop_frame();
@@ -275,7 +279,7 @@ impl Vm {
     }
 
     #[inline]
-    fn run_bytecode_inner(&mut self, co: &CodeObject, ip: &mut usize) -> LV2Result<()> {
+    fn run_bytecode_inner(&mut self, co: &LV2CodeObject, ip: &mut usize) -> LV2Result<()> {
         use crate::value::iter::*;
 
         while let Some(inx) = co.code.get(*ip) {
@@ -426,7 +430,7 @@ impl Vm {
                     }
                 }
                 Instruction::Conv(tid) => {
-                    let ty = ValueType::from_raw(*tid)?;
+                    let ty = LV2ValueType::from_raw(*tid)?;
 
                     self.ctx.last_value_mut()?.cast_inplace(ty)?;
                 }
@@ -476,7 +480,7 @@ impl Vm {
     ///
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
     /// if not handled correctly. See [Vm::run_object].
-    pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> LV2Result<()> {
+    pub fn run_bytecode(&mut self, co: &LV2CodeObject, offset: usize) -> LV2Result<()> {
         let mut ip = offset;
 
         if let Err(mut e) = self.run_bytecode_inner(co, &mut ip) {

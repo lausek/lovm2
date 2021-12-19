@@ -8,8 +8,8 @@ mod r#ref;
 pub(crate) mod iter;
 
 pub use self::conv::*;
-pub use self::iter::Iter;
-pub use self::r#ref::Reference;
+pub use self::iter::LV2Iter;
+pub use self::r#ref::LV2Reference;
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -20,9 +20,19 @@ use std::rc::Rc;
 use crate::error::*;
 
 /// Reference to a generic lovm2 object
-pub type AnyRef = Rc<RefCell<Handle>>;
+pub type LV2AnyRef = Rc<RefCell<LV2Handle>>;
 /// Reference to a lovm2 [Value]
-pub type ValueRef = Reference;
+pub type LV2ValueRef = LV2Reference;
+
+/// Value type mostly used to handle extern values
+pub struct LV2Handle(pub Box<dyn std::any::Any>);
+
+impl PartialEq for LV2Handle {
+    fn eq(&self, other: &Self) -> bool {
+        // TODO: try value compare
+        self.0.type_id() == other.0.type_id()
+    }
+}
 
 /// Wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
 pub fn box_value(value: LV2Value) -> LV2Value {
@@ -48,7 +58,7 @@ pub fn box_value(value: LV2Value) -> LV2Value {
         value => value,
     };
 
-    LV2Value::Ref(Reference::from(outer))
+    LV2Value::Ref(LV2Reference::from(outer))
 }
 
 /// Runtime representation of values
@@ -62,13 +72,13 @@ pub enum LV2Value {
     #[serde(with = "indexmap::serde_seq")]
     Dict(IndexMap<LV2Value, LV2Value>),
     List(Vec<LV2Value>),
-    Ref(Reference),
+    Ref(LV2Reference),
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
-    Iter(Rc<RefCell<Iter>>),
+    Iter(Rc<RefCell<LV2Iter>>),
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
-    Any(AnyRef),
+    Any(LV2AnyRef),
 }
 
 impl LV2Value {
@@ -92,7 +102,7 @@ impl LV2Value {
     where
         T: std::any::Any,
     {
-        LV2Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
+        LV2Value::Any(Rc::new(RefCell::new(LV2Handle(Box::new(from)))))
     }
 
     /// If the current value is an instance of `Ref`, this function
@@ -122,8 +132,8 @@ impl LV2Value {
 
     /// Create an iterator from the value. This will return
     /// an error if the value does not support iteration.
-    pub fn iter(&self) -> LV2Result<iter::Iter> {
-        iter::Iter::try_from(self.clone())
+    pub fn iter(&self) -> LV2Result<iter::LV2Iter> {
+        iter::LV2Iter::try_from(self.clone())
     }
 
     /// Returns a completely independent version of the value.
@@ -368,8 +378,8 @@ where
     }
 }
 
-impl From<Iter> for LV2Value {
-    fn from(it: Iter) -> Self {
+impl From<LV2Iter> for LV2Value {
+    fn from(it: LV2Iter) -> Self {
         LV2Value::Iter(Rc::new(RefCell::new(it)))
     }
 }
@@ -412,15 +422,5 @@ impl std::fmt::Debug for LV2Value {
             LV2Value::Iter(it) => write!(f, "{:?}", it),
             LV2Value::Any(_) => write!(f, "Handle"),
         }
-    }
-}
-
-/// Value type mostly used to handle extern values
-pub struct Handle(pub Box<dyn std::any::Any>);
-
-impl PartialEq for Handle {
-    fn eq(&self, other: &Self) -> bool {
-        // TODO: try value compare
-        self.0.type_id() == other.0.type_id()
     }
 }

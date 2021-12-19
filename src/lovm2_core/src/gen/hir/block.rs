@@ -168,8 +168,8 @@ impl std::iter::IntoIterator for LV2Block {
     }
 }
 
-impl HirLowering for LV2Block {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
+impl LV2HirLowering for LV2Block {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         for element in self.0.iter() {
             // every call has to leave a return value on stack.
             // if that value isn't needed - as in a statement position - we

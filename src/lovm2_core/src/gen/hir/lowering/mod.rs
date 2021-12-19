@@ -8,17 +8,17 @@ use super::*;
 
 pub(crate) use self::branch::HirLoweringBranch;
 pub use self::repeat::HirLoweringRepeat;
-pub use self::runtime::HirLoweringRuntime;
+pub use self::runtime::LV2HirLoweringRuntime;
 
 pub(crate) type LabelCounterRef = std::rc::Rc<std::cell::RefCell<LabelCounter>>;
 
 /// Structures supporting transformation into LIR
-pub trait HirLowering {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>);
+pub trait LV2HirLowering {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>);
 }
 
 /// Structures supporting custom jump targets
-pub trait Jumpable {
+pub trait LV2HirJumpable {
     fn new(_: LabelCounterRef) -> Self;
 
     fn end(&self) -> Label;

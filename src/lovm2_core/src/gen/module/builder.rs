@@ -3,11 +3,13 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::code::CodeObjectFunction;
+use crate::code::LV2CodeObjectFunction;
 use crate::error::*;
 use crate::gen::opt::Optimizer;
-use crate::gen::{CompileOptions, HirLoweringRuntime, LV2Function, LV2ModuleMeta, LirElement};
-use crate::module::{LV2Module, ENTRY_POINT};
+use crate::gen::{
+    LV2CompileOptions, LV2Function, LV2HirLoweringRuntime, LV2ModuleMeta, LirElement,
+};
+use crate::module::{LV2Module, LV2_ENTRY_POINT};
 use crate::var::LV2Variable;
 
 /// Representation of modules before lowering.
@@ -81,11 +83,11 @@ impl LV2ModuleBuilder {
     /// Generate a module from the current data. This uses the default [CompileOptions] e.g.
     /// optimization is enabled.
     pub fn build(&self) -> LV2CompileResult<LV2Module> {
-        self.build_with_options(CompileOptions::default())
+        self.build_with_options(LV2CompileOptions::default())
     }
 
     /// Generate a module from the current data but use custom compile options.
-    pub fn build_with_options(&self, options: CompileOptions) -> LV2CompileResult<LV2Module> {
+    pub fn build_with_options(&self, options: LV2CompileOptions) -> LV2CompileResult<LV2Module> {
         use crate::gen::{NoOptimizer, StandardOptimizer};
 
         if options.optimize {
@@ -97,13 +99,13 @@ impl LV2ModuleBuilder {
 
     fn build_with_options_and_optimizer(
         &self,
-        options: CompileOptions,
+        options: LV2CompileOptions,
         mut optimizer: impl Optimizer,
     ) -> LV2CompileResult<LV2Module> {
-        let mut ru = HirLoweringRuntime::new(self.meta.clone(), options, &mut optimizer);
+        let mut ru = LV2HirLoweringRuntime::new(self.meta.clone(), options, &mut optimizer);
 
         // Main entry point must be at start (offset 0)
-        let entry_key = LV2Variable::from(ENTRY_POINT);
+        let entry_key = LV2Variable::from(LV2_ENTRY_POINT);
 
         if let Some((key, hir)) = self.hirs.iter().find(|(k, _)| **k == entry_key) {
             ru.emit(LirElement::entry(key));
@@ -125,7 +127,7 @@ impl LV2ModuleBuilder {
         // Make all function offsets of the `CodeObject` available as module slots.
         for (iidx, offset) in module.code_object.entries.iter() {
             let key = &module.code_object.idents[*iidx];
-            let func = CodeObjectFunction::from(module.code_object.clone(), *offset);
+            let func = LV2CodeObjectFunction::from(module.code_object.clone(), *offset);
 
             module.slots.insert(key.clone(), Rc::new(func));
         }
@@ -135,7 +137,7 @@ impl LV2ModuleBuilder {
 
     /// Create a new function handle with the [ENTRY_POINT] name.
     pub fn entry(&mut self) -> &mut LV2Function {
-        let name = LV2Variable::from(ENTRY_POINT);
+        let name = LV2Variable::from(LV2_ENTRY_POINT);
 
         if !self.hirs.contains_key(&name) {
             self.hirs.insert(name.clone(), LV2Function::new());

@@ -1,12 +1,12 @@
 use std::rc::Rc;
 
-use crate::code::{CallProtocol, CallableRef};
+use crate::code::{LV2CallProtocol, LV2CallableRef};
 use crate::prelude::*;
 use crate::vm::Vm;
 
 struct StaticFunctionWrapper<T>(T);
 
-impl<T> CallProtocol for StaticFunctionWrapper<T>
+impl<T> LV2CallProtocol for StaticFunctionWrapper<T>
 where
     T: Fn(&mut Vm) -> LV2Result<()>,
 {
@@ -22,6 +22,6 @@ impl<T> std::fmt::Debug for StaticFunctionWrapper<T> {
 }
 
 /// Wrap a static function inside `Callable`.
-pub fn create_callable(from: impl Fn(&mut Vm) -> LV2Result<()> + 'static) -> CallableRef {
-    Rc::new(StaticFunctionWrapper(from)) as CallableRef
+pub fn create_callable(from: impl Fn(&mut Vm) -> LV2Result<()> + 'static) -> LV2CallableRef {
+    Rc::new(StaticFunctionWrapper(from)) as LV2CallableRef
 }

@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use crate::value::{LV2Value, ValueType};
+use crate::value::{LV2Value, LV2ValueType};
 use crate::var::LV2Variable;
 
 use super::{Label, Operator};
@@ -16,7 +16,7 @@ pub enum LirElement<'hir> {
         ident: &'hir LV2Variable,
     },
     Conv {
-        ty: ValueType,
+        ty: LV2ValueType,
     },
     Entry {
         ident: &'hir LV2Variable,

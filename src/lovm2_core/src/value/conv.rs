@@ -5,7 +5,7 @@ use super::*;
 /// Type of a value as integer
 #[derive(Clone, Debug)]
 #[repr(u16)]
-pub enum ValueType {
+pub enum LV2ValueType {
     Nil = 0,
     Bool = 1,
     Int = 2,
@@ -17,23 +17,23 @@ pub enum ValueType {
 
 impl LV2Value {
     /// Try converting the value into given type.
-    pub fn conv(self, ty: ValueType) -> LV2Result<LV2Value> {
+    pub fn conv(self, ty: LV2ValueType) -> LV2Result<LV2Value> {
         match ty {
-            ValueType::Bool => self.as_bool(),
-            ValueType::Int => self.as_integer(),
-            ValueType::Float => self.as_float(),
-            ValueType::Str => self.as_str(),
+            LV2ValueType::Bool => self.as_bool(),
+            LV2ValueType::Int => self.as_integer(),
+            LV2ValueType::Float => self.as_float(),
+            LV2ValueType::Str => self.as_str(),
             _ => err_not_supported(),
         }
     }
 
     /// Try converting the value into given type and update inplace.
-    pub fn cast_inplace(&mut self, ty: ValueType) -> LV2Result<()> {
+    pub fn cast_inplace(&mut self, ty: LV2ValueType) -> LV2Result<()> {
         match ty {
-            ValueType::Bool => *self = self.as_bool()?,
-            ValueType::Int => *self = self.as_integer()?,
-            ValueType::Float => *self = self.as_float()?,
-            ValueType::Str => *self = self.as_str()?,
+            LV2ValueType::Bool => *self = self.as_bool()?,
+            LV2ValueType::Int => *self = self.as_integer()?,
+            LV2ValueType::Float => *self = self.as_float()?,
+            LV2ValueType::Str => *self = self.as_str()?,
             _ => err_not_supported()?,
         }
         Ok(())
@@ -65,7 +65,7 @@ impl LV2Value {
     }
 
     /// Try getting the contained `AnyRef`.
-    pub fn as_any_inner(&self) -> LV2Result<AnyRef> {
+    pub fn as_any_inner(&self) -> LV2Result<LV2AnyRef> {
         match self {
             LV2Value::Any(r) => Ok(r.clone()),
             LV2Value::Ref(r) => r.borrow()?.as_any_inner(),
@@ -140,15 +140,15 @@ impl LV2Value {
     }
 
     /// Return the `ValueType` of this value. Used for converting between values.
-    pub fn type_id(&self) -> LV2Result<ValueType> {
+    pub fn type_id(&self) -> LV2Result<LV2ValueType> {
         let tid = match self {
-            LV2Value::Nil => ValueType::Nil,
-            LV2Value::Bool(_) => ValueType::Bool,
-            LV2Value::Int(_) => ValueType::Int,
-            LV2Value::Float(_) => ValueType::Float,
-            LV2Value::Str(_) => ValueType::Str,
-            LV2Value::Dict(_) => ValueType::Dict,
-            LV2Value::List(_) => ValueType::List,
+            LV2Value::Nil => LV2ValueType::Nil,
+            LV2Value::Bool(_) => LV2ValueType::Bool,
+            LV2Value::Int(_) => LV2ValueType::Int,
+            LV2Value::Float(_) => LV2ValueType::Float,
+            LV2Value::Str(_) => LV2ValueType::Str,
+            LV2Value::Dict(_) => LV2ValueType::Dict,
+            LV2Value::List(_) => LV2ValueType::List,
             LV2Value::Ref(r) => r.unref_to_value()?.borrow().type_id()?,
             _ => todo!(),
         };
@@ -156,16 +156,16 @@ impl LV2Value {
     }
 }
 
-impl ValueType {
-    pub fn from_raw(tid: u16) -> LV2Result<ValueType> {
+impl LV2ValueType {
+    pub fn from_raw(tid: u16) -> LV2Result<LV2ValueType> {
         match tid {
-            0 => Ok(ValueType::Nil),
-            1 => Ok(ValueType::Bool),
-            2 => Ok(ValueType::Int),
-            3 => Ok(ValueType::Float),
-            4 => Ok(ValueType::Str),
-            5 => Ok(ValueType::Dict),
-            6 => Ok(ValueType::List),
+            0 => Ok(LV2ValueType::Nil),
+            1 => Ok(LV2ValueType::Bool),
+            2 => Ok(LV2ValueType::Int),
+            3 => Ok(LV2ValueType::Float),
+            4 => Ok(LV2ValueType::Str),
+            5 => Ok(LV2ValueType::Dict),
+            6 => Ok(LV2ValueType::List),
             _ => err_from_string("not a valid type"),
         }
     }

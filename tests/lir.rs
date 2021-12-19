@@ -10,7 +10,7 @@ fn check_instruction_elimination(expr: LV2Expr) {
 
     let module = builder.clone().build().unwrap();
     let module_noop = builder
-        .build_with_options(CompileOptions { optimize: false })
+        .build_with_options(LV2CompileOptions { optimize: false })
         .unwrap();
 
     assert!(module.code_object.code.len() < module_noop.code_object.code.len());

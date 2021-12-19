@@ -41,8 +41,8 @@ pub enum LV2Statement {
     },
 }
 
-impl HirLowering for LV2Statement {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
+impl LV2HirLowering for LV2Statement {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         match self {
             LV2Statement::AssignReference { target, source } => {
                 target.lower(runtime);

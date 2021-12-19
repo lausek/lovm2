@@ -10,23 +10,23 @@ mod slots;
 
 use std::rc::Rc;
 
-use crate::code::CallProtocol;
-use crate::code::{CodeObject, CodeObjectFunction, LV2_MAGIC_NUMBER};
+use crate::code::LV2CallProtocol;
+use crate::code::{LV2CodeObject, LV2CodeObjectFunction, LV2_MAGIC_NUMBER};
 use crate::error::*;
 use crate::var::LV2Variable;
 
-pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
+pub use self::shared::{SharedObjectSlot, LV2_EXTERN_INITIALIZER};
 pub use self::slots::Slots;
 
 /// Name of the [CodeObject] entry that is used as a programs starting point inside
 /// [Vm::run](crate::vm::Vm::run).
-pub const ENTRY_POINT: &str = "main";
+pub const LV2_ENTRY_POINT: &str = "main";
 
 /// Main runtime representation for loadable modules.
 #[derive(Clone, Debug)]
 pub struct LV2Module {
     /// Always required. Shared object libraries will only fill the `name` and `loc` attribute.
-    pub code_object: Rc<CodeObject>,
+    pub code_object: Rc<LV2CodeObject>,
     /// Contains `CallProtocol` entries that will be added to the context.
     pub slots: Slots,
 }
@@ -60,7 +60,7 @@ impl LV2Module {
         if let Ok(lib) = shared::load_library_from_file(&path) {
             Ok(shared::module_from_library(path, lib)?)
         } else {
-            let co = CodeObject::load_from_file(path)?;
+            let co = LV2CodeObject::load_from_file(path)?;
 
             Ok(co.into())
         }
@@ -81,7 +81,7 @@ impl LV2Module {
     }
 
     /// Try looking up a `Callable` by name.
-    pub fn slot(&self, name: &LV2Variable) -> Option<Rc<dyn CallProtocol>> {
+    pub fn slot(&self, name: &LV2Variable) -> Option<Rc<dyn LV2CallProtocol>> {
         self.slots.get(name).cloned()
     }
 
@@ -105,15 +105,15 @@ impl LV2Module {
     }
 }
 
-impl From<CodeObject> for LV2Module {
-    fn from(code_object: CodeObject) -> Self {
+impl From<LV2CodeObject> for LV2Module {
+    fn from(code_object: LV2CodeObject) -> Self {
         let code_object = Rc::new(code_object);
         let mut slots = Slots::new();
 
         // make code object functions available in module
         for (iidx, offset) in code_object.entries.iter() {
             let var = &code_object.idents[*iidx];
-            let func = CodeObjectFunction::from(code_object.clone(), *offset);
+            let func = LV2CodeObjectFunction::from(code_object.clone(), *offset);
 
             slots.insert(var.clone(), Rc::new(func));
         }

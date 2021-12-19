@@ -3,14 +3,14 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::code::CodeObject;
+use crate::code::LV2CodeObject;
 use crate::gen::LV2ModuleMeta;
 use crate::var::LV2Variable;
 
 use super::*;
 
 /// Information for the process of lowering HIR to LIR
-pub struct HirLoweringRuntime<'lir> {
+pub struct LV2HirLoweringRuntime<'lir> {
     code: Vec<LirElement<'lir>>,
     counter: LabelCounterRef,
     meta: LV2ModuleMeta,
@@ -21,10 +21,10 @@ pub struct HirLoweringRuntime<'lir> {
     loop_stack: Vec<HirLoweringRepeat>,
 }
 
-impl<'lir> HirLoweringRuntime<'lir> {
+impl<'lir> LV2HirLoweringRuntime<'lir> {
     pub fn new(
         meta: LV2ModuleMeta,
-        _options: CompileOptions,
+        _options: LV2CompileOptions,
         optimizer: &'lir mut impl Optimizer,
     ) -> Self {
         Self {
@@ -67,7 +67,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         Ok(())
     }
 
-    pub fn complete(mut self) -> LV2CompileResult<CodeObject> {
+    pub fn complete(mut self) -> LV2CompileResult<LV2CodeObject> {
         let lir_runtime = LirLoweringRuntime::from(self.meta);
 
         self.optimizer.postprocess(&mut self.code);

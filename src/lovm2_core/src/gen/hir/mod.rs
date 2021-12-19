@@ -18,7 +18,7 @@ pub use self::block::LV2Block;
 pub use self::branch::LV2Branch;
 pub use self::call::LV2Call;
 pub use self::expr::{LV2Expr, LV2Operator1, LV2Operator2};
-pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
+pub use self::lowering::{LV2HirJumpable, LV2HirLowering, LV2HirLoweringRuntime};
 pub use self::repeat::LV2Repeat;
 pub use self::stmt::LV2Statement;
 
@@ -46,7 +46,10 @@ impl LV2Function {
     }
 
     /// Add a HIR to the lowering runtime
-    pub fn build<'hir, 'lir>(&'hir self, ru: &mut HirLoweringRuntime<'lir>) -> LV2CompileResult<()>
+    pub fn build<'hir, 'lir>(
+        &'hir self,
+        ru: &mut LV2HirLoweringRuntime<'lir>,
+    ) -> LV2CompileResult<()>
     where
         'hir: 'lir,
     {
@@ -54,7 +57,7 @@ impl LV2Function {
     }
 }
 
-impl HasBlock for LV2Function {
+impl LV2AddStatements for LV2Function {
     #[inline]
     fn block_mut(&mut self) -> &mut LV2Block {
         &mut self.block
@@ -62,7 +65,7 @@ impl HasBlock for LV2Function {
 }
 
 /// Supplying functionality for all structures containing a [Block]
-pub trait HasBlock {
+pub trait LV2AddStatements {
     fn block_mut(&mut self) -> &mut LV2Block;
 
     #[inline]

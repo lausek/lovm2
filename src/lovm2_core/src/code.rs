@@ -13,7 +13,7 @@ use crate::vm::Vm;
 pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, b'L', b'V', b'2'];
 
 /// Generic object implementing the `CallProtocol`
-pub type CallableRef = Rc<dyn CallProtocol>;
+pub type LV2CallableRef = Rc<dyn LV2CallProtocol>;
 
 /// Generalization for runnable objects
 /// - lovm2 bytecode ([CodeObject])
@@ -22,7 +22,7 @@ pub type CallableRef = Rc<dyn CallProtocol>;
 ///
 /// Functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
-pub trait CallProtocol: std::fmt::Debug {
+pub trait LV2CallProtocol: std::fmt::Debug {
     fn module(&self) -> Option<String> {
         None
     }
@@ -49,7 +49,7 @@ pub trait CallProtocol: std::fmt::Debug {
 /// Values will be returned over the value stack. Every code object has
 /// to return some value on termination. If no value is produced, `Nil` is implicitly returned.
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct CodeObject {
+pub struct LV2CodeObject {
     /// Name of the object. This is used as the modules name when imported.
     pub name: String,
     #[serde(skip_deserializing)]
@@ -68,7 +68,7 @@ pub struct CodeObject {
     pub code: Vec<Instruction>,
 }
 
-impl CallProtocol for CodeObject {
+impl LV2CallProtocol for LV2CodeObject {
     fn module(&self) -> Option<String> {
         Some(self.name.clone())
     }
@@ -78,7 +78,7 @@ impl CallProtocol for CodeObject {
     }
 }
 
-impl std::default::Default for CodeObject {
+impl std::default::Default for LV2CodeObject {
     fn default() -> Self {
         Self {
             name: String::new(),
@@ -92,7 +92,7 @@ impl std::default::Default for CodeObject {
     }
 }
 
-impl CodeObject {
+impl LV2CodeObject {
     pub fn new() -> Self {
         Self::default()
     }
@@ -120,7 +120,7 @@ impl CodeObject {
         // avoid misinterpreting random bytes as length of buffer
         // this could lead to memory allocation faults
         file.read_to_end(&mut buffer).unwrap();
-        let mut co: CodeObject = bincode::options()
+        let mut co: LV2CodeObject = bincode::options()
             .with_varint_encoding()
             .deserialize(&buffer[4..])
             .or_else(err_from_string)?;
@@ -164,18 +164,18 @@ impl CodeObject {
 
 /// Function of a [CodeObject]. Implements [CallProtocol] to allow execution of bytecode from a certain offset.
 #[derive(Debug)]
-pub struct CodeObjectFunction {
+pub struct LV2CodeObjectFunction {
     offset: usize,
-    on: Rc<CodeObject>,
+    on: Rc<LV2CodeObject>,
 }
 
-impl CodeObjectFunction {
-    pub fn from(on: Rc<CodeObject>, offset: usize) -> Self {
+impl LV2CodeObjectFunction {
+    pub fn from(on: Rc<LV2CodeObject>, offset: usize) -> Self {
         Self { offset, on }
     }
 }
 
-impl CallProtocol for CodeObjectFunction {
+impl LV2CallProtocol for LV2CodeObjectFunction {
     fn module(&self) -> Option<String> {
         Some(self.on.name.clone())
     }

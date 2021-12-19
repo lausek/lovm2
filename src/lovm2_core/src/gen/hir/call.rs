@@ -39,8 +39,8 @@ impl LV2Call {
     }
 }
 
-impl HirLowering for LV2Call {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
+impl LV2HirLowering for LV2Call {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         // calling convention is pascal-style i.e. f(a, b)
         // will be lowered as:
         //  push a

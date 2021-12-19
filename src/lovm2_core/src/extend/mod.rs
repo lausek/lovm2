@@ -89,26 +89,6 @@ pub use lovm2_module::*;
 
 pub use self::wrapper::create_callable;
 
-pub const BASIC: u8 = 1;
-pub const FRAME_STACK_EMPTY: u8 = 2;
-pub const IMPORT_CONFLICT: u8 = 3;
-pub const KEY_NOT_FOUND: u8 = 4;
-pub const LOOKUP_FAILED: u8 = 5;
-pub const MODULE_NOT_FOUND: u8 = 6;
-pub const OPERATION_NOT_SUPPORTED: u8 = 7;
-pub const VALUE_STACK_EMPTY: u8 = 8;
-
-#[repr(C)]
-pub struct LV2CError {
-    pub ty: u8,
-}
-
-impl From<u8> for LV2CError {
-    fn from(ty: u8) -> Self {
-        Self { ty }
-    }
-}
-
 /// Returns a virtual machine with the crates `target/debug` directory in the load path.
 pub fn create_test_vm() -> Vm {
     let cargo_root = std::env::var("CARGO_MANIFEST_DIR").expect("no cargo manifest");

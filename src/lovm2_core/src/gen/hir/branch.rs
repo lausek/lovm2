@@ -33,19 +33,19 @@ impl LV2Branch {
     }
 }
 
-impl HirLowering for LV2Branch {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
+impl LV2HirLowering for LV2Branch {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         lower_map_structure(runtime, &self.branches, &self.default);
     }
 }
 
 // generic lowering for control structures that evaluate expressions in order to execute code
 pub(crate) fn lower_map_structure<'hir, 'lir, T>(
-    runtime: &mut HirLoweringRuntime<'lir>,
+    runtime: &mut LV2HirLoweringRuntime<'lir>,
     branches: &'hir Vec<(LV2Expr, T)>,
     default: &'hir Option<T>,
 ) where
-    T: HirLowering,
+    T: LV2HirLowering,
     'hir: 'lir,
 {
     // push a new branch section. the stack is not really
