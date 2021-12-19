@@ -37,7 +37,7 @@ impl LV2Block {
     }
 
     pub fn decrement(&mut self, target: &LV2Variable) {
-        self.0.push(LV2Statement::AssignVariable { target: target.clone(), source: LV2Expr::sub(target, 1).into() });
+        self.0.push(LV2Statement::AssignVariable { target: target.clone(), source: LV2Expr::from(target).sub(1) });
     }
 
     pub fn extend(&mut self, block: LV2Block) {
@@ -63,7 +63,7 @@ impl LV2Block {
     }
 
     pub fn increment(&mut self, target: &LV2Variable) {
-        self.0.push(LV2Statement::AssignVariable { target: target.clone(), source: LV2Expr::add(target, 1).into() });
+        self.0.push(LV2Statement::AssignVariable { target: target.clone(), source: LV2Expr::from(target).add(1) });
     }
 
     pub fn last_mut(&mut self) -> Option<&mut LV2Statement> {

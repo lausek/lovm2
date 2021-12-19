@@ -37,7 +37,7 @@ fn load_custom_module() {
         assert_eq!("extern", req.module);
         let mut builder = LV2ModuleBuilder::named("extern");
 
-        builder.add("calc").return_value(LV2Expr::add(1, 1));
+        builder.add("calc").return_value(LV2Expr::from(1).add(1));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -67,7 +67,7 @@ fn import_from_scope() {
         assert_eq!("extern", req.module);
         let mut builder = LV2ModuleBuilder::named("extern");
 
-        builder.add("calc").return_value(LV2Expr::add(1, 1));
+        builder.add("calc").return_value(LV2Expr::from(1).add(1));
 
         Ok(Some(builder.build().unwrap().into()))
     });

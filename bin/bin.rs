@@ -9,9 +9,9 @@ fn loading() -> LV2ModuleBuilder {
 
     hir.assign(n, 0);
 
-    hir.repeat_until(LV2Expr::eq(n, 10))
+    hir.repeat_until(LV2Expr::from(n).eq(10))
         .step(lv2_call!(print, n))
-        .assign(n, LV2Expr::add(n, 1));
+        .increment(n);
 
     builder
 }

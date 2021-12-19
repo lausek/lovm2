@@ -7,23 +7,18 @@ use crate::vm::Context;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {
-        pub fn $method<T>(expr: T) -> Self
-        where
-            T: Into<Self>,
+        pub fn $method(self) -> Self
         {
-            Self::Operation1(LV2Operator1::$operator, Box::new(expr.into()))
+            Self::Operation1(LV2Operator1::$operator, Box::new(self))
         }
     };
     (2, $operator:ident, $method:ident) => {
-        pub fn $method<T, U>(left: T, right: U) -> Self
-        where
-            T: Into<Self>,
-            U: Into<Self>,
+        pub fn $method<T: Into<Self>>(self, other: T) -> Self
         {
             Self::Operation2(
                 LV2Operator2::$operator,
-                Box::new(left.into()),
-                Box::new(right.into()),
+                Box::new(self),
+                Box::new(other.into()),
             )
         }
     };
@@ -265,18 +260,6 @@ impl LV2Expr {
         }
     }
 
-    pub fn pow<T, U>(left: T, right: U) -> Self
-    where
-        T: Into<LV2Expr>,
-        U: Into<LV2Expr>,
-    {
-        LV2Expr::Operation2(
-            LV2Operator2::Pow,
-            Box::new(left.into()),
-            Box::new(right.into()),
-        )
-    }
-
     pub fn reverse(self) -> Self {
         LV2Expr::IterReverse {
             expr: Box::new(self),
@@ -331,6 +314,7 @@ impl LV2Expr {
     auto_implement!(2, Sub, sub);
     auto_implement!(2, Mul, mul);
     auto_implement!(2, Div, div);
+    auto_implement!(2, Pow, pow);
     auto_implement!(2, Rem, rem);
     auto_implement!(2, Shl, shl);
     auto_implement!(2, Shr, shr);

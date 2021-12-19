@@ -28,7 +28,7 @@ fn assign_local_add() {
     builder
         .entry()
         .assign(n, 2)
-        .assign(n, LV2Expr::add(n, 2))
+        .assign(n, LV2Expr::from(n).add(2))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -66,7 +66,10 @@ fn rem_lowering() {
     let rest = &lv2_var!(rest);
     let mut builder = LV2ModuleBuilder::new();
 
-    builder.entry().assign(rest, LV2Expr::rem(1, 2)).trigger(10);
+    builder
+        .entry()
+        .assign(rest, LV2Expr::from(1).rem(2))
+        .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -83,9 +86,9 @@ fn easy_loop() {
     let main_hir = builder.entry();
     main_hir.assign(n, 0);
     main_hir
-        .repeat_until(LV2Expr::eq(n, 10))
+        .repeat_until(LV2Expr::from(n).eq(10))
         .step(lv2_call!(print, n))
-        .assign(n, LV2Expr::add(n, 1));
+        .increment(n);
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -102,10 +105,7 @@ fn explicit_break() {
 
     let main_hir = builder.entry();
     main_hir.assign(n, 0);
-    main_hir
-        .repeat()
-        .assign(n, LV2Expr::add(n, 1))
-        .break_repeat();
+    main_hir.repeat().increment(n).break_repeat();
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -202,7 +202,9 @@ fn true_branching() {
     hir.assign(&n, 0);
 
     let branch = hir.branch();
-    branch.add_condition(LV2Expr::not(false)).assign(&n, 2);
+    branch
+        .add_condition(LV2Expr::from(false).not())
+        .assign(&n, 2);
     branch.default_condition().assign(&n, 1);
 
     hir.trigger(10);
@@ -224,10 +226,10 @@ fn multiple_branches() {
 
     let branch = hir.branch();
     branch
-        .add_condition(LV2Expr::eq(LV2Expr::rem(n, 3), 0))
+        .add_condition(LV2Expr::from(n).rem(3).eq(0))
         .assign(result, "fizz");
     branch
-        .add_condition(LV2Expr::eq(LV2Expr::rem(n, 5), 0))
+        .add_condition(LV2Expr::from(n).rem(5).eq(0))
         .assign(result, "buzz");
     branch.default_condition().assign(result, "none");
 
@@ -439,7 +441,7 @@ fn set_field_on_dict() {
 #[test]
 fn is_constant() {
     assert!(!LV2Expr::from(lv2_var!(n)).is_const());
-    assert!(LV2Expr::add(1, 2).is_const());
+    assert!(LV2Expr::from(1).add(2).is_const());
     assert!(LV2Expr::from("abc").is_const());
     assert!(LV2Expr::from(10).is_const());
 }
@@ -470,12 +472,12 @@ fn comparison() {
 
     builder
         .entry()
-        .assign(lt, LV2Expr::lt(2, 3))
-        .assign(le1, LV2Expr::le(2, 3))
-        .assign(le2, LV2Expr::le(2, 2))
-        .assign(gt, LV2Expr::gt(3, 2))
-        .assign(ge1, LV2Expr::ge(3, 2))
-        .assign(ge2, LV2Expr::ge(3, 3))
+        .assign(lt, LV2Expr::from(2).lt(3))
+        .assign(le1, LV2Expr::from(2).le(3))
+        .assign(le2, LV2Expr::from(2).le(2))
+        .assign(gt, LV2Expr::from(3).gt(2))
+        .assign(ge1, LV2Expr::from(3).ge(2))
+        .assign(ge2, LV2Expr::from(3).ge(3))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -497,8 +499,8 @@ fn raise_to_power() {
 
     builder
         .entry()
-        .assign(a, LV2Expr::pow(2, 3))
-        .assign(b, LV2Expr::pow(3., 3.))
+        .assign(a, LV2Expr::from(2).pow(3))
+        .assign(b, LV2Expr::from(3.).pow(3.))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -595,7 +597,7 @@ fn iterating_repeat() {
         .assign(iter, lv2_list!(1, 2, 3, 4).to_iter())
         .repeat_iterating(iter, i)
         .global(sum)
-        .assign(sum, LV2Expr::add(sum, i));
+        .assign(sum, LV2Expr::from(sum).add(i));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -620,7 +622,7 @@ fn iterating_repeat_inplace() {
     main_hir
         .repeat_iterating(ls, i)
         .global(sum)
-        .assign(sum, LV2Expr::add(sum, i));
+        .assign(sum, LV2Expr::from(sum).add(i));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -642,7 +644,7 @@ fn iterating_repeat_ranged() {
     main_hir
         .repeat_iterating(LV2Expr::iter_ranged(LV2Value::Nil, 10), i)
         .global(sum)
-        .assign(sum, LV2Expr::add(sum, i));
+        .assign(sum, LV2Expr::from(sum).add(i));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -665,7 +667,7 @@ fn iterating_repeat_nested() {
         .repeat_iterating(LV2Expr::iter_ranged(0, 5), i)
         .repeat_iterating(LV2Expr::iter_ranged(5, 10), j)
         .global(sum)
-        .assign(sum, LV2Expr::add(sum, LV2Expr::pow(j, i)));
+        .assign(sum, LV2Expr::from(sum).add(LV2Expr::from(j).pow(i)));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -686,13 +688,13 @@ fn shift_values() {
     builder
         .entry()
         .global(a)
-        .assign(a, LV2Expr::shl(2, 1))
+        .assign(a, LV2Expr::from(2).shl(1))
         .global(b)
-        .assign(b, LV2Expr::shr(16, 1))
+        .assign(b, LV2Expr::from(16).shr(1))
         .global(c)
-        .assign(c, LV2Expr::shl(0b00001010, 4))
+        .assign(c, LV2Expr::from(0b00001010).shl(4))
         .global(d)
-        .assign(d, LV2Expr::shr(0b0001010, 4))
+        .assign(d, LV2Expr::from(0b0001010).shr(4))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -715,14 +717,14 @@ fn conditional_expression() {
         .assign(
             x,
             LV2Expr::branch()
-                .add_condition(LV2Expr::eq(z, 1), false)
+                .add_condition(LV2Expr::from(z).eq(1), false)
                 .default_value(true),
         )
         .global(y)
         .assign(
             y,
             LV2Expr::branch()
-                .add_condition(LV2Expr::eq(z, 2), false)
+                .add_condition(LV2Expr::from(z).eq(2), false)
                 .default_value(true),
         )
         .trigger(10);

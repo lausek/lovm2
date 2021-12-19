@@ -23,7 +23,7 @@ fn merge_not_jump_false() {
     let branch = builder.entry().assign(n, 0).branch();
 
     branch
-        .add_condition(LV2Expr::not(LV2Expr::eq(n, 2)))
+        .add_condition(LV2Expr::not(LV2Expr::from(n).eq(2)))
         .return_value(1);
     branch.default_condition().return_value(2);
 
@@ -48,7 +48,9 @@ fn merge_constant_jump() {
     let mut builder = LV2ModuleBuilder::named("main");
     let branch = builder.entry().branch();
 
-    branch.add_condition(LV2Expr::not(false)).return_value(1);
+    branch
+        .add_condition(LV2Expr::from(false).not())
+        .return_value(1);
     branch.default_condition().return_value(2);
 
     let module = builder.build().unwrap();
@@ -76,11 +78,12 @@ fn merge_constant_jump() {
 fn short_circuit_and() {
     let n = &lv2_var!(n);
     let mut builder = LV2ModuleBuilder::new();
+    let div_by_null = LV2Expr::from(1).div(n);
 
     builder
         .entry()
         .assign(n, 0)
-        .return_value(LV2Expr::and(LV2Expr::eq(n, 1), LV2Expr::div(1, n)));
+        .return_value(LV2Expr::from(n).eq(1).and(div_by_null));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -96,10 +99,12 @@ fn short_circuit_and() {
 fn short_circuit_or() {
     let n = &lv2_var!(n);
     let mut builder = LV2ModuleBuilder::new();
+    let div_by_null = LV2Expr::from(1).div(n);
+
     builder
         .entry()
         .assign(n, 0)
-        .return_value(LV2Expr::or(LV2Expr::eq(n, 0), LV2Expr::div(1, n)));
+        .return_value(LV2Expr::from(n).eq(0).or(div_by_null));
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -114,8 +119,10 @@ fn short_circuit_or() {
 #[test]
 fn compute_constants() {
     let mut builder = LV2ModuleBuilder::new();
+
     builder.entry().return_value(LV2Expr::rem(
-        LV2Expr::mul(LV2Expr::add(LV2Expr::sub(6, 1), 2), LV2Expr::div(4, 2)),
+        //LV2Expr::mul(LV2Expr::add(LV2Expr::sub(6, 1), 2), LV2Expr::div(4, 2)),
+        LV2Expr::from(6).sub(1).add(2).mul(LV2Expr::from(4).div(2)),
         5,
     ));
 
@@ -148,11 +155,13 @@ fn dead_code_elimination_else_branche() {
 
     let branch = hir.branch();
     branch
-        .add_condition(LV2Expr::eq(LV2Expr::rem(n, 2), 0))
+        .add_condition(LV2Expr::from(n).rem(2).eq(0))
         .assign(y, 0);
 
     // this condition will always be met
-    branch.add_condition(LV2Expr::not(false)).assign(y, 1);
+    branch
+        .add_condition(LV2Expr::from(false).not())
+        .assign(y, 1);
 
     // this code will never be reached
     branch.default_condition().assign(y, 7);
@@ -175,24 +184,24 @@ fn dead_code_elimination_else_branche() {
 
 #[test]
 fn compile_options() {
-    check_instruction_elimination(LV2Expr::add(LV2Expr::mul(3, 2), 2));
+    check_instruction_elimination(LV2Expr::from(3).mul(2).add(2));
 }
 
 #[test]
 fn flip_comparison_operator() {
     let x = &lv2_var!(x);
 
-    check_instruction_elimination(LV2Expr::not(LV2Expr::eq(x, 5)));
-    check_instruction_elimination(LV2Expr::not(LV2Expr::ne(x, 5)));
-    check_instruction_elimination(LV2Expr::not(LV2Expr::gt(x, 5)));
-    check_instruction_elimination(LV2Expr::not(LV2Expr::ge(x, 5)));
-    check_instruction_elimination(LV2Expr::not(LV2Expr::lt(x, 5)));
-    check_instruction_elimination(LV2Expr::not(LV2Expr::le(x, 5)));
+    check_instruction_elimination(LV2Expr::from(x).eq(5).not());
+    check_instruction_elimination(LV2Expr::from(x).ne(5).not());
+    check_instruction_elimination(LV2Expr::from(x).gt(5).not());
+    check_instruction_elimination(LV2Expr::from(x).ge(5).not());
+    check_instruction_elimination(LV2Expr::from(x).lt(5).not());
+    check_instruction_elimination(LV2Expr::from(x).le(5).not());
 }
 
 #[test]
 fn eliminate_double_not() {
     let x = &lv2_var!(x);
 
-    check_instruction_elimination(LV2Expr::not(LV2Expr::not(x)));
+    check_instruction_elimination(LV2Expr::from(x).not().not());
 }
