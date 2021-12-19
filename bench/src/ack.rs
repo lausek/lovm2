@@ -54,7 +54,7 @@ pub fn ackermann(c: &mut Criterion) {
     // https://github.com/rust-lang/rust/issues/79381
     const PERSISTANCE_HACK: &str = "/tmp/ack.lovm2c";
     module.store_to_file(PERSISTANCE_HACK).unwrap();
-    if let Ok(module) = Module::load_from_file(PERSISTANCE_HACK) {
+    if let Ok(module) = LV2Module::load_from_file(PERSISTANCE_HACK) {
         vm.add_main_module(module).unwrap();
 
         c.bench_function("ack", |b| {

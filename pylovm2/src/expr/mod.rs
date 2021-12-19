@@ -3,7 +3,7 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::prelude::{Conv, Iter, Operator2};
+use lovm2::prelude::Operator2;
 use lovm2::Variable;
 
 pub use self::conv::*;
@@ -46,6 +46,7 @@ impl pyo3::class::basic::PyObjectProtocol for Expr {
     }
 }
 
+/*
 #[pymethods]
 impl Expr {
     pub fn ty(&self) -> PyResult<String> {
@@ -57,19 +58,19 @@ impl Expr {
         Ok(name.to_string())
     }
 }
+*/
 
 #[pymethods]
 impl Expr {
     #[classmethod]
     #[args(args = "*")]
-    pub fn access(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
+    pub fn get(self, _this: &PyAny, key: &PyAny) -> PyResult<Self> {
         use lovm2::prelude::*;
 
-        let name = any_to_ident(name)?;
-        let args = pyargs_to_exprs(args)?;
+        let key = any_to_expr(key)?;
 
         Ok(Self {
-            inner: Lovm2Expr::Access(Access::new(name, args)),
+            inner: self.inner.get(key),
         })
     }
 
@@ -91,15 +92,17 @@ impl Expr {
         use lovm2::prelude::*;
 
         let target = any_to_expr(target)?;
-        let mut slice = Slice::new(target);
+        let (mut start, mut end): (Expr, Expr) = (Value::Nil.into(), Value::Nil.into());
 
         if !start.is_none() {
-            slice = slice.start(any_to_expr(start)?);
+            start = any_to_expr(start)?;
         }
 
         if !end.is_none() {
-            slice = slice.end(any_to_expr(end)?);
+            end = any_to_expr(end)?;
         }
+
+        let slice = target.slice(start, end);
 
         Ok(Self {
             inner: slice.into(),
@@ -231,27 +234,33 @@ impl Expr {
 // conversion methods
 #[pymethods]
 impl Expr {
-    pub fn to_bool(&self) -> PyResult<Self> {
+    pub fn to_bool(self) -> PyResult<Self> {
         Ok(Self {
-            inner: Conv::to_bool(self.inner.clone()).into(),
+            inner: self.inner.to_bool(),
         })
     }
 
-    pub fn to_int(&self) -> PyResult<Self> {
+    pub fn to_int(self) -> PyResult<Self> {
         Ok(Self {
-            inner: Conv::to_integer(self.inner.clone()).into(),
+            inner: self.inner.to_integer(),
         })
     }
 
-    pub fn to_float(&self) -> PyResult<Self> {
+    pub fn to_float(self) -> PyResult<Self> {
         Ok(Self {
-            inner: Conv::to_float(self.inner.clone()).into(),
+            inner: self.inner.to_float(),
         })
     }
 
-    pub fn to_str(&self) -> PyResult<Self> {
+    pub fn to_iter(self) -> PyResult<Self> {
         Ok(Self {
-            inner: Conv::to_str(self.inner.clone()).into(),
+            inner: self.inner.to_iter(),
+        })
+    }
+
+    pub fn to_str(self) -> PyResult<Self> {
+        Ok(Self {
+            inner: self.inner.to_str(),
         })
     }
 }
@@ -260,35 +269,26 @@ impl Expr {
 #[pymethods]
 impl Expr {
     #[classmethod]
-    pub fn iter(_this: &PyAny, from: &PyAny) -> PyResult<Self> {
-        let from = any_to_expr(from)?;
-
-        Ok(Expr {
-            inner: Iter::create(from).into(),
-        })
-    }
-
-    #[classmethod]
     pub fn range(_this: &PyAny, from: &PyAny, to: Option<&PyAny>) -> PyResult<Self> {
         if let Some(to) = to {
             let (from, to) = (any_to_expr(from)?, any_to_expr(to)?);
 
             Ok(Expr {
-                inner: Iter::create_ranged(from, to).into(),
+                inner: Lovm2Expr::iter_ranged(from, to).into(),
             })
         } else {
             let to = any_to_expr(from)?;
 
             Ok(Expr {
-                inner: Iter::create_ranged(Lovm2ValueRaw::Nil, to).into(),
+                inner: Lovm2Expr::iter_ranged(Lovm2ValueRaw::Nil, to).into(),
             })
         }
     }
 
-    pub fn reverse(&mut self) -> PyResult<Self> {
+    pub fn reverse(self) -> PyResult<Self> {
         match &self.inner {
             Lovm2Expr::Iter(it) => Ok(Expr {
-                inner: Iter::reverse(it.clone()).into(),
+                inner: it.reverse(),
             }),
             _ => todo!(),
         }

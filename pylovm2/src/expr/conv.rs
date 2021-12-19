@@ -13,24 +13,24 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<Lovm2Expr> {
     match any.get_type().name().as_ref() {
         "dict" => {
             let dict = any.downcast::<PyDict>()?;
-            let mut obj = Initialize::dict();
+            let mut obj = lovm2::prelude::Expr::dict();
 
             for (key, val) in dict.iter() {
                 let (key, val) = (any_to_expr(key)?, any_to_expr(val)?);
 
-                obj.add_by_key(key, val);
+                obj = obj.set(key, val);
             }
 
             Ok(obj.into())
         }
         "list" => {
             let list = any.downcast::<PyList>()?;
-            let mut obj = Initialize::list();
+            let mut obj = lovm2::prelude::Expr::list();
 
             for val in list.iter() {
                 let val = any_to_expr(val)?;
 
-                obj.add(val);
+                obj = obj.append(val);
             }
 
             Ok(obj.into())
@@ -154,6 +154,7 @@ pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<Value> {
     }
 }
 
+/*
 pub fn any_to_access(any: &PyAny) -> PyResult<Lovm2Access> {
     match any.get_type().name().as_ref() {
         "Expr" => {
@@ -168,6 +169,7 @@ pub fn any_to_access(any: &PyAny) -> PyResult<Lovm2Access> {
         _ => any_to_ident(any).map(Lovm2Access::from),
     }
 }
+*/
 
 pub fn pyargs_to_exprs(args: &PyTuple) -> PyResult<Vec<Lovm2Expr>> {
     args.iter().map(any_to_expr).collect()

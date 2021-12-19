@@ -38,36 +38,36 @@ fn calc_hir(module: &mut LV2ModuleBuilder) {
     let (coeffs, x, factor, i, sigma) = &lv2_var!(coeffs, x, factor, i, sigma);
     let hir = module.add_with_args("calc", vec![coeffs.clone(), x.clone()]);
 
-    hir.step(Assign::var(sigma, 0))
-        .step(Assign::var(i, 0))
-        .step(Assign::var(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
+    hir.assign(sigma, 0)
+        .assign(i, 0)
+        .assign(factor, LV2Expr::sub(lv2_call!(len, coeffs), 1));
 
-    let delta = Expr::mul(lv2_access!(coeffs, i), Expr::pow(x, factor));
-    hir.repeat_until(Expr::not(Expr::le(0, factor)))
-        .step(Assign::var(sigma, Expr::add(sigma, delta)))
-        .step(Assign::var(i, Expr::add(i, 1)))
-        .step(Assign::var(factor, Expr::sub(factor, 1)));
+    let delta = LV2Expr::mul(lv2_access!(coeffs, i), LV2Expr::pow(x, factor));
+    hir.repeat_until(LV2Expr::not(LV2Expr::le(0, factor)))
+        .assign(sigma, LV2Expr::add(sigma, delta))
+        .assign(i, LV2Expr::add(i, 1))
+        .assign(factor, LV2Expr::sub(factor, 1));
 
-    hir.step(Return::value(sigma));
+    hir.return_value(sigma);
 }
 
 fn derive_hir(module: &mut LV2ModuleBuilder) {
     let (coeffs, i, factor, d) = &lv2_var!(coeffs, i, factor, d);
     let hir = module.add_with_args("derive", vec![coeffs.clone()]);
 
-    hir.step(Assign::var(d, lv2_list!()))
-        .step(Assign::var(i, 0))
-        .step(Assign::var(factor, Expr::sub(lv2_call!(len, coeffs), 1)));
+    hir.assign(d, lv2_list!())
+        .assign(i, 0)
+        .assign(factor, LV2Expr::sub(lv2_call!(len, coeffs), 1));
 
-    hir.repeat_until(Expr::not(Expr::lt(0, factor)))
-        .step(Assign::set(
-            &lv2_access!(d, i),
-            Expr::mul(lv2_access!(coeffs, i), factor),
-        ))
-        .step(Assign::var(i, Expr::add(i, 1)))
-        .step(Assign::var(factor, Expr::sub(factor, 1)));
+    hir.repeat_until(LV2Expr::not(LV2Expr::lt(0, factor)))
+        .set(
+            lv2_access!(d, i),
+            LV2Expr::mul(lv2_access!(coeffs, i), factor),
+        )
+        .assign(i, LV2Expr::add(i, 1))
+        .assign(factor, LV2Expr::sub(factor, 1));
 
-    hir.step(Return::value(d));
+    hir.return_value(d);
 }
 
 pub fn bisect_hir(module: &mut LV2ModuleBuilder) {
@@ -76,25 +76,25 @@ pub fn bisect_hir(module: &mut LV2ModuleBuilder) {
     let hir = module.add_with_args("bisect", vec![coeffs.clone(), startx.clone()]);
 
     // function setup
-    hir.step(Assign::var(x, Conv::to_float(startx)))
-        .step(Assign::var(dcoeffs, lv2_call!(derive, coeffs)))
-        .step(Assign::var(prev, Value::Nil));
+    hir.assign(x, LV2Expr::from(startx).to_float())
+        .assign(dcoeffs, lv2_call!(derive, coeffs))
+        .assign(prev, LV2Value::Nil);
 
     let computation_loop = hir.repeat();
-    computation_loop.step(Assign::var(d2, lv2_call!(calc, dcoeffs, x)));
+    computation_loop.assign(d2, lv2_call!(calc, dcoeffs, x));
     computation_loop
         .branch()
-        .add_condition(Expr::eq(d2, 0.))
-        .step(Assign::var(d2, 0.001));
-    computation_loop.step(Assign::var(d1, lv2_call!(calc, coeffs, x)));
-    computation_loop.step(Assign::var(x, Expr::sub(x, Expr::div(d1, d2))));
+        .add_condition(LV2Expr::eq(d2, 0.))
+        .assign(d2, 0.001);
+    computation_loop.assign(d1, lv2_call!(calc, coeffs, x));
+    computation_loop.assign(x, LV2Expr::sub(x, LV2Expr::div(d1, d2)));
     computation_loop
         .branch()
-        .add_condition(Expr::eq(prev, x))
-        .step(Break::new());
-    computation_loop.step(Assign::var(prev, x));
+        .add_condition(LV2Expr::eq(prev, x))
+        .break_repeat();
+    computation_loop.assign(prev, x);
 
-    hir.step(Return::value(x));
+    hir.return_value(x);
 }
 
 pub fn bisect(c: &mut Criterion) {

@@ -1,4 +1,3 @@
-pub(crate) type Lovm2Access = lovm2::gen::Access;
 pub(crate) type Lovm2Branch = lovm2::gen::Branch;
 pub(crate) type Lovm2Block = lovm2::gen::Block;
 pub(crate) type Lovm2Context = lovm2::vm::Context;

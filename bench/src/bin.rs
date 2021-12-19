@@ -13,7 +13,8 @@ use self::bisect::bisect;
 use self::legacy::*;
 
 fn fibonacci(c: &mut Criterion) {
-    let mut module = ModuleBuilder::new();
+    let mut module = LV2ModuleBuilder::new();
+    // TODO: not needed (?)
     module.entry();
 
     let (h, l, n, r) = &lv2_var!(h, l, n, r);
@@ -21,22 +22,22 @@ fn fibonacci(c: &mut Criterion) {
 
     fib_hir
         .branch()
-        .add_condition(Expr::or(Expr::eq(n, 0), Expr::eq(n, 1)))
-        .step(Return::value(n));
+        .add_condition(LV2Expr::or(LV2Expr::eq(n, 0), LV2Expr::eq(n, 1)))
+        .return_value(n);
 
     fib_hir
-        .step(Assign::var(l, 0))
-        .step(Assign::var(r, 1))
-        .step(Assign::var(n, Expr::sub(n, 1)));
+        .assign(l, 0)
+        .assign(r, 1)
+        .assign(n, LV2Expr::sub(n, 1));
 
     fib_hir
-        .repeat_until(Expr::eq(n, 0))
-        .step(Assign::var(h, r))
-        .step(Assign::var(r, Expr::add(l, r)))
-        .step(Assign::var(l, h))
-        .step(Assign::var(n, Expr::sub(n, 1)));
+        .repeat_until(LV2Expr::eq(n, 0))
+        .assign(h, r)
+        .assign(r, LV2Expr::add(l, r))
+        .assign(l, h)
+        .assign(n, LV2Expr::sub(n, 1));
 
-    fib_hir.step(Return::value(r));
+    fib_hir.return_value(r);
 
     c.bench_function("fib compile", |b| b.iter(|| module.build().unwrap()));
 
