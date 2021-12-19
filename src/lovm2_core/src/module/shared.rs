@@ -13,8 +13,8 @@ use std::rc::Rc;
 
 use crate::code::{CallProtocol, CallableRef, CodeObject};
 use crate::error::*;
-use crate::module::{Module, Slots};
-use crate::var::Variable;
+use crate::module::{LV2Module, Slots};
+use crate::var::LV2Variable;
 use crate::vm::Vm;
 
 /// Name of the unmangled function name to call when initializing module slots.
@@ -23,7 +23,7 @@ pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
 /// Definition for dynamically linked function.
 pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
 /// Function signature of the extern module initializer.
-pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<Variable, CallableRef>);
+pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, CallableRef>);
 
 fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
     unsafe {
@@ -65,7 +65,7 @@ where
 }
 
 /// Turn the loaded shared object into a `lovm2` [Module].
-pub fn module_from_library<T>(path: T, lib: Library) -> Lovm2Result<Module>
+pub fn module_from_library<T>(path: T, lib: Library) -> Lovm2Result<LV2Module>
 where
     T: AsRef<Path>,
 {
@@ -77,7 +77,7 @@ where
         ..CodeObject::default()
     };
 
-    Ok(Module {
+    Ok(LV2Module {
         code_object: Rc::new(code_object),
         slots: load_slots(name, lib)?,
     })

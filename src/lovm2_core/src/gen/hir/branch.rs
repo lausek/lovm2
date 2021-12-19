@@ -4,12 +4,12 @@ use super::*;
 
 /// Conditional execution
 #[derive(Clone)]
-pub struct Branch {
-    branches: Vec<(Expr, Block)>,
-    default: Option<Block>,
+pub struct LV2Branch {
+    branches: Vec<(LV2Expr, LV2Block)>,
+    default: Option<LV2Block>,
 }
 
-impl Branch {
+impl LV2Branch {
     pub fn new() -> Self {
         Self {
             branches: vec![],
@@ -18,8 +18,8 @@ impl Branch {
     }
 
     /// Expects a condition that evaluates to boolean `true`
-    pub fn add_condition(&mut self, condition: Expr) -> &mut Block {
-        self.branches.push((condition, Block::new()));
+    pub fn add_condition(&mut self, condition: LV2Expr) -> &mut LV2Block {
+        self.branches.push((condition, LV2Block::new()));
 
         let (_, block) = self.branches.last_mut().unwrap();
 
@@ -27,13 +27,13 @@ impl Branch {
     }
 
     /// `Block` to execute if no condition evaluates to `true`
-    pub fn default_condition(&mut self) -> &mut Block {
-        self.default = Some(Block::new());
+    pub fn default_condition(&mut self) -> &mut LV2Block {
+        self.default = Some(LV2Block::new());
         self.default.as_mut().unwrap()
     }
 }
 
-impl HirLowering for Branch {
+impl HirLowering for LV2Branch {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         lower_map_structure(runtime, &self.branches, &self.default);
@@ -43,7 +43,7 @@ impl HirLowering for Branch {
 // generic lowering for control structures that evaluate expressions in order to execute code
 pub(crate) fn lower_map_structure<'hir, 'lir, T>(
     runtime: &mut HirLoweringRuntime<'lir>,
-    branches: &'hir Vec<(Expr, T)>,
+    branches: &'hir Vec<(LV2Expr, T)>,
     default: &'hir Option<T>,
 ) where
     T: HirLowering,

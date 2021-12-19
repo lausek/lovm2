@@ -4,119 +4,119 @@ use super::*;
 
 /// Sum type for every HIR element
 #[derive(Clone)]
-pub enum HirElement {
+pub enum LV2Statement {
     AssignReference {
-        target: Expr,
-        source: Expr,
+        target: LV2Expr,
+        source: LV2Expr,
     },
     AssignVariable {
-        target: Variable,
-        source: Expr,
+        target: LV2Variable,
+        source: LV2Expr,
     },
-    Branch(Branch),
+    Branch(LV2Branch),
     /// Highlevel `break` statement
     Break,
-    Call(Call),
+    Call(LV2Call),
     /// Highlevel `continue` statement
     Continue,
     Drop {
-        expr: Expr
+        expr: LV2Expr
     },
     Import {
-        name: Expr,
+        name: LV2Expr,
         namespaced: bool,
     },
     Interrupt {
         n: u16,
     },
-    Repeat(Repeat),
+    Repeat(LV2Repeat),
     Return {
-        expr: Expr,
+        expr: LV2Expr,
     },
     ScopeGlobal {
-        ident: Variable,
+        ident: LV2Variable,
     },
     ScopeLocal {
-        ident: Variable,
+        ident: LV2Variable,
     },
 }
 
-impl HirLowering for HirElement {
+impl HirLowering for LV2Statement {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         match self {
-            HirElement::AssignReference { target, source } => {
+            LV2Statement::AssignReference { target, source } => {
                 target.lower(runtime);
                 source.lower(runtime);
                 runtime.emit(LirElement::Set);
             }
-            HirElement::AssignVariable { target, source } => {
+            LV2Statement::AssignVariable { target, source } => {
                 source.lower(runtime);
                 runtime.emit(LirElement::store(target));
             }
-            HirElement::Branch(branch) => branch.lower(runtime),
-            HirElement::Break => {
+            LV2Statement::Branch(branch) => branch.lower(runtime),
+            LV2Statement::Break => {
                 let repeat_end = runtime.loop_mut().unwrap().end();
                 runtime.emit(LirElement::jump(repeat_end));
             }
-            HirElement::Call(call) => call.lower(runtime),
-            HirElement::Continue => {
+            LV2Statement::Call(call) => call.lower(runtime),
+            LV2Statement::Continue => {
                 let repeat_start = runtime.loop_mut().unwrap().start();
                 runtime.emit(LirElement::jump(repeat_start));
             }
-            HirElement::Drop { expr } => {
+            LV2Statement::Drop { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Drop);
             }
-            HirElement::Import { name, namespaced} => {
+            LV2Statement::Import { name, namespaced} => {
                 name.lower(runtime);
                 let elem = LirElement::Import { namespaced: *namespaced };
                 runtime.emit(elem);
             }
-            HirElement::Interrupt { n} => {
+            LV2Statement::Interrupt { n} => {
                 runtime.emit(LirElement::Interrupt { n: *n });
             }
-            HirElement::Repeat(repeat) => repeat.lower(runtime),
-            HirElement::Return { expr} => {
+            LV2Statement::Repeat(repeat) => repeat.lower(runtime),
+            LV2Statement::Return { expr} => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Ret);
             },
-            HirElement::ScopeGlobal { ident } => {
+            LV2Statement::ScopeGlobal { ident } => {
                 runtime.emit(LirElement::ScopeGlobal { ident });
             }
-            HirElement::ScopeLocal { ident } => {
+            LV2Statement::ScopeLocal { ident } => {
                 runtime.emit(LirElement::ScopeLocal { ident });
             }
         }
     }
 }
 
-impl From<Branch> for HirElement {
-    fn from(branch: Branch) -> Self {
-        HirElement::Branch(branch)
+impl From<LV2Branch> for LV2Statement {
+    fn from(branch: LV2Branch) -> Self {
+        LV2Statement::Branch(branch)
     }
 }
 
-impl From<Call> for HirElement {
-    fn from(call: Call) -> Self {
-        HirElement::Call(call)
+impl From<LV2Call> for LV2Statement {
+    fn from(call: LV2Call) -> Self {
+        LV2Statement::Call(call)
     }
 }
 
-impl From<Expr> for HirElement {
-    fn from(expr: Expr) -> Self {
-        HirElement::Drop { expr }
+impl From<LV2Expr> for LV2Statement {
+    fn from(expr: LV2Expr) -> Self {
+        LV2Statement::Drop { expr }
     }
 }
 
-impl From<Repeat> for HirElement {
-    fn from(repeat: Repeat) -> Self {
-        HirElement::Repeat(repeat)
+impl From<LV2Repeat> for LV2Statement {
+    fn from(repeat: LV2Repeat) -> Self {
+        LV2Statement::Repeat(repeat)
     }
 }
 
-impl From<&mut Repeat> for HirElement {
-    fn from(repeat: &mut Repeat) -> Self {
-        HirElement::Repeat(repeat.clone())
+impl From<&mut LV2Repeat> for LV2Statement {
+    fn from(repeat: &mut LV2Repeat) -> Self {
+        LV2Statement::Repeat(repeat.clone())
     }
 }

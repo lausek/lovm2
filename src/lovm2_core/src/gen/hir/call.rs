@@ -4,15 +4,15 @@ use super::*;
 
 /// Execute a `CodeObject` by name using the given arguments
 #[derive(Clone, Debug)]
-pub struct Call {
-    name: Variable,
-    args: Vec<Expr>,
+pub struct LV2Call {
+    name: LV2Variable,
+    args: Vec<LV2Expr>,
 }
 
-impl Call {
+impl LV2Call {
     pub fn new<T>(name: T) -> Self
     where
-        T: Into<Variable>,
+        T: Into<LV2Variable>,
     {
         Self {
             args: vec![],
@@ -20,9 +20,9 @@ impl Call {
         }
     }
 
-    pub fn with_args<T>(name: T, args: Vec<Expr>) -> Self
+    pub fn with_args<T>(name: T, args: Vec<LV2Expr>) -> Self
     where
-        T: Into<Variable>,
+        T: Into<LV2Variable>,
     {
         Self {
             args,
@@ -32,14 +32,14 @@ impl Call {
 
     pub fn arg<T>(mut self, expr: T) -> Self
     where
-        T: Into<Expr>,
+        T: Into<LV2Expr>,
     {
         self.args.push(expr.into());
         self
     }
 }
 
-impl HirLowering for Call {
+impl HirLowering for LV2Call {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         // calling convention is pascal-style i.e. f(a, b)

@@ -4,7 +4,7 @@
 #[macro_export]
 macro_rules! lv2_access {
     ($name:expr, $key:expr $(, $rest:expr)* $(,)?) => {{
-        Expr::from($name)
+        LV2Expr::from($name)
             .get($key)
             $(
                 .get($rest)
@@ -16,7 +16,7 @@ macro_rules! lv2_access {
 #[macro_export]
 macro_rules! lv2_call {
     ($name:ident $(, $arg:tt)* $(,)?) => {{
-        Call::new(stringify!($name))
+        LV2Call::new(stringify!($name))
             $(
                 .arg(lv2_call!(1, $arg))
             )*
@@ -29,7 +29,7 @@ macro_rules! lv2_call {
 #[macro_export]
 macro_rules! lv2_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
-        let mut dict = Expr::dict();
+        let mut dict = LV2Expr::dict();
         $(
             dict = dict.insert($key, $val);
         )*
@@ -41,7 +41,7 @@ macro_rules! lv2_dict {
 #[macro_export]
 macro_rules! lv2_list {
     ($($val:expr),* $(,)?) => {{
-        let mut list = Expr::list();
+        let mut list = LV2Expr::list();
         $(
             list = list.append($val);
         )*
@@ -53,13 +53,13 @@ macro_rules! lv2_list {
 #[macro_export]
 macro_rules! lv2_var {
     ($name:ident) => {
-        Variable::from(stringify!($name))
+        LV2Variable::from(stringify!($name))
     };
     ($name1:ident, $name2:ident $(, $other:ident)*) => {
         (
-            Variable::from(stringify!($name1)),
-            Variable::from(stringify!($name2))
-            $(, Variable::from(stringify!($other)) )*
+            LV2Variable::from(stringify!($name1)),
+            LV2Variable::from(stringify!($name2))
+            $(, LV2Variable::from(stringify!($other)) )*
         )
     };
 }

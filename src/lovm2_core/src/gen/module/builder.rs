@@ -6,24 +6,24 @@ use std::rc::Rc;
 use crate::code::CodeObjectFunction;
 use crate::error::*;
 use crate::gen::opt::Optimizer;
-use crate::gen::{CompileOptions, Hir, HirLoweringRuntime, LirElement, ModuleMeta};
-use crate::module::{Module, ENTRY_POINT};
-use crate::var::Variable;
+use crate::gen::{CompileOptions, LV2Function, HirLoweringRuntime, LirElement, LV2ModuleMeta};
+use crate::module::{LV2Module, ENTRY_POINT};
+use crate::var::LV2Variable;
 
 /// Representation of modules before lowering.
 #[derive(Clone)]
-pub struct ModuleBuilder {
+pub struct LV2ModuleBuilder {
     /// Meta information about name, location and static uses.
-    meta: ModuleMeta,
+    meta: LV2ModuleMeta,
     /// Functions contained in the module.
-    hirs: HashMap<Variable, Hir>,
+    hirs: HashMap<LV2Variable, LV2Function>,
 }
 
-impl ModuleBuilder {
+impl LV2ModuleBuilder {
     /// Create a builder.
     pub fn new() -> Self {
         Self {
-            meta: ModuleMeta::default(),
+            meta: LV2ModuleMeta::default(),
             hirs: HashMap::new(),
         }
     }
@@ -39,7 +39,7 @@ impl ModuleBuilder {
     /// Create a builder with module meta information.
     pub fn with_meta<T>(meta: T) -> Self
     where
-        T: Into<ModuleMeta>,
+        T: Into<LV2ModuleMeta>,
     {
         Self {
             meta: meta.into(),
@@ -60,32 +60,32 @@ impl ModuleBuilder {
     }
 
     /// Create a new function hir without arguments.
-    pub fn add<T>(&mut self, name: T) -> &mut Hir
+    pub fn add<T>(&mut self, name: T) -> &mut LV2Function
     where
-        T: Into<Variable>,
+        T: Into<LV2Variable>,
     {
         self.add_with_args(name, vec![])
     }
 
     /// Create a new function hir with arguments.
-    pub fn add_with_args<T>(&mut self, name: T, args: Vec<Variable>) -> &mut Hir
+    pub fn add_with_args<T>(&mut self, name: T, args: Vec<LV2Variable>) -> &mut LV2Function
     where
-        T: Into<Variable>,
+        T: Into<LV2Variable>,
     {
-        let name: Variable = name.into();
+        let name: LV2Variable = name.into();
 
-        self.hirs.insert(name.clone(), Hir::with_args(args));
+        self.hirs.insert(name.clone(), LV2Function::with_args(args));
         self.hirs.get_mut(&name).unwrap()
     }
 
     /// Generate a module from the current data. This uses the default [CompileOptions] e.g.
     /// optimization is enabled.
-    pub fn build(&self) -> Lovm2CompileResult<Module> {
+    pub fn build(&self) -> Lovm2CompileResult<LV2Module> {
         self.build_with_options(CompileOptions::default())
     }
 
     /// Generate a module from the current data but use custom compile options.
-    pub fn build_with_options(&self, options: CompileOptions) -> Lovm2CompileResult<Module> {
+    pub fn build_with_options(&self, options: CompileOptions) -> Lovm2CompileResult<LV2Module> {
         use crate::gen::{NoOptimizer, StandardOptimizer};
 
         if options.optimize {
@@ -99,11 +99,11 @@ impl ModuleBuilder {
         &self,
         options: CompileOptions,
         mut optimizer: impl Optimizer,
-    ) -> Lovm2CompileResult<Module> {
+    ) -> Lovm2CompileResult<LV2Module> {
         let mut ru = HirLoweringRuntime::new(self.meta.clone(), options, &mut optimizer);
 
         // Main entry point must be at start (offset 0)
-        let entry_key = Variable::from(ENTRY_POINT);
+        let entry_key = LV2Variable::from(ENTRY_POINT);
 
         if let Some((key, hir)) = self.hirs.iter().find(|(k, _)| **k == entry_key) {
             ru.emit(LirElement::entry(key));
@@ -120,7 +120,7 @@ impl ModuleBuilder {
             hir.build(&mut ru)?;
         }
 
-        let mut module: Module = ru.complete()?.into();
+        let mut module: LV2Module = ru.complete()?.into();
 
         // Make all function offsets of the `CodeObject` available as module slots.
         for (iidx, offset) in module.code_object.entries.iter() {
@@ -134,11 +134,11 @@ impl ModuleBuilder {
     }
 
     /// Create a new function handle with the [ENTRY_POINT] name.
-    pub fn entry(&mut self) -> &mut Hir {
-        let name = Variable::from(ENTRY_POINT);
+    pub fn entry(&mut self) -> &mut LV2Function {
+        let name = LV2Variable::from(ENTRY_POINT);
 
         if !self.hirs.contains_key(&name) {
-            self.hirs.insert(name.clone(), Hir::new());
+            self.hirs.insert(name.clone(), LV2Function::new());
         }
 
         self.hirs.get_mut(&name).unwrap()

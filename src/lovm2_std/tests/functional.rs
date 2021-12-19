@@ -4,6 +4,7 @@ use test_utils::*;
 
 use lovm2_core::extend::prelude::*;
 
+// TODO: use new api
 #[test]
 fn dynamic_varargs() {
     let (arg, args, result) = &lv2_var!(arg, args, result);
@@ -13,9 +14,9 @@ fn dynamic_varargs() {
             .step(Assign::var(args, lv2_call!(argn)))
             .step(Assign::var(result, 0));
 
-        hir.repeat_until(Expr::eq(args, 0))
+        hir.repeat_until(LV2Expr::eq(args, 0))
             .step(Assign::var(arg, lv2_call!(pop_vstack)))
-            .step(Assign::var(result, Expr::add(result, arg)))
+            .step(Assign::var(result, LV2Expr::add(result, arg)))
             .step(Assign::decrement(args));
 
         hir.step(Return::value(result));
@@ -43,7 +44,7 @@ fn dynamic_call() {
             .step(Assign::var(n, lv2_call!(argn)));
 
         hir.step(Assign::var(i, n))
-            .repeat_until(Expr::eq(i, 0))
+            .repeat_until(LV2Expr::eq(i, 0))
             .step(lv2_call!(pop_vstack))
             .step(Assign::decrement(i));
 

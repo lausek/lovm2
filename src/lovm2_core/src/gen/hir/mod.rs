@@ -5,41 +5,41 @@ mod lowering;
 mod block;
 mod branch;
 mod call;
-mod element;
+mod stmt;
 mod expr;
 mod repeat;
 
 use crate::value::Value;
-use crate::var::Variable;
+use crate::var::LV2Variable;
 
 use super::*;
 
-pub use self::block::Block;
-pub use self::branch::Branch;
-pub use self::call::Call;
-pub use self::element::HirElement;
-pub use self::expr::{Expr, Operator1, Operator2};
+pub use self::block::LV2Block;
+pub use self::branch::LV2Branch;
+pub use self::call::LV2Call;
+pub use self::stmt::LV2Statement;
+pub use self::expr::{LV2Expr, LV2Operator1, LV2Operator2};
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
-pub use self::repeat::Repeat;
+pub use self::repeat::LV2Repeat;
 
 /// Highlevel representation of a function
 #[derive(Clone)]
-pub struct Hir {
-    args: Vec<Variable>,
-    block: Block,
+pub struct LV2Function {
+    args: Vec<LV2Variable>,
+    block: LV2Block,
 }
 
-impl Hir {
+impl LV2Function {
     /// Create a new function
     pub fn new() -> Self {
         Self {
             args: vec![],
-            block: Block::new(),
+            block: LV2Block::new(),
         }
     }
 
     /// Create a new function with arguments
-    pub fn with_args(args: Vec<Variable>) -> Self {
+    pub fn with_args(args: Vec<LV2Variable>) -> Self {
         let mut hir = Self::new();
         hir.args = args;
         hir
@@ -57,29 +57,29 @@ impl Hir {
     }
 }
 
-impl HasBlock for Hir {
+impl HasBlock for LV2Function {
     #[inline]
-    fn block_mut(&mut self) -> &mut Block {
+    fn block_mut(&mut self) -> &mut LV2Block {
         &mut self.block
     }
 }
 
 /// Supplying functionality for all structures containing a [Block]
 pub trait HasBlock {
-    fn block_mut(&mut self) -> &mut Block;
+    fn block_mut(&mut self) -> &mut LV2Block;
 
     #[inline]
     fn assign<U, T>(&mut self, var: &U, expr: T) -> &mut Self
     where
-        U: Into<Variable> + Clone,
-        T: Into<Expr>,
+        U: Into<LV2Variable> + Clone,
+        T: Into<LV2Expr>,
     {
         self.block_mut().assign(var, expr);
         self
     }
 
     #[inline]
-    fn branch(&mut self) -> &mut Branch {
+    fn branch(&mut self) -> &mut LV2Branch {
         self.block_mut().branch()
     }
 
@@ -96,13 +96,13 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn decrement(&mut self, ident: &Variable) -> &mut Self {
+    fn decrement(&mut self, ident: &LV2Variable) -> &mut Self {
         self.block_mut().decrement(ident);
         self
     }
 
     #[inline]
-    fn global(&mut self, var: &Variable) -> &mut Self
+    fn global(&mut self, var: &LV2Variable) -> &mut Self
     {
         self.block_mut().global(var);
         self
@@ -111,7 +111,7 @@ pub trait HasBlock {
     #[inline]
     fn import<T>(&mut self, name: T) -> &mut Self
     where
-        T: Into<Expr>,
+        T: Into<LV2Expr>,
     {
         self.block_mut().import(name);
         self
@@ -120,40 +120,40 @@ pub trait HasBlock {
     #[inline]
     fn import_from<T>(&mut self, name: T) -> &mut Self
     where
-        T: Into<Expr>,
+        T: Into<LV2Expr>,
     {
         self.block_mut().import_from(name);
         self
     }
 
     #[inline]
-    fn increment(&mut self, ident: &Variable) -> &mut Self {
+    fn increment(&mut self, ident: &LV2Variable) -> &mut Self {
         self.block_mut().increment(ident);
         self
     }
 
     #[inline]
-    fn local(&mut self, var: &Variable) -> &mut Self
+    fn local(&mut self, var: &LV2Variable) -> &mut Self
     {
         self.block_mut().local(var);
         self
     }
 
     #[inline]
-    fn repeat(&mut self) -> &mut Repeat {
+    fn repeat(&mut self) -> &mut LV2Repeat {
         self.block_mut().repeat()
     }
 
     #[inline]
-    fn repeat_until(&mut self, condition: Expr) -> &mut Repeat {
+    fn repeat_until(&mut self, condition: LV2Expr) -> &mut LV2Repeat {
         self.block_mut().repeat_until(condition)
     }
 
     #[inline]
-    fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut Repeat
+    fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut LV2Repeat
     where
-        U: Into<Expr>,
-        T: Into<Variable>,
+        U: Into<LV2Expr>,
+        T: Into<LV2Variable>,
     {
         self.block_mut().repeat_iterating(collection, item)
     }
@@ -165,13 +165,13 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn return_value<T: Into<Expr>>(&mut self, value: T) -> &mut Self {
+    fn return_value<T: Into<LV2Expr>>(&mut self, value: T) -> &mut Self {
         self.block_mut().return_value(value);
         self
     }
 
     #[inline]
-    fn set<T: Into<Expr>, U: Into<Expr>>(&mut self, target: T, source: U) -> &mut Self {
+    fn set<T: Into<LV2Expr>, U: Into<LV2Expr>>(&mut self, target: T, source: U) -> &mut Self {
         self.block_mut().set(target, source);
         self
     }
@@ -179,7 +179,7 @@ pub trait HasBlock {
     #[inline]
     fn step<T>(&mut self, element: T) -> &mut Self
     where
-        T: Into<HirElement>,
+        T: Into<LV2Statement>,
     {
         self.block_mut().step(element);
         self

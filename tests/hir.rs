@@ -9,7 +9,7 @@ use test_utils::*;
 #[test]
 fn assign_local() {
     let n = &lv2_var!(n);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder.entry().assign(n, 4).trigger(10);
 
@@ -23,12 +23,12 @@ fn assign_local() {
 #[test]
 fn assign_local_add() {
     let n = &lv2_var!(n);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
         .assign(n, 2)
-        .assign(n, Expr::add(n, 2))
+        .assign(n, LV2Expr::add(n, 2))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -41,7 +41,7 @@ fn assign_local_add() {
 #[test]
 fn assign_incremet_decrement() {
     let (a, b) = &lv2_var!(a, b);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -64,9 +64,9 @@ fn assign_incremet_decrement() {
 #[test]
 fn rem_lowering() {
     let rest = &lv2_var!(rest);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
-    builder.entry().assign(rest, Expr::rem(1, 2)).trigger(10);
+    builder.entry().assign(rest, LV2Expr::rem(1, 2)).trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
@@ -78,14 +78,14 @@ fn rem_lowering() {
 #[test]
 fn easy_loop() {
     let n = &lv2_var!(n);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     let main_hir = builder.entry();
     main_hir.assign(n, 0);
     main_hir
-        .repeat_until(Expr::eq(n, 10))
+        .repeat_until(LV2Expr::eq(n, 10))
         .step(lv2_call!(print, n))
-        .assign(n, Expr::add(n, 1));
+        .assign(n, LV2Expr::add(n, 1));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -98,11 +98,14 @@ fn easy_loop() {
 #[test]
 fn explicit_break() {
     let n = &lv2_var!(n);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     let main_hir = builder.entry();
     main_hir.assign(n, 0);
-    main_hir.repeat().assign(n, Expr::add(n, 1)).break_repeat();
+    main_hir
+        .repeat()
+        .assign(n, LV2Expr::add(n, 1))
+        .break_repeat();
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -115,7 +118,7 @@ fn explicit_break() {
 #[test]
 fn try_getting() {
     let (dict, dat0, list, lat0) = &lv2_var!(dict, dat0, list, lat0);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -136,7 +139,7 @@ fn try_getting() {
 #[test]
 fn try_setting() {
     let list = &lv2_var!(list);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -155,7 +158,7 @@ fn try_setting() {
 #[test]
 fn try_retrieving_len() {
     let (dict, ls, lendict, lenls) = &lv2_var!(dict, ls, lendict, lenls);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -176,11 +179,11 @@ fn try_retrieving_len() {
 #[test]
 fn try_casting() {
     let n = &lv2_var!(n);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
-        .assign(n, Expr::from(5.).to_integer())
+        .assign(n, LV2Expr::from(5.).to_integer())
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -192,14 +195,14 @@ fn try_casting() {
 
 #[test]
 fn true_branching() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let hir = builder.entry();
     let n = lv2_var!(n);
 
     hir.assign(&n, 0);
 
     let branch = hir.branch();
-    branch.add_condition(Expr::not(false)).assign(&n, 2);
+    branch.add_condition(LV2Expr::not(false)).assign(&n, 2);
     branch.default_condition().assign(&n, 1);
 
     hir.trigger(10);
@@ -213,7 +216,7 @@ fn true_branching() {
 
 #[test]
 fn multiple_branches() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let hir = builder.entry();
     let (result, n) = &lv2_var!(result, n);
 
@@ -221,10 +224,10 @@ fn multiple_branches() {
 
     let branch = hir.branch();
     branch
-        .add_condition(Expr::eq(Expr::rem(n, 3), 0))
+        .add_condition(LV2Expr::eq(LV2Expr::rem(n, 3), 0))
         .assign(result, "fizz");
     branch
-        .add_condition(Expr::eq(Expr::rem(n, 5), 0))
+        .add_condition(LV2Expr::eq(LV2Expr::rem(n, 5), 0))
         .assign(result, "buzz");
     branch.default_condition().assign(result, "none");
 
@@ -239,7 +242,7 @@ fn multiple_branches() {
 
 #[test]
 fn taking_parameters() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (a, b) = lv2_var!(a, b);
 
     builder
@@ -259,7 +262,7 @@ fn taking_parameters() {
 #[test]
 fn automatic_return() {
     let mut vm = Vm::new();
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder.entry();
     builder.add("no-return");
@@ -273,14 +276,14 @@ fn automatic_return() {
 
 #[test]
 fn return_values() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let n = lv2_var!(n);
 
     builder.add("returner").return_value(10);
 
     builder
         .entry()
-        .assign(&n, Call::new("returner"))
+        .assign(&n, LV2Call::new("returner"))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
@@ -292,11 +295,11 @@ fn return_values() {
 
 #[test]
 fn drop_call_values() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     let _ = builder.add("returner");
 
-    builder.entry().step(Call::new("returner")).trigger(10);
+    builder.entry().step(LV2Call::new("returner")).trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         assert!(ctx.last_value_mut().is_err());
@@ -307,14 +310,14 @@ fn drop_call_values() {
 #[test]
 fn cast_to_string() {
     let (a, b, c, d) = &lv2_var!(a, b, c, d);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
-        .assign(a, Expr::from(10).to_str())
-        .assign(b, Expr::from(10.1).to_str())
-        .assign(c, Expr::from("10").to_str())
-        .assign(d, Expr::from(true).to_str())
+        .assign(a, LV2Expr::from(10).to_str())
+        .assign(b, LV2Expr::from(10.1).to_str())
+        .assign(c, LV2Expr::from("10").to_str())
+        .assign(d, LV2Expr::from(true).to_str())
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
@@ -329,17 +332,20 @@ fn cast_to_string() {
 
 #[test]
 fn folding_expr() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     let main = builder.entry();
     let (a, n) = lv2_var!(a, n);
 
     main.global(&a)
-        .assign(&a, Expr::from_opn(Operator2::Div, vec![8.into(), 4.into()]))
+        .assign(
+            &a,
+            LV2Expr::from_opn(LV2Operator2::Div, vec![8.into(), 4.into()]),
+        )
         .global(&n)
         .assign(
             &n,
-            Expr::from_opn(Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
+            LV2Expr::from_opn(LV2Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
         )
         .trigger(10);
 
@@ -355,7 +361,7 @@ fn folding_expr() {
 #[test]
 fn get_field_from_dict() {
     let (x, y, z, d1, d2, g) = &lv2_var!(x, y, z, d1, d2, g);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -380,7 +386,7 @@ fn get_field_from_dict() {
 #[test]
 fn set_field_on_dict() {
     let (d1, d2, g) = &lv2_var!(d1, d2, g);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -429,15 +435,15 @@ fn set_field_on_dict() {
 
 #[test]
 fn is_constant() {
-    assert!(!Expr::from(lv2_var!(n)).is_const());
-    assert!(Expr::add(1, 2).is_const());
-    assert!(Expr::from("abc").is_const());
-    assert!(Expr::from(10).is_const());
+    assert!(!LV2Expr::from(lv2_var!(n)).is_const());
+    assert!(LV2Expr::add(1, 2).is_const());
+    assert!(LV2Expr::from("abc").is_const());
+    assert!(LV2Expr::from(10).is_const());
 }
 
 #[test]
 fn call_into_vm() {
-    let mut builder = ModuleBuilder::named("main");
+    let mut builder = LV2ModuleBuilder::named("main");
     builder.entry().step(lv2_call!(call_me, 10));
 
     builder
@@ -457,16 +463,16 @@ fn call_into_vm() {
 #[test]
 fn comparison() {
     let (lt, le1, le2, gt, ge1, ge2) = &lv2_var!(lt, le1, le2, gt, ge1, ge2);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
-        .assign(lt, Expr::lt(2, 3))
-        .assign(le1, Expr::le(2, 3))
-        .assign(le2, Expr::le(2, 2))
-        .assign(gt, Expr::gt(3, 2))
-        .assign(ge1, Expr::ge(3, 2))
-        .assign(ge2, Expr::ge(3, 3))
+        .assign(lt, LV2Expr::lt(2, 3))
+        .assign(le1, LV2Expr::le(2, 3))
+        .assign(le2, LV2Expr::le(2, 2))
+        .assign(gt, LV2Expr::gt(3, 2))
+        .assign(ge1, LV2Expr::ge(3, 2))
+        .assign(ge2, LV2Expr::ge(3, 3))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -484,12 +490,12 @@ fn comparison() {
 #[test]
 fn raise_to_power() {
     let (a, b) = &lv2_var!(a, b);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
-        .assign(a, Expr::pow(2, 3))
-        .assign(b, Expr::pow(3., 3.))
+        .assign(a, LV2Expr::pow(2, 3))
+        .assign(b, LV2Expr::pow(3., 3.))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -503,7 +509,7 @@ fn raise_to_power() {
 #[test]
 fn initialize_objects() {
     let (n, ae, ag, be, bg) = &lv2_var!(n, ae, ag, be, bg);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -529,12 +535,12 @@ fn initialize_objects() {
 #[test]
 fn store_without_reference() {
     let (n, x, y) = &lv2_var!(n, x, y);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
         .assign(n, 2)
-        .assign(x, Expr::from(5).boxed())
+        .assign(x, LV2Expr::from(5).boxed())
         .assign(y, x)
         .set(y, 7)
         .trigger(10);
@@ -550,12 +556,12 @@ fn store_without_reference() {
 #[test]
 fn create_slice() {
     let (ls, s) = &lv2_var!(ls, s);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
         .assign(ls, lv2_list!(1, 2, 3, 4, 5))
-        .assign(s, Expr::from(ls).slice(1, 4))
+        .assign(s, LV2Expr::from(ls).slice(1, 4))
         .set(lv2_access!(s, 1), 9)
         .trigger(10);
 
@@ -576,7 +582,7 @@ fn iterating_repeat() {
         assert!(ctx.last_value_mut().is_err());
     }
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (sum, i, iter) = &lv2_var!(sum, i, iter);
 
     let main_hir = builder.entry();
@@ -586,7 +592,7 @@ fn iterating_repeat() {
         .assign(iter, lv2_list!(1, 2, 3, 4).to_iter())
         .repeat_iterating(iter, i)
         .global(sum)
-        .assign(sum, Expr::add(sum, i));
+        .assign(sum, LV2Expr::add(sum, i));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -600,7 +606,7 @@ fn iterating_repeat_inplace() {
         assert_eq!(ctx.value_of("orig").unwrap(), ctx.value_of("ls").unwrap());
     }
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (sum, i, ls, orig) = &lv2_var!(sum, i, ls, orig);
 
     let main_hir = builder.entry();
@@ -611,7 +617,7 @@ fn iterating_repeat_inplace() {
     main_hir
         .repeat_iterating(ls, i)
         .global(sum)
-        .assign(sum, Expr::add(sum, i));
+        .assign(sum, LV2Expr::add(sum, i));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -624,16 +630,16 @@ fn iterating_repeat_ranged() {
         assert!(ctx.last_value_mut().is_err());
     }
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (sum, i) = &lv2_var!(sum, i);
 
     let main_hir = builder.entry();
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .repeat_iterating(Expr::iter_ranged(Value::Nil, 10), i)
+        .repeat_iterating(LV2Expr::iter_ranged(Value::Nil, 10), i)
         .global(sum)
-        .assign(sum, Expr::add(sum, i));
+        .assign(sum, LV2Expr::add(sum, i));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -646,17 +652,17 @@ fn iterating_repeat_nested() {
         assert!(ctx.last_value_mut().is_err());
     }
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (sum, i, j) = &lv2_var!(sum, i, j);
 
     let main_hir = builder.entry();
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .repeat_iterating(Expr::iter_ranged(0, 5), i)
-        .repeat_iterating(Expr::iter_ranged(5, 10), j)
+        .repeat_iterating(LV2Expr::iter_ranged(0, 5), i)
+        .repeat_iterating(LV2Expr::iter_ranged(5, 10), j)
         .global(sum)
-        .assign(sum, Expr::add(sum, Expr::pow(j, i)));
+        .assign(sum, LV2Expr::add(sum, LV2Expr::pow(j, i)));
     main_hir.trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -672,18 +678,18 @@ fn shift_values() {
     }
 
     let (a, b, c, d) = &lv2_var!(a, b, c, d);
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
         .global(a)
-        .assign(a, Expr::shl(2, 1))
+        .assign(a, LV2Expr::shl(2, 1))
         .global(b)
-        .assign(b, Expr::shr(16, 1))
+        .assign(b, LV2Expr::shr(16, 1))
         .global(c)
-        .assign(c, Expr::shl(0b00001010, 4))
+        .assign(c, LV2Expr::shl(0b00001010, 4))
         .global(d)
-        .assign(d, Expr::shr(0b0001010, 4))
+        .assign(d, LV2Expr::shr(0b0001010, 4))
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), check).unwrap();
@@ -696,7 +702,7 @@ fn conditional_expression() {
         assert_eq!(Value::from(false), *ctx.value_of("y").unwrap());
     }
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (x, y, z) = &lv2_var!(x, y, z);
 
     builder
@@ -705,15 +711,15 @@ fn conditional_expression() {
         .global(x)
         .assign(
             x,
-            Expr::branch()
-                .add_condition(Expr::eq(z, 1), false)
+            LV2Expr::branch()
+                .add_condition(LV2Expr::eq(z, 1), false)
                 .default_value(true),
         )
         .global(y)
         .assign(
             y,
-            Expr::branch()
-                .add_condition(Expr::eq(z, 2), false)
+            LV2Expr::branch()
+                .add_condition(LV2Expr::eq(z, 2), false)
                 .default_value(true),
         )
         .trigger(10);
@@ -731,7 +737,7 @@ fn variable_scoping() {
         assert_eq!(Value::from(true), *frame.value_of("y").unwrap());
     }
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (x, y) = &lv2_var!(x, y);
 
     builder
@@ -748,17 +754,17 @@ fn variable_scoping() {
 
 #[test]
 fn iterator_has_next() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (y, n, it) = &lv2_var!(y, n, it);
 
     builder
         .entry()
-        .assign(it, Expr::iter_ranged(0, 1))
+        .assign(it, LV2Expr::iter_ranged(0, 1))
         .global(y)
-        .assign(y, Expr::from(it).has_next())
-        .step(Expr::from(it).next())
+        .assign(y, LV2Expr::from(it).has_next())
+        .step(LV2Expr::from(it).next())
         .global(n)
-        .assign(n, Expr::from(it).has_next())
+        .assign(n, LV2Expr::from(it).has_next())
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -770,16 +776,16 @@ fn iterator_has_next() {
 
 #[test]
 fn iterator_reverse() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (y, n, it) = &lv2_var!(y, n, it);
 
     builder
         .entry()
-        .assign(it, Expr::iter_ranged(0, 2).reverse())
+        .assign(it, LV2Expr::iter_ranged(0, 2).reverse())
         .global(y)
-        .assign(y, Expr::from(it).next())
+        .assign(y, LV2Expr::from(it).next())
         .global(n)
-        .assign(n, Expr::from(it).next())
+        .assign(n, LV2Expr::from(it).next())
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
@@ -791,17 +797,17 @@ fn iterator_reverse() {
 
 #[test]
 fn iterators() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let (x, y, it) = &lv2_var!(x, y, it);
 
     builder
         .entry()
-        .assign(x, Expr::list().append(1).append(2).append(3))
+        .assign(x, LV2Expr::list().append(1).append(2).append(3))
         .global(y)
-        .assign(y, Expr::list())
-        .assign(it, Expr::from(x).to_iter().reverse())
-        .repeat_until(Expr::not(Expr::from(it).has_next()))
-        .step(Expr::from(y).append(Expr::from(it).next()));
+        .assign(y, LV2Expr::list())
+        .assign(it, LV2Expr::from(x).to_iter().reverse())
+        .repeat_until(LV2Expr::not(LV2Expr::from(it).has_next()))
+        .step(LV2Expr::from(y).append(LV2Expr::from(it).next()));
 
     builder.entry().trigger(10);
 

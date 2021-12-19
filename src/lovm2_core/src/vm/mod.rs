@@ -7,9 +7,9 @@ use std::rc::Rc;
 use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CallableRef, CodeObject};
 use crate::error::*;
-use crate::module::Module;
+use crate::module::LV2Module;
 use crate::value::{box_value, Value, ValueType};
-use crate::var::Variable;
+use crate::var::LV2Variable;
 
 mod context;
 mod frame;
@@ -42,7 +42,7 @@ pub const LOVM2_INT_DEBUG: u16 = 10;
 ///
 
 /// Function signature for module loading callback.
-pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<Module>>;
+pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<LV2Module>>;
 /// Function signature of interrupts.
 pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
 /// Function signature for `Callable` importing.
@@ -83,7 +83,7 @@ macro_rules! value_compare {
 pub struct Vm {
     ctx: Context,
     /// List of loaded modules: `Module` or `SharedObjectModule`.
-    modules: HashMap<String, Rc<Module>>,
+    modules: HashMap<String, Rc<LV2Module>>,
 
     import_hook: Rc<ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
@@ -116,7 +116,7 @@ impl Vm {
 
     /// Call a function by name with given arguments.
     pub fn call(&mut self, name: &str, args: &[Value]) -> Lovm2Result<Value> {
-        let name = Variable::from(name);
+        let name = LV2Variable::from(name);
         let co = self.ctx.lookup_code_object(&name)?;
 
         let mut argn: u8 = 0;
@@ -149,7 +149,7 @@ impl Vm {
     }
 
     /// Add a new function by name to the virtual machine.
-    pub fn add_function<T: Into<Variable>>(&mut self, key: T, co: CallableRef) -> Lovm2Result<()> {
+    pub fn add_function<T: Into<LV2Variable>>(&mut self, key: T, co: CallableRef) -> Lovm2Result<()> {
         let key = key.into();
 
         // this overwrites the slot with the new function. maybe not so good
@@ -163,7 +163,7 @@ impl Vm {
     /// Add the module and all of its slots to `scope`.
     pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
     where
-        T: Into<Module>,
+        T: Into<LV2Module>,
     {
         let module = module.into();
 
@@ -228,14 +228,14 @@ impl Vm {
                 let relative_to = path.parent().unwrap().to_str().unwrap();
 
                 if let Ok(path) = find_module(name, &[relative_to.to_string()]) {
-                    module = Some(Module::load_from_file(path)?);
+                    module = Some(LV2Module::load_from_file(path)?);
                 }
             }
         }
 
         if module.is_none() {
             let path = find_module(name, &self.load_paths)?;
-            module = Some(Module::load_from_file(path)?);
+            module = Some(LV2Module::load_from_file(path)?);
         }
 
         self.add_module(module.unwrap(), namespaced)
@@ -244,7 +244,7 @@ impl Vm {
     /// Add the module and all of its slots to `scope`.
     pub fn add_main_module<T>(&mut self, module: T) -> Lovm2Result<()>
     where
-        T: Into<Module>,
+        T: Into<LV2Module>,
     {
         let module = module.into();
 
@@ -494,7 +494,7 @@ impl Vm {
     /// Register a new callback function that is used for resolving dependencies at runtime.
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&LoadRequest) -> Lovm2Result<Option<Module>> + Sized + 'static,
+        T: Fn(&LoadRequest) -> Lovm2Result<Option<LV2Module>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }
@@ -545,7 +545,7 @@ pub fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
                 if let Ok(entry) = entry {
                     let fname = entry.path();
 
-                    if fname.file_stem().unwrap() == name && Module::is_loadable(&fname)? {
+                    if fname.file_stem().unwrap() == name && LV2Module::is_loadable(&fname)? {
                         let abspath = std::fs::canonicalize(fname).unwrap();
                         let abspath = abspath.to_string_lossy();
 

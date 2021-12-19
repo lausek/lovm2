@@ -7,7 +7,7 @@ use test_utils::*;
 fn load_avoid_sigabrt() {
     use std::path::Path;
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     builder.entry().import("io").trigger(10);
 
     let module = builder.build().unwrap();
@@ -23,7 +23,7 @@ fn load_avoid_sigabrt() {
 
 #[test]
 fn avoid_double_import() {
-    let mut builder = ModuleBuilder::named("main");
+    let mut builder = LV2ModuleBuilder::named("main");
 
     builder.entry().import("abc").import("abc").trigger(10);
 
@@ -31,7 +31,7 @@ fn avoid_double_import() {
 
     let mut vm = create_vm_with_std();
     vm.set_load_hook(|_name| {
-        let mut builder = ModuleBuilder::named("abc");
+        let mut builder = LV2ModuleBuilder::named("abc");
         builder.add("add");
         let module = builder.build().unwrap();
         Ok(Some(module.into()))

@@ -36,7 +36,7 @@ impl Optimizer for StandardOptimizer {
             match view {
                 // if `Not` is in front of a conditional jump, change condition
                 // and remove `Not`
-                [LirElement::Operation(Operator::Operator1(Operator1::Not)), LirElement::Jump {
+                [LirElement::Operation(Operator::Operator1(LV2Operator1::Not)), LirElement::Jump {
                     condition: Some(cond),
                     ..
                 }] => {
@@ -46,15 +46,15 @@ impl Optimizer for StandardOptimizer {
                 }
 
                 // if `Not` follows a comparison operator, negate comparison
-                [LirElement::Operation(Operator::Operator2(op)), LirElement::Operation(Operator::Operator1(Operator1::Not))] =>
+                [LirElement::Operation(Operator::Operator2(op)), LirElement::Operation(Operator::Operator1(LV2Operator1::Not))] =>
                 {
                     match op {
-                        Operator2::Equal => *op = Operator2::NotEqual,
-                        Operator2::NotEqual => *op = Operator2::Equal,
-                        Operator2::GreaterEqual => *op = Operator2::LessThan,
-                        Operator2::GreaterThan => *op = Operator2::LessEqual,
-                        Operator2::LessEqual => *op = Operator2::GreaterThan,
-                        Operator2::LessThan => *op = Operator2::GreaterEqual,
+                        LV2Operator2::Equal => *op = LV2Operator2::NotEqual,
+                        LV2Operator2::NotEqual => *op = LV2Operator2::Equal,
+                        LV2Operator2::GreaterEqual => *op = LV2Operator2::LessThan,
+                        LV2Operator2::GreaterThan => *op = LV2Operator2::LessEqual,
+                        LV2Operator2::LessEqual => *op = LV2Operator2::GreaterThan,
+                        LV2Operator2::LessThan => *op = LV2Operator2::GreaterEqual,
                         _ => continue,
                     }
 
@@ -62,7 +62,7 @@ impl Optimizer for StandardOptimizer {
                 }
 
                 // if `Not` follows `Not`, eliminate both
-                [LirElement::Operation(Operator::Operator1(Operator1::Not)), LirElement::Operation(Operator::Operator1(Operator1::Not))] =>
+                [LirElement::Operation(Operator::Operator1(LV2Operator1::Not)), LirElement::Operation(Operator::Operator1(LV2Operator1::Not))] =>
                 {
                     code.pop();
                     code.pop();
@@ -110,23 +110,23 @@ impl Optimizer for StandardOptimizer {
                     // TODO: avoid clone here
                     let (left, right) = (left.as_ref().clone(), right.as_ref().clone());
                     let newval = match op {
-                        Operator2::Add => left.add(right),
-                        Operator2::Sub => left.sub(right),
-                        Operator2::Mul => left.mul(right),
-                        Operator2::Div => left.div(right),
-                        Operator2::Pow => left.pow(right),
-                        Operator2::Rem => left.rem(right),
-                        Operator2::Shl => left.shl(right),
-                        Operator2::Shr => left.shr(right),
-                        Operator2::And => left.bitand(right),
-                        Operator2::Or => left.bitor(right),
-                        Operator2::XOr => left.bitxor(right),
-                        Operator2::Equal => Ok(left.eq(&right).into()),
-                        Operator2::NotEqual => Ok(left.ne(&right).into()),
-                        Operator2::GreaterEqual => Ok(left.ge(&right).into()),
-                        Operator2::GreaterThan => Ok(left.gt(&right).into()),
-                        Operator2::LessEqual => Ok(left.le(&right).into()),
-                        Operator2::LessThan => Ok(left.lt(&right).into()),
+                        LV2Operator2::Add => left.add(right),
+                        LV2Operator2::Sub => left.sub(right),
+                        LV2Operator2::Mul => left.mul(right),
+                        LV2Operator2::Div => left.div(right),
+                        LV2Operator2::Pow => left.pow(right),
+                        LV2Operator2::Rem => left.rem(right),
+                        LV2Operator2::Shl => left.shl(right),
+                        LV2Operator2::Shr => left.shr(right),
+                        LV2Operator2::And => left.bitand(right),
+                        LV2Operator2::Or => left.bitor(right),
+                        LV2Operator2::XOr => left.bitxor(right),
+                        LV2Operator2::Equal => Ok(left.eq(&right).into()),
+                        LV2Operator2::NotEqual => Ok(left.ne(&right).into()),
+                        LV2Operator2::GreaterEqual => Ok(left.ge(&right).into()),
+                        LV2Operator2::GreaterThan => Ok(left.gt(&right).into()),
+                        LV2Operator2::LessEqual => Ok(left.le(&right).into()),
+                        LV2Operator2::LessThan => Ok(left.lt(&right).into()),
                     }
                     .unwrap();
 

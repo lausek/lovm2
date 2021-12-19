@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 use crate::value::{Value, ValueType};
-use crate::var::Variable;
+use crate::var::LV2Variable;
 
 use super::{Label, Operator};
 
@@ -13,13 +13,13 @@ pub enum LirElement<'hir> {
     Append,
     Call {
         argn: u8,
-        ident: &'hir Variable,
+        ident: &'hir LV2Variable,
     },
     Conv {
         ty: ValueType,
     },
     Entry {
-        ident: &'hir Variable,
+        ident: &'hir LV2Variable,
     },
     // Jmp(u16), Jt(u16), Jf(u16)
     Jump {
@@ -34,18 +34,18 @@ pub enum LirElement<'hir> {
         value: Cow<'hir, Value>,
     },
     ScopeGlobal {
-        ident: &'hir Variable,
+        ident: &'hir LV2Variable,
     },
     ScopeLocal {
-        ident: &'hir Variable,
+        ident: &'hir LV2Variable,
     },
     // LPush(u16), GPush(u16),
     PushDynamic {
-        ident: &'hir Variable,
+        ident: &'hir LV2Variable,
     },
     // LMove(u16), GMove(u16)
     StoreDynamic {
-        ident: &'hir Variable,
+        ident: &'hir LV2Variable,
     },
     Import {
         namespaced: bool,
@@ -69,11 +69,11 @@ pub enum LirElement<'hir> {
 }
 
 impl<'hir> LirElement<'hir> {
-    pub fn call(ident: &'hir Variable, argn: u8) -> Self {
+    pub fn call(ident: &'hir LV2Variable, argn: u8) -> Self {
         Self::Call { argn, ident }
     }
 
-    pub fn entry(ident: &'hir Variable) -> Self {
+    pub fn entry(ident: &'hir LV2Variable) -> Self {
         Self::Entry { ident }
     }
 
@@ -103,7 +103,7 @@ impl<'hir> LirElement<'hir> {
         }
     }
 
-    pub fn push_dynamic(ident: &'hir Variable) -> Self {
+    pub fn push_dynamic(ident: &'hir LV2Variable) -> Self {
         Self::PushDynamic { ident }
     }
 
@@ -114,7 +114,7 @@ impl<'hir> LirElement<'hir> {
         Self::Operation(op.into())
     }
 
-    pub fn store(ident: &'hir Variable) -> Self {
+    pub fn store(ident: &'hir LV2Variable) -> Self {
         Self::StoreDynamic { ident }
     }
 }

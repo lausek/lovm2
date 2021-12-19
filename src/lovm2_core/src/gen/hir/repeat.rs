@@ -4,51 +4,51 @@ use super::*;
 
 /// Runs a [Block] forever or until a condition is met
 #[derive(Clone)]
-pub enum Repeat {
+pub enum LV2Repeat {
     Endless {
-        block: Block,
+        block: LV2Block,
     },
     Iterating {
-        collection: Expr,
-        item: Variable,
-        block: Block,
+        collection: LV2Expr,
+        item: LV2Variable,
+        block: LV2Block,
     },
     Until {
-        condition: Expr,
-        block: Block,
+        condition: LV2Expr,
+        block: LV2Block,
     },
 }
 
-impl Repeat {
+impl LV2Repeat {
     pub fn endless() -> Self {
         Self::Endless {
-            block: Block::new(),
+            block: LV2Block::new(),
         }
     }
 
-    pub fn until(condition: Expr) -> Self {
+    pub fn until(condition: LV2Expr) -> Self {
         Self::Until {
-            block: Block::new(),
+            block: LV2Block::new(),
             condition,
         }
     }
 
     pub fn iterating<U, T>(collection: U, item: T) -> Self
     where
-        U: Into<Expr>,
-        T: Into<Variable>,
+        U: Into<LV2Expr>,
+        T: Into<LV2Variable>,
     {
         Self::Iterating {
-            block: Block::new(),
+            block: LV2Block::new(),
             collection: collection.into(),
             item: item.into(),
         }
     }
 }
 
-impl HasBlock for Repeat {
+impl HasBlock for LV2Repeat {
     #[inline]
-    fn block_mut(&mut self) -> &mut Block {
+    fn block_mut(&mut self) -> &mut LV2Block {
         match self {
             Self::Until { block, .. } => block,
             Self::Endless { block, .. } => block,
@@ -57,7 +57,7 @@ impl HasBlock for Repeat {
     }
 }
 
-impl HirLowering for Repeat {
+impl HirLowering for LV2Repeat {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         runtime.push_loop();
@@ -76,7 +76,7 @@ impl HirLowering for Repeat {
     }
 }
 
-fn endless_lower<'lir, 'hir: 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block: &'hir Block)
+fn endless_lower<'lir, 'hir: 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block: &'hir LV2Block)
 {
     prelude(runtime);
     postlude(runtime, block);
@@ -84,9 +84,9 @@ fn endless_lower<'lir, 'hir: 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block
 
 fn iterating_lower<'lir, 'hir: 'lir>(
     runtime: &mut HirLoweringRuntime<'lir>,
-    collection: &'hir Expr,
-    item: &'hir Variable,
-    block: &'hir Block,
+    collection: &'hir LV2Expr,
+    item: &'hir LV2Variable,
+    block: &'hir LV2Block,
 )
 {
     collection.lower(runtime);
@@ -113,8 +113,8 @@ fn iterating_lower<'lir, 'hir: 'lir>(
 
 fn until_lower<'lir, 'hir: 'lir>(
     runtime: &mut HirLoweringRuntime<'lir>,
-    condition: &'hir Expr,
-    block: &'hir Block,
+    condition: &'hir LV2Expr,
+    block: &'hir LV2Block,
 )
 {
     prelude(runtime);
@@ -137,7 +137,7 @@ fn prelude(runtime: &mut HirLoweringRuntime) {
     runtime.emit(LirElement::Label(repeat_start));
 }
 
-fn postlude<'lir, 'hir: 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block: &'hir Block)
+fn postlude<'lir, 'hir: 'lir>(runtime: &mut HirLoweringRuntime<'lir>, block: &'hir LV2Block)
 {
     let repeat = runtime.loop_mut().unwrap();
     let repeat_start = repeat.start();

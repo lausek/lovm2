@@ -15,4 +15,4 @@ pub(crate) mod bytecode;
 pub(crate) mod var;
 
 pub use crate::bytecode::Instruction;
-pub use crate::var::Variable;
+pub use crate::var::LV2Variable;

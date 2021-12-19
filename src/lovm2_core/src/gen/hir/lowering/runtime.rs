@@ -4,8 +4,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::code::CodeObject;
-use crate::gen::ModuleMeta;
-use crate::var::Variable;
+use crate::gen::LV2ModuleMeta;
+use crate::var::LV2Variable;
 
 use super::*;
 
@@ -13,17 +13,17 @@ use super::*;
 pub struct HirLoweringRuntime<'lir> {
     code: Vec<LirElement<'lir>>,
     counter: LabelCounterRef,
-    meta: ModuleMeta,
+    meta: LV2ModuleMeta,
     optimizer: &'lir mut dyn Optimizer,
 
     branch_stack: Vec<HirLoweringBranch>,
-    locals: Vec<&'lir Variable>,
+    locals: Vec<&'lir LV2Variable>,
     loop_stack: Vec<HirLoweringRepeat>,
 }
 
 impl<'lir> HirLoweringRuntime<'lir> {
     pub fn new(
-        meta: ModuleMeta,
+        meta: LV2ModuleMeta,
         _options: CompileOptions,
         optimizer: &'lir mut impl Optimizer,
     ) -> Self {
@@ -43,7 +43,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         self.counter.borrow_mut().create_new_label()
     }
 
-    pub fn add_hir(&mut self, hir: &'lir Hir) -> Lovm2CompileResult<()> {
+    pub fn add_hir(&mut self, hir: &'lir LV2Function) -> Lovm2CompileResult<()> {
         // before lowering a code object function, reset locals
         self.locals.clear();
 
@@ -80,7 +80,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         self.optimizer.transform(&mut self.code);
     }
 
-    pub fn has_local(&self, var: &Variable) -> bool {
+    pub fn has_local(&self, var: &LV2Variable) -> bool {
         self.locals.contains(&var)
     }
 

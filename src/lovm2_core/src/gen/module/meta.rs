@@ -5,7 +5,7 @@ pub const DEFAULT_MODULE_NAME: &str = "_unknown_";
 
 /// Meta information required on native and shared object modules.
 #[derive(Clone, Debug)]
-pub struct ModuleMeta {
+pub struct LV2ModuleMeta {
     /// Location of the modules source.
     pub(crate) loc: Option<String>,
     /// Module name.
@@ -14,7 +14,7 @@ pub struct ModuleMeta {
     pub(crate) uses: Vec<String>,
 }
 
-impl ModuleMeta {
+impl LV2ModuleMeta {
     pub fn new(name: String, loc: Option<String>, uses: Vec<String>) -> Self {
         Self { loc, name, uses }
     }
@@ -25,7 +25,7 @@ impl ModuleMeta {
     }
 }
 
-impl From<&Path> for ModuleMeta {
+impl From<&Path> for LV2ModuleMeta {
     fn from(path: &Path) -> Self {
         let name = path.file_stem().unwrap().to_string_lossy().to_string();
         let loc = Some(path.display().to_string());
@@ -38,7 +38,7 @@ impl From<&Path> for ModuleMeta {
     }
 }
 
-impl From<String> for ModuleMeta {
+impl From<String> for LV2ModuleMeta {
     fn from(name: String) -> Self {
         Self {
             name,
@@ -47,7 +47,7 @@ impl From<String> for ModuleMeta {
     }
 }
 
-impl std::default::Default for ModuleMeta {
+impl std::default::Default for LV2ModuleMeta {
     fn default() -> Self {
         Self {
             loc: None,

@@ -7,7 +7,7 @@ use lovm2::vm::Vm;
 
 #[test]
 fn load_hook_none() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder.entry().import("notfound").trigger(10);
 
@@ -21,13 +21,13 @@ fn load_hook_none() {
 
 #[test]
 fn load_custom_module() {
-    let mut builder = ModuleBuilder::named("main");
+    let mut builder = LV2ModuleBuilder::named("main");
     let n = &lv2_var!(n);
 
     builder
         .entry()
         .import("extern")
-        .assign(n, Call::new("extern.calc"))
+        .assign(n, LV2Call::new("extern.calc"))
         .trigger(10);
 
     let module = builder.build().unwrap();
@@ -35,9 +35,9 @@ fn load_custom_module() {
     let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
-        let mut builder = ModuleBuilder::named("extern");
+        let mut builder = LV2ModuleBuilder::named("extern");
 
-        builder.add("calc").return_value(Expr::add(1, 1));
+        builder.add("calc").return_value(LV2Expr::add(1, 1));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -51,13 +51,13 @@ fn load_custom_module() {
 
 #[test]
 fn import_from_scope() {
-    let mut builder = ModuleBuilder::named("main");
+    let mut builder = LV2ModuleBuilder::named("main");
     let n = &lv2_var!(n);
 
     builder
         .entry()
         .import_from("extern")
-        .assign(n, Call::new("calc"))
+        .assign(n, LV2Call::new("calc"))
         .trigger(10);
 
     let module = builder.build().unwrap();
@@ -65,9 +65,9 @@ fn import_from_scope() {
     let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
-        let mut builder = ModuleBuilder::named("extern");
+        let mut builder = LV2ModuleBuilder::named("extern");
 
-        builder.add("calc").return_value(Expr::add(1, 1));
+        builder.add("calc").return_value(LV2Expr::add(1, 1));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -84,11 +84,11 @@ fn import_vice_versa() {
     const PASSED_VALUE: Value = Value::Int(72);
     let (n, result) = &lv2_var!(n, result);
 
-    let mut builder = ModuleBuilder::named("main");
+    let mut builder = LV2ModuleBuilder::named("main");
     builder
         .entry()
         .import("extern")
-        .step(Call::new("extern.callextern"))
+        .step(LV2Call::new("extern.callextern"))
         .trigger(10);
 
     builder
@@ -102,12 +102,12 @@ fn import_vice_versa() {
     let mut vm = create_vm_with_std();
     vm.set_load_hook(|req| {
         assert_eq!("extern", req.module);
-        let mut builder = ModuleBuilder::named("extern");
+        let mut builder = LV2ModuleBuilder::named("extern");
 
         builder
             .add("callextern")
             .import("main")
-            .step(Call::new("main.callmain").arg(PASSED_VALUE));
+            .step(LV2Call::new("main.callmain").arg(PASSED_VALUE));
 
         Ok(Some(builder.build().unwrap().into()))
     });
@@ -120,11 +120,11 @@ fn import_vice_versa() {
 
 #[test]
 fn custom_naming_scheme() {
-    let mut module = ModuleBuilder::named("main");
+    let mut module = LV2ModuleBuilder::named("main");
     module.add("call_main");
     let module = module.build().unwrap();
 
-    let mut ex = ModuleBuilder::named("extern");
+    let mut ex = LV2ModuleBuilder::named("extern");
     ex.add("call_extern");
     ex.add("call");
     let ex = ex.build().unwrap();
@@ -152,7 +152,7 @@ fn custom_naming_scheme() {
 
 #[test]
 fn main_has_no_entry_point() {
-    let module = ModuleBuilder::named("main").build().unwrap();
+    let module = LV2ModuleBuilder::named("main").build().unwrap();
     let mut vm = Vm::new();
 
     let e = vm.add_main_module(module).err().unwrap();
@@ -167,7 +167,7 @@ fn main_has_no_entry_point() {
 
 #[test]
 fn main_import_as_global() {
-    let mut module = ModuleBuilder::named("main");
+    let mut module = LV2ModuleBuilder::named("main");
     module.add("main");
     module.add("myfunc");
     let module = module.build().unwrap();
@@ -181,11 +181,11 @@ fn main_import_as_global() {
 
 #[test]
 fn namespaced_imports() {
-    let mut a = ModuleBuilder::named("a");
+    let mut a = LV2ModuleBuilder::named("a");
     a.add("ina");
     let a = a.build().unwrap();
 
-    let mut b = ModuleBuilder::named("b");
+    let mut b = LV2ModuleBuilder::named("b");
     b.add("inb");
     let b = b.build().unwrap();
 

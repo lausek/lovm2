@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::code::{CallProtocol, CallableRef};
 use crate::value::Value;
-use crate::var::Variable;
+use crate::var::LV2Variable;
 
 use super::*;
 
@@ -23,7 +23,7 @@ pub struct Context {
     /// Global variables that can be altered from every object.
     pub(super) globals: HashMap<String, Value>,
     /// Entries in this map can directly be called from `lovm2` bytecode.
-    pub(super) scope: HashMap<Variable, CallableRef>,
+    pub(super) scope: HashMap<LV2Variable, CallableRef>,
     /// Call stack that contains local variables and the amount of arguments passed.
     pub(super) lstack: Vec<Frame>,
     /// Value stack. This is where the computation happens.
@@ -42,7 +42,7 @@ impl Context {
     }
 
     /// Try to resolve the given name to a callable
-    pub fn lookup_code_object(&self, name: &Variable) -> Lovm2Result<CallableRef> {
+    pub fn lookup_code_object(&self, name: &LV2Variable) -> Lovm2Result<CallableRef> {
         self.scope
             .get(name)
             .cloned()

@@ -7,21 +7,21 @@ use crate::vm::Context;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {
-        pub fn $method<T>(expr: T) -> Expr
+        pub fn $method<T>(expr: T) -> Self
         where
-            T: Into<Expr>,
+            T: Into<Self>,
         {
-            Expr::Operation1(Operator1::$operator, Box::new(expr.into()))
+            Self::Operation1(LV2Operator1::$operator, Box::new(expr.into()))
         }
     };
     (2, $operator:ident, $method:ident) => {
-        pub fn $method<T, U>(left: T, right: U) -> Expr
+        pub fn $method<T, U>(left: T, right: U) -> Self
         where
-            T: Into<Expr>,
-            U: Into<Expr>,
+            T: Into<Self>,
+            U: Into<Self>,
         {
-            Expr::Operation2(
-                Operator2::$operator,
+            Self::Operation2(
+                LV2Operator2::$operator,
                 Box::new(left.into()),
                 Box::new(right.into()),
             )
@@ -31,64 +31,64 @@ macro_rules! auto_implement {
 
 /// Expressions and operations that produce `Values`
 #[derive(Clone, Debug)]
-pub enum Expr {
+pub enum LV2Expr {
     Append {
-        base: Box<Expr>,
-        value: Box<Expr>,
+        base: Box<LV2Expr>,
+        value: Box<LV2Expr>,
     },
     Branch(Box<ExprBranch>),
-    Call(Call),
+    Call(LV2Call),
     /// Do type conversion on a lowered `Expr` at runtime
     Conv {
         ty: ValueType,
-        expr: Box<Expr>,
+        expr: Box<LV2Expr>,
     },
     /// Consecutive read on a `List` or `Dict`
     Get {
-        target: Box<Expr>,
-        key: Box<Expr>,
+        target: Box<LV2Expr>,
+        key: Box<LV2Expr>,
     },
     // TODO: change name to `Set`
     Insert {
-        base: Box<Expr>,
-        key: Box<Expr>,
-        value: Box<Expr>,
+        base: Box<LV2Expr>,
+        key: Box<LV2Expr>,
+        value: Box<LV2Expr>,
     },
     /// Create an iterator from some collection
     IterCreate {
-        expr: Box<Expr>,
+        expr: Box<LV2Expr>,
     },
     /// Create an iterator for a range
     IterCreateRanged {
-        from: Box<Expr>,
-        to: Box<Expr>,
+        from: Box<LV2Expr>,
+        to: Box<LV2Expr>,
     },
     IterHasNext {
-        expr: Box<Expr>,
+        expr: Box<LV2Expr>,
     },
     IterNext {
-        expr: Box<Expr>,
+        expr: Box<LV2Expr>,
     },
     IterReverse {
-        expr: Box<Expr>,
+        expr: Box<LV2Expr>,
     },
-    Operation1(Operator1, Box<Expr>),
-    Operation2(Operator2, Box<Expr>, Box<Expr>),
+    Operation1(LV2Operator1, Box<LV2Expr>),
+    Operation2(LV2Operator2, Box<LV2Expr>, Box<LV2Expr>),
     Slice {
-        target: Box<Expr>,
-        start: Box<Expr>,
-        end: Box<Expr>,
+        target: Box<LV2Expr>,
+        start: Box<LV2Expr>,
+        end: Box<LV2Expr>,
     },
     Value {
         val: Value,
         boxed: bool,
     },
-    Variable(Variable),
+    Variable(LV2Variable),
 }
 
 /// Operator with two operands
 #[derive(Clone, Debug, PartialEq)]
-pub enum Operator2 {
+pub enum LV2Operator2 {
     Add,
     Sub,
     Mul,
@@ -111,13 +111,13 @@ pub enum Operator2 {
 
 /// Operator with one operand
 #[derive(Clone, Debug, PartialEq)]
-pub enum Operator1 {
+pub enum LV2Operator1 {
     Not,
 }
 
-impl Expr {
-    pub fn append<T: Into<Expr>>(self, value: T) -> Self {
-        Expr::Append {
+impl LV2Expr {
+    pub fn append<T: Into<LV2Expr>>(self, value: T) -> Self {
+        LV2Expr::Append {
             base: Box::new(self.boxed()),
             value: Box::new(value.into()),
         }
@@ -125,7 +125,7 @@ impl Expr {
 
     pub fn boxed(mut self) -> Self {
         match &mut self {
-            Expr::Value { boxed, .. } => *boxed = true,
+            LV2Expr::Value { boxed, .. } => *boxed = true,
             _ => {},
         }
         self
@@ -136,14 +136,14 @@ impl Expr {
     }
 
     pub fn dict() -> Self {
-        Expr::Value {
+        LV2Expr::Value {
             val: Value::dict(),
             boxed: false,
         }
     }
 
-    pub fn get<T: Into<Expr>>(self, key: T) -> Self {
-        Expr::Get {
+    pub fn get<T: Into<LV2Expr>>(self, key: T) -> Self {
+        LV2Expr::Get {
             key: Box::new(key.into()),
             target: Box::new(self),
         }
@@ -151,40 +151,40 @@ impl Expr {
 
     pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
         match self {
-            Expr::Append { base, value } => {
+            LV2Expr::Append { base, value } => {
                 let mut base = base.eval(ctx)?;
                 let (key, value) = (base.len()? as i64, value.eval(ctx)?);
                 base.set(&key.into(), value)?;
                 Ok(base)
             }
-            Expr::Branch(_) => todo!(),
-            Expr::Call(_) => todo!(),
-            Expr::Conv { .. } => todo!(),
-            Expr::Get { .. } => todo!(),
-            Expr::Insert { base, key, value } => {
+            LV2Expr::Branch(_) => todo!(),
+            LV2Expr::Call(_) => todo!(),
+            LV2Expr::Conv { .. } => todo!(),
+            LV2Expr::Get { .. } => todo!(),
+            LV2Expr::Insert { base, key, value } => {
                 let mut base = base.eval(ctx)?;
                 let (key, value) = (key.eval(ctx)?, value.eval(ctx)?);
                 base.set(&key, value)?;
                 Ok(base)
             }
-            Expr::IterCreate { .. }
-            | Expr::IterCreateRanged { .. }
-            | Expr::IterHasNext { .. }
-            | Expr::IterNext { .. }
-            | Expr::IterReverse { .. } => {
+            LV2Expr::IterCreate { .. }
+            | LV2Expr::IterCreateRanged { .. }
+            | LV2Expr::IterHasNext { .. }
+            | LV2Expr::IterNext { .. }
+            | LV2Expr::IterReverse { .. } => {
                 todo!()
             }
-            Expr::Operation1(_, _) => todo!(),
-            Expr::Operation2(_, _, _) => todo!(),
+            LV2Expr::Operation1(_, _) => todo!(),
+            LV2Expr::Operation2(_, _, _) => todo!(),
 
-            Expr::Slice { .. } => todo!(),
-            Expr::Value { val, .. } => Ok(val.clone()),
+            LV2Expr::Slice { .. } => todo!(),
+            LV2Expr::Value { val, .. } => Ok(val.clone()),
             // TODO: wait until `result_cloned` is stabilized
-            Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
+            LV2Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
         }
     }
 
-    pub fn from_opn(op: Operator2, args: Vec<Expr>) -> Self {
+    pub fn from_opn(op: LV2Operator2, args: Vec<LV2Expr>) -> Self {
         if args.len() < 2 {
             unimplemented!();
         }
@@ -195,96 +195,96 @@ impl Expr {
         it.fold(expr, |left, right| Self::from_op(&op, left, right))
     }
 
-    pub fn from_op(op: &Operator2, left: Expr, right: Expr) -> Self {
+    pub fn from_op(op: &LV2Operator2, left: LV2Expr, right: LV2Expr) -> Self {
         match op {
-            Operator2::Add => Self::add(left, right),
-            Operator2::Sub => Self::sub(left, right),
-            Operator2::Mul => Self::mul(left, right),
-            Operator2::Div => Self::div(left, right),
-            Operator2::Pow => Self::pow(left, right),
-            Operator2::Rem => Self::rem(left, right),
-            Operator2::Shl => Self::shl(left, right),
-            Operator2::Shr => Self::shr(left, right),
-            Operator2::And => Self::and(left, right),
-            Operator2::Or => Self::or(left, right),
-            Operator2::XOr => Self::xor(left, right),
+            LV2Operator2::Add => Self::add(left, right),
+            LV2Operator2::Sub => Self::sub(left, right),
+            LV2Operator2::Mul => Self::mul(left, right),
+            LV2Operator2::Div => Self::div(left, right),
+            LV2Operator2::Pow => Self::pow(left, right),
+            LV2Operator2::Rem => Self::rem(left, right),
+            LV2Operator2::Shl => Self::shl(left, right),
+            LV2Operator2::Shr => Self::shr(left, right),
+            LV2Operator2::And => Self::and(left, right),
+            LV2Operator2::Or => Self::or(left, right),
+            LV2Operator2::XOr => Self::xor(left, right),
 
-            Operator2::Equal => Self::eq(left, right),
-            Operator2::NotEqual => Self::ne(left, right),
-            Operator2::GreaterEqual => Self::ge(left, right),
-            Operator2::GreaterThan => Self::gt(left, right),
-            Operator2::LessEqual => Self::le(left, right),
-            Operator2::LessThan => Self::lt(left, right),
+            LV2Operator2::Equal => Self::eq(left, right),
+            LV2Operator2::NotEqual => Self::ne(left, right),
+            LV2Operator2::GreaterEqual => Self::ge(left, right),
+            LV2Operator2::GreaterThan => Self::gt(left, right),
+            LV2Operator2::LessEqual => Self::le(left, right),
+            LV2Operator2::LessThan => Self::lt(left, right),
         }
     }
 
     pub fn has_next(self) -> Self {
-        Expr::IterHasNext {
+        LV2Expr::IterHasNext {
             expr: Box::new(self),
         }
     }
 
     pub fn is_const(&self) -> bool {
         match self {
-            Expr::Operation1(_, item) => item.is_const(),
-            Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
-            Expr::Value { .. } => true,
+            LV2Expr::Operation1(_, item) => item.is_const(),
+            LV2Expr::Operation2(_, lhs, rhs) => lhs.is_const() && rhs.is_const(),
+            LV2Expr::Value { .. } => true,
             _ => false,
         }
     }
 
-    pub fn insert<T: Into<Expr>, U: Into<Expr>>(mut self, key: T, value: U) -> Self {
-        if let Expr::Value { val: Value::Dict(_) | Value::List(_), boxed} = &mut self {
+    pub fn insert<T: Into<LV2Expr>, U: Into<LV2Expr>>(mut self, key: T, value: U) -> Self {
+        if let LV2Expr::Value { val: Value::Dict(_) | Value::List(_), boxed} = &mut self {
             *boxed = true;
         }
 
-        Expr::Insert {
+        LV2Expr::Insert {
             base: Box::new(self),
             key: Box::new(key.into()),
             value: Box::new(value.into()),
         }
     }
 
-    pub fn iter_ranged<T: Into<Expr>, U: Into<Expr>>(from: T, to: U) -> Self {
-        Expr::IterCreateRanged {
+    pub fn iter_ranged<T: Into<LV2Expr>, U: Into<LV2Expr>>(from: T, to: U) -> Self {
+        LV2Expr::IterCreateRanged {
             from: Box::new(from.into()),
             to: Box::new(to.into()),
         }
     }
 
     pub fn list() -> Self {
-        Expr::Value {
+        LV2Expr::Value {
             val: Value::list(),
             boxed: false,
         }
     }
 
     pub fn next(self) -> Self {
-        Expr::IterNext {
+        LV2Expr::IterNext {
             expr: Box::new(self),
         }
     }
 
     pub fn pow<T, U>(left: T, right: U) -> Self
     where
-        T: Into<Expr>,
-        U: Into<Expr>,
+        T: Into<LV2Expr>,
+        U: Into<LV2Expr>,
     {
-        Expr::Operation2(
-            Operator2::Pow,
+        LV2Expr::Operation2(
+            LV2Operator2::Pow,
             Box::new(left.into()),
             Box::new(right.into()),
         )
     }
 
     pub fn reverse(self) -> Self {
-        Expr::IterReverse {
+        LV2Expr::IterReverse {
             expr: Box::new(self),
         }
     }
 
-    pub fn slice<T: Into<Expr>, U: Into<Expr>>(self, start: T, end: U) -> Self {
-        Expr::Slice {
+    pub fn slice<T: Into<LV2Expr>, U: Into<LV2Expr>>(self, start: T, end: U) -> Self {
+        LV2Expr::Slice {
             target: Box::new(self),
             start: Box::new(start.into()),
             end: Box::new(end.into()),
@@ -292,41 +292,41 @@ impl Expr {
     }
 
     pub fn to_bool(self) -> Self {
-        Expr::Conv {
+        LV2Expr::Conv {
             ty: ValueType::Bool,
             expr: Box::new(self),
         }
     }
 
     pub fn to_float(self) -> Self {
-        Expr::Conv {
+        LV2Expr::Conv {
             ty: ValueType::Float,
             expr: Box::new(self),
         }
     }
 
     pub fn to_integer(self) -> Self {
-        Expr::Conv {
+        LV2Expr::Conv {
             ty: ValueType::Int,
             expr: Box::new(self),
         }
     }
 
     pub fn to_iter(self) -> Self {
-        Expr::IterCreate {
+        LV2Expr::IterCreate {
             expr: Box::new(self),
         }
     }
 
     pub fn to_str(self) -> Self {
-        Expr::Conv {
+        LV2Expr::Conv {
             ty: ValueType::Str,
             expr: Box::new(self),
         }
     }
 }
 
-impl Expr {
+impl LV2Expr {
     auto_implement!(2, Add, add);
     auto_implement!(2, Sub, sub);
     auto_implement!(2, Mul, mul);
@@ -348,100 +348,100 @@ impl Expr {
     auto_implement!(1, Not, not);
 }
 
-impl From<ExprBranch> for Expr {
-    fn from(branch: ExprBranch) -> Expr {
-        Expr::Branch(Box::new(branch))
+impl From<ExprBranch> for LV2Expr {
+    fn from(branch: ExprBranch) -> LV2Expr {
+        LV2Expr::Branch(Box::new(branch))
     }
 }
 
-impl From<Call> for Expr {
-    fn from(call: Call) -> Expr {
-        Expr::Call(call)
+impl From<LV2Call> for LV2Expr {
+    fn from(call: LV2Call) -> LV2Expr {
+        LV2Expr::Call(call)
     }
 }
 
-impl<T> From<T> for Expr
+impl<T> From<T> for LV2Expr
 where
     T: Into<Value>,
 {
-    fn from(val: T) -> Expr {
-        Expr::Value {
+    fn from(val: T) -> LV2Expr {
+        LV2Expr::Value {
             val: val.into(),
             boxed: false,
         }
     }
 }
 
-impl From<Variable> for Expr {
-    fn from(v: Variable) -> Expr {
-        Expr::Variable(v)
+impl From<LV2Variable> for LV2Expr {
+    fn from(v: LV2Variable) -> LV2Expr {
+        LV2Expr::Variable(v)
     }
 }
 
-impl From<&Variable> for Expr {
-    fn from(v: &Variable) -> Expr {
-        Expr::Variable(v.clone())
+impl From<&LV2Variable> for LV2Expr {
+    fn from(v: &LV2Variable) -> LV2Expr {
+        LV2Expr::Variable(v.clone())
     }
 }
 
-impl HirLowering for Expr {
+impl HirLowering for LV2Expr {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
     {
         match self {
-            Expr::Append { base, value } => {
+            LV2Expr::Append { base, value } => {
                 base.lower(runtime);
                 runtime.emit(LirElement::Duplicate);
                 value.lower(runtime);
                 runtime.emit(LirElement::Append);
             }
-            Expr::Branch(branch) => branch.lower(runtime),
-            Expr::Call(call) => call.lower(runtime),
-            Expr::Conv { ty, expr } => {
+            LV2Expr::Branch(branch) => branch.lower(runtime),
+            LV2Expr::Call(call) => call.lower(runtime),
+            LV2Expr::Conv { ty, expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Conv { ty: ty.clone() });
             }
-            Expr::Get { target, key } => {
+            LV2Expr::Get { target, key } => {
                 target.lower(runtime);
                 key.lower(runtime);
                 runtime.emit(LirElement::RGet);
             }
-            Expr::Insert { base, key, value } => {
+            LV2Expr::Insert { base, key, value } => {
                 lower_insert(runtime, base, key, value);
             }
-            Expr::IterCreate { expr } => {
+            LV2Expr::IterCreate { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::IterCreate);
             }
-            Expr::IterCreateRanged { from, to } => {
+            LV2Expr::IterCreateRanged { from, to } => {
                 from.lower(runtime);
                 to.lower(runtime);
                 runtime.emit(LirElement::IterCreateRanged);
             }
-            Expr::IterHasNext { expr } => {
+            LV2Expr::IterHasNext { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::IterHasNext);
             }
-            Expr::IterNext { expr } => {
+            LV2Expr::IterNext { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::IterNext);
             }
-            Expr::IterReverse { expr } => {
+            LV2Expr::IterReverse { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::IterReverse);
             }
-            Expr::Operation1(op, expr) => {
+            LV2Expr::Operation1(op, expr) => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::operation(op));
             }
-            Expr::Operation2(op, expr1, expr2) => {
+            LV2Expr::Operation2(op, expr1, expr2) => {
                 expr1.lower(runtime);
 
                 // implement short-circuit for `And`/`Or`
                 // generates a random label as jump target
-                let sc_label = if matches!(op, Operator2::And | Operator2::Or) {
+                let sc_label = if matches!(op, LV2Operator2::And | LV2Operator2::Or) {
                     let sc_label = runtime.create_new_label();
                     // jump if first expression was already true
-                    let cond = *op == Operator2::Or;
+                    let cond = *op == LV2Operator2::Or;
 
                     runtime.emit(LirElement::Duplicate);
                     runtime.emit(LirElement::jump_conditional(cond, sc_label.clone()));
@@ -459,15 +459,15 @@ impl HirLowering for Expr {
                     runtime.emit(LirElement::Label(sc_label));
                 }
             }
-            Expr::Slice { target, start, end } => lower_slice(runtime, target, start, end),
-            Expr::Value { ref val, boxed } => {
+            LV2Expr::Slice { target, start, end } => lower_slice(runtime, target, start, end),
+            LV2Expr::Value { ref val, boxed } => {
                 runtime.emit(LirElement::push_constant(val));
 
                 if *boxed || matches!(val, Value::Dict(_) | Value::List(_)) {
                     runtime.emit(LirElement::Box);
                 }
             }
-            Expr::Variable(ref var) => {
+            LV2Expr::Variable(ref var) => {
                 runtime.emit(LirElement::push_dynamic(var));
             }
         }
@@ -475,7 +475,7 @@ impl HirLowering for Expr {
 }
 
 pub struct ExprBranchIncomplete {
-    branches: Vec<(Expr, Expr)>,
+    branches: Vec<(LV2Expr, LV2Expr)>,
 }
 
 impl ExprBranchIncomplete {
@@ -485,8 +485,8 @@ impl ExprBranchIncomplete {
 
     pub fn add_condition<T, U>(mut self, condition: T, value: U) -> Self
     where
-        T: Into<Expr>,
-        U: Into<Expr>,
+        T: Into<LV2Expr>,
+        U: Into<LV2Expr>,
     {
         self.branches.push((condition.into(), value.into()));
         self
@@ -494,7 +494,7 @@ impl ExprBranchIncomplete {
 
     pub fn default_value<T>(self, default: T) -> ExprBranch
     where
-        T: Into<Expr>,
+        T: Into<LV2Expr>,
     {
         ExprBranch {
             branches: self.branches,
@@ -505,15 +505,15 @@ impl ExprBranchIncomplete {
 
 #[derive(Clone, Debug)]
 pub struct ExprBranch {
-    branches: Vec<(Expr, Expr)>,
-    default: Option<Expr>,
+    branches: Vec<(LV2Expr, LV2Expr)>,
+    default: Option<LV2Expr>,
 }
 
 impl ExprBranch {
     pub fn add_condition<T, U>(mut self, condition: T, value: U) -> Self
     where
-        T: Into<Expr>,
-        U: Into<Expr>,
+        T: Into<LV2Expr>,
+        U: Into<LV2Expr>,
     {
         self.branches.push((condition.into(), value.into()));
         self
@@ -521,7 +521,7 @@ impl ExprBranch {
 
     pub fn default_value<T>(mut self, default: T) -> Self
     where
-        T: Into<Expr>,
+        T: Into<LV2Expr>,
     {
         self.default = Some(default.into());
         self
@@ -537,9 +537,9 @@ impl HirLowering for ExprBranch {
 
 fn lower_insert<'lir, 'hir: 'lir>(
     runtime: &mut HirLoweringRuntime<'lir>,
-    base: &'hir Expr,
-    key: &'hir Expr,
-    value: &'hir Expr,
+    base: &'hir LV2Expr,
+    key: &'hir LV2Expr,
+    value: &'hir LV2Expr,
 )
 {
     base.lower(runtime);
@@ -554,9 +554,9 @@ fn lower_insert<'lir, 'hir: 'lir>(
 
 fn lower_slice<'lir, 'hir: 'lir>(
     runtime: &mut HirLoweringRuntime<'lir>,
-    target: &'hir Expr,
-    start: &'hir Expr,
-    end: &'hir Expr,
+    target: &'hir LV2Expr,
+    start: &'hir LV2Expr,
+    end: &'hir LV2Expr,
 )
 {
     target.lower(runtime);

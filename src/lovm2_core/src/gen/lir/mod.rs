@@ -17,18 +17,18 @@ pub enum Scope {
 /// Combination of all operators
 #[derive(Clone, Debug, PartialEq)]
 pub enum Operator {
-    Operator1(Operator1),
-    Operator2(Operator2),
+    Operator1(LV2Operator1),
+    Operator2(LV2Operator2),
 }
 
-impl From<&Operator1> for Operator {
-    fn from(op: &Operator1) -> Self {
+impl From<&LV2Operator1> for Operator {
+    fn from(op: &LV2Operator1) -> Self {
         Self::Operator1(op.clone())
     }
 }
 
-impl From<&Operator2> for Operator {
-    fn from(op: &Operator2) -> Self {
+impl From<&LV2Operator2> for Operator {
+    fn from(op: &LV2Operator2) -> Self {
         Self::Operator2(op.clone())
     }
 }

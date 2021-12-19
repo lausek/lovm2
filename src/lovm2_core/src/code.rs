@@ -6,7 +6,7 @@ use std::rc::Rc;
 use crate::bytecode::Instruction;
 use crate::error::*;
 use crate::value::Value;
-use crate::var::Variable;
+use crate::var::LV2Variable;
 use crate::vm::Vm;
 
 /// 4 bytes at the start of each serialized lovm2 module.
@@ -63,7 +63,7 @@ pub struct CodeObject {
     /// Necessary constants.
     pub consts: Vec<Value>,
     /// Necessary identifiers.
-    pub idents: Vec<Variable>,
+    pub idents: Vec<LV2Variable>,
     /// Bytecode itself.
     pub code: Vec<Instruction>,
 }

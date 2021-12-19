@@ -13,7 +13,7 @@ use std::rc::Rc;
 use crate::code::CallProtocol;
 use crate::code::{CodeObject, CodeObjectFunction, LV2_MAGIC_NUMBER};
 use crate::error::*;
-use crate::var::Variable;
+use crate::var::LV2Variable;
 
 pub use self::shared::{SharedObjectSlot, EXTERN_LOVM2_INITIALIZER};
 pub use self::slots::Slots;
@@ -24,14 +24,14 @@ pub const ENTRY_POINT: &str = "main";
 
 /// Main runtime representation for loadable modules.
 #[derive(Clone, Debug)]
-pub struct Module {
+pub struct LV2Module {
     /// Always required. Shared object libraries will only fill the `name` and `loc` attribute.
     pub code_object: Rc<CodeObject>,
     /// Contains `CallProtocol` entries that will be added to the context.
     pub slots: Slots,
 }
 
-impl Module {
+impl LV2Module {
     /// A module is loadable if the first four bytes of the file are either the ELF
     /// magic number (shared object) or the `lovm2` magic number [LV2_MAGIC_NUMBER].
     pub fn is_loadable<T>(path: T) -> Lovm2Result<bool>
@@ -81,7 +81,7 @@ impl Module {
     }
 
     /// Try looking up a `Callable` by name.
-    pub fn slot(&self, name: &Variable) -> Option<Rc<dyn CallProtocol>> {
+    pub fn slot(&self, name: &LV2Variable) -> Option<Rc<dyn CallProtocol>> {
         self.slots.get(name).cloned()
     }
 
@@ -105,7 +105,7 @@ impl Module {
     }
 }
 
-impl From<CodeObject> for Module {
+impl From<CodeObject> for LV2Module {
     fn from(code_object: CodeObject) -> Self {
         let code_object = Rc::new(code_object);
         let mut slots = Slots::new();
@@ -122,7 +122,7 @@ impl From<CodeObject> for Module {
     }
 }
 
-impl std::fmt::Display for Module {
+impl std::fmt::Display for LV2Module {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(
             f,

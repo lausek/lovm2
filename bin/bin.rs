@@ -1,17 +1,17 @@
 use lovm2::create_vm_with_std;
 use lovm2::gen::prelude::*;
 
-fn loading() -> ModuleBuilder {
-    let mut builder = ModuleBuilder::new();
+fn loading() -> LV2ModuleBuilder {
+    let mut builder = LV2ModuleBuilder::new();
 
     let hir = builder.entry();
     let n = &lv2_var!(n);
 
     hir.assign(n, 0);
 
-    hir.repeat_until(Expr::eq(n, 10))
+    hir.repeat_until(LV2Expr::eq(n, 10))
         .step(lv2_call!(print, n))
-        .assign(n, Expr::add(n, 1));
+        .assign(n, LV2Expr::add(n, 1));
 
     builder
 }

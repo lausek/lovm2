@@ -2,7 +2,7 @@ use std::path::Path;
 
 use lovm2::code::CodeObject;
 use lovm2::create_vm_with_std;
-use lovm2::module::Module;
+use lovm2::module::LV2Module;
 use lovm2::prelude::*;
 use lovm2::value::Value;
 
@@ -11,7 +11,7 @@ const DESERIALIZE_PATH: &str = "/tmp/assign-global.lovm2c";
 
 #[test]
 fn serialize_module() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
 
     builder
         .entry()
@@ -27,7 +27,7 @@ fn serialize_module() {
 
 #[test]
 fn deserialize_module() {
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     let n = &lv2_var!(n);
 
     builder.entry().global(n).assign(n, 10);
@@ -40,7 +40,7 @@ fn deserialize_module() {
 
     assert!(Path::new(DESERIALIZE_PATH).exists());
 
-    let module = Module::load_from_file(DESERIALIZE_PATH).unwrap();
+    let module = LV2Module::load_from_file(DESERIALIZE_PATH).unwrap();
 
     let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
@@ -56,7 +56,7 @@ fn global_uses() {
 
     const PRELOADED: &str = "preloaded";
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     builder.add_dependency(PRELOADED);
 
     let n = &lv2_var!(n);

@@ -14,7 +14,7 @@ macro_rules! define_code {
         }
     } => {{
         let mut co = lovm2::code::CodeObject::new();
-        $( co.idents = vec![$( Variable::from(stringify!($name)) ),*]; )?
+        $( co.idents = vec![$( LV2Variable::from(stringify!($name)) ),*]; )?
         $( co.consts = vec![$( Value::from($cval) ),*]; )?
 
         let c = vec![

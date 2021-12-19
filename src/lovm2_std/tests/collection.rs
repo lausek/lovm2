@@ -4,6 +4,7 @@ use test_utils::*;
 
 use lovm2_core::extend::prelude::*;
 
+// TODO: use new api
 #[test]
 fn native_set_predicates() {
     let (a, b, c, d, e, f) = &lv2_var!(a, b, c, d, e, f);
@@ -219,7 +220,7 @@ fn native_map() {
     let mut vm = run_module_test(|builder| {
         builder
             .add_with_args("inc", vec![lv2_var!(x)])
-            .step(Return::value(Expr::add(lv2_var!(x), 1)));
+            .step(Return::value(LV2Expr::add(lv2_var!(x), 1)));
 
         builder
             .add_with_args("toe", vec![lv2_var!(x)])
@@ -242,7 +243,7 @@ fn native_filter() {
     let mut vm = run_module_test(|builder| {
         builder
             .add_with_args("even", vec![lv2_var!(x)])
-            .step(Return::value(Expr::eq(Expr::rem(lv2_var!(x), 2), 0)));
+            .step(Return::value(LV2Expr::eq(LV2Expr::rem(lv2_var!(x), 2), 0)));
     });
 
     assert_eq!(

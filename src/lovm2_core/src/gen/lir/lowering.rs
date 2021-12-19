@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
 use crate::value::Value;
-use crate::var::Variable;
+use crate::var::LV2Variable;
 
 use super::*;
 
@@ -37,18 +37,18 @@ enum Offset {
 
 /// Information for the process of lowering LIR to bytecode
 pub struct LirLoweringRuntime {
-    meta: ModuleMeta,
+    meta: LV2ModuleMeta,
     entries: Vec<(usize, usize)>,
     consts: Vec<Value>,
-    idents: Vec<Variable>,
+    idents: Vec<LV2Variable>,
     code: Vec<Instruction>,
 
-    globals: HashSet<Variable>,
+    globals: HashSet<LV2Variable>,
     offsets: HashMap<Label, Offset>,
 }
 
 impl LirLoweringRuntime {
-    pub fn from(meta: ModuleMeta) -> Self {
+    pub fn from(meta: LV2ModuleMeta) -> Self {
         Self {
             meta,
             entries: vec![],
@@ -219,7 +219,7 @@ impl LirLoweringRuntime {
         }
     }
 
-    fn index_ident(&mut self, var: &Variable) -> usize {
+    fn index_ident(&mut self, var: &LV2Variable) -> usize {
         match self.idents.iter().position(|item| item == var) {
             Some(pos) => pos,
             None => {
@@ -234,26 +234,26 @@ impl From<Operator> for Instruction {
     fn from(op: Operator) -> Self {
         match op {
             Operator::Operator2(op) => match op {
-                Operator2::Add => Instruction::Add,
-                Operator2::Sub => Instruction::Sub,
-                Operator2::Mul => Instruction::Mul,
-                Operator2::Div => Instruction::Div,
-                Operator2::Pow => Instruction::Pow,
-                Operator2::Rem => Instruction::Rem,
-                Operator2::Shl => Instruction::Shl,
-                Operator2::Shr => Instruction::Shr,
-                Operator2::And => Instruction::And,
-                Operator2::Or => Instruction::Or,
-                Operator2::XOr => Instruction::XOr,
-                Operator2::Equal => Instruction::Eq,
-                Operator2::NotEqual => Instruction::Ne,
-                Operator2::GreaterEqual => Instruction::Ge,
-                Operator2::GreaterThan => Instruction::Gt,
-                Operator2::LessEqual => Instruction::Le,
-                Operator2::LessThan => Instruction::Lt,
+                LV2Operator2::Add => Instruction::Add,
+                LV2Operator2::Sub => Instruction::Sub,
+                LV2Operator2::Mul => Instruction::Mul,
+                LV2Operator2::Div => Instruction::Div,
+                LV2Operator2::Pow => Instruction::Pow,
+                LV2Operator2::Rem => Instruction::Rem,
+                LV2Operator2::Shl => Instruction::Shl,
+                LV2Operator2::Shr => Instruction::Shr,
+                LV2Operator2::And => Instruction::And,
+                LV2Operator2::Or => Instruction::Or,
+                LV2Operator2::XOr => Instruction::XOr,
+                LV2Operator2::Equal => Instruction::Eq,
+                LV2Operator2::NotEqual => Instruction::Ne,
+                LV2Operator2::GreaterEqual => Instruction::Ge,
+                LV2Operator2::GreaterThan => Instruction::Gt,
+                LV2Operator2::LessEqual => Instruction::Le,
+                LV2Operator2::LessThan => Instruction::Lt,
             },
             Operator::Operator1(op) => match op {
-                Operator1::Not => Instruction::Not,
+                LV2Operator1::Not => Instruction::Not,
             },
         }
     }

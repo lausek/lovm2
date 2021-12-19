@@ -36,7 +36,7 @@ lovm2 = "0.4.9"
 ``` rust
 use lovm2::prelude::*;
 
-let mut module = ModuleBuilder::new();
+let mut module = LV2ModuleBuilder::new();
 
 // declare the variables our code will use
 let n = &lv2_var!(n);
@@ -46,7 +46,7 @@ let main_hir = module.entry();
 // set the local variable n to 10
 main_hir.assign(n, 10);
 // `print` is a builtin function
-main_hir.step(Call::new("print").arg(n).arg("Hello World"));
+main_hir.step(LV2Call::new("print").arg(n).arg("Hello World"));
 
 // creates a `Module` from the `ModuleBuilder`
 let module = module.build().unwrap();

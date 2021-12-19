@@ -10,7 +10,7 @@ use crate::error::*;
 
 pub use self::hir::*;
 pub(crate) use self::lir::*;
-pub use self::module::{ModuleBuilder, ModuleMeta, DEFAULT_MODULE_NAME};
+pub use self::module::{LV2ModuleBuilder, LV2ModuleMeta, DEFAULT_MODULE_NAME};
 pub(crate) use self::opt::*;
 
 /// Settings for lowering to bytecode
