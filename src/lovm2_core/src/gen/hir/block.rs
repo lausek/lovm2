@@ -16,7 +16,10 @@ impl LV2Block {
         U: Into<LV2Variable> + Clone,
         T: Into<LV2Expr>,
     {
-        self.step(LV2Statement::AssignVariable { target: target.clone().into(), source: source.into() });
+        self.step(LV2Statement::AssignVariable {
+            target: target.clone().into(),
+            source: source.into(),
+        });
     }
 
     pub fn branch(&mut self) -> &mut LV2Branch {
@@ -37,7 +40,10 @@ impl LV2Block {
     }
 
     pub fn decrement(&mut self, target: &LV2Variable) {
-        self.0.push(LV2Statement::AssignVariable { target: target.clone(), source: LV2Expr::from(target).sub(1) });
+        self.0.push(LV2Statement::AssignVariable {
+            target: target.clone(),
+            source: LV2Expr::from(target).sub(1),
+        });
     }
 
     pub fn extend(&mut self, block: LV2Block) {
@@ -45,25 +51,36 @@ impl LV2Block {
     }
 
     pub fn global(&mut self, ident: &LV2Variable) {
-        self.0.push(LV2Statement::ScopeGlobal { ident: ident.clone() });
+        self.0.push(LV2Statement::ScopeGlobal {
+            ident: ident.clone(),
+        });
     }
 
     pub fn import<T>(&mut self, name: T)
     where
         T: Into<LV2Expr>,
     {
-        self.0.push(LV2Statement::Import { name: name.into(), namespaced: true});
+        self.0.push(LV2Statement::Import {
+            name: name.into(),
+            namespaced: true,
+        });
     }
 
     pub fn import_from<T>(&mut self, name: T)
     where
         T: Into<LV2Expr>,
     {
-        self.0.push(LV2Statement::Import { name: name.into(), namespaced: false});
+        self.0.push(LV2Statement::Import {
+            name: name.into(),
+            namespaced: false,
+        });
     }
 
     pub fn increment(&mut self, target: &LV2Variable) {
-        self.0.push(LV2Statement::AssignVariable { target: target.clone(), source: LV2Expr::from(target).add(1) });
+        self.0.push(LV2Statement::AssignVariable {
+            target: target.clone(),
+            source: LV2Expr::from(target).add(1),
+        });
     }
 
     pub fn last_mut(&mut self) -> Option<&mut LV2Statement> {
@@ -71,7 +88,9 @@ impl LV2Block {
     }
 
     pub fn local(&mut self, ident: &LV2Variable) {
-        self.0.push(LV2Statement::ScopeLocal { ident: ident.clone() });
+        self.0.push(LV2Statement::ScopeLocal {
+            ident: ident.clone(),
+        });
     }
 
     pub fn repeat(&mut self) -> &mut LV2Repeat {
@@ -106,7 +125,9 @@ impl LV2Block {
     }
 
     pub fn return_nil(&mut self) {
-        self.0.push(LV2Statement::Return { expr: LV2Value::Nil.into() });
+        self.0.push(LV2Statement::Return {
+            expr: LV2Value::Nil.into(),
+        });
     }
 
     pub fn return_value<T: Into<LV2Expr>>(&mut self, expr: T) {
@@ -114,7 +135,10 @@ impl LV2Block {
     }
 
     pub fn set<T: Into<LV2Expr>, U: Into<LV2Expr>>(&mut self, target: T, source: U) {
-        self.0.push(LV2Statement::AssignReference { target: target.into(), source: source.into() });
+        self.0.push(LV2Statement::AssignReference {
+            target: target.into(),
+            source: source.into(),
+        });
     }
 
     pub fn step<T>(&mut self, hir: T)
@@ -124,8 +148,7 @@ impl LV2Block {
         self.0.push(hir.into());
     }
 
-    pub fn trigger(&mut self, n: u16)
-    {
+    pub fn trigger(&mut self, n: u16) {
         self.0.push(LV2Statement::Interrupt { n });
     }
 }
@@ -146,8 +169,7 @@ impl std::iter::IntoIterator for LV2Block {
 }
 
 impl HirLowering for LV2Block {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
         for element in self.0.iter() {
             // every call has to leave a return value on stack.
             // if that value isn't needed - as in a statement position - we

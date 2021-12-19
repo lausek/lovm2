@@ -253,7 +253,11 @@ impl FunctionArg {
 
     pub fn is_custom_ty(&self) -> bool {
         match self.ty_name.to_string().as_str() {
-            stringify!(LV2Value) | stringify!(bool) | stringify!(i64) | stringify!(f64) | stringify!(String) => false,
+            stringify!(LV2Value)
+            | stringify!(bool)
+            | stringify!(i64)
+            | stringify!(f64)
+            | stringify!(String) => false,
             _ => true,
         }
     }

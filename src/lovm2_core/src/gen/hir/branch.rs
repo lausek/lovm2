@@ -34,8 +34,7 @@ impl LV2Branch {
 }
 
 impl HirLowering for LV2Branch {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
         lower_map_structure(runtime, &self.branches, &self.default);
     }
 }

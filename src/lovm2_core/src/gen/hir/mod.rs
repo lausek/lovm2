@@ -5,9 +5,9 @@ mod lowering;
 mod block;
 mod branch;
 mod call;
-mod stmt;
 mod expr;
 mod repeat;
+mod stmt;
 
 use crate::value::LV2Value;
 use crate::var::LV2Variable;
@@ -17,10 +17,10 @@ use super::*;
 pub use self::block::LV2Block;
 pub use self::branch::LV2Branch;
 pub use self::call::LV2Call;
-pub use self::stmt::LV2Statement;
 pub use self::expr::{LV2Expr, LV2Operator1, LV2Operator2};
 pub use self::lowering::{HirLowering, HirLoweringRuntime, Jumpable};
 pub use self::repeat::LV2Repeat;
+pub use self::stmt::LV2Statement;
 
 /// Highlevel representation of a function
 #[derive(Clone)]
@@ -46,10 +46,7 @@ impl LV2Function {
     }
 
     /// Add a HIR to the lowering runtime
-    pub fn build<'hir, 'lir>(
-        &'hir self,
-        ru: &mut HirLoweringRuntime<'lir>,
-    ) -> LV2CompileResult<()>
+    pub fn build<'hir, 'lir>(&'hir self, ru: &mut HirLoweringRuntime<'lir>) -> LV2CompileResult<()>
     where
         'hir: 'lir,
     {
@@ -102,8 +99,7 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn global(&mut self, var: &LV2Variable) -> &mut Self
-    {
+    fn global(&mut self, var: &LV2Variable) -> &mut Self {
         self.block_mut().global(var);
         self
     }
@@ -133,8 +129,7 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn local(&mut self, var: &LV2Variable) -> &mut Self
-    {
+    fn local(&mut self, var: &LV2Variable) -> &mut Self {
         self.block_mut().local(var);
         self
     }
@@ -186,8 +181,7 @@ pub trait HasBlock {
     }
 
     #[inline]
-    fn trigger(&mut self, n: u16) -> &mut Self
-    {
+    fn trigger(&mut self, n: u16) -> &mut Self {
         self.block_mut().trigger(n);
         self
     }

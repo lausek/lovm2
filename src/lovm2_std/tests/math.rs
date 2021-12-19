@@ -25,7 +25,10 @@ fn native_trigonometry() {
     let pih = std::f64::consts::PI * 0.5;
     let n = 0f64;
 
-    assert_eq!(LV2Value::from(n.sin()), vm.call("sin", &[0.into()]).unwrap());
+    assert_eq!(
+        LV2Value::from(n.sin()),
+        vm.call("sin", &[0.into()]).unwrap()
+    );
     assert_eq!(
         LV2Value::from(pi2.sin()),
         vm.call("sin", &[pi2.into()]).unwrap()
@@ -35,7 +38,10 @@ fn native_trigonometry() {
         vm.call("sin", &[pih.into()]).unwrap()
     );
 
-    assert_eq!(LV2Value::from(n.cos()), vm.call("cos", &[0.into()]).unwrap());
+    assert_eq!(
+        LV2Value::from(n.cos()),
+        vm.call("cos", &[0.into()]).unwrap()
+    );
     assert_eq!(
         LV2Value::from(pi2.cos()),
         vm.call("cos", &[pi2.into()]).unwrap()
@@ -45,7 +51,10 @@ fn native_trigonometry() {
         vm.call("cos", &[pih.into()]).unwrap()
     );
 
-    assert_eq!(LV2Value::from(n.tan()), vm.call("tan", &[0.into()]).unwrap());
+    assert_eq!(
+        LV2Value::from(n.tan()),
+        vm.call("tan", &[0.into()]).unwrap()
+    );
     assert_eq!(
         LV2Value::from(pi2.tan()),
         vm.call("tan", &[pi2.into()]).unwrap()
@@ -55,9 +64,18 @@ fn native_trigonometry() {
         vm.call("tan", &[pih.into()]).unwrap()
     );
 
-    assert_eq!(LV2Value::from(n.asin()), vm.call("asin", &[n.into()]).unwrap());
-    assert_eq!(LV2Value::from(n.acos()), vm.call("acos", &[n.into()]).unwrap());
-    assert_eq!(LV2Value::from(n.atan()), vm.call("atan", &[n.into()]).unwrap());
+    assert_eq!(
+        LV2Value::from(n.asin()),
+        vm.call("asin", &[n.into()]).unwrap()
+    );
+    assert_eq!(
+        LV2Value::from(n.acos()),
+        vm.call("acos", &[n.into()]).unwrap()
+    );
+    assert_eq!(
+        LV2Value::from(n.atan()),
+        vm.call("atan", &[n.into()]).unwrap()
+    );
 }
 
 #[test]

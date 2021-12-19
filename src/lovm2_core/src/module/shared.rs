@@ -23,7 +23,8 @@ pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
 /// Definition for dynamically linked function.
 pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> LV2Result<()>;
 /// Function signature of the extern module initializer.
-pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, CallableRef>);
+pub type ExternInitializer =
+    extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, CallableRef>);
 
 fn load_slots(_name: &str, lib: Library) -> LV2Result<Slots> {
     unsafe {

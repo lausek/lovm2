@@ -282,7 +282,11 @@ impl Vm {
             match inx {
                 Instruction::LPush(lidx) => {
                     let variable = &co.idents[*lidx as usize];
-                    let local = self.ctx.frame_mut()?.value_of(variable).map(LV2Value::clone)?;
+                    let local = self
+                        .ctx
+                        .frame_mut()?
+                        .value_of(variable)
+                        .map(LV2Value::clone)?;
 
                     self.ctx.push_value(local);
                 }

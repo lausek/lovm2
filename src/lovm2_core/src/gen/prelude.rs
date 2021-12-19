@@ -1,5 +1,7 @@
 pub use super::hir::*;
-pub use super::{CompileOptions, HasBlock, LV2Function, LV2ModuleBuilder, LV2ModuleMeta, DEFAULT_MODULE_NAME};
+pub use super::{
+    CompileOptions, HasBlock, LV2Function, LV2ModuleBuilder, LV2ModuleMeta, DEFAULT_MODULE_NAME,
+};
 
 pub use crate::value::LV2Value;
 pub use crate::var::LV2Variable;

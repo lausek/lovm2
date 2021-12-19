@@ -40,13 +40,13 @@ fn calc_hir(module: &mut LV2ModuleBuilder) {
 
     hir.assign(sigma, 0)
         .assign(i, 0)
-        .assign(factor, LV2Expr::sub(lv2_call!(len, coeffs), 1));
+        .assign(factor, lv2_call!(len, coeffs).sub(1));
 
-    let delta = LV2Expr::mul(lv2_access!(coeffs, i), LV2Expr::pow(x, factor));
-    hir.repeat_until(LV2Expr::not(LV2Expr::le(0, factor)))
-        .assign(sigma, LV2Expr::add(sigma, delta))
-        .assign(i, LV2Expr::add(i, 1))
-        .assign(factor, LV2Expr::sub(factor, 1));
+    let delta = lv2_access!(coeffs, i).mul(LV2Expr::from(x).pow(factor));
+    hir.repeat_until(LV2Expr::from(0).le(factor).not())
+        .assign(sigma, LV2Expr::from(sigma).add(delta))
+        .increment(i)
+        .decrement(factor);
 
     hir.return_value(sigma);
 }
@@ -57,15 +57,15 @@ fn derive_hir(module: &mut LV2ModuleBuilder) {
 
     hir.assign(d, lv2_list!())
         .assign(i, 0)
-        .assign(factor, LV2Expr::sub(lv2_call!(len, coeffs), 1));
+        .assign(factor, lv2_call!(len, coeffs).sub(1));
 
-    hir.repeat_until(LV2Expr::not(LV2Expr::lt(0, factor)))
+    hir.repeat_until(LV2Expr::from(0).lt(factor).not())
         .set(
             lv2_access!(d, i),
             LV2Expr::mul(lv2_access!(coeffs, i), factor),
         )
-        .assign(i, LV2Expr::add(i, 1))
-        .assign(factor, LV2Expr::sub(factor, 1));
+        .increment(i)
+        .decrement(factor);
 
     hir.return_value(d);
 }
@@ -84,13 +84,13 @@ pub fn bisect_hir(module: &mut LV2ModuleBuilder) {
     computation_loop.assign(d2, lv2_call!(calc, dcoeffs, x));
     computation_loop
         .branch()
-        .add_condition(LV2Expr::eq(d2, 0.))
+        .add_condition(LV2Expr::from(d2).eq(0.))
         .assign(d2, 0.001);
     computation_loop.assign(d1, lv2_call!(calc, coeffs, x));
-    computation_loop.assign(x, LV2Expr::sub(x, LV2Expr::div(d1, d2)));
+    computation_loop.assign(x, LV2Expr::from(d1).div(d2).sub(x));
     computation_loop
         .branch()
-        .add_condition(LV2Expr::eq(prev, x))
+        .add_condition(LV2Expr::from(prev).eq(x))
         .break_repeat();
     computation_loop.assign(prev, x);
 

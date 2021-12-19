@@ -121,7 +121,6 @@ fn compute_constants() {
     let mut builder = LV2ModuleBuilder::new();
 
     builder.entry().return_value(LV2Expr::rem(
-        //LV2Expr::mul(LV2Expr::add(LV2Expr::sub(6, 1), 2), LV2Expr::div(4, 2)),
         LV2Expr::from(6).sub(1).add(2).mul(LV2Expr::from(4).div(2)),
         5,
     ));

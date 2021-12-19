@@ -20,7 +20,7 @@ pub enum LV2Statement {
     /// Highlevel `continue` statement
     Continue,
     Drop {
-        expr: LV2Expr
+        expr: LV2Expr,
     },
     Import {
         name: LV2Expr,
@@ -42,8 +42,7 @@ pub enum LV2Statement {
 }
 
 impl HirLowering for LV2Statement {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
         match self {
             LV2Statement::AssignReference { target, source } => {
                 target.lower(runtime);
@@ -68,19 +67,21 @@ impl HirLowering for LV2Statement {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Drop);
             }
-            LV2Statement::Import { name, namespaced} => {
+            LV2Statement::Import { name, namespaced } => {
                 name.lower(runtime);
-                let elem = LirElement::Import { namespaced: *namespaced };
+                let elem = LirElement::Import {
+                    namespaced: *namespaced,
+                };
                 runtime.emit(elem);
             }
-            LV2Statement::Interrupt { n} => {
+            LV2Statement::Interrupt { n } => {
                 runtime.emit(LirElement::Interrupt { n: *n });
             }
             LV2Statement::Repeat(repeat) => repeat.lower(runtime),
-            LV2Statement::Return { expr} => {
+            LV2Statement::Return { expr } => {
                 expr.lower(runtime);
                 runtime.emit(LirElement::Ret);
-            },
+            }
             LV2Statement::ScopeGlobal { ident } => {
                 runtime.emit(LirElement::ScopeGlobal { ident });
             }

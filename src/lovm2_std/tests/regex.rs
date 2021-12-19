@@ -11,7 +11,8 @@ fn native_is_match() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(re).step(Assign::var(re, lv2_call!(new_regex, "\\d{2}")));
+            .global(re)
+            .step(Assign::var(re, lv2_call!(new_regex, "\\d{2}")));
     });
 
     vm.call("init", &[]).unwrap();
@@ -39,7 +40,8 @@ fn native_captures() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(re).step(Assign::var(re, lv2_call!(new_regex, "(\\d)?(\\S+)")));
+            .global(re)
+            .step(Assign::var(re, lv2_call!(new_regex, "(\\d)?(\\S+)")));
     });
 
     vm.call("init", &[]).unwrap();
@@ -47,12 +49,24 @@ fn native_captures() {
     let re = vm.context_mut().value_of(re).unwrap().clone();
 
     let result = vm.call("captures", &[re.clone(), "1abc".into()]).unwrap();
-    assert_eq!(LV2Value::from("1abc"), result.get(&LV2Value::Int(0)).unwrap());
+    assert_eq!(
+        LV2Value::from("1abc"),
+        result.get(&LV2Value::Int(0)).unwrap()
+    );
     assert_eq!(LV2Value::from("1"), result.get(&LV2Value::Int(1)).unwrap());
-    assert_eq!(LV2Value::from("abc"), result.get(&LV2Value::Int(2)).unwrap());
+    assert_eq!(
+        LV2Value::from("abc"),
+        result.get(&LV2Value::Int(2)).unwrap()
+    );
 
     let result = vm.call("captures", &[re.clone(), "abc".into()]).unwrap();
-    assert_eq!(LV2Value::from("abc"), result.get(&LV2Value::Int(0)).unwrap());
+    assert_eq!(
+        LV2Value::from("abc"),
+        result.get(&LV2Value::Int(0)).unwrap()
+    );
     assert_eq!(LV2Value::Nil, result.get(&LV2Value::Int(1)).unwrap());
-    assert_eq!(LV2Value::from("abc"), result.get(&LV2Value::Int(2)).unwrap());
+    assert_eq!(
+        LV2Value::from("abc"),
+        result.get(&LV2Value::Int(2)).unwrap()
+    );
 }

@@ -22,20 +22,21 @@ fn fibonacci(c: &mut Criterion) {
 
     fib_hir
         .branch()
-        .add_condition(LV2Expr::or(LV2Expr::eq(n, 0), LV2Expr::eq(n, 1)))
+        //.add_condition(LV2Expr::or(LV2Expr::eq(n, 0), LV2Expr::eq(n, 1)))
+        .add_condition(LV2Expr::from(n).eq(0).or(LV2Expr::from(n).eq(1)))
         .return_value(n);
 
     fib_hir
         .assign(l, 0)
         .assign(r, 1)
-        .assign(n, LV2Expr::sub(n, 1));
+        .decrement(n);
 
     fib_hir
-        .repeat_until(LV2Expr::eq(n, 0))
+        .repeat_until(LV2Expr::from(n).eq(0))
         .assign(h, r)
-        .assign(r, LV2Expr::add(l, r))
+        .assign(r, LV2Expr::from(l).add(r))
         .assign(l, h)
-        .assign(n, LV2Expr::sub(n, 1));
+        .decrement(n);
 
     fib_hir.return_value(r);
 

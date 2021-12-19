@@ -7,14 +7,12 @@ use crate::vm::Context;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {
-        pub fn $method(self) -> Self
-        {
+        pub fn $method(self) -> Self {
             Self::Operation1(LV2Operator1::$operator, Box::new(self))
         }
     };
     (2, $operator:ident, $method:ident) => {
-        pub fn $method<T: Into<Self>>(self, other: T) -> Self
-        {
+        pub fn $method<T: Into<Self>>(self, other: T) -> Self {
             Self::Operation2(
                 LV2Operator2::$operator,
                 Box::new(self),
@@ -121,7 +119,7 @@ impl LV2Expr {
     pub fn boxed(mut self) -> Self {
         match &mut self {
             LV2Expr::Value { boxed, .. } => *boxed = true,
-            _ => {},
+            _ => {}
         }
         self
     }
@@ -229,7 +227,11 @@ impl LV2Expr {
     }
 
     pub fn insert<T: Into<LV2Expr>, U: Into<LV2Expr>>(mut self, key: T, value: U) -> Self {
-        if let LV2Expr::Value { val: LV2Value::Dict(_) | LV2Value::List(_), boxed} = &mut self {
+        if let LV2Expr::Value {
+            val: LV2Value::Dict(_) | LV2Value::List(_),
+            boxed,
+        } = &mut self
+        {
             *boxed = true;
         }
 
@@ -369,8 +371,7 @@ impl From<&LV2Variable> for LV2Expr {
 }
 
 impl HirLowering for LV2Expr {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
         match self {
             LV2Expr::Append { base, value } => {
                 base.lower(runtime);
@@ -513,8 +514,7 @@ impl ExprBranch {
 }
 
 impl HirLowering for ExprBranch {
-    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>)
-    {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut HirLoweringRuntime<'lir>) {
         super::branch::lower_map_structure(runtime, &self.branches, &self.default);
     }
 }
@@ -524,8 +524,7 @@ fn lower_insert<'lir, 'hir: 'lir>(
     base: &'hir LV2Expr,
     key: &'hir LV2Expr,
     value: &'hir LV2Expr,
-)
-{
+) {
     base.lower(runtime);
 
     runtime.emit(LirElement::Duplicate);
@@ -541,8 +540,7 @@ fn lower_slice<'lir, 'hir: 'lir>(
     target: &'hir LV2Expr,
     start: &'hir LV2Expr,
     end: &'hir LV2Expr,
-)
-{
+) {
     target.lower(runtime);
     start.lower(runtime);
     end.lower(runtime);

@@ -56,7 +56,9 @@ pub enum LirElement<'hir> {
     Duplicate,
     Get,
     RGet,
-    Interrupt { n: u16 },
+    Interrupt {
+        n: u16,
+    },
     Ret,
     Set,
     Slice,
@@ -135,7 +137,7 @@ impl std::fmt::Display for LirElement<'_> {
             Self::PushConstant { value } => write!(f, "\tCPush({})", value),
             Self::PushDynamic { ident } => write!(f, "\tPush({})", ident),
             Self::StoreDynamic { ident } => write!(f, "\tStore({})", ident),
-            Self::Interrupt {n} => write!(f, "\tInterrupt({})", n),
+            Self::Interrupt { n } => write!(f, "\tInterrupt({})", n),
             _ => write!(f, "\t{:?}", self),
         }
     }

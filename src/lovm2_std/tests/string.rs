@@ -132,8 +132,14 @@ fn native_to_lower() {
 fn native_trim() {
     let mut vm = run_module_test(|_| {});
 
-    assert_eq!(LV2Value::from("a"), vm.call("trim", &[" a".into()]).unwrap());
-    assert_eq!(LV2Value::from("a"), vm.call("trim", &["a ".into()]).unwrap());
+    assert_eq!(
+        LV2Value::from("a"),
+        vm.call("trim", &[" a".into()]).unwrap()
+    );
+    assert_eq!(
+        LV2Value::from("a"),
+        vm.call("trim", &["a ".into()]).unwrap()
+    );
 
     assert_eq!(
         LV2Value::from("a"),

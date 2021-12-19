@@ -16,10 +16,12 @@ macro_rules! lv2_access {
 #[macro_export]
 macro_rules! lv2_call {
     ($name:ident $(, $arg:tt)* $(,)?) => {{
-        LV2Call::new(stringify!($name))
-            $(
-                .arg(lv2_call!(1, $arg))
-            )*
+        LV2Expr::from(
+            LV2Call::new(stringify!($name))
+                $(
+                    .arg(lv2_call!(1, $arg))
+                )*
+        )
     }};
     (1, $arg:ident) => {{ lv2_var!($arg) }};
     (1, $arg:expr) => {{ $arg }};

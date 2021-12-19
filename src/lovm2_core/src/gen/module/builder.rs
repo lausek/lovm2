@@ -6,7 +6,7 @@ use std::rc::Rc;
 use crate::code::CodeObjectFunction;
 use crate::error::*;
 use crate::gen::opt::Optimizer;
-use crate::gen::{CompileOptions, LV2Function, HirLoweringRuntime, LirElement, LV2ModuleMeta};
+use crate::gen::{CompileOptions, HirLoweringRuntime, LV2Function, LV2ModuleMeta, LirElement};
 use crate::module::{LV2Module, ENTRY_POINT};
 use crate::var::LV2Variable;
 

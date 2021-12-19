@@ -12,12 +12,18 @@ fn native_set_predicates() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(a).step(Assign::var(a, lv2_list!(true)))
-            .global(b).step(Assign::var(b, lv2_list!(true, "abc", 1)))
-            .global(c).step(Assign::var(c, lv2_list!(true, "", 1)))
-            .global(d).step(Assign::var(d, lv2_list!()))
-            .global(e).step(Assign::var(e, lv2_list!(false, true)))
-            .global(f).step(Assign::var(f, lv2_list!(false)));
+            .global(a)
+            .step(Assign::var(a, lv2_list!(true)))
+            .global(b)
+            .step(Assign::var(b, lv2_list!(true, "abc", 1)))
+            .global(c)
+            .step(Assign::var(c, lv2_list!(true, "", 1)))
+            .global(d)
+            .step(Assign::var(d, lv2_list!()))
+            .global(e)
+            .step(Assign::var(e, lv2_list!(false, true)))
+            .global(f)
+            .step(Assign::var(f, lv2_list!(false)));
     });
 
     vm.call("init", &[]).unwrap();
@@ -51,10 +57,14 @@ fn native_contains() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(n).step(Assign::var(n, 10))
-            .global(s).step(Assign::var(s, "abc10d"))
-            .global(d).step(Assign::var(d, lv2_dict!(10 => 1, "b" => 2)))
-            .global(ls).step(Assign::var(ls, lv2_list!("a", true, n)));
+            .global(n)
+            .step(Assign::var(n, 10))
+            .global(s)
+            .step(Assign::var(s, "abc10d"))
+            .global(d)
+            .step(Assign::var(d, lv2_dict!(10 => 1, "b" => 2)))
+            .global(ls)
+            .step(Assign::var(ls, lv2_list!("a", true, n)));
     });
 
     vm.call("init", &[]).unwrap();
@@ -89,10 +99,14 @@ fn native_len() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(n).step(Assign::var(n, 10))
-            .global(s).step(Assign::var(s, "abc10d"))
-            .global(d).step(Assign::var(d, lv2_dict!(10 => 1, "b" => 2)))
-            .global(ls).step(Assign::var(ls, lv2_list!("a", true, n)));
+            .global(n)
+            .step(Assign::var(n, 10))
+            .global(s)
+            .step(Assign::var(s, "abc10d"))
+            .global(d)
+            .step(Assign::var(d, lv2_dict!(10 => 1, "b" => 2)))
+            .global(ls)
+            .step(Assign::var(ls, lv2_list!("a", true, n)));
     });
 
     vm.call("init", &[]).unwrap();
@@ -193,10 +207,14 @@ fn native_sort() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(d).step(Assign::var(d, lv2_dict!("b" => 1, "a" => 1)))
-            .global(ds).step(Assign::var(ds, lv2_dict!("a" => 1, "b" => 1)))
-            .global(ls).step(Assign::var(ls, lv2_list!(3, 1, 2)))
-            .global(lss).step(Assign::var(lss, lv2_list!(1, 2, 3)));
+            .global(d)
+            .step(Assign::var(d, lv2_dict!("b" => 1, "a" => 1)))
+            .global(ds)
+            .step(Assign::var(ds, lv2_dict!("a" => 1, "b" => 1)))
+            .global(ls)
+            .step(Assign::var(ls, lv2_list!(3, 1, 2)))
+            .global(lss)
+            .step(Assign::var(lss, lv2_list!(1, 2, 3)));
     });
 
     vm.call("init", &[]).unwrap();
@@ -206,7 +224,10 @@ fn native_sort() {
     let ls = vm.context_mut().value_of(ls).unwrap().clone();
     let lss = vm.context_mut().value_of(lss).unwrap().clone();
 
-    assert_eq!(LV2Value::from("abcd"), vm.call("sort", &[s.clone()]).unwrap());
+    assert_eq!(
+        LV2Value::from("abcd"),
+        vm.call("sort", &[s.clone()]).unwrap()
+    );
 
     assert_eq!(lss, vm.call("sort", &[ls.clone()]).unwrap());
 
