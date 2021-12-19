@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::bytecode::Instruction;
 use crate::code::CodeObject;
-use crate::value::Value;
+use crate::value::LV2Value;
 use crate::var::LV2Variable;
 
 use super::*;
@@ -13,7 +13,7 @@ fn patch_addrs(
     code: &mut Vec<Instruction>,
     joffs: Vec<usize>,
     coff: usize,
-) -> Lovm2CompileResult<()> {
+) -> LV2CompileResult<()> {
     let coff = coff as u16;
 
     for joff in joffs.into_iter() {
@@ -39,7 +39,7 @@ enum Offset {
 pub struct LirLoweringRuntime {
     meta: LV2ModuleMeta,
     entries: Vec<(usize, usize)>,
-    consts: Vec<Value>,
+    consts: Vec<LV2Value>,
     idents: Vec<LV2Variable>,
     code: Vec<Instruction>,
 
@@ -61,7 +61,7 @@ impl LirLoweringRuntime {
         }
     }
 
-    pub fn lower(mut self, code: Vec<LirElement>) -> Lovm2CompileResult<CodeObject> {
+    pub fn lower(mut self, code: Vec<LirElement>) -> LV2CompileResult<CodeObject> {
         if cfg!(debug_assertions) {
             println!(">>> LIR");
             for lir_element in code.iter() {
@@ -90,7 +90,7 @@ impl LirLoweringRuntime {
         Ok(co)
     }
 
-    fn emit(&mut self, lir_element: LirElement) -> Lovm2CompileResult<()> {
+    fn emit(&mut self, lir_element: LirElement) -> LV2CompileResult<()> {
         match lir_element {
             LirElement::Append => self.code.push(Instruction::Append),
             LirElement::Call { argn, ident } => {
@@ -209,7 +209,7 @@ impl LirLoweringRuntime {
         }
     }
 
-    fn index_const(&mut self, val: &Value) -> usize {
+    fn index_const(&mut self, val: &LV2Value) -> usize {
         match self.consts.iter().position(|item| item == val) {
             Some(pos) => pos,
             None => {

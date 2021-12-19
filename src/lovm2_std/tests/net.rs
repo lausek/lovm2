@@ -26,8 +26,8 @@ fn get_body_as_string() {
     let res = vm.call("exec", &[req]).unwrap();
     let body = vm.call("get_body_as_string", &[res.clone()]).unwrap();
 
-    assert_eq!(Value::from(200), vm.call("get_status", &[res]).unwrap());
-    assert_eq!(Value::from("[\"a\",\"b\"]"), body);
+    assert_eq!(LV2Value::from(200), vm.call("get_status", &[res]).unwrap());
+    assert_eq!(LV2Value::from("[\"a\",\"b\"]"), body);
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn post_request() {
     vm.call("set_body", &[req.clone(), "abcd".into()]).unwrap();
     let res = vm.call("exec", &[req]).unwrap();
 
-    assert_eq!(Value::from(200), vm.call("get_status", &[res]).unwrap());
+    assert_eq!(LV2Value::from(200), vm.call("get_status", &[res]).unwrap());
 }
 
 #[test]
@@ -71,5 +71,5 @@ fn error_status_code() {
     let req = vm.call("new_request", &[host.into()]).unwrap();
     let res = vm.call("exec", &[req]).unwrap();
 
-    assert_eq!(Value::from(403), vm.call("get_status", &[res]).unwrap());
+    assert_eq!(LV2Value::from(403), vm.call("get_status", &[res]).unwrap());
 }

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::bytecode::Instruction;
 use crate::error::*;
-use crate::value::Value;
+use crate::value::LV2Value;
 use crate::var::LV2Variable;
 use crate::vm::Vm;
 
@@ -27,7 +27,7 @@ pub trait CallProtocol: std::fmt::Debug {
         None
     }
 
-    fn run(&self, vm: &mut Vm) -> Lovm2Result<()>;
+    fn run(&self, vm: &mut Vm) -> LV2Result<()>;
 }
 
 /// `CodeObject` contains the bytecode as well as all the data used by it.
@@ -61,7 +61,7 @@ pub struct CodeObject {
     /// Entry points for the bytecode in the form Vec<(index_into_idents, bytecode_offset)>. These are the functions of the module.
     pub entries: Vec<(usize, usize)>,
     /// Necessary constants.
-    pub consts: Vec<Value>,
+    pub consts: Vec<LV2Value>,
     /// Necessary identifiers.
     pub idents: Vec<LV2Variable>,
     /// Bytecode itself.
@@ -73,7 +73,7 @@ impl CallProtocol for CodeObject {
         Some(self.name.clone())
     }
 
-    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+    fn run(&self, vm: &mut Vm) -> LV2Result<()> {
         vm.run_bytecode(&self, 0)
     }
 }
@@ -98,7 +98,7 @@ impl CodeObject {
     }
 
     /// Tries to load the file as shared object first and falls back to regular deserialization if it failed
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
+    pub fn load_from_file<T>(path: T) -> LV2Result<Self>
     where
         T: AsRef<std::path::Path>,
     {
@@ -132,7 +132,7 @@ impl CodeObject {
     }
 
     /// Return the objects representation as bytes
-    pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
+    pub fn to_bytes(&self) -> LV2Result<Vec<u8>> {
         use bincode::Options;
 
         let mut buffer = Vec::from(LV2_MAGIC_NUMBER);
@@ -148,7 +148,7 @@ impl CodeObject {
 
     // TODO: could lead to errors when two threads serialize to the same file
     /// Write the object to a file at given path
-    pub fn store_to_file<T>(&self, path: T) -> Lovm2Result<()>
+    pub fn store_to_file<T>(&self, path: T) -> LV2Result<()>
     where
         T: AsRef<std::path::Path>,
     {
@@ -180,7 +180,7 @@ impl CallProtocol for CodeObjectFunction {
         Some(self.on.name.clone())
     }
 
-    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+    fn run(&self, vm: &mut Vm) -> LV2Result<()> {
         vm.run_bytecode(&self.on, self.offset)
     }
 }

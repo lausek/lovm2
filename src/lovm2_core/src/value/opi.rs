@@ -1,10 +1,10 @@
 //! Implementation of primitive inplace operations on `Value`
 
-use super::Value::*;
+use super::LV2Value::*;
 use super::*;
 
-impl Value {
-    pub fn add_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+impl LV2Value {
+    pub fn add_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a += b,
             (Float(ref mut a), Float(b)) => *a += b,
@@ -16,7 +16,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn sub_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn sub_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a -= b,
             (Float(ref mut a), Float(b)) => *a -= b,
@@ -27,7 +27,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn mul_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn mul_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a *= b,
             (Float(ref mut a), Float(b)) => *a *= b,
@@ -38,7 +38,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn div_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn div_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a /= b,
             (Float(ref mut a), Float(b)) => *a /= b,
@@ -49,7 +49,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn rem_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn rem_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a %= b,
             (Float(ref mut a), Float(b)) => *a %= b,
@@ -60,7 +60,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn shl_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn shl_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a <<= b,
             _ => err_not_supported()?,
@@ -68,7 +68,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn shr_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn shr_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Int(ref mut a), Int(b)) => *a >>= b,
             _ => err_not_supported()?,
@@ -76,7 +76,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn pow_inplace(&mut self, exp: Value) -> Lovm2Result<()> {
+    pub fn pow_inplace(&mut self, exp: LV2Value) -> LV2Result<()> {
         let exp = exp.as_integer_inner()?;
         match self {
             Int(ref mut base) => *base = base.pow(exp as u32),
@@ -86,7 +86,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn and_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn and_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Bool(a), Bool(b)) => *a &= b,
             (Int(a), Int(b)) => *a &= b,
@@ -95,7 +95,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn or_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn or_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Bool(a), Bool(b)) => *a |= b,
             (Int(a), Int(b)) => *a |= b,
@@ -104,7 +104,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn xor_inplace(&mut self, other: Value) -> Lovm2Result<()> {
+    pub fn xor_inplace(&mut self, other: LV2Value) -> LV2Result<()> {
         match (self, other) {
             (Bool(a), Bool(b)) => *a ^= b,
             (Int(a), Int(b)) => *a ^= b,
@@ -113,7 +113,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn not_inplace(&mut self) -> Lovm2Result<()> {
+    pub fn not_inplace(&mut self) -> LV2Result<()> {
         match self {
             Bool(ref mut a) => *a = !*a,
             Int(ref mut a) => *a = !*a,

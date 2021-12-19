@@ -1,7 +1,7 @@
 use super::*;
 
 #[inline]
-fn inner_readn(buffer: &mut Buffer, n: usize) -> Lovm2Result<String> {
+fn inner_readn(buffer: &mut Buffer, n: usize) -> LV2Result<String> {
     let upto = buffer.roff + n;
     let upto = std::cmp::min(upto, buffer.inner.len());
     let s = String::from_utf8_lossy(&buffer.inner[buffer.roff..upto]).to_string();
@@ -12,17 +12,17 @@ fn inner_readn(buffer: &mut Buffer, n: usize) -> Lovm2Result<String> {
 }
 
 #[lovm2_function]
-fn new_buffer() -> Lovm2Result<Buffer> {
+fn new_buffer() -> LV2Result<Buffer> {
     Ok(Buffer::default())
 }
 
 #[lovm2_function]
-fn readn(buffer: &mut Buffer, n: i64) -> Lovm2Result<String> {
+fn readn(buffer: &mut Buffer, n: i64) -> LV2Result<String> {
     inner_readn(buffer, n as usize)
 }
 
 #[lovm2_function]
-fn read_line(buffer: &mut Buffer) -> Lovm2Result<String> {
+fn read_line(buffer: &mut Buffer) -> LV2Result<String> {
     let mut n = 0;
 
     while let Some(c) = buffer.inner.get(n) {
@@ -36,7 +36,7 @@ fn read_line(buffer: &mut Buffer) -> Lovm2Result<String> {
 }
 
 #[lovm2_function]
-fn writes(buffer: &mut Buffer, text: String) -> Lovm2Result<bool> {
+fn writes(buffer: &mut Buffer, text: String) -> LV2Result<bool> {
     buffer.inner.extend_from_slice(text.as_bytes());
     Ok(true)
 }

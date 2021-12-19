@@ -80,7 +80,7 @@ pub enum LV2Expr {
         end: Box<LV2Expr>,
     },
     Value {
-        val: Value,
+        val: LV2Value,
         boxed: bool,
     },
     Variable(LV2Variable),
@@ -137,7 +137,7 @@ impl LV2Expr {
 
     pub fn dict() -> Self {
         LV2Expr::Value {
-            val: Value::dict(),
+            val: LV2Value::dict(),
             boxed: false,
         }
     }
@@ -149,7 +149,7 @@ impl LV2Expr {
         }
     }
 
-    pub fn eval(&self, ctx: &Context) -> Lovm2Result<Value> {
+    pub fn eval(&self, ctx: &Context) -> LV2Result<LV2Value> {
         match self {
             LV2Expr::Append { base, value } => {
                 let mut base = base.eval(ctx)?;
@@ -234,7 +234,7 @@ impl LV2Expr {
     }
 
     pub fn insert<T: Into<LV2Expr>, U: Into<LV2Expr>>(mut self, key: T, value: U) -> Self {
-        if let LV2Expr::Value { val: Value::Dict(_) | Value::List(_), boxed} = &mut self {
+        if let LV2Expr::Value { val: LV2Value::Dict(_) | LV2Value::List(_), boxed} = &mut self {
             *boxed = true;
         }
 
@@ -254,7 +254,7 @@ impl LV2Expr {
 
     pub fn list() -> Self {
         LV2Expr::Value {
-            val: Value::list(),
+            val: LV2Value::list(),
             boxed: false,
         }
     }
@@ -362,7 +362,7 @@ impl From<LV2Call> for LV2Expr {
 
 impl<T> From<T> for LV2Expr
 where
-    T: Into<Value>,
+    T: Into<LV2Value>,
 {
     fn from(val: T) -> LV2Expr {
         LV2Expr::Value {
@@ -463,7 +463,7 @@ impl HirLowering for LV2Expr {
             LV2Expr::Value { ref val, boxed } => {
                 runtime.emit(LirElement::push_constant(val));
 
-                if *boxed || matches!(val, Value::Dict(_) | Value::List(_)) {
+                if *boxed || matches!(val, LV2Value::Dict(_) | LV2Value::List(_)) {
                     runtime.emit(LirElement::Box);
                 }
             }

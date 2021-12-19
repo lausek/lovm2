@@ -21,11 +21,11 @@ use crate::vm::Vm;
 pub const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
 
 /// Definition for dynamically linked function.
-pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> Lovm2Result<()>;
+pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> LV2Result<()>;
 /// Function signature of the extern module initializer.
 pub type ExternInitializer = extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, CallableRef>);
 
-fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
+fn load_slots(_name: &str, lib: Library) -> LV2Result<Slots> {
     unsafe {
         let lib = Rc::new(lib);
 
@@ -41,13 +41,13 @@ fn load_slots(_name: &str, lib: Library) -> Lovm2Result<Slots> {
 
                 Ok(Slots::from(slots))
             }
-            Err(_) => Err(Lovm2ErrorTy::Basic.into()),
+            Err(_) => Err(LV2ErrorTy::Basic.into()),
         }
     }
 }
 
 /// Try loading a shared object from a file.
-pub fn load_library_from_file<T>(path: T) -> Lovm2Result<Library>
+pub fn load_library_from_file<T>(path: T) -> LV2Result<Library>
 where
     T: AsRef<Path>,
 {
@@ -65,7 +65,7 @@ where
 }
 
 /// Turn the loaded shared object into a `lovm2` [Module].
-pub fn module_from_library<T>(path: T, lib: Library) -> Lovm2Result<LV2Module>
+pub fn module_from_library<T>(path: T, lib: Library) -> LV2Result<LV2Module>
 where
     T: AsRef<Path>,
 {
@@ -93,7 +93,7 @@ pub struct SharedObjectSlot(
 );
 
 impl SharedObjectSlot {
-    pub fn new<T>(lib: Rc<Library>, name: T) -> Lovm2Result<Self>
+    pub fn new<T>(lib: Rc<Library>, name: T) -> LV2Result<Self>
     where
         T: AsRef<str>,
     {
@@ -111,7 +111,7 @@ impl SharedObjectSlot {
 }
 
 impl CallProtocol for SharedObjectSlot {
-    fn run(&self, vm: &mut Vm) -> Lovm2Result<()> {
+    fn run(&self, vm: &mut Vm) -> LV2Result<()> {
         unsafe { self.1(vm) }
     }
 }

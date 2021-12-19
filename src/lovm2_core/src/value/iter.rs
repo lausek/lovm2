@@ -10,7 +10,7 @@ use super::*;
 enum IterType {
     Limit(i64),
     Open,
-    Over(Value),
+    Over(LV2Value),
 }
 
 /// Runtime iterator implementation
@@ -65,7 +65,7 @@ impl Iter {
 
     /// Advance the iterator and get the next value. This will return an error
     /// if the iterator has no elements left.
-    pub fn next(&mut self) -> Lovm2Result<Value> {
+    pub fn next(&mut self) -> LV2Result<LV2Value> {
         let idx = self.current;
 
         let val = match &self.ty {
@@ -131,7 +131,7 @@ impl Iter {
     }
 
     /// Consume the iterator into a vector of values.
-    pub fn collect(mut self) -> Vec<Value> {
+    pub fn collect(mut self) -> Vec<LV2Value> {
         let mut result = vec![];
 
         while self.has_next() {
@@ -142,16 +142,16 @@ impl Iter {
     }
 }
 
-impl TryFrom<Value> for Iter {
-    type Error = Lovm2Error;
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
+impl TryFrom<LV2Value> for Iter {
+    type Error = LV2Error;
+    fn try_from(value: LV2Value) -> Result<Self, Self::Error> {
         match &value {
-            Value::Any(any) => {
+            LV2Value::Any(any) => {
                 if let Some(value) = any.borrow().0.downcast_ref::<Iter>() {
                     return Ok(value.clone());
                 }
             }
-            Value::Iter(it) => return Ok(it.borrow().clone()),
+            LV2Value::Iter(it) => return Ok(it.borrow().clone()),
             _ => {}
         }
 
@@ -176,21 +176,21 @@ impl std::default::Default for Iter {
 }
 
 #[inline]
-fn get_iter(vm: &mut Vm) -> Lovm2Result<Rc<RefCell<Iter>>> {
+fn get_iter(vm: &mut Vm) -> LV2Result<Rc<RefCell<Iter>>> {
     match vm.context_mut().pop_value()? {
-        Value::Iter(it) => Ok(it),
+        LV2Value::Iter(it) => Ok(it),
         val => return Err(err_ty_unexpected("iterator", format!("{:?}", val))),
     }
 }
 
-pub(crate) fn vm_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_create(vm: &mut Vm) -> LV2Result<()> {
     let from = vm.context_mut().pop_value()?;
 
     // if the value on stack already is an iterator, leave it
-    let it = if matches!(from, Value::Iter(_)) {
+    let it = if matches!(from, LV2Value::Iter(_)) {
         from
     } else {
-        Value::from(from.iter()?)
+        LV2Value::from(from.iter()?)
     };
 
     vm.context_mut().push_value(it);
@@ -198,17 +198,17 @@ pub(crate) fn vm_iter_create(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> LV2Result<()> {
     let to = vm.context_mut().pop_value()?;
     let from = vm.context_mut().pop_value()?;
 
     let it = match (from, to) {
-        (Value::Nil, Value::Nil) => unimplemented!(),
-        (Value::Nil, to) => {
+        (LV2Value::Nil, LV2Value::Nil) => unimplemented!(),
+        (LV2Value::Nil, to) => {
             let to = to.as_integer_inner()?;
             Iter::ranged_to(to)
         }
-        (from, Value::Nil) => {
+        (from, LV2Value::Nil) => {
             let from = from.as_integer_inner()?;
             Iter::ranged_from(from)
         }
@@ -218,12 +218,12 @@ pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> Lovm2Result<()> {
         }
     };
 
-    vm.context_mut().push_value(Value::from(it));
+    vm.context_mut().push_value(LV2Value::from(it));
 
     Ok(())
 }
 
-pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> LV2Result<()> {
     let it = get_iter(vm)?;
     let it = it.borrow();
 
@@ -232,7 +232,7 @@ pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_next(vm: &mut Vm) -> LV2Result<()> {
     let it = get_iter(vm)?;
     let mut it = it.borrow_mut();
 
@@ -241,12 +241,12 @@ pub(crate) fn vm_iter_next(vm: &mut Vm) -> Lovm2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> Lovm2Result<()> {
+pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> LV2Result<()> {
     let it = get_iter(vm)?;
     let it = it.borrow();
     let reversed = it.clone().reverse();
 
-    vm.context_mut().push_value(Value::from(reversed));
+    vm.context_mut().push_value(LV2Value::from(reversed));
 
     Ok(())
 }

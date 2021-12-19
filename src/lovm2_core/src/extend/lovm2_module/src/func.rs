@@ -33,14 +33,14 @@ impl Function {
             quote! {
                 #[doc = #docstring]
                 #[no_mangle]
-                pub extern fn #ident(vm: &mut Vm) -> lovm2_core::prelude::Lovm2Result<()> {
+                pub extern fn #ident(vm: &mut Vm) -> lovm2_core::prelude::LV2Result<()> {
                     #body
                 }
             }
         } else {
             quote! {
                 #[doc = #docstring]
-                pub fn #ident(vm: &mut Vm) -> lovm2_core::prelude::Lovm2Result<()> {
+                pub fn #ident(vm: &mut Vm) -> lovm2_core::prelude::LV2Result<()> {
                     #body
                 }
             }

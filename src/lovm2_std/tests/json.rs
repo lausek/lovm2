@@ -11,7 +11,7 @@ fn native_decode() {
     let mut vm = run_module_test(|builder| {
         builder
             .add("init")
-            .global(a).step(Assign::var(a, lv2_dict!("a" => 10, "b" => Value::Nil)))
+            .global(a).step(Assign::var(a, lv2_dict!("a" => 10, "b" => LV2Value::Nil)))
             .global(b).step(Assign::var(b, lv2_list!(lv2_dict!(), lv2_dict!(), 1.5)));
     });
 
@@ -37,7 +37,7 @@ fn native_encode() {
             .add("init")
             .global(d).step(Assign::var(d, lv2_dict!(true => 0.5)))
             .global(dd).step(Assign::var(dd, lv2_dict!("a" => lv2_dict!("b" => "c"))))
-            .global(ls).step(Assign::var(ls, lv2_list!(1, "abc", d, Value::Nil)))
+            .global(ls).step(Assign::var(ls, lv2_list!(1, "abc", d, LV2Value::Nil)))
             .global(n).step(Assign::var(n, 2));
     });
 
@@ -49,16 +49,16 @@ fn native_encode() {
     let n = vm.context_mut().value_of(n).unwrap().clone();
 
     assert_eq!(
-        Value::from("[1,\"abc\",{\"true\":0.5},null]"),
+        LV2Value::from("[1,\"abc\",{\"true\":0.5},null]"),
         vm.call("encode", &[ls]).unwrap()
     );
     assert_eq!(
-        Value::from("{\"a\":{\"b\":\"c\"}}"),
+        LV2Value::from("{\"a\":{\"b\":\"c\"}}"),
         vm.call("encode", &[dd]).unwrap()
     );
     assert_eq!(
-        Value::from("{\"true\":0.5}"),
+        LV2Value::from("{\"true\":0.5}"),
         vm.call("encode", &[d]).unwrap()
     );
-    assert_eq!(Value::from("2"), vm.call("encode", &[n]).unwrap());
+    assert_eq!(LV2Value::from("2"), vm.call("encode", &[n]).unwrap());
 }

@@ -6,7 +6,7 @@ pub fn run_module_test(
     mut vm: Vm,
     module: LV2Module,
     testfn: impl Fn(&mut Context) + 'static,
-) -> Lovm2Result<()> {
+) -> LV2Result<()> {
     let called = std::rc::Rc::new(std::cell::Cell::new(false));
 
     let called_ref = called.clone();

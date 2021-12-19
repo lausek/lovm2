@@ -1,6 +1,6 @@
 use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
-use lovm2::value::Value;
+use lovm2::value::LV2Value;
 use lovm2::Instruction;
 
 fn check_instruction_elimination(expr: LV2Expr) {
@@ -40,7 +40,7 @@ fn merge_not_jump_false() {
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
-    assert_eq!(Value::Int(1), result.clone());
+    assert_eq!(LV2Value::Int(1), result.clone());
 }
 
 #[test]
@@ -61,7 +61,7 @@ fn merge_constant_jump() {
         .any(|c| matches!(c, Instruction::Jt(_) | Instruction::Jf(_))));
 
     // `false` is constant and should be eliminated
-    assert!(!module.code_object.consts.contains(&Value::Bool(false)));
+    assert!(!module.code_object.consts.contains(&LV2Value::Bool(false)));
     // check if dead code elimination is working
     assert_eq!(2, module.code_object.code.len());
 
@@ -69,7 +69,7 @@ fn merge_constant_jump() {
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
-    assert_eq!(Value::Int(1), result.clone());
+    assert_eq!(LV2Value::Int(1), result.clone());
 }
 
 #[test]
@@ -89,7 +89,7 @@ fn short_circuit_and() {
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
-    assert_eq!(Value::Bool(false), result.clone());
+    assert_eq!(LV2Value::Bool(false), result.clone());
 }
 
 #[test]
@@ -108,7 +108,7 @@ fn short_circuit_or() {
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
-    assert_eq!(Value::Bool(true), result.clone());
+    assert_eq!(LV2Value::Bool(true), result.clone());
 }
 
 #[test]
@@ -128,7 +128,7 @@ fn compute_constants() {
         .iter()
         .any(|c| matches!(c, Instruction::Jt(_) | Instruction::Jf(_))));
 
-    let expected = Value::Int(4);
+    let expected = LV2Value::Int(4);
     assert_eq!(1, module.code_object.consts.len());
     assert!(module.code_object.consts.contains(&expected));
 
@@ -164,13 +164,13 @@ fn dead_code_elimination_else_branche() {
 
     assert_eq!(16, module.code_object.code.len());
     assert_eq!(4, module.code_object.consts.len());
-    assert!(!module.code_object.consts.contains(&Value::Int(7)));
+    assert!(!module.code_object.consts.contains(&LV2Value::Int(7)));
 
     let mut vm = create_vm_with_std();
     vm.add_main_module(module).unwrap();
     let result = vm.run().unwrap();
 
-    assert_eq!(Value::Int(1), result.clone());
+    assert_eq!(LV2Value::Int(1), result.clone());
 }
 
 #[test]

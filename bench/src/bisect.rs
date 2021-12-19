@@ -34,7 +34,7 @@ def bisect(coeffs, startx):
         prev = current
 */
 
-fn calc_hir(module: &mut ModuleBuilder) {
+fn calc_hir(module: &mut LV2ModuleBuilder) {
     let (coeffs, x, factor, i, sigma) = &lv2_var!(coeffs, x, factor, i, sigma);
     let hir = module.add_with_args("calc", vec![coeffs.clone(), x.clone()]);
 
@@ -51,7 +51,7 @@ fn calc_hir(module: &mut ModuleBuilder) {
     hir.step(Return::value(sigma));
 }
 
-fn derive_hir(module: &mut ModuleBuilder) {
+fn derive_hir(module: &mut LV2ModuleBuilder) {
     let (coeffs, i, factor, d) = &lv2_var!(coeffs, i, factor, d);
     let hir = module.add_with_args("derive", vec![coeffs.clone()]);
 
@@ -70,7 +70,7 @@ fn derive_hir(module: &mut ModuleBuilder) {
     hir.step(Return::value(d));
 }
 
-pub fn bisect_hir(module: &mut ModuleBuilder) {
+pub fn bisect_hir(module: &mut LV2ModuleBuilder) {
     let (prev, x, d1, d2, coeffs, dcoeffs, startx) =
         &lv2_var!(prev, x, d1, d2, coeffs, dcoeffs, startx);
     let hir = module.add_with_args("bisect", vec![coeffs.clone(), startx.clone()]);
@@ -98,7 +98,7 @@ pub fn bisect_hir(module: &mut ModuleBuilder) {
 }
 
 pub fn bisect(c: &mut Criterion) {
-    let mut module = ModuleBuilder::new();
+    let mut module = LV2ModuleBuilder::new();
     module.entry();
 
     calc_hir(&mut module);

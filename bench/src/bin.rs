@@ -50,20 +50,20 @@ fn fibonacci(c: &mut Criterion) {
 
     c.bench_function("fib 0", |b| {
         b.iter(|| {
-            assert_eq!(Value::from(0), vm.call("fib", &[0.into()]).unwrap());
+            assert_eq!(LV2Value::from(0), vm.call("fib", &[0.into()]).unwrap());
         })
     });
 
     c.bench_function("fib 1", |b| {
         b.iter(|| {
-            assert_eq!(Value::from(1), vm.call("fib", &[1.into()]).unwrap());
+            assert_eq!(LV2Value::from(1), vm.call("fib", &[1.into()]).unwrap());
         })
     });
 
     c.bench_function("fib 90", |b| {
         b.iter(|| {
             assert_eq!(
-                Value::from(2880067194370816120),
+                LV2Value::from(2880067194370816120),
                 vm.call("fib", &[90.into()]).unwrap()
             );
         })

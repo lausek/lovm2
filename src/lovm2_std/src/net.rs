@@ -32,15 +32,15 @@ fn set_header(req: &mut Request, key: String, val: String) {
 }
 
 #[lovm2_function]
-fn set_body(req: &mut Request, mut body: Value) -> Lovm2Result<bool> {
+fn set_body(req: &mut Request, mut body: LV2Value) -> LV2Result<bool> {
     body.unref_inplace()?;
 
-    if let Value::Str(body) = body {
+    if let LV2Value::Str(body) = body {
         req.body = body.as_bytes().to_vec();
         return Ok(true);
     }
 
-    if let Value::Any(any) = body {
+    if let LV2Value::Any(any) = body {
         if let Some(buf) = (*any).borrow_mut().0.downcast_mut::<Buffer>() {
             req.body = buf.inner.clone();
         }
@@ -51,14 +51,14 @@ fn set_body(req: &mut Request, mut body: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn set_method(req: &mut Request, method: String) -> Lovm2Result<bool> {
+fn set_method(req: &mut Request, method: String) -> LV2Result<bool> {
     use std::convert::TryFrom;
     req.method = Method::try_from(method)?;
     Ok(true)
 }
 
 #[lovm2_function]
-fn serve(vm: &mut Vm, host: String, callback: String) -> Lovm2Result<()> {
+fn serve(vm: &mut Vm, host: String, callback: String) -> LV2Result<()> {
     let server = tiny_http::Server::http(host).unwrap();
 
     for mut request in server.incoming_requests() {
@@ -108,7 +108,7 @@ fn serve(vm: &mut Vm, host: String, callback: String) -> Lovm2Result<()> {
 }
 
 #[lovm2_function]
-fn exec(req: &Request) -> Lovm2Result<Response> {
+fn exec(req: &Request) -> LV2Result<Response> {
     use curl::easy::Easy;
 
     let mut easy = Easy::new();
@@ -162,12 +162,12 @@ fn get_status(res: &Response) -> i64 {
 }
 
 #[lovm2_function]
-fn get_body_as_string(res: &Response) -> Lovm2Result<String> {
+fn get_body_as_string(res: &Response) -> LV2Result<String> {
     String::from_utf8(res.body.clone()).or_else(|_| err_from_string("response is not valid utf-8"))
 }
 
 #[lovm2_function]
-fn get_body_as_buffer(res: &Response) -> Lovm2Result<Buffer> {
+fn get_body_as_buffer(res: &Response) -> LV2Result<Buffer> {
     Ok(Buffer {
         inner: res.body.clone(),
         ..Buffer::default()

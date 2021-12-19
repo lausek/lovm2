@@ -58,7 +58,7 @@ fn file_list_dir() {
 
     assert!(!root.exists());
     assert_eq!(
-        Value::from(false),
+        LV2Value::from(false),
         vm.call("exists", &[root_str.into()]).unwrap(),
     );
 
@@ -66,11 +66,11 @@ fn file_list_dir() {
 
     assert!(root.exists() && root.is_dir());
     assert_eq!(
-        Value::from(true),
+        LV2Value::from(true),
         vm.call("exists", &[root_str.into()]).unwrap(),
     );
     assert_eq!(
-        Value::from(true),
+        LV2Value::from(true),
         vm.call("is_dir", &[root_str.into()]).unwrap(),
     );
 
@@ -95,13 +95,13 @@ fn file_list_dir() {
 
     // cannot unlink directory
     assert_eq!(
-        Value::from(false),
+        LV2Value::from(false),
         vm.call("unlink", &[root_str.into()]).unwrap()
     );
 
     // directory is not empty
     assert_eq!(
-        Value::from(false),
+        LV2Value::from(false),
         vm.call("rmdir", &[root_str.into()]).unwrap(),
     );
 
@@ -111,14 +111,14 @@ fn file_list_dir() {
     while it.has_next() {
         let dir_file = it.next().unwrap();
         assert_eq!(
-            Value::from(true),
+            LV2Value::from(true),
             vm.call("unlink", &[dir_file.into()]).unwrap()
         );
     }
 
     // directory was deleted
     assert_eq!(
-        Value::from(true),
+        LV2Value::from(true),
         vm.call("rmdir", &[root_str.into()]).unwrap(),
     );
 
@@ -136,8 +136,8 @@ fn filepath_operations() {
     let parent = vm.call("parent", &[root_str.into()]).unwrap();
 
     assert_eq!(
-        Value::from("b"),
+        LV2Value::from("b"),
         vm.call("basename", &[root_str.into()]).unwrap(),
     );
-    assert_eq!(Value::from("a"), vm.call("basename", &[parent]).unwrap(),);
+    assert_eq!(LV2Value::from("a"), vm.call("basename", &[parent]).unwrap(),);
 }

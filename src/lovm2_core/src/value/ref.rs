@@ -9,7 +9,7 @@ use super::*;
 pub struct Reference(
     #[serde(serialize_with = "serialize_value_ref")]
     #[serde(deserialize_with = "deserialize_value_ref")]
-    pub(crate) Option<Rc<RefCell<Value>>>,
+    pub(crate) Option<Rc<RefCell<LV2Value>>>,
 );
 
 impl Reference {
@@ -19,7 +19,7 @@ impl Reference {
     }
 
     /// Try to borrow the inner value.
-    pub fn borrow(&self) -> Lovm2Result<Ref<'_, Value>> {
+    pub fn borrow(&self) -> LV2Result<Ref<'_, LV2Value>> {
         if let Some(inner) = &self.0 {
             Ok(inner.borrow())
         } else {
@@ -28,7 +28,7 @@ impl Reference {
     }
 
     /// Try to borrow the inner value as mutable.
-    pub fn borrow_mut(&self) -> Lovm2Result<RefMut<'_, Value>> {
+    pub fn borrow_mut(&self) -> LV2Result<RefMut<'_, LV2Value>> {
         if let Some(inner) = &self.0 {
             Ok(inner.borrow_mut())
         } else {
@@ -38,9 +38,9 @@ impl Reference {
 
     /// Dereference to the contained value. Nested references will
     /// be dereferenced until a non-reference value was found.
-    pub fn unref_to_value(&self) -> Lovm2Result<Rc<RefCell<Value>>> {
+    pub fn unref_to_value(&self) -> LV2Result<Rc<RefCell<LV2Value>>> {
         if let Some(val) = &self.0 {
-            if let Value::Ref(r) = &*val.borrow() {
+            if let LV2Value::Ref(r) = &*val.borrow() {
                 r.unref_to_value()
             } else {
                 Ok(val.clone())
@@ -60,20 +60,20 @@ impl Reference {
     }
 }
 
-impl From<Value> for Reference {
-    fn from(val: Value) -> Self {
+impl From<LV2Value> for Reference {
+    fn from(val: LV2Value) -> Self {
         Self(Some(Rc::new(RefCell::new(val))))
     }
 }
 
-fn serialize_value_ref<S>(_: &Option<Rc<RefCell<Value>>>, s: S) -> Result<S::Ok, S::Error>
+fn serialize_value_ref<S>(_: &Option<Rc<RefCell<LV2Value>>>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     s.serialize_none()
 }
 
-fn deserialize_value_ref<'de, D>(_: D) -> Result<Option<Rc<RefCell<Value>>>, D::Error>
+fn deserialize_value_ref<'de, D>(_: D) -> Result<Option<Rc<RefCell<LV2Value>>>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -88,9 +88,9 @@ impl std::cmp::PartialEq for Reference {
     }
 }
 
-impl std::cmp::PartialEq<Value> for Reference {
-    fn eq(&self, rhs: &Value) -> bool {
-        if let Value::Ref(rhs) = rhs {
+impl std::cmp::PartialEq<LV2Value> for Reference {
+    fn eq(&self, rhs: &LV2Value) -> bool {
+        if let LV2Value::Ref(rhs) = rhs {
             self == rhs
         } else {
             self.unref_to_value()

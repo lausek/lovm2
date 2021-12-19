@@ -8,7 +8,7 @@ use crate::bytecode::Instruction;
 use crate::code::{CallProtocol, CallableRef, CodeObject};
 use crate::error::*;
 use crate::module::LV2Module;
-use crate::value::{box_value, Value, ValueType};
+use crate::value::{box_value, LV2Value, ValueType};
 use crate::var::LV2Variable;
 
 mod context;
@@ -42,11 +42,11 @@ pub const LOVM2_INT_DEBUG: u16 = 10;
 ///
 
 /// Function signature for module loading callback.
-pub type LoadHookFn = dyn Fn(&LoadRequest) -> Lovm2Result<Option<LV2Module>>;
+pub type LoadHookFn = dyn Fn(&LoadRequest) -> LV2Result<Option<LV2Module>>;
 /// Function signature of interrupts.
-pub type InterruptFn = dyn Fn(&mut Vm) -> Lovm2Result<()>;
+pub type InterruptFn = dyn Fn(&mut Vm) -> LV2Result<()>;
 /// Function signature for `Callable` importing.
-pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> Lovm2Result<Option<String>>;
+pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> LV2Result<Option<String>>;
 
 /// Structure containing relevant information for module resolvement.
 pub struct LoadRequest {
@@ -75,7 +75,7 @@ macro_rules! value_compare {
     ($vm:expr, $fn:ident) => {{
         let second = $vm.ctx.pop_value()?;
         let first = $vm.ctx.pop_value()?;
-        $vm.ctx.push_value(Value::Bool(first.$fn(&second)));
+        $vm.ctx.push_value(LV2Value::Bool(first.$fn(&second)));
     }};
 }
 
@@ -115,7 +115,7 @@ impl Vm {
     }
 
     /// Call a function by name with given arguments.
-    pub fn call(&mut self, name: &str, args: &[Value]) -> Lovm2Result<Value> {
+    pub fn call(&mut self, name: &str, args: &[LV2Value]) -> LV2Result<LV2Value> {
         let name = LV2Variable::from(name);
         let co = self.ctx.lookup_code_object(&name)?;
 
@@ -127,7 +127,7 @@ impl Vm {
 
             let arg = arg.clone();
             let arg = match arg {
-                Value::Dict(_) | Value::List(_) => box_value(arg),
+                LV2Value::Dict(_) | LV2Value::List(_) => box_value(arg),
                 _ => arg,
             };
 
@@ -149,19 +149,19 @@ impl Vm {
     }
 
     /// Add a new function by name to the virtual machine.
-    pub fn add_function<T: Into<LV2Variable>>(&mut self, key: T, co: CallableRef) -> Lovm2Result<()> {
+    pub fn add_function<T: Into<LV2Variable>>(&mut self, key: T, co: CallableRef) -> LV2Result<()> {
         let key = key.into();
 
         // this overwrites the slot with the new function. maybe not so good
         if self.ctx.scope.insert(key.clone(), co).is_some() {
-            return Err((Lovm2ErrorTy::ImportConflict, key).into());
+            return Err((LV2ErrorTy::ImportConflict, key).into());
         }
 
         Ok(())
     }
 
     /// Add the module and all of its slots to `scope`.
-    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> Lovm2Result<()>
+    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> LV2Result<()>
     where
         T: Into<LV2Module>,
     {
@@ -204,7 +204,7 @@ impl Vm {
         name: &str,
         relative_to: Option<String>,
         namespaced: bool,
-    ) -> Lovm2Result<()> {
+    ) -> LV2Result<()> {
         if self.modules.get(name).is_some() {
             return Ok(());
         }
@@ -242,7 +242,7 @@ impl Vm {
     }
 
     /// Add the module and all of its slots to `scope`.
-    pub fn add_main_module<T>(&mut self, module: T) -> Lovm2Result<()>
+    pub fn add_main_module<T>(&mut self, module: T) -> LV2Result<()>
     where
         T: Into<LV2Module>,
     {
@@ -252,12 +252,12 @@ impl Vm {
             self.ctx.entry = Some(co.clone());
             self.add_module(module, false)
         } else {
-            Err(Lovm2ErrorTy::NoEntryPoint.into())
+            Err(LV2ErrorTy::NoEntryPoint.into())
         }
     }
 
     /// A wrapper for `run_bytecode` that handles pushing and popping stack frames.
-    pub fn run_object(&mut self, co: &dyn CallProtocol) -> Lovm2Result<Value> {
+    pub fn run_object(&mut self, co: &dyn CallProtocol) -> LV2Result<LV2Value> {
         self.ctx.push_frame(0);
         co.run(self)?;
         self.ctx.pop_frame();
@@ -266,29 +266,29 @@ impl Vm {
     }
 
     /// Start the execution at `ENTRY_POINT`.
-    pub fn run(&mut self) -> Lovm2Result<Value> {
+    pub fn run(&mut self) -> LV2Result<LV2Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
         } else {
-            Err(Lovm2ErrorTy::NoEntryPoint.into())
+            Err(LV2ErrorTy::NoEntryPoint.into())
         }
     }
 
     #[inline]
-    fn run_bytecode_inner(&mut self, co: &CodeObject, ip: &mut usize) -> Lovm2Result<()> {
+    fn run_bytecode_inner(&mut self, co: &CodeObject, ip: &mut usize) -> LV2Result<()> {
         use crate::value::iter::*;
 
         while let Some(inx) = co.code.get(*ip) {
             match inx {
                 Instruction::LPush(lidx) => {
                     let variable = &co.idents[*lidx as usize];
-                    let local = self.ctx.frame_mut()?.value_of(variable).map(Value::clone)?;
+                    let local = self.ctx.frame_mut()?.value_of(variable).map(LV2Value::clone)?;
 
                     self.ctx.push_value(local);
                 }
                 Instruction::GPush(gidx) => {
                     let variable = &co.idents[*gidx as usize];
-                    let global = self.ctx.value_of(variable).map(Value::clone)?;
+                    let global = self.ctx.value_of(variable).map(LV2Value::clone)?;
 
                     self.ctx.push_value(global);
                 }
@@ -329,11 +329,11 @@ impl Vm {
                     let mut obj = self.ctx.pop_value()?;
 
                     if let Err(e) = obj.get(&key) {
-                        if Lovm2ErrorTy::KeyNotFound != e.ty {
+                        if LV2ErrorTy::KeyNotFound != e.ty {
                             return Err(e);
                         }
 
-                        obj.set(&key, box_value(Value::Nil))?;
+                        obj.set(&key, box_value(LV2Value::Nil))?;
                     }
 
                     let val = obj.get(&key)?;
@@ -345,7 +345,7 @@ impl Vm {
                     let target = self.ctx.pop_value()?;
 
                     match target {
-                        Value::Ref(r) => *r.borrow_mut()? = val.clone_inner()?,
+                        LV2Value::Ref(r) => *r.borrow_mut()? = val.clone_inner()?,
                         _ => return err_invalid_set_target(target),
                     }
                 }
@@ -472,7 +472,7 @@ impl Vm {
     ///
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
     /// if not handled correctly. See [Vm::run_object].
-    pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> Lovm2Result<()> {
+    pub fn run_bytecode(&mut self, co: &CodeObject, offset: usize) -> LV2Result<()> {
         let mut ip = offset;
 
         if let Err(mut e) = self.run_bytecode_inner(co, &mut ip) {
@@ -486,7 +486,7 @@ impl Vm {
     /// Register a new callback function that is used for patching function names.
     pub fn set_import_hook<T>(&mut self, hook: T)
     where
-        T: Fn(Option<&str>, &str) -> Lovm2Result<Option<String>> + 'static,
+        T: Fn(Option<&str>, &str) -> LV2Result<Option<String>> + 'static,
     {
         self.import_hook = Rc::new(hook);
     }
@@ -494,15 +494,15 @@ impl Vm {
     /// Register a new callback function that is used for resolving dependencies at runtime.
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&LoadRequest) -> Lovm2Result<Option<LV2Module>> + Sized + 'static,
+        T: Fn(&LoadRequest) -> LV2Result<Option<LV2Module>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }
 
     /// Gegister a new callback function on interrupt `n`.
-    pub fn set_interrupt<T>(&mut self, n: u16, func: T) -> Lovm2Result<()>
+    pub fn set_interrupt<T>(&mut self, n: u16, func: T) -> LV2Result<()>
     where
-        T: Fn(&mut Vm) -> Lovm2Result<()> + Sized + 'static,
+        T: Fn(&mut Vm) -> LV2Result<()> + Sized + 'static,
     {
         if n != LOVM2_INT_DEBUG && n <= LOVM2_RESERVED_INTERRUPTS {
             return err_reserved_interrupt(n);
@@ -514,29 +514,29 @@ impl Vm {
     }
 }
 
-fn create_slice(target: Value, start: Value, end: Value) -> Lovm2Result<Value> {
+fn create_slice(target: LV2Value, start: LV2Value, end: LV2Value) -> LV2Result<LV2Value> {
     let start_idx = match start {
-        Value::Nil => 0,
+        LV2Value::Nil => 0,
         _ => start.as_integer_inner()?,
     };
 
     let end_idx = match end {
-        Value::Nil => target.len()? as i64,
+        LV2Value::Nil => target.len()? as i64,
         _ => end.as_integer_inner()?,
     };
 
     let mut slice = vec![];
 
     for idx in start_idx..end_idx {
-        slice.push(target.get(&Value::from(idx))?);
+        slice.push(target.get(&LV2Value::from(idx))?);
     }
 
-    Ok(box_value(Value::List(slice)))
+    Ok(box_value(LV2Value::List(slice)))
 }
 
 /// Search for a name inside the given directories. This strips the file extension
 /// and compares the file stem.
-pub fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
+pub fn find_module(name: &str, load_paths: &[String]) -> LV2Result<String> {
     use std::fs::read_dir;
 
     for path in load_paths.iter() {
@@ -556,12 +556,12 @@ pub fn find_module(name: &str, load_paths: &[String]) -> Lovm2Result<String> {
         }
     }
 
-    Err((Lovm2ErrorTy::ModuleNotFound, name).into())
+    Err((LV2ErrorTy::ModuleNotFound, name).into())
 }
 
 /// Takes a [LoadRequest] and calls [find_module] to search for possible candidates
 /// relative to the current module.
-pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
+pub fn find_candidate(req: &LoadRequest) -> LV2Result<String> {
     if let Some(relative_to) = &req.relative_to {
         let path = std::path::Path::new(relative_to)
             .parent()
@@ -571,12 +571,12 @@ pub fn find_candidate(req: &LoadRequest) -> Lovm2Result<String> {
 
         find_module(&req.module, &[path])
     } else {
-        Err((Lovm2ErrorTy::ModuleNotFound, &req.module).into())
+        Err((LV2ErrorTy::ModuleNotFound, &req.module).into())
     }
 }
 
 #[inline]
-fn default_import_hook(module: Option<&str>, name: &str) -> Lovm2Result<Option<String>> {
+fn default_import_hook(module: Option<&str>, name: &str) -> LV2Result<Option<String>> {
     let name = match module {
         Some(module) => format!("{}.{}", module, name),
         _ => name.to_string(),

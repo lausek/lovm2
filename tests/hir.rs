@@ -15,7 +15,7 @@ fn assign_local() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(4), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -33,7 +33,7 @@ fn assign_local_add() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(4), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(4), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -53,10 +53,10 @@ fn assign_incremet_decrement() {
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
-        assert_eq!(Value::Int(0), *ctx.value_of("b").unwrap());
+        assert_eq!(LV2Value::Int(0), *ctx.value_of("b").unwrap());
 
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(1), *frame.value_of("a").unwrap());
+        assert_eq!(LV2Value::Int(1), *frame.value_of("a").unwrap());
     })
     .unwrap();
 }
@@ -70,7 +70,7 @@ fn rem_lowering() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(1), *frame.value_of("rest").unwrap());
+        assert_eq!(LV2Value::Int(1), *frame.value_of("rest").unwrap());
     })
     .unwrap();
 }
@@ -90,7 +90,7 @@ fn easy_loop() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(10), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -110,7 +110,7 @@ fn explicit_break() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(1), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(1), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -130,8 +130,8 @@ fn try_getting() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(7), *frame.value_of("dat0").unwrap());
-        assert_eq!(Value::Int(10), *frame.value_of("lat0").unwrap());
+        assert_eq!(LV2Value::Int(7), *frame.value_of("dat0").unwrap());
+        assert_eq!(LV2Value::Int(10), *frame.value_of("lat0").unwrap());
     })
     .unwrap();
 }
@@ -150,7 +150,7 @@ fn try_setting() {
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         let list = &frame.value_of("list").unwrap();
-        assert_eq!(Value::Int(7), list.get(&Value::Int(1)).unwrap());
+        assert_eq!(LV2Value::Int(7), list.get(&LV2Value::Int(1)).unwrap());
     })
     .unwrap();
 }
@@ -170,8 +170,8 @@ fn try_retrieving_len() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of("lendict").unwrap());
-        assert_eq!(Value::Int(3), *frame.value_of("lenls").unwrap());
+        assert_eq!(LV2Value::Int(2), *frame.value_of("lendict").unwrap());
+        assert_eq!(LV2Value::Int(3), *frame.value_of("lenls").unwrap());
     })
     .unwrap();
 }
@@ -188,7 +188,7 @@ fn try_casting() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(5), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(5), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -209,7 +209,7 @@ fn true_branching() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of(&n).unwrap());
+        assert_eq!(LV2Value::Int(2), *frame.value_of(&n).unwrap());
     })
     .unwrap();
 }
@@ -235,7 +235,7 @@ fn multiple_branches() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::from("buzz"), *frame.value_of("result").unwrap());
+        assert_eq!(LV2Value::from("buzz"), *frame.value_of("result").unwrap());
     })
     .unwrap();
 }
@@ -253,8 +253,8 @@ fn taking_parameters() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of(&a).unwrap());
-        assert_eq!(Value::Int(7), *frame.value_of(&b).unwrap());
+        assert_eq!(LV2Value::Int(2), *frame.value_of(&a).unwrap());
+        assert_eq!(LV2Value::Int(7), *frame.value_of(&b).unwrap());
     })
     .unwrap();
 }
@@ -271,7 +271,7 @@ fn automatic_return() {
 
     vm.add_main_module(module).unwrap();
 
-    assert_eq!(Value::Nil, vm.call("no-return", &[]).unwrap());
+    assert_eq!(LV2Value::Nil, vm.call("no-return", &[]).unwrap());
 }
 
 #[test]
@@ -288,7 +288,7 @@ fn return_values() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(10), *frame.value_of(&n).unwrap());
+        assert_eq!(LV2Value::Int(10), *frame.value_of(&n).unwrap());
     })
     .unwrap();
 }
@@ -322,10 +322,10 @@ fn cast_to_string() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::from("10"), *frame.value_of("a").unwrap());
-        assert_eq!(Value::from("10.1"), *frame.value_of("b").unwrap());
-        assert_eq!(Value::from("10"), *frame.value_of("c").unwrap());
-        assert_eq!(Value::from("true"), *frame.value_of("d").unwrap());
+        assert_eq!(LV2Value::from("10"), *frame.value_of("a").unwrap());
+        assert_eq!(LV2Value::from("10.1"), *frame.value_of("b").unwrap());
+        assert_eq!(LV2Value::from("10"), *frame.value_of("c").unwrap());
+        assert_eq!(LV2Value::from("true"), *frame.value_of("d").unwrap());
     })
     .unwrap();
 }
@@ -352,8 +352,8 @@ fn folding_expr() {
     run_module_test(create_vm_with_std(), builder.build().unwrap(), move |ctx| {
         let a = ctx.value_of(&a).unwrap();
         let n = ctx.value_of(&n).unwrap();
-        assert_eq!(Value::Int(2), *a);
-        assert_eq!(Value::Int(1), *n);
+        assert_eq!(LV2Value::Int(2), *a);
+        assert_eq!(LV2Value::Int(1), *n);
     })
     .unwrap();
 }
@@ -376,9 +376,9 @@ fn get_field_from_dict() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(37), *frame.value_of("x").unwrap());
-        assert_eq!(Value::Int(42), *frame.value_of("y").unwrap());
-        assert_eq!(Value::Int(67), *frame.value_of("z").unwrap());
+        assert_eq!(LV2Value::Int(37), *frame.value_of("x").unwrap());
+        assert_eq!(LV2Value::Int(42), *frame.value_of("y").unwrap());
+        assert_eq!(LV2Value::Int(67), *frame.value_of("z").unwrap());
     })
     .unwrap();
 }
@@ -402,32 +402,35 @@ fn set_field_on_dict() {
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
         assert_eq!(
-            Value::Int(37),
+            LV2Value::Int(37),
             frame
                 .value_of("d1")
                 .unwrap()
-                .get(&Value::from("x"))
+                .get(&LV2Value::from("x"))
                 .unwrap()
         );
         assert!(frame
             .value_of("d2")
             .unwrap()
-            .get(&Value::from("x"))
+            .get(&LV2Value::from("x"))
             .unwrap()
             .is_ref());
         assert_eq!(
-            Value::Int(42),
+            LV2Value::Int(42),
             frame
                 .value_of("d2")
                 .unwrap()
-                .get(&Value::from("x"))
+                .get(&LV2Value::from("x"))
                 .unwrap()
-                .get(&Value::from("y"))
+                .get(&LV2Value::from("y"))
                 .unwrap()
         );
         assert_eq!(
-            Value::Int(67),
-            ctx.value_of("g").unwrap().get(&Value::from("x")).unwrap()
+            LV2Value::Int(67),
+            ctx.value_of("g")
+                .unwrap()
+                .get(&LV2Value::from("x"))
+                .unwrap()
         );
     })
     .unwrap();
@@ -455,7 +458,7 @@ fn call_into_vm() {
     // ensure that the interrupt has been called
     run_module_test(create_vm_with_std(), module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(10), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(10), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -477,12 +480,12 @@ fn comparison() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Bool(true), *frame.value_of("lt").unwrap());
-        assert_eq!(Value::Bool(true), *frame.value_of("le1").unwrap());
-        assert_eq!(Value::Bool(true), *frame.value_of("le2").unwrap());
-        assert_eq!(Value::Bool(true), *frame.value_of("gt").unwrap());
-        assert_eq!(Value::Bool(true), *frame.value_of("ge1").unwrap());
-        assert_eq!(Value::Bool(true), *frame.value_of("ge2").unwrap());
+        assert_eq!(LV2Value::Bool(true), *frame.value_of("lt").unwrap());
+        assert_eq!(LV2Value::Bool(true), *frame.value_of("le1").unwrap());
+        assert_eq!(LV2Value::Bool(true), *frame.value_of("le2").unwrap());
+        assert_eq!(LV2Value::Bool(true), *frame.value_of("gt").unwrap());
+        assert_eq!(LV2Value::Bool(true), *frame.value_of("ge1").unwrap());
+        assert_eq!(LV2Value::Bool(true), *frame.value_of("ge2").unwrap());
     })
     .unwrap();
 }
@@ -500,8 +503,8 @@ fn raise_to_power() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(8), *frame.value_of("a").unwrap());
-        assert_eq!(Value::Float(27.), *frame.value_of("b").unwrap());
+        assert_eq!(LV2Value::Int(8), *frame.value_of("a").unwrap());
+        assert_eq!(LV2Value::Float(27.), *frame.value_of("b").unwrap());
     })
     .unwrap();
 }
@@ -547,8 +550,8 @@ fn store_without_reference() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
-        assert_eq!(Value::Int(7), *frame.value_of("y").unwrap());
+        assert_eq!(LV2Value::Int(2), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(7), *frame.value_of("y").unwrap());
     })
     .unwrap();
 }
@@ -569,8 +572,8 @@ fn create_slice() {
         let frame = ctx.frame_mut().unwrap();
         let ls = frame.value_of("ls").unwrap();
         let s = frame.value_of("s").unwrap();
-        assert_eq!(Value::Int(9), s.get(&Value::Int(1)).unwrap());
-        assert_eq!(Value::Int(9), ls.get(&Value::Int(2)).unwrap());
+        assert_eq!(LV2Value::Int(9), s.get(&LV2Value::Int(1)).unwrap());
+        assert_eq!(LV2Value::Int(9), ls.get(&LV2Value::Int(2)).unwrap());
     })
     .unwrap();
 }
@@ -578,7 +581,7 @@ fn create_slice() {
 #[test]
 fn iterating_repeat() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
+        assert_eq!(LV2Value::from(10), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
     }
 
@@ -601,7 +604,7 @@ fn iterating_repeat() {
 #[test]
 fn iterating_repeat_inplace() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(10), ctx.value_of("sum").unwrap().clone());
+        assert_eq!(LV2Value::from(10), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
         assert_eq!(ctx.value_of("orig").unwrap(), ctx.value_of("ls").unwrap());
     }
@@ -626,7 +629,7 @@ fn iterating_repeat_inplace() {
 #[test]
 fn iterating_repeat_ranged() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(45), ctx.value_of("sum").unwrap().clone());
+        assert_eq!(LV2Value::from(45), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
     }
 
@@ -637,7 +640,7 @@ fn iterating_repeat_ranged() {
 
     main_hir.global(sum).assign(sum, 0);
     main_hir
-        .repeat_iterating(LV2Expr::iter_ranged(Value::Nil, 10), i)
+        .repeat_iterating(LV2Expr::iter_ranged(LV2Value::Nil, 10), i)
         .global(sum)
         .assign(sum, LV2Expr::add(sum, i));
     main_hir.trigger(10);
@@ -648,7 +651,7 @@ fn iterating_repeat_ranged() {
 #[test]
 fn iterating_repeat_nested() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(17199), ctx.value_of("sum").unwrap().clone());
+        assert_eq!(LV2Value::from(17199), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
     }
 
@@ -671,10 +674,10 @@ fn iterating_repeat_nested() {
 #[test]
 fn shift_values() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(4), *ctx.value_of("a").unwrap());
-        assert_eq!(Value::from(8), *ctx.value_of("b").unwrap());
-        assert_eq!(Value::from(0b10100000), *ctx.value_of("c").unwrap());
-        assert_eq!(Value::from(0), *ctx.value_of("d").unwrap());
+        assert_eq!(LV2Value::from(4), *ctx.value_of("a").unwrap());
+        assert_eq!(LV2Value::from(8), *ctx.value_of("b").unwrap());
+        assert_eq!(LV2Value::from(0b10100000), *ctx.value_of("c").unwrap());
+        assert_eq!(LV2Value::from(0), *ctx.value_of("d").unwrap());
     }
 
     let (a, b, c, d) = &lv2_var!(a, b, c, d);
@@ -698,8 +701,8 @@ fn shift_values() {
 #[test]
 fn conditional_expression() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(true), *ctx.value_of("x").unwrap());
-        assert_eq!(Value::from(false), *ctx.value_of("y").unwrap());
+        assert_eq!(LV2Value::from(true), *ctx.value_of("x").unwrap());
+        assert_eq!(LV2Value::from(false), *ctx.value_of("y").unwrap());
     }
 
     let mut builder = LV2ModuleBuilder::new();
@@ -730,11 +733,11 @@ fn conditional_expression() {
 #[test]
 fn variable_scoping() {
     fn check(ctx: &mut Context) {
-        assert_eq!(Value::from(1), *ctx.value_of("x").unwrap());
+        assert_eq!(LV2Value::from(1), *ctx.value_of("x").unwrap());
 
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::from(2), *frame.value_of("x").unwrap());
-        assert_eq!(Value::from(true), *frame.value_of("y").unwrap());
+        assert_eq!(LV2Value::from(2), *frame.value_of("x").unwrap());
+        assert_eq!(LV2Value::from(true), *frame.value_of("y").unwrap());
     }
 
     let mut builder = LV2ModuleBuilder::new();
@@ -768,8 +771,8 @@ fn iterator_has_next() {
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
-        assert_eq!(Value::from(true), *ctx.value_of("y").unwrap());
-        assert_eq!(Value::from(false), *ctx.value_of("n").unwrap());
+        assert_eq!(LV2Value::from(true), *ctx.value_of("y").unwrap());
+        assert_eq!(LV2Value::from(false), *ctx.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -789,8 +792,8 @@ fn iterator_reverse() {
         .trigger(10);
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
-        assert_eq!(Value::from(1), *ctx.value_of("y").unwrap());
-        assert_eq!(Value::from(0), *ctx.value_of("n").unwrap());
+        assert_eq!(LV2Value::from(1), *ctx.value_of("y").unwrap());
+        assert_eq!(LV2Value::from(0), *ctx.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -813,7 +816,7 @@ fn iterators() {
 
     run_module_test(create_vm_with_std(), builder.build().unwrap(), |ctx| {
         let expected = vec![3, 2, 1];
-        assert_eq!(Value::from(expected), *ctx.value_of("y").unwrap());
+        assert_eq!(LV2Value::from(expected), *ctx.value_of("y").unwrap());
     })
     .unwrap();
 }

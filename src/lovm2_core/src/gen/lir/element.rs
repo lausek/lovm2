@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use crate::value::{Value, ValueType};
+use crate::value::{LV2Value, ValueType};
 use crate::var::LV2Variable;
 
 use super::{Label, Operator};
@@ -31,7 +31,7 @@ pub enum LirElement<'hir> {
     Operation(Operator),
     // CPush(u16)
     PushConstant {
-        value: Cow<'hir, Value>,
+        value: Cow<'hir, LV2Value>,
     },
     ScopeGlobal {
         ident: &'hir LV2Variable,
@@ -91,13 +91,13 @@ impl<'hir> LirElement<'hir> {
         }
     }
 
-    pub fn push_constant(value: &'hir Value) -> Self {
+    pub fn push_constant(value: &'hir LV2Value) -> Self {
         Self::PushConstant {
             value: Cow::Borrowed(value),
         }
     }
 
-    pub fn push_constant_owned(value: Value) -> Self {
+    pub fn push_constant_owned(value: LV2Value) -> Self {
         Self::PushConstant {
             value: Cow::Owned(value),
         }

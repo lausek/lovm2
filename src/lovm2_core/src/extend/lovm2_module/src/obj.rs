@@ -18,9 +18,9 @@ impl Object {
         let result = quote! {
             #ty
 
-            impl Into<Value> for #name {
-                fn into(self) -> Value {
-                    Value::create_any(self)
+            impl Into<lovm2_core::prelude::LV2Value> for #name {
+                fn into(self) -> lovm2_core::prelude::LV2Value {
+                    lovm2_core::prelude::LV2Value::create_any(self)
                 }
             }
         };

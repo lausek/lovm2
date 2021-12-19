@@ -2,7 +2,7 @@ use test_utils::*;
 
 use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
-use lovm2::value::Value;
+use lovm2::value::LV2Value;
 use lovm2::vm::Vm;
 
 #[test]
@@ -44,7 +44,7 @@ fn load_custom_module() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(2), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
@@ -74,14 +74,14 @@ fn import_from_scope() {
 
     run_module_test(vm, module, |ctx| {
         let frame = ctx.frame_mut().unwrap();
-        assert_eq!(Value::Int(2), *frame.value_of("n").unwrap());
+        assert_eq!(LV2Value::Int(2), *frame.value_of("n").unwrap());
     })
     .unwrap();
 }
 
 #[test]
 fn import_vice_versa() {
-    const PASSED_VALUE: Value = Value::Int(72);
+    const PASSED_VALUE: LV2Value = LV2Value::Int(72);
     let (n, result) = &lv2_var!(n, result);
 
     let mut builder = LV2ModuleBuilder::named("main");
@@ -158,8 +158,8 @@ fn main_has_no_entry_point() {
     let e = vm.add_main_module(module).err().unwrap();
     assert!(matches!(
         e,
-        Lovm2Error {
-            ty: Lovm2ErrorTy::NoEntryPoint,
+        LV2Error {
+            ty: LV2ErrorTy::NoEntryPoint,
             ..
         }
     ));
@@ -215,7 +215,7 @@ fn call_stdlib_functions() {
     let mut vm = create_vm_with_std();
 
     assert_eq!(
-        Value::from("a"),
+        LV2Value::from("a"),
         vm.call("trim", &["    a ".into()]).unwrap(),
     );
     assert!(vm.call("new_request", &["".into()]).is_ok());

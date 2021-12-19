@@ -9,7 +9,7 @@ mod stmt;
 mod expr;
 mod repeat;
 
-use crate::value::Value;
+use crate::value::LV2Value;
 use crate::var::LV2Variable;
 
 use super::*;
@@ -49,7 +49,7 @@ impl LV2Function {
     pub fn build<'hir, 'lir>(
         &'hir self,
         ru: &mut HirLoweringRuntime<'lir>,
-    ) -> Lovm2CompileResult<()>
+    ) -> LV2CompileResult<()>
     where
         'hir: 'lir,
     {

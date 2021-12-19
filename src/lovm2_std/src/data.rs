@@ -47,7 +47,7 @@ pub enum Method {
 }
 
 impl std::convert::TryFrom<String> for Method {
-    type Error = Lovm2Error;
+    type Error = LV2Error;
 
     fn try_from(mut from: String) -> Result<Self, Self::Error> {
         from.make_ascii_lowercase();

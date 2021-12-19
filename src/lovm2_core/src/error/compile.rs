@@ -1,11 +1,11 @@
 /// Compiletime error
 #[derive(Debug)]
-pub struct Lovm2CompileError {
+pub struct LV2CompileError {
     pub ty: Option<String>,
     pub msg: String,
 }
 
-impl<T> From<T> for Lovm2CompileError
+impl<T> From<T> for LV2CompileError
 where
     T: ToString,
 {

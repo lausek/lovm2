@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::code::{CallProtocol, CallableRef};
-use crate::value::Value;
+use crate::value::LV2Value;
 use crate::var::LV2Variable;
 
 use super::*;
@@ -21,13 +21,13 @@ pub struct Context {
     /// Starting point of execution.
     pub(super) entry: Option<Rc<dyn CallProtocol>>,
     /// Global variables that can be altered from every object.
-    pub(super) globals: HashMap<String, Value>,
+    pub(super) globals: HashMap<String, LV2Value>,
     /// Entries in this map can directly be called from `lovm2` bytecode.
     pub(super) scope: HashMap<LV2Variable, CallableRef>,
     /// Call stack that contains local variables and the amount of arguments passed.
     pub(super) lstack: Vec<Frame>,
     /// Value stack. This is where the computation happens.
-    pub(super) vstack: Vec<Value>,
+    pub(super) vstack: Vec<LV2Value>,
 }
 
 impl Context {
@@ -42,15 +42,15 @@ impl Context {
     }
 
     /// Try to resolve the given name to a callable
-    pub fn lookup_code_object(&self, name: &LV2Variable) -> Lovm2Result<CallableRef> {
+    pub fn lookup_code_object(&self, name: &LV2Variable) -> LV2Result<CallableRef> {
         self.scope
             .get(name)
             .cloned()
-            .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, name).into())
+            .ok_or_else(|| (LV2ErrorTy::LookupFailed, name).into())
     }
 
     /// Get a mutable reference to the value stack itself
-    pub fn stack_mut(&mut self) -> &mut Vec<Value> {
+    pub fn stack_mut(&mut self) -> &mut Vec<LV2Value> {
         &mut self.vstack
     }
 
@@ -60,14 +60,14 @@ impl Context {
     }
 
     /// Get a mutable reference to the last stack frame
-    pub fn frame_mut(&mut self) -> Lovm2Result<&mut Frame> {
+    pub fn frame_mut(&mut self) -> LV2Result<&mut Frame> {
         self.lstack
             .last_mut()
-            .ok_or_else(|| Lovm2ErrorTy::FrameStackEmpty.into())
+            .ok_or_else(|| LV2ErrorTy::FrameStackEmpty.into())
     }
 
     /// Set value of a global variable
-    pub fn set_global<T>(&mut self, var: T, val: Value)
+    pub fn set_global<T>(&mut self, var: T, val: LV2Value)
     where
         T: AsRef<str>,
     {
@@ -85,31 +85,31 @@ impl Context {
     }
 
     /// Put a new value on the stack
-    pub fn push_value(&mut self, value: Value) {
+    pub fn push_value(&mut self, value: LV2Value) {
         self.vstack.push(value);
     }
 
     /// Remove the last value on stack
-    pub fn pop_value(&mut self) -> Lovm2Result<Value> {
+    pub fn pop_value(&mut self) -> LV2Result<LV2Value> {
         self.vstack
             .pop()
-            .ok_or_else(|| Lovm2ErrorTy::ValueStackEmpty.into())
+            .ok_or_else(|| LV2ErrorTy::ValueStackEmpty.into())
     }
 
     /// Get a mutable reference to the last value on stack
-    pub fn last_value_mut(&mut self) -> Lovm2Result<&mut Value> {
+    pub fn last_value_mut(&mut self) -> LV2Result<&mut LV2Value> {
         self.vstack
             .last_mut()
-            .ok_or_else(|| Lovm2ErrorTy::ValueStackEmpty.into())
+            .ok_or_else(|| LV2ErrorTy::ValueStackEmpty.into())
     }
 
     /// Lookup a global value
-    pub fn value_of<T>(&self, var: T) -> Lovm2Result<&Value>
+    pub fn value_of<T>(&self, var: T) -> LV2Result<&LV2Value>
     where
         T: AsRef<str>,
     {
         self.globals
             .get(var.as_ref())
-            .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into())
+            .ok_or_else(|| (LV2ErrorTy::LookupFailed, var).into())
     }
 }

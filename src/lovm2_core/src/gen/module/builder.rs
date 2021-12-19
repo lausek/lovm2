@@ -80,12 +80,12 @@ impl LV2ModuleBuilder {
 
     /// Generate a module from the current data. This uses the default [CompileOptions] e.g.
     /// optimization is enabled.
-    pub fn build(&self) -> Lovm2CompileResult<LV2Module> {
+    pub fn build(&self) -> LV2CompileResult<LV2Module> {
         self.build_with_options(CompileOptions::default())
     }
 
     /// Generate a module from the current data but use custom compile options.
-    pub fn build_with_options(&self, options: CompileOptions) -> Lovm2CompileResult<LV2Module> {
+    pub fn build_with_options(&self, options: CompileOptions) -> LV2CompileResult<LV2Module> {
         use crate::gen::{NoOptimizer, StandardOptimizer};
 
         if options.optimize {
@@ -99,7 +99,7 @@ impl LV2ModuleBuilder {
         &self,
         options: CompileOptions,
         mut optimizer: impl Optimizer,
-    ) -> Lovm2CompileResult<LV2Module> {
+    ) -> LV2CompileResult<LV2Module> {
         let mut ru = HirLoweringRuntime::new(self.meta.clone(), options, &mut optimizer);
 
         // Main entry point must be at start (offset 0)

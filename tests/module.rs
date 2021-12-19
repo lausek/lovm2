@@ -4,7 +4,7 @@ use lovm2::code::CodeObject;
 use lovm2::create_vm_with_std;
 use lovm2::module::LV2Module;
 use lovm2::prelude::*;
-use lovm2::value::Value;
+use lovm2::value::LV2Value;
 
 const SERIALIZE_PATH: &str = "/tmp/hello-world.lovm2c";
 const DESERIALIZE_PATH: &str = "/tmp/assign-global.lovm2c";
@@ -47,7 +47,7 @@ fn deserialize_module() {
     vm.run().unwrap();
 
     let n = vm.context_mut().value_of(n).unwrap();
-    assert_eq!(Value::Int(10), *n);
+    assert_eq!(LV2Value::Int(10), *n);
 }
 
 #[test]

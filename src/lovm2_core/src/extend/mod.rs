@@ -99,11 +99,11 @@ pub const OPERATION_NOT_SUPPORTED: u8 = 7;
 pub const VALUE_STACK_EMPTY: u8 = 8;
 
 #[repr(C)]
-pub struct Lovm2CError {
+pub struct LV2CError {
     pub ty: u8,
 }
 
-impl From<u8> for Lovm2CError {
+impl From<u8> for LV2CError {
     fn from(ty: u8) -> Self {
         Self { ty }
     }

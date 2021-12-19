@@ -4,20 +4,20 @@ mod compile;
 mod methods;
 mod ty;
 
-pub use self::compile::Lovm2CompileError;
+pub use self::compile::LV2CompileError;
 pub use self::methods::*;
-pub use self::ty::Lovm2ErrorTy;
+pub use self::ty::LV2ErrorTy;
 
 /// Runtime Result
-pub type Lovm2Result<T> = Result<T, Lovm2Error>;
+pub type LV2Result<T> = Result<T, LV2Error>;
 /// Compile Result
-pub type Lovm2CompileResult<T> = Result<T, Lovm2CompileError>;
+pub type LV2CompileResult<T> = Result<T, LV2CompileError>;
 
 // TODO: format output/display; only output first backtrace line that starts with `lovm2`
 /// Runtime Error
 #[derive(Debug)]
-pub struct Lovm2Error {
-    pub ty: Lovm2ErrorTy,
+pub struct LV2Error {
+    pub ty: LV2ErrorTy,
     pub msg: String,
     pub inx_offsets: Vec<usize>,
 
@@ -25,8 +25,8 @@ pub struct Lovm2Error {
     pub trace: backtrace::Backtrace,
 }
 
-impl From<Lovm2ErrorTy> for Lovm2Error {
-    fn from(ty: Lovm2ErrorTy) -> Self {
+impl From<LV2ErrorTy> for LV2Error {
+    fn from(ty: LV2ErrorTy) -> Self {
         Self {
             ty,
             ..Self::default()
@@ -34,20 +34,20 @@ impl From<Lovm2ErrorTy> for Lovm2Error {
     }
 }
 
-impl From<std::io::Error> for Lovm2Error {
+impl From<std::io::Error> for LV2Error {
     fn from(e: std::io::Error) -> Self {
         Self {
-            ty: Lovm2ErrorTy::Custom(format!("{}", e)),
+            ty: LV2ErrorTy::Custom(format!("{}", e)),
             ..Self::default()
         }
     }
 }
 
-impl<T> From<(Lovm2ErrorTy, T)> for Lovm2Error
+impl<T> From<(LV2ErrorTy, T)> for LV2Error
 where
     T: AsRef<str>,
 {
-    fn from(descr: (Lovm2ErrorTy, T)) -> Self {
+    fn from(descr: (LV2ErrorTy, T)) -> Self {
         Self {
             ty: descr.0,
             msg: descr.1.as_ref().to_string(),
@@ -56,27 +56,27 @@ where
     }
 }
 
-impl From<(String, String)> for Lovm2Error {
+impl From<(String, String)> for LV2Error {
     fn from(f: (String, String)) -> Self {
         Self {
-            ty: Lovm2ErrorTy::Custom(f.0),
+            ty: LV2ErrorTy::Custom(f.0),
             msg: f.1,
             ..Self::default()
         }
     }
 }
 
-impl From<String> for Lovm2Error {
+impl From<String> for LV2Error {
     fn from(msg: String) -> Self {
         Self {
-            ty: Lovm2ErrorTy::Basic,
+            ty: LV2ErrorTy::Basic,
             msg,
             ..Self::default()
         }
     }
 }
 
-impl std::fmt::Display for Lovm2Error {
+impl std::fmt::Display for LV2Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "{}: {}", self.ty, self.msg)?;
 
@@ -94,10 +94,10 @@ impl std::fmt::Display for Lovm2Error {
     }
 }
 
-impl Default for Lovm2Error {
+impl Default for LV2Error {
     fn default() -> Self {
         Self {
-            ty: Lovm2ErrorTy::Basic,
+            ty: LV2ErrorTy::Basic,
             msg: String::new(),
             inx_offsets: vec![],
 

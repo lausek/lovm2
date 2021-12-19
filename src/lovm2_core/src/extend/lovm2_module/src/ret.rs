@@ -43,7 +43,7 @@ impl FunctionRet {
             Self::Result(ty) => {
                 let ty = ty.as_tokens();
 
-                quote! { Lovm2Result<#ty> }
+                quote! { LV2Result<#ty> }
             }
         }
     }
@@ -61,7 +61,7 @@ impl FunctionRet {
 
                 quote! {
                     #raise_error
-                    let val: Value = #ident.into();
+                    let val: LV2Value = #ident.into();
                     vm.context_mut().push_value(val);
                     Ok(())
                 }
@@ -71,17 +71,17 @@ impl FunctionRet {
 
                 quote! {
                     if let Some(val) = #ident {
-                        let val: Value = val.into();
+                        let val: LV2Value = val.into();
                         vm.context_mut().push_value(val);
                     } else {
-                        vm.context_mut().push_value(Value::Nil);
+                        vm.context_mut().push_value(LV2Value::Nil);
                     }
                     Ok(())
                 }
             }
             Self::None => {
                 quote! {
-                    vm.context_mut().push_value(Value::Nil);
+                    vm.context_mut().push_value(LV2Value::Nil);
                     Ok(())
                 }
             }
@@ -94,8 +94,8 @@ impl std::fmt::Display for FunctionRet {
         match self {
             Self::None => write!(f, "()"),
             Self::Ident(name) => write!(f, "{}", name),
-            Self::Maybe(ty) => write!(f, "Option<{}>", *ty),
-            Self::Result(ty) => write!(f, "Lovm2Result<{}>", *ty),
+            Self::Maybe(ty) => write!(f, "{}<{}>", stringify!(Option), *ty),
+            Self::Result(ty) => write!(f, "{}<{}>", stringify!(LV2Result), *ty),
         }
     }
 }
@@ -121,8 +121,8 @@ pub(crate) fn accept_type(ty: &syn::Type) -> GenResult<FunctionRet> {
                     };
 
                 let rt = match segment.ident.to_string().as_ref() {
-                    "Option" => FunctionRet::Maybe(Box::new(ty_arg.unwrap())),
-                    "Lovm2Result" => FunctionRet::Result(Box::new(ty_arg.unwrap())),
+                    stringify!(Option) => FunctionRet::Maybe(Box::new(ty_arg.unwrap())),
+                    stringify!(LV2Result) => FunctionRet::Result(Box::new(ty_arg.unwrap())),
                     _ => FunctionRet::Ident(segment.ident.clone()),
                 };
 

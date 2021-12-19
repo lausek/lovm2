@@ -1,9 +1,9 @@
 use super::*;
 
 #[lovm2_function]
-fn all(collection: &Value) -> Lovm2Result<bool> {
+fn all(collection: &LV2Value) -> LV2Result<bool> {
     match collection {
-        Value::List(ls) => {
+        LV2Value::List(ls) => {
             for item in ls.iter() {
                 if !item.as_bool_inner()? {
                     return Ok(false);
@@ -16,9 +16,9 @@ fn all(collection: &Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn any(collection: &Value) -> Lovm2Result<bool> {
+fn any(collection: &LV2Value) -> LV2Result<bool> {
     match collection {
-        Value::List(ls) => {
+        LV2Value::List(ls) => {
             for item in ls.iter() {
                 if item.as_bool_inner()? {
                     return Ok(true);
@@ -31,9 +31,9 @@ fn any(collection: &Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn append(collection: &mut Value, value: Value) -> Lovm2Result<()> {
+fn append(collection: &mut LV2Value, value: LV2Value) -> LV2Result<()> {
     match collection {
-        Value::List(ls) => {
+        LV2Value::List(ls) => {
             ls.push(value);
             Ok(())
         }
@@ -42,10 +42,10 @@ fn append(collection: &mut Value, value: Value) -> Lovm2Result<()> {
 }
 
 #[lovm2_function]
-fn contains(haystack: &Value, needle: Value) -> Lovm2Result<bool> {
+fn contains(haystack: &LV2Value, needle: LV2Value) -> LV2Result<bool> {
     match haystack {
-        Value::Dict(_) => Ok(haystack.get(&needle).is_ok()),
-        Value::List(ls) => {
+        LV2Value::Dict(_) => Ok(haystack.get(&needle).is_ok()),
+        LV2Value::List(ls) => {
             let mut found = false;
 
             for item in ls.iter() {
@@ -57,7 +57,7 @@ fn contains(haystack: &Value, needle: Value) -> Lovm2Result<bool> {
 
             Ok(found)
         }
-        Value::Str(s) => {
+        LV2Value::Str(s) => {
             let needle = needle.as_str_inner()?;
 
             Ok(s.contains(&needle))
@@ -67,17 +67,17 @@ fn contains(haystack: &Value, needle: Value) -> Lovm2Result<bool> {
 }
 
 #[lovm2_function]
-fn deep_clone(val: Value) -> Value {
+fn deep_clone(val: LV2Value) -> LV2Value {
     val.deep_clone()
 }
 
 #[lovm2_function]
-fn delete(collection: &mut Value, key: Value) -> Lovm2Result<bool> {
+fn delete(collection: &mut LV2Value, key: LV2Value) -> LV2Result<bool> {
     collection.delete(&key).map(|_| true)
 }
 
 #[lovm2_function]
-fn filter(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Value> {
+fn filter(vm: &mut Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
 
@@ -92,16 +92,16 @@ fn filter(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Val
         }
     }
 
-    Ok(box_value(Value::List(ls)))
+    Ok(box_value(LV2Value::List(ls)))
 }
 
 #[lovm2_function]
-fn get(collection: &Value, key: Value) -> Lovm2Result<Value> {
+fn get(collection: &LV2Value, key: LV2Value) -> LV2Result<LV2Value> {
     collection.get(&key)
 }
 
 #[lovm2_function]
-fn map(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Value> {
+fn map(vm: &mut Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
 
@@ -112,41 +112,41 @@ fn map(vm: &mut Vm, collection: &Value, func_name: String) -> Lovm2Result<Value>
         ls.push(result);
     }
 
-    Ok(box_value(Value::List(ls)))
+    Ok(box_value(LV2Value::List(ls)))
 }
 
 #[lovm2_function]
-fn set(collection: &mut Value, key: Value, val: Value) -> Lovm2Result<bool> {
+fn set(collection: &mut LV2Value, key: LV2Value, val: LV2Value) -> LV2Result<bool> {
     collection.set(&key, val).map(|_| true)
 }
 
 #[lovm2_function]
-fn sort(collection: &Value) -> Lovm2Result<Value> {
+fn sort(collection: &LV2Value) -> LV2Result<LV2Value> {
     let sorted = match collection {
-        Value::Str(s) => {
+        LV2Value::Str(s) => {
             let mut cs: Vec<char> = s.chars().collect();
 
             cs.sort_unstable();
 
             let sorted: String = cs.into_iter().collect();
 
-            Value::from(sorted)
+            LV2Value::from(sorted)
         }
-        Value::List(ls) => {
-            let mut ls: Vec<Value> = ls.iter().map(Value::deep_clone).collect();
+        LV2Value::List(ls) => {
+            let mut ls: Vec<LV2Value> = ls.iter().map(LV2Value::deep_clone).collect();
 
             ls.sort();
 
-            box_value(Value::from(ls))
+            box_value(LV2Value::from(ls))
         }
-        Value::Dict(_) => {
+        LV2Value::Dict(_) => {
             let mut d = collection.deep_clone();
 
             d.unref_inplace()?;
 
-            if let Value::Dict(mut d) = d {
+            if let LV2Value::Dict(mut d) = d {
                 d.sort_keys();
-                box_value(Value::Dict(d))
+                box_value(LV2Value::Dict(d))
             } else {
                 unreachable!()
             }

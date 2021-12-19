@@ -2,13 +2,13 @@
 
 use std::cmp::Ordering;
 
-use super::Value::*;
+use super::LV2Value::*;
 use super::*;
 
-impl std::ops::Add for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Add for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn add(self, other: Value) -> Self::Output {
+    fn add(self, other: LV2Value) -> Self::Output {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a + b)),
             (Float(a), Float(b)) => Ok(Float(a + b)),
@@ -21,10 +21,10 @@ impl std::ops::Add for Value {
     }
 }
 
-impl std::ops::Sub for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Sub for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn sub(self, other: Value) -> Lovm2Result<Value> {
+    fn sub(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a - b)),
             (Float(a), Float(b)) => Ok(Float(a - b)),
@@ -37,10 +37,10 @@ impl std::ops::Sub for Value {
     }
 }
 
-impl std::ops::Mul for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Mul for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn mul(self, other: Value) -> Lovm2Result<Value> {
+    fn mul(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a * b)),
             (Float(a), Float(b)) => Ok(Float(a * b)),
@@ -52,10 +52,10 @@ impl std::ops::Mul for Value {
     }
 }
 
-impl std::ops::Div for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Div for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn div(self, other: Value) -> Lovm2Result<Value> {
+    fn div(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a / b)),
             (Float(a), Float(b)) => Ok(Float(a / b)),
@@ -68,10 +68,10 @@ impl std::ops::Div for Value {
     }
 }
 
-impl std::ops::Rem for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Rem for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn rem(self, other: Value) -> Lovm2Result<Value> {
+    fn rem(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a % b)),
             (Float(a), Float(b)) => Ok(Float(a % b)),
@@ -84,10 +84,10 @@ impl std::ops::Rem for Value {
     }
 }
 
-impl std::ops::Shl for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Shl for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn shl(self, other: Value) -> Lovm2Result<Value> {
+    fn shl(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a << b)),
             _ => err_not_supported(),
@@ -95,10 +95,10 @@ impl std::ops::Shl for Value {
     }
 }
 
-impl std::ops::Shr for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Shr for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn shr(self, other: Value) -> Lovm2Result<Value> {
+    fn shr(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Int(a), Int(b)) => Ok(Int(a >> b)),
             _ => err_not_supported(),
@@ -106,10 +106,10 @@ impl std::ops::Shr for Value {
     }
 }
 
-impl std::ops::BitAnd for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::BitAnd for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn bitand(self, other: Value) -> Lovm2Result<Value> {
+    fn bitand(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Bool(a), Bool(b)) => Ok(Bool(a && b)),
             (Int(a), Int(b)) => Ok(Int(a & b)),
@@ -118,10 +118,10 @@ impl std::ops::BitAnd for Value {
     }
 }
 
-impl std::ops::BitOr for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::BitOr for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn bitor(self, other: Value) -> Lovm2Result<Value> {
+    fn bitor(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Bool(a), Bool(b)) => Ok(Bool(a || b)),
             (Int(a), Int(b)) => Ok(Int(a | b)),
@@ -130,10 +130,10 @@ impl std::ops::BitOr for Value {
     }
 }
 
-impl std::ops::BitXor for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::BitXor for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn bitxor(self, other: Value) -> Lovm2Result<Value> {
+    fn bitxor(self, other: LV2Value) -> LV2Result<LV2Value> {
         match (self, other) {
             (Bool(a), Bool(b)) => Ok(Bool(a ^ b)),
             (Int(a), Int(b)) => Ok(Int(a ^ b)),
@@ -142,10 +142,10 @@ impl std::ops::BitXor for Value {
     }
 }
 
-impl std::ops::Not for Value {
-    type Output = Lovm2Result<Value>;
+impl std::ops::Not for LV2Value {
+    type Output = LV2Result<LV2Value>;
 
-    fn not(self) -> Lovm2Result<Value> {
+    fn not(self) -> LV2Result<LV2Value> {
         match self {
             Bool(a) => Ok(Bool(!a)),
             Int(a) => Ok(Int(!a)),
@@ -154,8 +154,8 @@ impl std::ops::Not for Value {
     }
 }
 
-impl Value {
-    pub fn pow(&self, exp: Value) -> Lovm2Result<Value> {
+impl LV2Value {
+    pub fn pow(&self, exp: LV2Value) -> LV2Result<LV2Value> {
         let exp = exp.as_integer_inner()?;
         match self {
             Int(base) => Ok(Int(base.pow(exp as u32))),
@@ -165,8 +165,8 @@ impl Value {
     }
 }
 
-impl std::cmp::PartialEq for Value {
-    fn eq(&self, rhs: &Value) -> bool {
+impl std::cmp::PartialEq for LV2Value {
+    fn eq(&self, rhs: &LV2Value) -> bool {
         match (self, rhs) {
             (Nil, Nil) => true,
             (Bool(a), Bool(b)) => a == b,
@@ -182,8 +182,8 @@ impl std::cmp::PartialEq for Value {
     }
 }
 
-impl std::cmp::PartialOrd for Value {
-    fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
+impl std::cmp::PartialOrd for LV2Value {
+    fn partial_cmp(&self, other: &LV2Value) -> Option<Ordering> {
         match (self, other) {
             (Ref(a), b) => a.borrow().unwrap().partial_cmp(b),
             (a, Ref(b)) => a.partial_cmp(&b.borrow().unwrap()),
@@ -198,8 +198,8 @@ impl std::cmp::PartialOrd for Value {
     }
 }
 
-impl std::cmp::Ord for Value {
-    fn cmp(&self, other: &Value) -> Ordering {
+impl std::cmp::Ord for LV2Value {
+    fn cmp(&self, other: &LV2Value) -> Ordering {
         self.partial_cmp(other).unwrap_or(Ordering::Equal)
     }
 }

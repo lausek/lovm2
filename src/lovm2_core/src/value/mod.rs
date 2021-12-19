@@ -25,9 +25,9 @@ pub type AnyRef = Rc<RefCell<Handle>>;
 pub type ValueRef = Reference;
 
 /// Wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
-pub fn box_value(value: Value) -> Value {
+pub fn box_value(value: LV2Value) -> LV2Value {
     let outer = match value {
-        Value::Dict(d) => {
+        LV2Value::Dict(d) => {
             let mut hm = IndexMap::new();
 
             for (key, val) in d.into_iter() {
@@ -38,9 +38,9 @@ pub fn box_value(value: Value) -> Value {
                 }
             }
 
-            Value::Dict(hm)
+            LV2Value::Dict(hm)
         }
-        Value::List(l) => Value::List(
+        LV2Value::List(l) => LV2Value::List(
             l.into_iter()
                 .map(|val| if val.is_ref() { val } else { box_value(val) })
                 .collect::<Vec<_>>(),
@@ -48,20 +48,20 @@ pub fn box_value(value: Value) -> Value {
         value => value,
     };
 
-    Value::Ref(Reference::from(outer))
+    LV2Value::Ref(Reference::from(outer))
 }
 
 /// Runtime representation of values
 #[derive(Clone, Deserialize, Serialize)]
-pub enum Value {
+pub enum LV2Value {
     Nil,
     Bool(bool),
     Int(i64),
     Float(f64),
     Str(String),
     #[serde(with = "indexmap::serde_seq")]
-    Dict(IndexMap<Value, Value>),
-    List(Vec<Value>),
+    Dict(IndexMap<LV2Value, LV2Value>),
+    List(Vec<LV2Value>),
     Ref(Reference),
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -71,20 +71,20 @@ pub enum Value {
     Any(AnyRef),
 }
 
-impl Value {
+impl LV2Value {
     /// Append a new item to the value.
-    pub fn append(&mut self, mut val: Value) -> Lovm2Result<()> {
+    pub fn append(&mut self, mut val: LV2Value) -> LV2Result<()> {
         if !val.is_ref() {
             val = box_value(val);
         }
 
         match self {
-            Value::List(list) => {
+            LV2Value::List(list) => {
                 list.push(val);
                 Ok(())
             }
-            Value::Ref(r) => r.borrow_mut()?.append(val),
-            _ => Err((Lovm2ErrorTy::OperationNotSupported, "append").into()),
+            LV2Value::Ref(r) => r.borrow_mut()?.append(val),
+            _ => Err((LV2ErrorTy::OperationNotSupported, "append").into()),
         }
     }
     /// Create a `Handle` to the given value.
@@ -92,14 +92,14 @@ impl Value {
     where
         T: std::any::Any,
     {
-        Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
+        LV2Value::Any(Rc::new(RefCell::new(Handle(Box::new(from)))))
     }
 
     /// If the current value is an instance of `Ref`, this function
     /// will return an owned clone of the innermost value. If the value
     /// is not a reference, this is just a clone.
-    pub fn clone_inner(&self) -> Lovm2Result<Value> {
-        if let Value::Ref(r) = self {
+    pub fn clone_inner(&self) -> LV2Result<LV2Value> {
+        if let LV2Value::Ref(r) = self {
             Ok(r.unref_to_value()?.borrow().clone())
         } else {
             Ok(self.clone())
@@ -108,8 +108,8 @@ impl Value {
 
     /// Ensure that the value is not wrapped in a reference.
     /// This is used for stack mutations as first operand.
-    pub fn unref_inplace(&mut self) -> Lovm2Result<()> {
-        if let Value::Ref(r) = self {
+    pub fn unref_inplace(&mut self) -> LV2Result<()> {
+        if let LV2Value::Ref(r) = self {
             *self = r.unref_to_value()?.borrow().clone();
         }
         Ok(())
@@ -117,12 +117,12 @@ impl Value {
 
     /// Returns true if the value is a reference.
     pub fn is_ref(&self) -> bool {
-        matches!(self, Value::Ref(_))
+        matches!(self, LV2Value::Ref(_))
     }
 
     /// Create an iterator from the value. This will return
     /// an error if the value does not support iteration.
-    pub fn iter(&self) -> Lovm2Result<iter::Iter> {
+    pub fn iter(&self) -> LV2Result<iter::Iter> {
         iter::Iter::try_from(self.clone())
     }
 
@@ -131,8 +131,8 @@ impl Value {
     /// as well as `Ref`.
     pub fn deep_clone(&self) -> Self {
         match self {
-            Value::Dict(d) => {
-                let mut dc = Value::dict();
+            LV2Value::Dict(d) => {
+                let mut dc = LV2Value::dict();
 
                 for (key, val) in d.iter() {
                     dc.set(&key.clone(), val.clone()).unwrap();
@@ -140,43 +140,43 @@ impl Value {
 
                 box_value(dc)
             }
-            Value::List(ls) => {
+            LV2Value::List(ls) => {
                 let ls = ls.iter().map(Self::deep_clone).collect();
 
-                box_value(Value::List(ls))
+                box_value(LV2Value::List(ls))
             }
-            Value::Ref(r) => Value::Ref(r.deep_clone()),
+            LV2Value::Ref(r) => LV2Value::Ref(r.deep_clone()),
             _ => self.clone(),
         }
     }
 
     /// Delete an item from a value by key.
-    pub fn delete(&mut self, key: &Value) -> Lovm2Result<()> {
+    pub fn delete(&mut self, key: &LV2Value) -> LV2Result<()> {
         match self {
-            Value::Dict(dict) => {
+            LV2Value::Dict(dict) => {
                 dict.remove(key);
             }
-            Value::List(list) => {
+            LV2Value::List(list) => {
                 let key = key.as_integer_inner()?;
 
                 list.remove(key as usize);
             }
-            Value::Ref(r) => r.borrow_mut()?.delete(key)?,
-            _ => return Err((Lovm2ErrorTy::OperationNotSupported, "delete").into()),
+            LV2Value::Ref(r) => r.borrow_mut()?.delete(key)?,
+            _ => return Err((LV2ErrorTy::OperationNotSupported, "delete").into()),
         }
         Ok(())
     }
 
     /// Retrieve an item by key.
-    pub fn get(&self, key: &Value) -> Lovm2Result<Value> {
+    pub fn get(&self, key: &LV2Value) -> LV2Result<LV2Value> {
         match self {
-            Value::Str(_) => self.get_by_index(key.as_integer_inner()? as usize),
-            Value::Dict(dict) => match dict.get(key) {
+            LV2Value::Str(_) => self.get_by_index(key.as_integer_inner()? as usize),
+            LV2Value::Dict(dict) => match dict.get(key) {
                 Some(val) => Ok(val.clone()),
                 None => err_key_not_found(self, &key)?,
             },
-            Value::List(list) => {
-                if let Value::Int(idx) = key.as_integer()? {
+            LV2Value::List(list) => {
+                if let LV2Value::Int(idx) = key.as_integer()? {
                     match list.get(idx as usize) {
                         Some(val) => Ok(val.clone()),
                         None => err_key_not_found(self, &key)?,
@@ -185,55 +185,55 @@ impl Value {
                     unreachable!()
                 }
             }
-            Value::Ref(r) => r.borrow()?.get(key),
-            _ => Err((Lovm2ErrorTy::OperationNotSupported, "get").into()),
+            LV2Value::Ref(r) => r.borrow()?.get(key),
+            _ => Err((LV2ErrorTy::OperationNotSupported, "get").into()),
         }
     }
 
     /// Get an item by a number. This is mainly used for iteration.
-    pub fn get_by_index(&self, idx: usize) -> Lovm2Result<Value> {
+    pub fn get_by_index(&self, idx: usize) -> LV2Result<LV2Value> {
         match self {
-            Value::Str(s) => s
+            LV2Value::Str(s) => s
                 .chars()
                 .nth(idx)
-                .map(Value::from)
-                .ok_or_else(|| (Lovm2ErrorTy::KeyNotFound, idx.to_string()).into()),
-            Value::Dict(dict) => dict
+                .map(LV2Value::from)
+                .ok_or_else(|| (LV2ErrorTy::KeyNotFound, idx.to_string()).into()),
+            LV2Value::Dict(dict) => dict
                 .get_index(idx)
-                .map(|(key, val)| box_value(Value::List(vec![key.clone(), val.clone()])))
-                .ok_or_else(|| (Lovm2ErrorTy::KeyNotFound, idx.to_string()).into()),
-            Value::List(list) => list
+                .map(|(key, val)| box_value(LV2Value::List(vec![key.clone(), val.clone()])))
+                .ok_or_else(|| (LV2ErrorTy::KeyNotFound, idx.to_string()).into()),
+            LV2Value::List(list) => list
                 .get(idx)
                 .cloned()
-                .ok_or_else(|| (Lovm2ErrorTy::KeyNotFound, idx.to_string()).into()),
-            Value::Ref(r) => r.borrow()?.get_by_index(idx),
-            _ => Err((Lovm2ErrorTy::OperationNotSupported, "get_by_index").into()),
+                .ok_or_else(|| (LV2ErrorTy::KeyNotFound, idx.to_string()).into()),
+            LV2Value::Ref(r) => r.borrow()?.get_by_index(idx),
+            _ => Err((LV2ErrorTy::OperationNotSupported, "get_by_index").into()),
         }
     }
 
     /// Retrieve the length of the value.
-    pub fn len(&self) -> Lovm2Result<usize> {
+    pub fn len(&self) -> LV2Result<usize> {
         match self {
-            Value::Str(s) => Ok(s.len()),
-            Value::Dict(dict) => Ok(dict.len()),
-            Value::List(list) => Ok(list.len()),
-            Value::Ref(r) => r.borrow()?.len(),
-            _ => Err((Lovm2ErrorTy::OperationNotSupported, "len").into()),
+            LV2Value::Str(s) => Ok(s.len()),
+            LV2Value::Dict(dict) => Ok(dict.len()),
+            LV2Value::List(list) => Ok(list.len()),
+            LV2Value::Ref(r) => r.borrow()?.len(),
+            _ => Err((LV2ErrorTy::OperationNotSupported, "len").into()),
         }
     }
 
     /// Insert a new item into the value.
-    pub fn set(&mut self, key: &Value, mut val: Value) -> Lovm2Result<()> {
+    pub fn set(&mut self, key: &LV2Value, mut val: LV2Value) -> LV2Result<()> {
         if !val.is_ref() {
             val = box_value(val);
         }
 
         match self {
-            Value::Dict(dict) => {
+            LV2Value::Dict(dict) => {
                 dict.insert(key.clone(), val);
                 Ok(())
             }
-            Value::List(list) => {
+            LV2Value::List(list) => {
                 let idx = key.as_integer_inner()?;
 
                 if list.len() == idx as usize {
@@ -244,13 +244,13 @@ impl Value {
 
                 Ok(())
             }
-            Value::Ref(r) => r.borrow_mut()?.set(key, val),
-            _ => Err((Lovm2ErrorTy::OperationNotSupported, "set").into()),
+            LV2Value::Ref(r) => r.borrow_mut()?.set(key, val),
+            _ => Err((LV2ErrorTy::OperationNotSupported, "set").into()),
         }
     }
 }
 
-impl Value {
+impl LV2Value {
     /// Create a new instance of `Dict`.
     pub fn dict() -> Self {
         Self::Dict(IndexMap::new())
@@ -262,22 +262,22 @@ impl Value {
     }
 }
 
-impl std::cmp::Eq for Value {}
+impl std::cmp::Eq for LV2Value {}
 
-impl std::hash::Hash for Value {
+impl std::hash::Hash for LV2Value {
     fn hash<H>(&self, hasher: &mut H)
     where
         H: std::hash::Hasher,
     {
         match self {
-            Value::Nil => unimplemented!(),
-            Value::Bool(b) => hasher.write_u8(*b as u8),
-            Value::Int(n) => hasher.write_i64(*n),
-            Value::Float(_) => unimplemented!(),
-            Value::Str(s) => hasher.write(s.as_bytes()),
-            Value::Dict(_) => unimplemented!(),
-            Value::List(_) => unimplemented!(),
-            Value::Ref(r) => {
+            LV2Value::Nil => unimplemented!(),
+            LV2Value::Bool(b) => hasher.write_u8(*b as u8),
+            LV2Value::Int(n) => hasher.write_i64(*n),
+            LV2Value::Float(_) => unimplemented!(),
+            LV2Value::Str(s) => hasher.write(s.as_bytes()),
+            LV2Value::Dict(_) => unimplemented!(),
+            LV2Value::List(_) => unimplemented!(),
+            LV2Value::Ref(r) => {
                 let r = r.borrow().unwrap();
                 r.hash(hasher);
             }
@@ -286,15 +286,15 @@ impl std::hash::Hash for Value {
     }
 }
 
-impl std::fmt::Display for Value {
+impl std::fmt::Display for LV2Value {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Value::Nil => write!(f, "Nil"),
-            Value::Bool(b) => write!(f, "{}", b),
-            Value::Int(n) => write!(f, "{}", n),
-            Value::Float(n) => write!(f, "{}", n),
-            Value::Str(s) => write!(f, "{}", s),
-            Value::Dict(d) => write!(
+            LV2Value::Nil => write!(f, "Nil"),
+            LV2Value::Bool(b) => write!(f, "{}", b),
+            LV2Value::Int(n) => write!(f, "{}", n),
+            LV2Value::Float(n) => write!(f, "{}", n),
+            LV2Value::Str(s) => write!(f, "{}", s),
+            LV2Value::Dict(d) => write!(
                 f,
                 "{{{}}}",
                 d.iter()
@@ -302,7 +302,7 @@ impl std::fmt::Display for Value {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            Value::List(ls) => write!(
+            LV2Value::List(ls) => write!(
                 f,
                 "[{}]",
                 ls.iter()
@@ -310,107 +310,107 @@ impl std::fmt::Display for Value {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            Value::Ref(r) => write!(f, "{}", r),
-            Value::Iter(it) => write!(f, "{}", it.borrow()),
-            Value::Any(_) => write!(f, "Handle"),
+            LV2Value::Ref(r) => write!(f, "{}", r),
+            LV2Value::Iter(it) => write!(f, "{}", it.borrow()),
+            LV2Value::Any(_) => write!(f, "Handle"),
         }
     }
 }
 
-impl From<()> for Value {
+impl From<()> for LV2Value {
     fn from(_: ()) -> Self {
-        Value::Nil
+        LV2Value::Nil
     }
 }
 
-impl From<bool> for Value {
+impl From<bool> for LV2Value {
     fn from(b: bool) -> Self {
-        Value::Bool(b)
+        LV2Value::Bool(b)
     }
 }
 
-impl From<char> for Value {
+impl From<char> for LV2Value {
     fn from(c: char) -> Self {
-        Value::Str(c.to_string())
+        LV2Value::Str(c.to_string())
     }
 }
 
-impl From<i64> for Value {
+impl From<i64> for LV2Value {
     fn from(n: i64) -> Self {
-        Value::Int(n)
+        LV2Value::Int(n)
     }
 }
 
-impl From<f64> for Value {
+impl From<f64> for LV2Value {
     fn from(n: f64) -> Self {
-        Value::Float(n)
+        LV2Value::Float(n)
     }
 }
 
-impl From<&str> for Value {
+impl From<&str> for LV2Value {
     fn from(s: &str) -> Self {
-        Value::Str(s.to_string())
+        LV2Value::Str(s.to_string())
     }
 }
 
-impl From<String> for Value {
+impl From<String> for LV2Value {
     fn from(s: String) -> Self {
-        Value::Str(s)
+        LV2Value::Str(s)
     }
 }
 
-impl<T> From<Vec<T>> for Value
+impl<T> From<Vec<T>> for LV2Value
 where
-    T: Into<Value>,
+    T: Into<LV2Value>,
 {
     fn from(val: Vec<T>) -> Self {
-        Value::List(val.into_iter().map(T::into).collect())
+        LV2Value::List(val.into_iter().map(T::into).collect())
     }
 }
 
-impl From<Iter> for Value {
+impl From<Iter> for LV2Value {
     fn from(it: Iter) -> Self {
-        Value::Iter(Rc::new(RefCell::new(it)))
+        LV2Value::Iter(Rc::new(RefCell::new(it)))
     }
 }
 
-impl Into<bool> for Value {
+impl Into<bool> for LV2Value {
     fn into(self) -> bool {
         self.as_bool_inner().unwrap()
     }
 }
 
-impl Into<i64> for Value {
+impl Into<i64> for LV2Value {
     fn into(self) -> i64 {
         self.as_integer_inner().unwrap()
     }
 }
 
-impl Into<f64> for Value {
+impl Into<f64> for LV2Value {
     fn into(self) -> f64 {
         self.as_float_inner().unwrap()
     }
 }
 
-impl Into<String> for Value {
+impl Into<String> for LV2Value {
     fn into(self) -> String {
         self.as_str_inner().unwrap()
     }
 }
 
-impl std::fmt::Debug for Value {
+impl std::fmt::Debug for LV2Value {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            Value::Nil => write!(f, "Nil"),
-            Value::Bool(b) => write!(f, "Bool({:?})", b),
-            Value::Int(n) => write!(f, "Int({:?})", n),
-            Value::Float(n) => write!(f, "Float({:?})", n),
-            Value::Str(s) => write!(f, "Str({:?})", s),
-            Value::Dict(m) => write!(f, "Dict({:?})", m),
-            Value::List(ls) => write!(f, "List({:?})", ls),
-            Value::Ref(r) => write!(f, "{:?}", r),
-            Value::Iter(it) => write!(f, "{:?}", it),
-            Value::Any(_) => write!(f, "Handle"),
+            LV2Value::Nil => write!(f, "Nil"),
+            LV2Value::Bool(b) => write!(f, "Bool({:?})", b),
+            LV2Value::Int(n) => write!(f, "Int({:?})", n),
+            LV2Value::Float(n) => write!(f, "Float({:?})", n),
+            LV2Value::Str(s) => write!(f, "Str({:?})", s),
+            LV2Value::Dict(m) => write!(f, "Dict({:?})", m),
+            LV2Value::List(ls) => write!(f, "List({:?})", ls),
+            LV2Value::Ref(r) => write!(f, "{:?}", r),
+            LV2Value::Iter(it) => write!(f, "{:?}", it),
+            LV2Value::Any(_) => write!(f, "Handle"),
         }
     }
 }

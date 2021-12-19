@@ -122,19 +122,19 @@ pub fn create_std_module() -> LV2Module {
     module
 }
 
-pub fn input(vm: &mut Vm) -> Lovm2Result<()> {
+pub fn input(vm: &mut Vm) -> LV2Result<()> {
     use std::io::stdin;
 
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
 
-    vm.context_mut().push_value(Value::Str(input));
+    vm.context_mut().push_value(LV2Value::Str(input));
 
     Ok(())
 }
 
 #[lovm2_function]
-fn len(val: &Value) -> Lovm2Result<i64> {
+fn len(val: &LV2Value) -> LV2Result<i64> {
     val.as_any_inner()
         .and_then(|any| {
             if let Some(buf) = any.borrow().0.downcast_ref::<Buffer>() {
@@ -151,7 +151,7 @@ fn len(val: &Value) -> Lovm2Result<i64> {
         .or_else(|_| val.len().map(|n| n as i64))
 }
 
-pub fn print(vm: &mut Vm) -> Lovm2Result<()> {
+pub fn print(vm: &mut Vm) -> LV2Result<()> {
     use std::io::Write;
 
     let argn = vm.context_mut().frame_mut().unwrap().argn;
@@ -164,7 +164,7 @@ pub fn print(vm: &mut Vm) -> Lovm2Result<()> {
 
     print!("{}", args.join(" "));
     std::io::stdout().flush().unwrap();
-    vm.context_mut().push_value(Value::Nil);
+    vm.context_mut().push_value(LV2Value::Nil);
 
     Ok(())
 }

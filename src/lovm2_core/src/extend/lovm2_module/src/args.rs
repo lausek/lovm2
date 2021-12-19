@@ -133,7 +133,7 @@ impl FunctionArgs {
                     let #name = vm.context_mut().pop_value()?.as_any_inner()?;
                     let mut #name = (*#name).borrow_mut();
                     let #name = (*#name).0.#downcast_method::<#ty_name>()
-                                .ok_or_else(|| (Lovm2ErrorTy::OperationNotSupported, "downcast"))?;
+                                .ok_or_else(|| (LV2ErrorTy::OperationNotSupported, "downcast"))?;
                 }
             } else {
                 let mutability = if *is_mut {
@@ -187,7 +187,7 @@ impl FunctionArgs {
                 };
 
                 quote! {
-                    if let lovm2_core::prelude::Value::Ref(r) = #first_name {
+                    if let lovm2_core::prelude::LV2Value::Ref(r) = #first_name {
                         use std::ops::{Deref, DerefMut};
                         let #first_name = r.unref_to_value()?;
                         let #mut_kw #first_name = (*#first_name).#borrow();
@@ -253,7 +253,7 @@ impl FunctionArg {
 
     pub fn is_custom_ty(&self) -> bool {
         match self.ty_name.to_string().as_str() {
-            "Value" | "bool" | "i64" | "f64" | "String" => false,
+            stringify!(LV2Value) | stringify!(bool) | stringify!(i64) | stringify!(f64) | stringify!(String) => false,
             _ => true,
         }
     }

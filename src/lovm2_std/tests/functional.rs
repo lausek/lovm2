@@ -23,15 +23,15 @@ fn dynamic_varargs() {
     });
 
     assert_eq!(
-        Value::from(6),
+        LV2Value::from(6),
         vm.call("sum", &[1.into(), 2.into(), 3.into()]).unwrap()
     );
     assert_eq!(
-        Value::from(3),
+        LV2Value::from(3),
         vm.call("sum", &[1.into(), 2.into()]).unwrap()
     );
-    assert_eq!(Value::from(1), vm.call("sum", &[1.into()]).unwrap());
-    assert_eq!(Value::from(0), vm.call("sum", &[]).unwrap());
+    assert_eq!(LV2Value::from(1), vm.call("sum", &[1.into()]).unwrap());
+    assert_eq!(LV2Value::from(0), vm.call("sum", &[]).unwrap());
 }
 
 #[test]
@@ -54,10 +54,10 @@ fn dynamic_call() {
     let mut args = vec![];
     for i in 0..5 {
         assert_eq!(
-            Value::from(i),
+            LV2Value::from(i),
             vm.call("call", &["return_argn".into(), args.clone().into()])
                 .unwrap(),
         );
-        args.push(Value::from(i));
+        args.push(LV2Value::from(i));
     }
 }

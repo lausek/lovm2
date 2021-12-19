@@ -34,7 +34,7 @@ pub struct LV2Module {
 impl LV2Module {
     /// A module is loadable if the first four bytes of the file are either the ELF
     /// magic number (shared object) or the `lovm2` magic number [LV2_MAGIC_NUMBER].
-    pub fn is_loadable<T>(path: T) -> Lovm2Result<bool>
+    pub fn is_loadable<T>(path: T) -> LV2Result<bool>
     where
         T: AsRef<std::path::Path>,
     {
@@ -52,7 +52,7 @@ impl LV2Module {
     }
 
     /// Checks if the file is loadable and tries creating a module from it.
-    pub fn load_from_file<T>(path: T) -> Lovm2Result<Self>
+    pub fn load_from_file<T>(path: T) -> LV2Result<Self>
     where
         T: AsRef<std::path::Path>,
     {
@@ -87,7 +87,7 @@ impl LV2Module {
 
     /// Write the contained `CodeObject` into a file. This wil do nothing
     /// for shared object modules.
-    pub fn store_to_file<T>(&self, path: T) -> Lovm2Result<()>
+    pub fn store_to_file<T>(&self, path: T) -> LV2Result<()>
     where
         T: AsRef<std::path::Path>,
     {
@@ -95,7 +95,7 @@ impl LV2Module {
     }
 
     /// Returns the `CodeObject` representation as bytes.
-    pub fn to_bytes(&self) -> Lovm2Result<Vec<u8>> {
+    pub fn to_bytes(&self) -> LV2Result<Vec<u8>> {
         self.code_object.to_bytes()
     }
 

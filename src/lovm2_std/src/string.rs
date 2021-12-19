@@ -1,7 +1,7 @@
 use super::*;
 
 #[lovm2_function]
-fn format(vm: &mut Vm) -> Lovm2Result<String> {
+fn format(vm: &mut Vm) -> LV2Result<String> {
     let argn = vm.context_mut().frame_mut()?.argn - 1;
     let mut args = vec![];
 
@@ -24,8 +24,8 @@ fn index_of(base: String, pat: String) -> Option<i64> {
 }
 
 #[lovm2_function]
-fn join(base: &Value, sep: String) -> Lovm2Result<String> {
-    if let Value::List(ls) = base {
+fn join(base: &LV2Value, sep: String) -> LV2Result<String> {
+    if let LV2Value::List(ls) = base {
         let mut items = vec![];
 
         for item in ls.iter() {
@@ -39,7 +39,7 @@ fn join(base: &Value, sep: String) -> Lovm2Result<String> {
 }
 
 #[lovm2_function]
-fn chr(n: i64) -> Lovm2Result<String> {
+fn chr(n: i64) -> LV2Result<String> {
     let bytes: Vec<u8> = n.to_be_bytes()[4..]
         .iter()
         .filter(|n| **n != 0)
@@ -50,7 +50,7 @@ fn chr(n: i64) -> Lovm2Result<String> {
 }
 
 #[lovm2_function]
-fn ord(c: String) -> Lovm2Result<i64> {
+fn ord(c: String) -> LV2Result<i64> {
     if 1 != c.chars().count() {
         return err_from_string("ord requires string of length one");
     }
@@ -71,9 +71,9 @@ fn replace(base: String, pat: String, repl: String) -> String {
 }
 
 #[lovm2_function]
-fn split(base: String, sep: String) -> Lovm2Result<Value> {
-    let ls = base.split(&sep).map(Value::from).collect::<Vec<_>>();
-    let val = Value::List(ls);
+fn split(base: String, sep: String) -> LV2Result<LV2Value> {
+    let ls = base.split(&sep).map(LV2Value::from).collect::<Vec<_>>();
+    let val = LV2Value::List(ls);
 
     Ok(box_value(val))
 }

@@ -106,7 +106,7 @@ impl LV2Block {
     }
 
     pub fn return_nil(&mut self) {
-        self.0.push(LV2Statement::Return { expr: Value::Nil.into() });
+        self.0.push(LV2Statement::Return { expr: LV2Value::Nil.into() });
     }
 
     pub fn return_value<T: Into<LV2Expr>>(&mut self, expr: T) {

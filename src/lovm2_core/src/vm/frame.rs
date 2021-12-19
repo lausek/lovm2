@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::value::Value;
+use crate::value::LV2Value;
 
 use super::*;
 
@@ -15,7 +15,7 @@ pub struct Frame {
     /// Amount of parameters passed to the frame
     pub argn: u8,
     /// Local variables
-    locals: HashMap<String, Value>,
+    locals: HashMap<String, LV2Value>,
 }
 
 impl Frame {
@@ -27,7 +27,7 @@ impl Frame {
     }
 
     /// Create or update a local value.
-    pub fn set_local<T>(&mut self, var: T, value: Value)
+    pub fn set_local<T>(&mut self, var: T, value: LV2Value)
     where
         T: AsRef<str>,
     {
@@ -35,12 +35,12 @@ impl Frame {
     }
 
     /// Try looking up the value of a local variable.
-    pub fn value_of<T>(&self, var: T) -> Lovm2Result<&Value>
+    pub fn value_of<T>(&self, var: T) -> LV2Result<&LV2Value>
     where
         T: AsRef<str>,
     {
         self.locals
             .get(var.as_ref())
-            .ok_or_else(|| (Lovm2ErrorTy::LookupFailed, var).into())
+            .ok_or_else(|| (LV2ErrorTy::LookupFailed, var).into())
     }
 }

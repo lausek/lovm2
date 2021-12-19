@@ -19,15 +19,15 @@ fn native_is_match() {
     let re = vm.context_mut().value_of(re).unwrap().clone();
 
     assert_eq!(
-        Value::Bool(true),
+        LV2Value::Bool(true),
         vm.call("is_match", &[re.clone(), "ab10cd".into()]).unwrap()
     );
     assert_eq!(
-        Value::Bool(false),
+        LV2Value::Bool(false),
         vm.call("is_match", &[re.clone(), "ab1cd".into()]).unwrap()
     );
     assert_eq!(
-        Value::Bool(false),
+        LV2Value::Bool(false),
         vm.call("is_match", &[re, "abcd".into()]).unwrap()
     );
 }
@@ -47,12 +47,12 @@ fn native_captures() {
     let re = vm.context_mut().value_of(re).unwrap().clone();
 
     let result = vm.call("captures", &[re.clone(), "1abc".into()]).unwrap();
-    assert_eq!(Value::from("1abc"), result.get(&Value::Int(0)).unwrap());
-    assert_eq!(Value::from("1"), result.get(&Value::Int(1)).unwrap());
-    assert_eq!(Value::from("abc"), result.get(&Value::Int(2)).unwrap());
+    assert_eq!(LV2Value::from("1abc"), result.get(&LV2Value::Int(0)).unwrap());
+    assert_eq!(LV2Value::from("1"), result.get(&LV2Value::Int(1)).unwrap());
+    assert_eq!(LV2Value::from("abc"), result.get(&LV2Value::Int(2)).unwrap());
 
     let result = vm.call("captures", &[re.clone(), "abc".into()]).unwrap();
-    assert_eq!(Value::from("abc"), result.get(&Value::Int(0)).unwrap());
-    assert_eq!(Value::Nil, result.get(&Value::Int(1)).unwrap());
-    assert_eq!(Value::from("abc"), result.get(&Value::Int(2)).unwrap());
+    assert_eq!(LV2Value::from("abc"), result.get(&LV2Value::Int(0)).unwrap());
+    assert_eq!(LV2Value::Nil, result.get(&LV2Value::Int(1)).unwrap());
+    assert_eq!(LV2Value::from("abc"), result.get(&LV2Value::Int(2)).unwrap());
 }

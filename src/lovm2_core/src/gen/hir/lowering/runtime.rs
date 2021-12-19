@@ -43,7 +43,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         self.counter.borrow_mut().create_new_label()
     }
 
-    pub fn add_hir(&mut self, hir: &'lir LV2Function) -> Lovm2CompileResult<()> {
+    pub fn add_hir(&mut self, hir: &'lir LV2Function) -> LV2CompileResult<()> {
         // before lowering a code object function, reset locals
         self.locals.clear();
 
@@ -59,7 +59,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         match self.code.last_mut() {
             Some(LirElement::Ret) => {}
             _ => {
-                self.emit(LirElement::push_constant_owned(Value::Nil));
+                self.emit(LirElement::push_constant_owned(LV2Value::Nil));
                 self.emit(LirElement::Ret);
             }
         }
@@ -67,7 +67,7 @@ impl<'lir> HirLoweringRuntime<'lir> {
         Ok(())
     }
 
-    pub fn complete(mut self) -> Lovm2CompileResult<CodeObject> {
+    pub fn complete(mut self) -> LV2CompileResult<CodeObject> {
         let lir_runtime = LirLoweringRuntime::from(self.meta);
 
         self.optimizer.postprocess(&mut self.code);

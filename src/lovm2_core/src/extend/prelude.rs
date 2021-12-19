@@ -3,7 +3,7 @@ pub use std::collections::HashMap;
 pub use std::rc::Rc;
 
 pub use crate::code::CallableRef;
-pub use crate::error::{Lovm2Error, Lovm2ErrorTy, Lovm2Result};
+pub use crate::error::{LV2Error, LV2ErrorTy, LV2Result};
 pub use crate::module::SharedObjectSlot;
 pub use crate::prelude::*;
 pub use crate::value::box_value;

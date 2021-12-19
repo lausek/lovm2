@@ -9,7 +9,7 @@ fn native_format() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::from("abcd"),
+        LV2Value::from("abcd"),
         vm.call("format", &["a{}c{}".into(), "b".into(), "d".into()])
             .unwrap()
     );
@@ -20,12 +20,12 @@ fn native_join() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::from("a & b"),
+        LV2Value::from("a & b"),
         vm.call("join", &[vec!["a", "b"].into(), " & ".into()])
             .unwrap()
     );
     assert_eq!(
-        Value::from("a"),
+        LV2Value::from("a"),
         vm.call("join", &[vec!["a"].into(), " & ".into()]).unwrap()
     );
 }
@@ -35,11 +35,11 @@ fn native_split() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::List(vec!["a".into(), "b".into(), "c".into()]),
+        LV2Value::List(vec!["a".into(), "b".into(), "c".into()]),
         vm.call("split", &["a;b;c".into(), ";".into()]).unwrap()
     );
     assert_eq!(
-        Value::List(vec!["a".into()]),
+        LV2Value::List(vec!["a".into()]),
         vm.call("split", &["a".into(), ";".into()]).unwrap()
     );
 }
@@ -49,15 +49,15 @@ fn native_index_of() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::Int(0),
+        LV2Value::Int(0),
         vm.call("index_of", &["abc".into(), "a".into()]).unwrap()
     );
     assert_eq!(
-        Value::Int(2),
+        LV2Value::Int(2),
         vm.call("index_of", &["abc".into(), "c".into()]).unwrap()
     );
     assert_eq!(
-        Value::Nil,
+        LV2Value::Nil,
         vm.call("index_of", &["abc".into(), "d".into()]).unwrap()
     );
 }
@@ -66,14 +66,14 @@ fn native_index_of() {
 fn native_char_conversion() {
     let mut vm = run_module_test(|_| {});
 
-    let x_as_str = Value::from("x");
-    let x_as_int = Value::from(120);
+    let x_as_str = LV2Value::from("x");
+    let x_as_int = LV2Value::from(120);
 
     assert_eq!(x_as_int, vm.call("ord", &[x_as_str.clone()]).unwrap(),);
     assert_eq!(x_as_str, vm.call("chr", &[x_as_int.clone()]).unwrap(),);
 
-    let sigma_as_str = Value::from("∑");
-    let sigma_as_int = Value::from(i64::from_be_bytes([
+    let sigma_as_str = LV2Value::from("∑");
+    let sigma_as_int = LV2Value::from(i64::from_be_bytes([
         0, 0, 0, 0, 0, 0b11100010, 0b10001000, 0b10010001,
     ]));
 
@@ -92,17 +92,17 @@ fn native_replace() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::from("abb"),
+        LV2Value::from("abb"),
         vm.call("replace", &["abc".into(), "c".into(), "b".into()])
             .unwrap()
     );
     assert_eq!(
-        Value::from("abc"),
+        LV2Value::from("abc"),
         vm.call("replace", &["abc".into(), "d".into(), "b".into()])
             .unwrap()
     );
     assert_eq!(
-        Value::from("bbb"),
+        LV2Value::from("bbb"),
         vm.call("replace", &["aba".into(), "a".into(), "b".into()])
             .unwrap()
     );
@@ -113,7 +113,7 @@ fn native_to_upper() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::from("AA"),
+        LV2Value::from("AA"),
         vm.call("to_upper", &["aA".into()]).unwrap()
     );
 }
@@ -123,7 +123,7 @@ fn native_to_lower() {
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::from("aa"),
+        LV2Value::from("aa"),
         vm.call("to_lower", &["aA".into()]).unwrap()
     );
 }
@@ -132,11 +132,11 @@ fn native_to_lower() {
 fn native_trim() {
     let mut vm = run_module_test(|_| {});
 
-    assert_eq!(Value::from("a"), vm.call("trim", &[" a".into()]).unwrap());
-    assert_eq!(Value::from("a"), vm.call("trim", &["a ".into()]).unwrap());
+    assert_eq!(LV2Value::from("a"), vm.call("trim", &[" a".into()]).unwrap());
+    assert_eq!(LV2Value::from("a"), vm.call("trim", &["a ".into()]).unwrap());
 
     assert_eq!(
-        Value::from("a"),
+        LV2Value::from("a"),
         vm.call("trim", &["   a   ".into()]).unwrap()
     );
 }

@@ -29,19 +29,19 @@ fn native_set_predicates() {
     let e = vm.context_mut().value_of(e).unwrap().clone();
     let f = vm.context_mut().value_of(f).unwrap().clone();
 
-    assert_eq!(Value::from(true), vm.call("all", &[a.clone()]).unwrap());
-    assert_eq!(Value::from(true), vm.call("all", &[b.clone()]).unwrap());
-    assert_eq!(Value::from(false), vm.call("all", &[c.clone()]).unwrap());
-    assert_eq!(Value::from(true), vm.call("all", &[d.clone()]).unwrap());
-    assert_eq!(Value::from(false), vm.call("all", &[e.clone()]).unwrap());
-    assert_eq!(Value::from(false), vm.call("all", &[f.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("all", &[a.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("all", &[b.clone()]).unwrap());
+    assert_eq!(LV2Value::from(false), vm.call("all", &[c.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("all", &[d.clone()]).unwrap());
+    assert_eq!(LV2Value::from(false), vm.call("all", &[e.clone()]).unwrap());
+    assert_eq!(LV2Value::from(false), vm.call("all", &[f.clone()]).unwrap());
 
-    assert_eq!(Value::from(true), vm.call("any", &[a.clone()]).unwrap());
-    assert_eq!(Value::from(true), vm.call("any", &[b.clone()]).unwrap());
-    assert_eq!(Value::from(true), vm.call("any", &[c.clone()]).unwrap());
-    assert_eq!(Value::from(false), vm.call("any", &[d.clone()]).unwrap());
-    assert_eq!(Value::from(true), vm.call("any", &[e.clone()]).unwrap());
-    assert_eq!(Value::from(false), vm.call("any", &[f.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("any", &[a.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("any", &[b.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("any", &[c.clone()]).unwrap());
+    assert_eq!(LV2Value::from(false), vm.call("any", &[d.clone()]).unwrap());
+    assert_eq!(LV2Value::from(true), vm.call("any", &[e.clone()]).unwrap());
+    assert_eq!(LV2Value::from(false), vm.call("any", &[f.clone()]).unwrap());
 }
 
 #[test]
@@ -65,19 +65,19 @@ fn native_contains() {
     let ls = vm.context_mut().value_of(ls).unwrap().clone();
 
     assert_eq!(
-        Value::from(true),
+        LV2Value::from(true),
         vm.call("contains", &[s.clone(), n.clone()]).unwrap()
     );
     assert_eq!(
-        Value::from(true),
+        LV2Value::from(true),
         vm.call("contains", &[d.clone(), n.clone()]).unwrap()
     );
     assert_eq!(
-        Value::from(true),
+        LV2Value::from(true),
         vm.call("contains", &[ls.clone(), n.clone()]).unwrap()
     );
     assert_eq!(
-        Value::from(false),
+        LV2Value::from(false),
         vm.call("contains", &[d.clone(), s.clone()]).unwrap()
     );
 }
@@ -102,17 +102,17 @@ fn native_len() {
     let d = vm.context_mut().value_of(d).unwrap().clone();
     let ls = vm.context_mut().value_of(ls).unwrap().clone();
 
-    assert_eq!(Value::from(6), vm.call("len", &[s.clone()]).unwrap());
-    assert_eq!(Value::from(2), vm.call("len", &[d.clone()]).unwrap());
-    assert_eq!(Value::from(3), vm.call("len", &[ls.clone()]).unwrap());
+    assert_eq!(LV2Value::from(6), vm.call("len", &[s.clone()]).unwrap());
+    assert_eq!(LV2Value::from(2), vm.call("len", &[d.clone()]).unwrap());
+    assert_eq!(LV2Value::from(3), vm.call("len", &[ls.clone()]).unwrap());
     assert!(vm.call("len", &[n.clone()]).is_err());
 }
 
 #[test]
 fn native_deep_clone() {
-    let ls = box_value(Value::List(vec![1.into(), 2.into()]));
+    let ls = box_value(LV2Value::List(vec![1.into(), 2.into()]));
 
-    let mut d = Value::dict();
+    let mut d = LV2Value::dict();
     d.set(&1.into(), 2.into()).unwrap();
     let d = box_value(d);
 
@@ -120,7 +120,7 @@ fn native_deep_clone() {
 
     let mut dc = vm.call("deep_clone", &[d.clone()]).unwrap();
     dc.set(&1.into(), 3.into()).unwrap();
-    assert_eq!(Value::from(2), d.get(&1.into()).unwrap());
+    assert_eq!(LV2Value::from(2), d.get(&1.into()).unwrap());
 
     let mut lsc = vm.call("deep_clone", &[d.clone()]).unwrap();
     lsc.delete(&0.into()).unwrap();
@@ -129,7 +129,7 @@ fn native_deep_clone() {
 
 #[test]
 fn native_delete() {
-    let ls = box_value(Value::List(vec![1.into(), 2.into()]));
+    let ls = box_value(LV2Value::List(vec![1.into(), 2.into()]));
 
     let mut vm = run_module_test(|_| {});
 
@@ -142,53 +142,53 @@ fn native_delete() {
 
 #[test]
 fn native_get() {
-    let s = Value::from("abcd");
-    let ls = box_value(Value::List(vec![1.into()]));
+    let s = LV2Value::from("abcd");
+    let ls = box_value(LV2Value::List(vec![1.into()]));
 
-    let mut d = Value::dict();
+    let mut d = LV2Value::dict();
     d.set(&1.into(), 2.into()).unwrap();
     let d = box_value(d);
 
     let mut vm = run_module_test(|_| {});
 
     assert_eq!(
-        Value::from("c"),
+        LV2Value::from("c"),
         vm.call("get", &[s.clone(), 2.into()]).unwrap()
     );
     assert_eq!(
-        Value::from(1),
+        LV2Value::from(1),
         vm.call("get", &[ls.clone(), 0.into()]).unwrap()
     );
     assert_eq!(
-        Value::from(2),
+        LV2Value::from(2),
         vm.call("get", &[d.clone(), 1.into()]).unwrap()
     );
 }
 
 #[test]
 fn native_set() {
-    let ls = box_value(Value::List(vec![1.into()]));
+    let ls = box_value(LV2Value::List(vec![1.into()]));
 
-    let mut d = Value::dict();
+    let mut d = LV2Value::dict();
     d.set(&1.into(), 2.into()).unwrap();
     let d = box_value(d);
 
     let mut vm = run_module_test(|_| {});
 
-    assert_eq!(Value::from(1), ls.get(&0.into()).unwrap());
+    assert_eq!(LV2Value::from(1), ls.get(&0.into()).unwrap());
     vm.call("set", &[ls.clone(), 0.into(), 2.into()]).unwrap();
-    assert_eq!(Value::from(2), ls.get(&0.into()).unwrap());
+    assert_eq!(LV2Value::from(2), ls.get(&0.into()).unwrap());
     assert_eq!(1, ls.len().unwrap());
 
     assert!(d.get(&"ab".into()).is_err());
     vm.call("set", &[d.clone(), "ab".into(), 3.into()]).unwrap();
-    assert_eq!(Value::from(3), d.get(&"ab".into()).unwrap());
+    assert_eq!(LV2Value::from(3), d.get(&"ab".into()).unwrap());
 }
 
 #[test]
 fn native_sort() {
     let (d, ds, ls, lss) = &lv2_var!(d, ds, ls, lss);
-    let s = Value::from("bcda");
+    let s = LV2Value::from("bcda");
 
     let mut vm = run_module_test(|builder| {
         builder
@@ -206,13 +206,13 @@ fn native_sort() {
     let ls = vm.context_mut().value_of(ls).unwrap().clone();
     let lss = vm.context_mut().value_of(lss).unwrap().clone();
 
-    assert_eq!(Value::from("abcd"), vm.call("sort", &[s.clone()]).unwrap());
+    assert_eq!(LV2Value::from("abcd"), vm.call("sort", &[s.clone()]).unwrap());
 
     assert_eq!(lss, vm.call("sort", &[ls.clone()]).unwrap());
 
     assert_eq!(ds, vm.call("sort", &[d.clone()]).unwrap());
 
-    assert!(vm.call("sort", &[Value::from(1)]).is_err());
+    assert!(vm.call("sort", &[LV2Value::from(1)]).is_err());
 }
 
 #[test]
@@ -224,15 +224,15 @@ fn native_map() {
 
         builder
             .add_with_args("toe", vec![lv2_var!(x)])
-            .step(Return::value(Value::from("e")));
+            .step(Return::value(LV2Value::from("e")));
     });
 
     assert_eq!(
-        Value::from(vec!["e", "e", "e"]),
+        LV2Value::from(vec!["e", "e", "e"]),
         vm.call("map", &["abc".into(), "toe".into()]).unwrap(),
     );
     assert_eq!(
-        Value::from(vec![101, 102, 103]),
+        LV2Value::from(vec![101, 102, 103]),
         vm.call("map", &[vec![100, 101, 102].into(), "inc".into()])
             .unwrap(),
     );
@@ -247,7 +247,7 @@ fn native_filter() {
     });
 
     assert_eq!(
-        Value::from(vec![100, 102]),
+        LV2Value::from(vec![100, 102]),
         vm.call("filter", &[vec![100, 101, 102].into(), "even".into()])
             .unwrap(),
     );
@@ -257,11 +257,11 @@ fn native_filter() {
 fn native_append() {
     let mut vm = run_module_test(|_| {});
 
-    let ls = box_value(Value::List(vec![]));
+    let ls = box_value(LV2Value::List(vec![]));
     assert_eq!(0, ls.len().unwrap());
     assert!(vm.call("append", &[ls.clone(), 2.into()]).is_ok());
     assert_eq!(1, ls.len().unwrap());
-    assert_eq!(Value::from(2), ls.get(&0.into()).unwrap());
+    assert_eq!(LV2Value::from(2), ls.get(&0.into()).unwrap());
 
     assert!(vm.call("append", &[1.into(), 2.into()]).is_err());
 }
