@@ -122,7 +122,7 @@ pub fn create_std_module() -> LV2Module {
     module
 }
 
-pub fn input(vm: &mut Vm) -> LV2Result<()> {
+pub fn input(vm: &mut LV2Vm) -> LV2Result<()> {
     use std::io::stdin;
 
     let mut input = String::new();
@@ -151,7 +151,7 @@ fn len(val: &LV2Value) -> LV2Result<i64> {
         .or_else(|_| val.len().map(|n| n as i64))
 }
 
-pub fn print(vm: &mut Vm) -> LV2Result<()> {
+pub fn print(vm: &mut LV2Vm) -> LV2Result<()> {
     use std::io::Write;
 
     let argn = vm.context_mut().frame_mut().unwrap().argn;

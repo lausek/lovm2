@@ -21,7 +21,7 @@ use crate::error::*;
 
 /// Reference to a generic lovm2 object
 pub type LV2AnyRef = Rc<RefCell<LV2Handle>>;
-/// Reference to a lovm2 [Value]
+/// Reference to a lovm2 [LV2Value]
 pub type LV2ValueRef = LV2Reference;
 
 /// Value type mostly used to handle extern values

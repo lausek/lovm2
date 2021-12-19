@@ -1,4 +1,4 @@
-//! Building modules from Hir
+//! Building modules
 
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -80,7 +80,7 @@ impl LV2ModuleBuilder {
         self.hirs.get_mut(&name).unwrap()
     }
 
-    /// Generate a module from the current data. This uses the default [CompileOptions] e.g.
+    /// Generate a module from the current data. This uses the default [LV2CompileOptions] e.g.
     /// optimization is enabled.
     pub fn build(&self) -> LV2CompileResult<LV2Module> {
         self.build_with_options(LV2CompileOptions::default())
@@ -124,7 +124,7 @@ impl LV2ModuleBuilder {
 
         let mut module: LV2Module = ru.complete()?.into();
 
-        // Make all function offsets of the `CodeObject` available as module slots.
+        // Make all function offsets of the `LV2CodeObject` available as module slots.
         for (iidx, offset) in module.code_object.entries.iter() {
             let key = &module.code_object.idents[*iidx];
             let func = LV2CodeObjectFunction::from(module.code_object.clone(), *offset);
@@ -135,7 +135,7 @@ impl LV2ModuleBuilder {
         Ok(module)
     }
 
-    /// Create a new function handle with the [ENTRY_POINT] name.
+    /// Create a new function handle with the [LV2_ENTRY_POINT] name.
     pub fn entry(&mut self) -> &mut LV2Function {
         let name = LV2Variable::from(LV2_ENTRY_POINT);
 

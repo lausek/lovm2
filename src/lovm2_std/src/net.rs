@@ -58,7 +58,7 @@ fn set_method(req: &mut Request, method: String) -> LV2Result<bool> {
 }
 
 #[lovm2_function]
-fn serve(vm: &mut Vm, host: String, callback: String) -> LV2Result<()> {
+fn serve(vm: &mut LV2Vm, host: String, callback: String) -> LV2Result<()> {
     let server = tiny_http::Server::http(host).unwrap();
 
     for mut request in server.incoming_requests() {

@@ -17,7 +17,7 @@ pub const DEFAULT_VSTACK_SIZE: usize = 256;
 /// This contains all necessary runtime data and gets shared with objects that
 /// implement `CallProtocol` as well as interrupts.
 #[derive(Debug)]
-pub struct Context {
+pub struct LV2Context {
     /// Starting point of execution.
     pub(super) entry: Option<Rc<dyn LV2CallProtocol>>,
     /// Global variables that can be altered from every object.
@@ -25,12 +25,12 @@ pub struct Context {
     /// Entries in this map can directly be called from `lovm2` bytecode.
     pub(super) scope: HashMap<LV2Variable, LV2CallableRef>,
     /// Call stack that contains local variables and the amount of arguments passed.
-    pub(super) lstack: Vec<Frame>,
+    pub(super) lstack: Vec<LV2StackFrame>,
     /// Value stack. This is where the computation happens.
     pub(super) vstack: Vec<LV2Value>,
 }
 
-impl Context {
+impl LV2Context {
     pub fn new() -> Self {
         Self {
             entry: None,
@@ -55,12 +55,12 @@ impl Context {
     }
 
     /// Get a mutable reference to the value lstack itself
-    pub fn lstack_mut(&mut self) -> &mut Vec<Frame> {
+    pub fn lstack_mut(&mut self) -> &mut Vec<LV2StackFrame> {
         &mut self.lstack
     }
 
     /// Get a mutable reference to the last stack frame
-    pub fn frame_mut(&mut self) -> LV2Result<&mut Frame> {
+    pub fn frame_mut(&mut self) -> LV2Result<&mut LV2StackFrame> {
         self.lstack
             .last_mut()
             .ok_or_else(|| LV2ErrorTy::FrameStackEmpty.into())
@@ -76,7 +76,7 @@ impl Context {
 
     /// Create a frame on the callstack
     pub fn push_frame(&mut self, argn: u8) {
-        self.lstack.push(Frame::new(argn));
+        self.lstack.push(LV2StackFrame::new(argn));
     }
 
     /// Remove a frame from the callstack

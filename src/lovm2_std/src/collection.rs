@@ -77,7 +77,7 @@ fn delete(collection: &mut LV2Value, key: LV2Value) -> LV2Result<bool> {
 }
 
 #[lovm2_function]
-fn filter(vm: &mut Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
+fn filter(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
 
@@ -101,7 +101,7 @@ fn get(collection: &LV2Value, key: LV2Value) -> LV2Result<LV2Value> {
 }
 
 #[lovm2_function]
-fn map(vm: &mut Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
+fn map(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
 

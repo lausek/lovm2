@@ -15,13 +15,13 @@ use crate::code::{LV2CallProtocol, LV2CallableRef, LV2CodeObject};
 use crate::error::*;
 use crate::module::{LV2Module, Slots};
 use crate::var::LV2Variable;
-use crate::vm::Vm;
+use crate::vm::LV2Vm;
 
 /// Name of the unmangled function name to call when initializing module slots.
 pub const LV2_EXTERN_INITIALIZER: &str = "lovm2_module_initialize";
 
 /// Definition for dynamically linked function.
-pub type ExternFunction = unsafe extern "C" fn(&mut Vm) -> LV2Result<()>;
+pub type ExternFunction = unsafe extern "C" fn(&mut LV2Vm) -> LV2Result<()>;
 /// Function signature of the extern module initializer.
 pub type ExternInitializer =
     extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, LV2CallableRef>);
@@ -112,7 +112,7 @@ impl SharedObjectSlot {
 }
 
 impl LV2CallProtocol for SharedObjectSlot {
-    fn run(&self, vm: &mut Vm) -> LV2Result<()> {
+    fn run(&self, vm: &mut LV2Vm) -> LV2Result<()> {
         unsafe { self.1(vm) }
     }
 }

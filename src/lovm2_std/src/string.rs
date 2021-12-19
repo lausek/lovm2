@@ -1,7 +1,7 @@
 use super::*;
 
 #[lovm2_function]
-fn format(vm: &mut Vm) -> LV2Result<String> {
+fn format(vm: &mut LV2Vm) -> LV2Result<String> {
     let argn = vm.context_mut().frame_mut()?.argn - 1;
     let mut args = vec![];
 

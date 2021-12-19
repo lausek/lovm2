@@ -1,11 +1,11 @@
 use lovm2::module::LV2Module;
 use lovm2::prelude::*;
-use lovm2::vm::{Context, LOVM2_INT_DEBUG, Vm};
+use lovm2::vm::{LV2Context, LOVM2_INT_DEBUG, LV2Vm};
 
 pub fn run_module_test(
-    mut vm: Vm,
+    mut vm: LV2Vm,
     module: LV2Module,
-    testfn: impl Fn(&mut Context) + 'static,
+    testfn: impl Fn(&mut LV2Context) + 'static,
 ) -> LV2Result<()> {
     let called = std::rc::Rc::new(std::cell::Cell::new(false));
 

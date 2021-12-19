@@ -15,8 +15,7 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 use syn::{Block, Ident, ItemFn, ReturnType};
 
-//use lovm2_core::module::EXTERN_LOVM2_INITIALIZER;
-const EXTERN_LOVM2_INITIALIZER: &str = "lovm2_module_initialize";
+const LV2_EXTERN_INITIALIZER: &str = "lovm2_module_initialize";
 
 use self::args::*;
 use self::func::*;
@@ -32,7 +31,7 @@ lazy_static! {
 /// Generates the module initializer (always required)
 #[proc_macro]
 pub fn lovm2_module_init(_args: TokenStream) -> TokenStream {
-    let initfn = Ident::new(EXTERN_LOVM2_INITIALIZER, proc_macro2::Span::call_site());
+    let initfn = Ident::new(LV2_EXTERN_INITIALIZER, proc_macro2::Span::call_site());
     let funcs = FUNCS.lock().unwrap();
     let names = funcs.iter();
 

@@ -64,16 +64,12 @@ impl LV2AddStatements for LV2Function {
     }
 }
 
-/// Supplying functionality for all structures containing a [Block]
+/// Supplying functionality for all structures containing a [LV2Block]
 pub trait LV2AddStatements {
     fn block_mut(&mut self) -> &mut LV2Block;
 
     #[inline]
-    fn assign<U, T>(&mut self, var: &U, expr: T) -> &mut Self
-    where
-        U: Into<LV2Variable> + Clone,
-        T: Into<LV2Expr>,
-    {
+    fn assign<T: Into<LV2Variable>, U: Into<LV2Expr>>(&mut self, var: T, expr: U) -> &mut Self {
         self.block_mut().assign(var, expr);
         self
     }
@@ -108,19 +104,13 @@ pub trait LV2AddStatements {
     }
 
     #[inline]
-    fn import<T>(&mut self, name: T) -> &mut Self
-    where
-        T: Into<LV2Expr>,
-    {
+    fn import<T: Into<LV2Expr>>(&mut self, name: T) -> &mut Self {
         self.block_mut().import(name);
         self
     }
 
     #[inline]
-    fn import_from<T>(&mut self, name: T) -> &mut Self
-    where
-        T: Into<LV2Expr>,
-    {
+    fn import_from<T: Into<LV2Expr>>(&mut self, name: T) -> &mut Self {
         self.block_mut().import_from(name);
         self
     }
@@ -148,11 +138,11 @@ pub trait LV2AddStatements {
     }
 
     #[inline]
-    fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut LV2Repeat
-    where
-        U: Into<LV2Expr>,
-        T: Into<LV2Variable>,
-    {
+    fn repeat_iterating<T: Into<LV2Expr>, U: Into<LV2Variable>>(
+        &mut self,
+        collection: T,
+        item: U,
+    ) -> &mut LV2Repeat {
         self.block_mut().repeat_iterating(collection, item)
     }
 
@@ -175,10 +165,7 @@ pub trait LV2AddStatements {
     }
 
     #[inline]
-    fn step<T>(&mut self, element: T) -> &mut Self
-    where
-        T: Into<LV2Statement>,
-    {
+    fn step<T: Into<LV2Statement>>(&mut self, element: T) -> &mut Self {
         self.block_mut().step(element);
         self
     }

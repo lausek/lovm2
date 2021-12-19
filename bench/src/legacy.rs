@@ -36,7 +36,7 @@ macro_rules! lv2_list {
     };
 }
 
-pub(crate) fn create_vm() -> lovm2::vm::Vm {
+pub(crate) fn create_vm() -> lovm2::vm::LV2Vm {
     if cfg!(lovm2_version = "0.4.8") {
         return lovm2::create_vm_with_std();
     }
@@ -44,5 +44,5 @@ pub(crate) fn create_vm() -> lovm2::vm::Vm {
     #[cfg(not(any(lovm2_version = "0.3.7", lovm2_version = "0.4.8")))]
     return lovm2::vm::Vm::with_std();
 
-    lovm2::vm::Vm::new()
+    lovm2::vm::LV2Vm::new()
 }

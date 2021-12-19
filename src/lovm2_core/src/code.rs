@@ -7,16 +7,16 @@ use crate::bytecode::Instruction;
 use crate::error::*;
 use crate::value::LV2Value;
 use crate::var::LV2Variable;
-use crate::vm::Vm;
+use crate::vm::LV2Vm;
 
 /// 4 bytes at the start of each serialized lovm2 module.
 pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, b'L', b'V', b'2'];
 
-/// Generic object implementing the `CallProtocol`
+/// Generic object implementing the [LV2CallProtocol]
 pub type LV2CallableRef = Rc<dyn LV2CallProtocol>;
 
 /// Generalization for runnable objects
-/// - lovm2 bytecode ([CodeObject])
+/// - lovm2 bytecode ([LV2CodeObject])
 /// - Statically linked functions (standard library is an example, `create_callable`)
 /// - Dynamically linked functions ([SharedObjectSlot](crate::module::SharedObjectSlot))
 ///
@@ -27,15 +27,15 @@ pub trait LV2CallProtocol: std::fmt::Debug {
         None
     }
 
-    fn run(&self, vm: &mut Vm) -> LV2Result<()>;
+    fn run(&self, vm: &mut LV2Vm) -> LV2Result<()>;
 }
 
-/// `CodeObject` contains the bytecode as well as all the data used by it.
+/// `LV2CodeObject` contains the bytecode as well as all the data used by it.
 ///
 /// The `entries` attribute is a vector of name-offset pairs where the first component is an
-/// index into `idents`. This information is essential for the [run_bytecode](Vm::run_bytecode) function used by
-/// [CodeObjectFunction]. It shouldn't be necessary to manually alter `entries`. By default,
-/// the subprogram named [ENTRY_POINT](crate::module::ENTRY_POINT) will be at offset 0:
+/// index into `idents`. This information is essential for the [run_bytecode](crate::vm::LV2Vm::run_bytecode) function used by
+/// [LV2CodeObjectFunction]. It shouldn't be necessary to manually alter `entries`. By default,
+/// the subprogram named [LV2_ENTRY_POINT](crate::module::LV2_ENTRY_POINT) will be at offset 0:
 ///
 /// ``` ignored
 /// main:
@@ -73,7 +73,7 @@ impl LV2CallProtocol for LV2CodeObject {
         Some(self.name.clone())
     }
 
-    fn run(&self, vm: &mut Vm) -> LV2Result<()> {
+    fn run(&self, vm: &mut LV2Vm) -> LV2Result<()> {
         vm.run_bytecode(&self, 0)
     }
 }
@@ -162,7 +162,7 @@ impl LV2CodeObject {
     }
 }
 
-/// Function of a [CodeObject]. Implements [CallProtocol] to allow execution of bytecode from a certain offset.
+/// Function of a [LV2CodeObject]. Implements [LV2CallProtocol] to allow execution of bytecode from a certain offset.
 #[derive(Debug)]
 pub struct LV2CodeObjectFunction {
     offset: usize,
@@ -180,7 +180,7 @@ impl LV2CallProtocol for LV2CodeObjectFunction {
         Some(self.on.name.clone())
     }
 
-    fn run(&self, vm: &mut Vm) -> LV2Result<()> {
+    fn run(&self, vm: &mut LV2Vm) -> LV2Result<()> {
         vm.run_bytecode(&self.on, self.offset)
     }
 }

@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use crate::vm::Vm;
+use crate::vm::LV2Vm;
 
 use super::*;
 
@@ -176,14 +176,14 @@ impl std::default::Default for LV2Iter {
 }
 
 #[inline]
-fn get_iter(vm: &mut Vm) -> LV2Result<Rc<RefCell<LV2Iter>>> {
+fn get_iter(vm: &mut LV2Vm) -> LV2Result<Rc<RefCell<LV2Iter>>> {
     match vm.context_mut().pop_value()? {
         LV2Value::Iter(it) => Ok(it),
         val => return Err(err_ty_unexpected("iterator", format!("{:?}", val))),
     }
 }
 
-pub(crate) fn vm_iter_create(vm: &mut Vm) -> LV2Result<()> {
+pub(crate) fn vm_iter_create(vm: &mut LV2Vm) -> LV2Result<()> {
     let from = vm.context_mut().pop_value()?;
 
     // if the value on stack already is an iterator, leave it
@@ -198,7 +198,7 @@ pub(crate) fn vm_iter_create(vm: &mut Vm) -> LV2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> LV2Result<()> {
+pub(crate) fn vm_iter_create_ranged(vm: &mut LV2Vm) -> LV2Result<()> {
     let to = vm.context_mut().pop_value()?;
     let from = vm.context_mut().pop_value()?;
 
@@ -223,7 +223,7 @@ pub(crate) fn vm_iter_create_ranged(vm: &mut Vm) -> LV2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> LV2Result<()> {
+pub(crate) fn vm_iter_has_next(vm: &mut LV2Vm) -> LV2Result<()> {
     let it = get_iter(vm)?;
     let it = it.borrow();
 
@@ -232,7 +232,7 @@ pub(crate) fn vm_iter_has_next(vm: &mut Vm) -> LV2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_next(vm: &mut Vm) -> LV2Result<()> {
+pub(crate) fn vm_iter_next(vm: &mut LV2Vm) -> LV2Result<()> {
     let it = get_iter(vm)?;
     let mut it = it.borrow_mut();
 
@@ -241,7 +241,7 @@ pub(crate) fn vm_iter_next(vm: &mut Vm) -> LV2Result<()> {
     Ok(())
 }
 
-pub(crate) fn vm_iter_reverse(vm: &mut Vm) -> LV2Result<()> {
+pub(crate) fn vm_iter_reverse(vm: &mut LV2Vm) -> LV2Result<()> {
     let it = get_iter(vm)?;
     let it = it.borrow();
     let reversed = it.clone().reverse();

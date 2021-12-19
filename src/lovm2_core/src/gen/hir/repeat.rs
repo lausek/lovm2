@@ -1,8 +1,8 @@
-//! Runs a `Block` forever or until a condition is met
+//! Runs a [LV2Block] forever or until a condition is met
 
 use super::*;
 
-/// Runs a [Block] forever or until a condition is met
+/// Runs a [LV2Block] forever or until a condition is met
 #[derive(Clone)]
 pub enum LV2Repeat {
     Endless {

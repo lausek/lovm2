@@ -11,14 +11,14 @@ use super::*;
 
 /// A stack frame used in `Context.lstack`
 #[derive(Debug)]
-pub struct Frame {
+pub struct LV2StackFrame {
     /// Amount of parameters passed to the frame
     pub argn: u8,
     /// Local variables
     locals: HashMap<String, LV2Value>,
 }
 
-impl Frame {
+impl LV2StackFrame {
     pub fn new(argn: u8) -> Self {
         Self {
             argn,

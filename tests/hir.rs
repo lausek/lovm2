@@ -2,7 +2,7 @@
 
 use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
-use lovm2::vm::{Context, Vm};
+use lovm2::vm::{LV2Context, LV2Vm};
 
 use test_utils::*;
 
@@ -263,7 +263,7 @@ fn taking_parameters() {
 
 #[test]
 fn automatic_return() {
-    let mut vm = Vm::new();
+    let mut vm = LV2Vm::new();
     let mut builder = LV2ModuleBuilder::new();
 
     builder.entry();
@@ -582,7 +582,7 @@ fn create_slice() {
 
 #[test]
 fn iterating_repeat() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(10), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
     }
@@ -605,7 +605,7 @@ fn iterating_repeat() {
 
 #[test]
 fn iterating_repeat_inplace() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(10), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
         assert_eq!(ctx.value_of("orig").unwrap(), ctx.value_of("ls").unwrap());
@@ -630,7 +630,7 @@ fn iterating_repeat_inplace() {
 
 #[test]
 fn iterating_repeat_ranged() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(45), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
     }
@@ -652,7 +652,7 @@ fn iterating_repeat_ranged() {
 
 #[test]
 fn iterating_repeat_nested() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(17199), ctx.value_of("sum").unwrap().clone());
         assert!(ctx.last_value_mut().is_err());
     }
@@ -675,7 +675,7 @@ fn iterating_repeat_nested() {
 
 #[test]
 fn shift_values() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(4), *ctx.value_of("a").unwrap());
         assert_eq!(LV2Value::from(8), *ctx.value_of("b").unwrap());
         assert_eq!(LV2Value::from(0b10100000), *ctx.value_of("c").unwrap());
@@ -702,7 +702,7 @@ fn shift_values() {
 
 #[test]
 fn conditional_expression() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(true), *ctx.value_of("x").unwrap());
         assert_eq!(LV2Value::from(false), *ctx.value_of("y").unwrap());
     }
@@ -734,7 +734,7 @@ fn conditional_expression() {
 
 #[test]
 fn variable_scoping() {
-    fn check(ctx: &mut Context) {
+    fn check(ctx: &mut LV2Context) {
         assert_eq!(LV2Value::from(1), *ctx.value_of("x").unwrap());
 
         let frame = ctx.frame_mut().unwrap();

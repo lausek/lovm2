@@ -3,7 +3,7 @@
 use super::*;
 
 use crate::value::LV2ValueType;
-use crate::vm::Context;
+use crate::vm::LV2Context;
 
 macro_rules! auto_implement {
     (1, $operator:ident, $method:ident) => {
@@ -142,7 +142,7 @@ impl LV2Expr {
         }
     }
 
-    pub fn eval(&self, ctx: &Context) -> LV2Result<LV2Value> {
+    pub fn eval(&self, ctx: &LV2Context) -> LV2Result<LV2Value> {
         match self {
             LV2Expr::Append { base, value } => {
                 let mut base = base.eval(ctx)?;

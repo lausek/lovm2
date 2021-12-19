@@ -37,7 +37,7 @@ impl FunctionArgs {
                             syn::Type::Path(tp) => {
                                 let ty_name = tp.path.get_ident().unwrap();
 
-                                if "Vm" == ty_name.to_string() {
+                                if stringify!(LV2Vm) == ty_name.to_string() {
                                     if vm.is_some() {
                                         return Err(format!("vm reference declared twice."));
                                     }
@@ -79,7 +79,7 @@ impl FunctionArgs {
         let mut parts = vec![];
 
         if let Some(vm) = &self.vm {
-            parts.push(quote! { #vm: &mut Vm });
+            parts.push(quote! { #vm: &mut LV2Vm });
         }
 
         for arg in self.simple.iter() {
@@ -148,7 +148,7 @@ impl FunctionArgs {
         }
 
         let vm = if let Some(name) = &self.vm {
-            quote! { let #name: &mut Vm = vm; }
+            quote! { let #name: &mut LV2Vm = vm; }
         } else {
             quote! {}
         };
@@ -208,7 +208,7 @@ impl std::fmt::Display for FunctionArgs {
         let mut parts = vec![];
 
         if let Some(vm) = &self.vm {
-            parts.push(format!("{}: &mut Vm", vm));
+            parts.push(format!("{}: &mut {}", vm, stringify!(LV2Vm)));
         }
 
         for arg in self.simple.iter() {

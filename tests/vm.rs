@@ -3,7 +3,7 @@ use test_utils::*;
 use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
 use lovm2::value::LV2Value;
-use lovm2::vm::Vm;
+use lovm2::vm::LV2Vm;
 
 #[test]
 fn load_hook_none() {
@@ -153,7 +153,7 @@ fn custom_naming_scheme() {
 #[test]
 fn main_has_no_entry_point() {
     let module = LV2ModuleBuilder::named("main").build().unwrap();
-    let mut vm = Vm::new();
+    let mut vm = LV2Vm::new();
 
     let e = vm.add_main_module(module).err().unwrap();
     assert!(matches!(
@@ -172,7 +172,7 @@ fn main_import_as_global() {
     module.add("myfunc");
     let module = module.build().unwrap();
 
-    let mut vm = Vm::new();
+    let mut vm = LV2Vm::new();
     vm.add_main_module(module).unwrap();
 
     assert!(vm.call("myfunc", &[]).is_ok());
@@ -189,7 +189,7 @@ fn namespaced_imports() {
     b.add("inb");
     let b = b.build().unwrap();
 
-    let mut vm = Vm::new();
+    let mut vm = LV2Vm::new();
 
     vm.add_module(a, true).unwrap();
     vm.add_module(b, false).unwrap();
@@ -202,7 +202,7 @@ fn namespaced_imports() {
 
 #[test]
 fn setting_interrupts() {
-    let mut vm = Vm::new();
+    let mut vm = LV2Vm::new();
 
     assert!(vm.set_interrupt(1, |_| { unreachable!() }).is_err());
     assert!(vm.set_interrupt(10, |_| { unreachable!() }).is_ok());

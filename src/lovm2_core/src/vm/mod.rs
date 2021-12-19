@@ -14,13 +14,13 @@ use crate::var::LV2Variable;
 mod context;
 mod frame;
 
-pub use self::context::Context;
-pub use self::frame::Frame;
+pub use self::context::LV2Context;
+pub use self::frame::LV2StackFrame;
 
 pub const LOVM2_RESERVED_INTERRUPTS: u16 = 63;
 pub const LOVM2_INT_DEBUG: u16 = 10;
 
-/// Virtual machine for executing [modules](crate::module::Module)
+/// Virtual machine for executing [modules](crate::module::LV2Module)
 ///
 /// Call convention is pascal style. If you have a function like `f(a, b, c)` it will be translated
 /// to
@@ -42,14 +42,14 @@ pub const LOVM2_INT_DEBUG: u16 = 10;
 ///
 
 /// Function signature for module loading callback.
-pub type LoadHookFn = dyn Fn(&LoadRequest) -> LV2Result<Option<LV2Module>>;
+pub type LV2LoadHookFn = dyn Fn(&LV2LoadRequest) -> LV2Result<Option<LV2Module>>;
 /// Function signature of interrupts.
-pub type InterruptFn = dyn Fn(&mut Vm) -> LV2Result<()>;
-/// Function signature for `Callable` importing.
-pub type ImportHookFn = dyn Fn(Option<&str>, &str) -> LV2Result<Option<String>>;
+pub type LV2InterruptFn = dyn Fn(&mut LV2Vm) -> LV2Result<()>;
+/// Function signature for `LV2Callable` importing.
+pub type LV2ImportHookFn = dyn Fn(Option<&str>, &str) -> LV2Result<Option<String>>;
 
 /// Structure containing relevant information for module resolvement.
-pub struct LoadRequest {
+pub struct LV2LoadRequest {
     pub module: String,
     pub relative_to: Option<String>,
 }
@@ -80,26 +80,26 @@ macro_rules! value_compare {
 }
 
 /// VM structure containing hooks and loaded modules
-pub struct Vm {
-    ctx: Context,
-    /// List of loaded modules: `Module` or `SharedObjectModule`.
+pub struct LV2Vm {
+    ctx: LV2Context,
+    /// List of loaded modules: `LV2Module` or `SharedObjectModule`.
     modules: HashMap<String, Rc<LV2Module>>,
 
-    import_hook: Rc<ImportHookFn>,
+    import_hook: Rc<LV2ImportHookFn>,
     // TODO: make this an array once const_in_array_repeat_expressions was stabilized
     /// Interrupt table. These functions can be triggered using the `Interrupt` instruction.
-    pub(crate) interrupts: Vec<Option<Rc<InterruptFn>>>,
+    pub(crate) interrupts: Vec<Option<Rc<LV2InterruptFn>>>,
     /// Function to call if a module is about to be loaded.
-    load_hook: Option<Rc<LoadHookFn>>,
+    load_hook: Option<Rc<LV2LoadHookFn>>,
     /// List of directories for module lookup.
     pub load_paths: Vec<String>,
 }
 
-impl Vm {
+impl LV2Vm {
     /// Create a new instance.
     pub fn new() -> Self {
         Self {
-            ctx: Context::new(),
+            ctx: LV2Context::new(),
             modules: HashMap::new(),
 
             import_hook: Rc::new(default_import_hook),
@@ -144,7 +144,7 @@ impl Vm {
     }
 
     /// Get a mutable reference to the current `Context`
-    pub fn context_mut(&mut self) -> &mut Context {
+    pub fn context_mut(&mut self) -> &mut LV2Context {
         &mut self.ctx
     }
 
@@ -216,7 +216,7 @@ impl Vm {
         let mut module = None;
 
         if let Some(load_hook) = self.load_hook.clone() {
-            let load_request = LoadRequest {
+            let load_request = LV2LoadRequest {
                 module: name.to_string(),
                 relative_to: relative_to.clone(),
             };
@@ -269,7 +269,7 @@ impl Vm {
         self.ctx.pop_value()
     }
 
-    /// Start the execution at `ENTRY_POINT`.
+    /// Start the execution at `LV2_ENTRY_POINT`.
     pub fn run(&mut self) -> LV2Result<LV2Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
@@ -479,7 +479,7 @@ impl Vm {
     /// implementation of lovm2 bytecode behavior
     ///
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
-    /// if not handled correctly. See [Vm::run_object].
+    /// if not handled correctly. See [LV2Vm::run_object].
     pub fn run_bytecode(&mut self, co: &LV2CodeObject, offset: usize) -> LV2Result<()> {
         let mut ip = offset;
 
@@ -502,7 +502,7 @@ impl Vm {
     /// Register a new callback function that is used for resolving dependencies at runtime.
     pub fn set_load_hook<T>(&mut self, hook: T)
     where
-        T: Fn(&LoadRequest) -> LV2Result<Option<LV2Module>> + Sized + 'static,
+        T: Fn(&LV2LoadRequest) -> LV2Result<Option<LV2Module>> + Sized + 'static,
     {
         self.load_hook = Some(Rc::new(hook));
     }
@@ -510,7 +510,7 @@ impl Vm {
     /// Gegister a new callback function on interrupt `n`.
     pub fn set_interrupt<T>(&mut self, n: u16, func: T) -> LV2Result<()>
     where
-        T: Fn(&mut Vm) -> LV2Result<()> + Sized + 'static,
+        T: Fn(&mut LV2Vm) -> LV2Result<()> + Sized + 'static,
     {
         if n != LOVM2_INT_DEBUG && n <= LOVM2_RESERVED_INTERRUPTS {
             return err_reserved_interrupt(n);
@@ -567,9 +567,9 @@ pub fn find_module(name: &str, load_paths: &[String]) -> LV2Result<String> {
     Err((LV2ErrorTy::ModuleNotFound, name).into())
 }
 
-/// Takes a [LoadRequest] and calls [find_module] to search for possible candidates
+/// Takes a [LV2LoadRequest] and calls [find_module] to search for possible candidates
 /// relative to the current module.
-pub fn find_candidate(req: &LoadRequest) -> LV2Result<String> {
+pub fn find_candidate(req: &LV2LoadRequest) -> LV2Result<String> {
     if let Some(relative_to) = &req.relative_to {
         let path = std::path::Path::new(relative_to)
             .parent()

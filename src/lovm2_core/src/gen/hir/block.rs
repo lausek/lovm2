@@ -11,13 +11,9 @@ impl LV2Block {
         Self(vec![])
     }
 
-    pub fn assign<U, T>(&mut self, target: &U, source: T)
-    where
-        U: Into<LV2Variable> + Clone,
-        T: Into<LV2Expr>,
-    {
+    pub fn assign<T: Into<LV2Variable>, U: Into<LV2Expr>>(&mut self, target: T, source: U) {
         self.step(LV2Statement::AssignVariable {
-            target: target.clone().into(),
+            target: target.into(),
             source: source.into(),
         });
     }
@@ -56,20 +52,14 @@ impl LV2Block {
         });
     }
 
-    pub fn import<T>(&mut self, name: T)
-    where
-        T: Into<LV2Expr>,
-    {
+    pub fn import<T: Into<LV2Expr>>(&mut self, name: T) {
         self.0.push(LV2Statement::Import {
             name: name.into(),
             namespaced: true,
         });
     }
 
-    pub fn import_from<T>(&mut self, name: T)
-    where
-        T: Into<LV2Expr>,
-    {
+    pub fn import_from<T: Into<LV2Expr>>(&mut self, name: T) {
         self.0.push(LV2Statement::Import {
             name: name.into(),
             namespaced: false,
@@ -111,11 +101,11 @@ impl LV2Block {
         }
     }
 
-    pub fn repeat_iterating<U, T>(&mut self, collection: U, item: T) -> &mut LV2Repeat
-    where
-        U: Into<LV2Expr>,
-        T: Into<LV2Variable>,
-    {
+    pub fn repeat_iterating<T: Into<LV2Expr>, U: Into<LV2Variable>>(
+        &mut self,
+        collection: T,
+        item: U,
+    ) -> &mut LV2Repeat {
         self.step(LV2Repeat::iterating(collection, item));
 
         match self.last_mut().unwrap() {
@@ -141,10 +131,7 @@ impl LV2Block {
         });
     }
 
-    pub fn step<T>(&mut self, hir: T)
-    where
-        T: Into<LV2Statement>,
-    {
+    pub fn step<T: Into<LV2Statement>>(&mut self, hir: T) {
         self.0.push(hir.into());
     }
 

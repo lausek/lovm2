@@ -1,8 +1,8 @@
 //! Generic protocol for module like objects
 //!
-//! A `Module` can be created from a `CodeObject` or by loading a lovm2 compatible shared object
+//! A `LV2Module` can be created from a `LV2CodeObject` or by loading a lovm2 compatible shared object
 //! library. It maintains an internal map of callable objects, meaning that everything
-//! implementing the `CallProtocol` can be added and executed from inside the VM. On load, all
+//! implementing the `LV2CallProtocol` can be added and executed from inside the VM. On load, all
 //! entries from `Slots` will then be added to the context making them runnable from bytecode.
 
 mod shared;
@@ -18,8 +18,8 @@ use crate::var::LV2Variable;
 pub use self::shared::{SharedObjectSlot, LV2_EXTERN_INITIALIZER};
 pub use self::slots::Slots;
 
-/// Name of the [CodeObject] entry that is used as a programs starting point inside
-/// [Vm::run](crate::vm::Vm::run).
+/// Name of the [LV2CodeObject] entry that is used as a programs starting point inside
+/// [LV2Vm::run](crate::vm::LV2Vm::run).
 pub const LV2_ENTRY_POINT: &str = "main";
 
 /// Main runtime representation for loadable modules.
@@ -80,12 +80,12 @@ impl LV2Module {
         &self.slots
     }
 
-    /// Try looking up a `Callable` by name.
+    /// Try looking up a `LV2Callable` by name.
     pub fn slot(&self, name: &LV2Variable) -> Option<Rc<dyn LV2CallProtocol>> {
         self.slots.get(name).cloned()
     }
 
-    /// Write the contained `CodeObject` into a file. This wil do nothing
+    /// Write the contained `LV2CodeObject` into a file. This wil do nothing
     /// for shared object modules.
     pub fn store_to_file<T>(&self, path: T) -> LV2Result<()>
     where
@@ -94,7 +94,7 @@ impl LV2Module {
         self.code_object.store_to_file(path)
     }
 
-    /// Returns the `CodeObject` representation as bytes.
+    /// Returns the `LV2CodeObject` representation as bytes.
     pub fn to_bytes(&self) -> LV2Result<Vec<u8>> {
         self.code_object.to_bytes()
     }
