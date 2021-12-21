@@ -2,34 +2,37 @@
 
 use super::*;
 
-/// Runs a [LV2Block] forever or until a condition is met
 #[derive(Clone)]
-pub enum LV2Repeat {
-    Endless {
-        block: LV2Block,
-    },
+pub enum LV2RepeatType {
+    Endless,
     Iterating {
         collection: LV2Expr,
         item: LV2Variable,
-        block: LV2Block,
     },
     Until {
         condition: LV2Expr,
-        block: LV2Block,
     },
+}
+
+/// Runs a [LV2Block] forever or until a condition is met
+#[derive(Clone)]
+pub struct LV2Repeat {
+    block: LV2Block,
+    ty: LV2RepeatType,
 }
 
 impl LV2Repeat {
     pub fn endless() -> Self {
-        Self::Endless {
+        Self {
             block: LV2Block::new(),
+            ty: LV2RepeatType::Endless,
         }
     }
 
     pub fn until(condition: LV2Expr) -> Self {
-        Self::Until {
+        Self {
             block: LV2Block::new(),
-            condition,
+            ty: LV2RepeatType::Until { condition },
         }
     }
 
@@ -38,10 +41,12 @@ impl LV2Repeat {
         U: Into<LV2Expr>,
         T: Into<LV2Variable>,
     {
-        Self::Iterating {
+        Self {
             block: LV2Block::new(),
-            collection: collection.into(),
-            item: item.into(),
+            ty: LV2RepeatType::Iterating {
+                collection: collection.into(),
+                item: item.into(),
+            },
         }
     }
 }
@@ -49,11 +54,7 @@ impl LV2Repeat {
 impl LV2AddStatements for LV2Repeat {
     #[inline]
     fn block_mut(&mut self) -> &mut LV2Block {
-        match self {
-            Self::Until { block, .. } => block,
-            Self::Endless { block, .. } => block,
-            Self::Iterating { block, .. } => block,
-        }
+        &mut self.block
     }
 }
 
@@ -61,14 +62,12 @@ impl LV2HirLowering for LV2Repeat {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         runtime.push_loop();
 
-        match self {
-            Self::Endless { block } => endless_lower(runtime, block),
-            Self::Until { condition, block } => until_lower(runtime, condition, block),
-            Self::Iterating {
-                collection,
-                item,
-                block,
-            } => iterating_lower(runtime, collection, item, block),
+        match &self.ty {
+            LV2RepeatType::Endless => endless_lower(runtime, &self.block),
+            LV2RepeatType::Until { condition } => until_lower(runtime, condition, &self.block),
+            LV2RepeatType::Iterating { collection, item } => {
+                iterating_lower(runtime, collection, item, &self.block)
+            }
         }
 
         runtime.pop_loop().unwrap();
