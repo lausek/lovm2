@@ -2,19 +2,18 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
-use lovm2::prelude::*;
-use lovm2::vm::LoadRequest;
+//use lovm2::prelude::*;
+//use lovm2::vm::LoadRequest;
 
 use crate::context::Context;
 use crate::expr::any_to_expr;
-use crate::lv2::*;
 use crate::module::Module;
 use crate::value::Value;
 use crate::{err_to_exception, exception_to_err};
 
 #[pyclass(unsendable)]
 pub struct Vm {
-    inner: lovm2::vm::Vm,
+    inner: lovm2::vm::LV2Vm,
 }
 
 #[pymethods]
@@ -22,7 +21,7 @@ impl Vm {
     #[new]
     pub fn new() -> Self {
         Self {
-            inner: lovm2::vm::Vm::new(),
+            inner: lovm2::vm::LV2Vm::new(),
         }
     }
 
@@ -52,7 +51,7 @@ impl Vm {
     #[args(args = "*")]
     pub fn call(&mut self, name: &PyString, args: &PyTuple) -> PyResult<Value> {
         let name = name.to_str()?.to_string();
-        let ruargs: PyResult<Vec<Lovm2ValueRaw>> = args
+        let ruargs: PyResult<Vec<lovm2::value::LV2Value>> = args
             .iter()
             .map(|arg| {
                 any_to_expr(arg)?
@@ -114,12 +113,12 @@ impl Vm {
                 let guard = Python::acquire_gil();
                 let py = guard.python();
 
-                let context_ref = vm.context_mut() as *mut Lovm2Context;
+                let context_ref = vm.context_mut() as *mut lovm2::vm::LV2Context;
                 let ctx = Py::new(py, Context::new(context_ref)).unwrap();
                 let args = PyTuple::new(py, vec![ctx]);
 
                 if let Err(e) = func.call1(py, args) {
-                    return Err(Lovm2Error::from(exception_to_err(&e, py)));
+                    return Err(lovm2::error::LV2Error::from(exception_to_err(&e, py)));
                 }
 
                 Ok(())
@@ -129,7 +128,7 @@ impl Vm {
     }
 
     pub fn set_load_hook(&mut self, func: PyObject) -> PyResult<()> {
-        let hook = move |req: &LoadRequest| {
+        let hook = move |req: &lovm2::vm::LV2LoadRequest| {
             let guard = Python::acquire_gil();
             let py = guard.python();
             let args = PyTuple::new(

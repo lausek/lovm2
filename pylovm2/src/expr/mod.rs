@@ -3,16 +3,15 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-use lovm2::prelude::Operator2;
-use lovm2::Variable;
+//use lovm2::prelude::Operator2;
+//use lovm2::Variable;
 
 pub use self::conv::*;
-use crate::lv2::*;
 
 macro_rules! auto_wrapper {
     ($method_name:ident, $($arg:expr),*) => {
         Ok(Self {
-            inner: Lovm2Expr::$method_name(
+            inner: lovm2::prelude::LV2Expr::$method_name(
                 $( any_to_expr($arg)? ),*
             ),
         })
@@ -25,7 +24,7 @@ macro_rules! auto_wrapper {
         }
 
         Ok(Self {
-            inner: Lovm2Expr::from_opn(
+            inner: lovm2::prelude::LV2Expr::from_opn(
                 $op,
                 args
             ),
@@ -36,7 +35,7 @@ macro_rules! auto_wrapper {
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Expr {
-    pub inner: lovm2::gen::Expr,
+    pub inner: lovm2::gen::LV2Expr,
 }
 
 #[pyproto]
@@ -62,45 +61,31 @@ impl Expr {
 
 #[pymethods]
 impl Expr {
-    #[classmethod]
     #[args(args = "*")]
-    pub fn get(self, _this: &PyAny, key: &PyAny) -> PyResult<Self> {
-        use lovm2::prelude::*;
-
+    pub fn get(&mut self, _this: &PyAny, key: &PyAny) -> PyResult<Self> {
         let key = any_to_expr(key)?;
 
         Ok(Self {
-            inner: self.inner.get(key),
+            inner: self.inner.clone().get(key),
         })
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn call(_this: &PyAny, name: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        use lovm2::prelude::*;
-
-        let name = Variable::from(name.str()?.to_string());
+        let name = lovm2::prelude::LV2Variable::from(name.str()?.to_string());
         let args = pyargs_to_exprs(args)?;
 
         Ok(Self {
-            inner: Lovm2Expr::Call(Call::with_args(name, args)),
+            inner: lovm2::prelude::LV2Expr::Call(lovm2::prelude::LV2Call::with_args(name, args)),
         })
     }
 
     #[classmethod]
     pub fn slice(_this: &PyAny, target: &PyAny, start: &PyAny, end: &PyAny) -> PyResult<Self> {
-        use lovm2::prelude::*;
-
         let target = any_to_expr(target)?;
-        let (mut start, mut end): (Expr, Expr) = (Value::Nil.into(), Value::Nil.into());
-
-        if !start.is_none() {
-            start = any_to_expr(start)?;
-        }
-
-        if !end.is_none() {
-            end = any_to_expr(end)?;
-        }
+        //let (mut start, mut end): (lovm2::prelude::LV2Expr, lovm2::prelude::LV2Expr) = (lovm2::value::LV2Value::Nil.into(), lovm2::value::LV2Value::Nil.into());
+        let (start, end) = (any_to_expr(start)?, any_to_expr(end)?);
 
         let slice = target.slice(start, end);
 
@@ -121,7 +106,7 @@ impl Expr {
         let name = arg.to_string();
 
         Ok(Self {
-            inner: Lovm2Expr::Variable(Variable::from(name)),
+            inner: lovm2::prelude::LV2Expr::from(lovm2::prelude::LV2Variable::from(name)),
         })
     }
 }
@@ -131,55 +116,55 @@ impl Expr {
     #[classmethod]
     #[args(args = "*")]
     pub fn add(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Add, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Add, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn sub(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Sub, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Sub, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn mul(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Mul, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Mul, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn div(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Div, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Div, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn shl(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Shl, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Shl, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn shr(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Shr, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Shr, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn rem(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Rem, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Rem, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn land(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::And, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::And, args)
     }
 
     #[classmethod]
     #[args(args = "*")]
     pub fn lor(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Or, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Or, args)
     }
 
     #[classmethod]
@@ -227,40 +212,40 @@ impl Expr {
     #[classmethod]
     #[args(args = "*")]
     pub fn pow(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(Operator2::Pow, args)
+        auto_wrapper!(lovm2::prelude::LV2Operator2::Pow, args)
     }
 }
 
 // conversion methods
 #[pymethods]
 impl Expr {
-    pub fn to_bool(self) -> PyResult<Self> {
+    pub fn to_bool(&mut self) -> PyResult<Self> {
         Ok(Self {
-            inner: self.inner.to_bool(),
+            inner: self.inner.clone().to_bool(),
         })
     }
 
-    pub fn to_int(self) -> PyResult<Self> {
+    pub fn to_int(&mut self) -> PyResult<Self> {
         Ok(Self {
-            inner: self.inner.to_integer(),
+            inner: self.inner.clone().to_integer(),
         })
     }
 
-    pub fn to_float(self) -> PyResult<Self> {
+    pub fn to_float(&mut self) -> PyResult<Self> {
         Ok(Self {
-            inner: self.inner.to_float(),
+            inner: self.inner.clone().to_float(),
         })
     }
 
-    pub fn to_iter(self) -> PyResult<Self> {
+    pub fn to_iter(&mut self) -> PyResult<Self> {
         Ok(Self {
-            inner: self.inner.to_iter(),
+            inner: self.inner.clone().to_iter(),
         })
     }
 
-    pub fn to_str(self) -> PyResult<Self> {
+    pub fn to_str(&mut self) -> PyResult<Self> {
         Ok(Self {
-            inner: self.inner.to_str(),
+            inner: self.inner.clone().to_str(),
         })
     }
 }
@@ -274,23 +259,20 @@ impl Expr {
             let (from, to) = (any_to_expr(from)?, any_to_expr(to)?);
 
             Ok(Expr {
-                inner: Lovm2Expr::iter_ranged(from, to).into(),
+                inner: lovm2::prelude::LV2Expr::iter_ranged(from, to).into(),
             })
         } else {
             let to = any_to_expr(from)?;
 
             Ok(Expr {
-                inner: Lovm2Expr::iter_ranged(Lovm2ValueRaw::Nil, to).into(),
+                inner: lovm2::prelude::LV2Expr::iter_ranged(lovm2::value::LV2Value::Nil, to).into(),
             })
         }
     }
 
-    pub fn reverse(self) -> PyResult<Self> {
-        match &self.inner {
-            Lovm2Expr::Iter(it) => Ok(Expr {
-                inner: it.reverse(),
-            }),
-            _ => todo!(),
-        }
+    pub fn reverse(&mut self) -> PyResult<Self> {
+        Ok(Expr {
+            inner: self.inner.clone().reverse(),
+        })
     }
 }

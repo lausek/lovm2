@@ -33,7 +33,7 @@ macro_rules! lv2_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
         let mut dict = LV2Expr::dict();
         $(
-            dict = dict.insert($key, $val);
+            dict = dict.set($key, $val);
         )*
         dict
     }};

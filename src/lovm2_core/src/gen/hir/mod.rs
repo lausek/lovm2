@@ -98,6 +98,12 @@ pub trait LV2AddStatements {
     }
 
     #[inline]
+    fn extend(&mut self, block: LV2Block) -> &mut Self {
+        self.block_mut().extend(block);
+        self
+    }
+
+    #[inline]
     fn global(&mut self, var: &LV2Variable) -> &mut Self {
         self.block_mut().global(var);
         self

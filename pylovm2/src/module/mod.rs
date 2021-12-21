@@ -7,16 +7,14 @@ use pyo3::prelude::*;
 pub use self::builder::ModuleBuilder;
 use self::slot::ModuleBuilderSlot;
 
-use crate::lv2::*;
-
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Module {
-    pub inner: Option<Lovm2Module>,
+    pub inner: Option<lovm2::prelude::LV2Module>,
 }
 
-impl From<Lovm2Module> for Module {
-    fn from(inner: Lovm2Module) -> Self {
+impl From<lovm2::prelude::LV2Module> for Module {
+    fn from(inner: lovm2::prelude::LV2Module) -> Self {
         Self {
             inner: Some(inner.into()),
         }
@@ -29,7 +27,7 @@ impl Module {
     pub fn load(_this: &PyAny, path: &PyAny) -> PyResult<Self> {
         let path = path.str()?.to_str()?;
 
-        match Lovm2Module::load_from_file(path) {
+        match lovm2::prelude::LV2Module::load_from_file(path) {
             Ok(inner) => Ok(Self { inner: Some(inner) }),
             Err(err) => Err(PyRuntimeError::new_err(err.to_string())),
         }
@@ -63,7 +61,7 @@ impl Module {
         self.inner
             .as_ref()
             .ok_or_else(|| PyRuntimeError::new_err("inner module not loaded"))
-            .map(Lovm2Module::location)
+            .map(lovm2::prelude::LV2Module::location)
     }
 }
 

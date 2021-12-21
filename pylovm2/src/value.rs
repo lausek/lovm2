@@ -4,15 +4,14 @@ use pyo3::types::*;
 
 use crate::err_to_exception;
 use crate::expr::any_to_pylovm2_value;
-use crate::lv2::*;
 
-pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
+pub fn lovm2py(val: &lovm2::value::LV2Value, py: Python) -> PyObject {
     match val {
-        Lovm2ValueRaw::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
-        Lovm2ValueRaw::Int(n) => (*n).into_py(py),
-        Lovm2ValueRaw::Float(n) => (*n).into_py(py),
-        Lovm2ValueRaw::Str(s) => s.into_py(py),
-        Lovm2ValueRaw::Dict(dict) => {
+        lovm2::value::LV2Value::Bool(b) => (if *b { 1. } else { 0. }).into_py(py),
+        lovm2::value::LV2Value::Int(n) => (*n).into_py(py),
+        lovm2::value::LV2Value::Float(n) => (*n).into_py(py),
+        lovm2::value::LV2Value::Str(s) => s.into_py(py),
+        lovm2::value::LV2Value::Dict(dict) => {
             let map = PyDict::new(py);
 
             for (key, val) in dict.iter() {
@@ -23,26 +22,26 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
 
             map.to_object(py)
         }
-        Lovm2ValueRaw::List(list) => list
+        lovm2::value::LV2Value::List(list) => list
             .iter()
             .map(|item| lovm2py(item, py))
             .collect::<Vec<PyObject>>()
             .to_object(py),
-        Lovm2ValueRaw::Nil => py.None(),
-        Lovm2ValueRaw::Ref(r) => {
+        lovm2::value::LV2Value::Nil => py.None(),
+        lovm2::value::LV2Value::Ref(r) => {
             if !r.is_empty() {
                 lovm2py(&r.borrow().unwrap(), py)
             } else {
                 py.None()
             }
         }
-        Lovm2ValueRaw::Iter(it) => {
+        lovm2::value::LV2Value::Iter(it) => {
             let vals = it.borrow().clone().collect();
-            let ls = lovm2::value::box_value(Lovm2ValueRaw::List(vals));
+            let ls = lovm2::value::box_value(lovm2::value::LV2Value::List(vals));
 
             lovm2py(&ls, py)
         }
-        Lovm2ValueRaw::Any(_) => todo!(),
+        lovm2::value::LV2Value::Any(_) => todo!(),
     }
 }
 
@@ -50,16 +49,16 @@ pub fn lovm2py(val: &Lovm2ValueRaw, py: Python) -> PyObject {
 #[pyclass(unsendable)]
 #[derive(Clone)]
 pub struct Value {
-    pub(crate) inner: Lovm2Value,
+    pub(crate) inner: lovm2::value::LV2ValueRef,
 }
 
 impl Value {
-    pub fn from(inner: Lovm2Value) -> Self {
+    pub fn from(inner: lovm2::value::LV2ValueRef) -> Self {
         Self { inner }
     }
 
-    pub fn from_struct(inner: Lovm2ValueRaw) -> Self {
-        Self::from(Lovm2Ref::from(inner))
+    pub fn from_struct(inner: lovm2::value::LV2Value) -> Self {
+        Self::from(lovm2::value::LV2ValueRef::from(inner))
     }
 }
 
@@ -74,15 +73,15 @@ impl Value {
 impl pyo3::class::basic::PyObjectProtocol for Value {
     fn __bool__(&self) -> PyResult<bool> {
         let result = match &*self.inner.borrow().unwrap() {
-            Lovm2ValueRaw::Bool(b) => *b,
-            Lovm2ValueRaw::Int(n) => *n == 0,
-            Lovm2ValueRaw::Float(n) => *n as i64 == 0,
-            Lovm2ValueRaw::Str(s) => !s.is_empty(),
-            Lovm2ValueRaw::Dict(d) => !d.is_empty(),
-            Lovm2ValueRaw::List(l) => !l.is_empty(),
-            Lovm2ValueRaw::Nil => false,
+            lovm2::value::LV2Value::Bool(b) => *b,
+            lovm2::value::LV2Value::Int(n) => *n == 0,
+            lovm2::value::LV2Value::Float(n) => *n as i64 == 0,
+            lovm2::value::LV2Value::Str(s) => !s.is_empty(),
+            lovm2::value::LV2Value::Dict(d) => !d.is_empty(),
+            lovm2::value::LV2Value::List(l) => !l.is_empty(),
+            lovm2::value::LV2Value::Nil => false,
             // TODO: is a reference true?
-            Lovm2ValueRaw::Ref(_) => false,
+            lovm2::value::LV2Value::Ref(_) => false,
             _ => todo!(),
         };
 
@@ -105,7 +104,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
             .borrow()
             .unwrap()
             .clone()
-            .conv(Lovm2ValueType::Int)
+            .conv(lovm2::value::LV2ValueType::Int)
         {
             Ok(val) => Ok(Value::from_struct(val).to_py(py)),
             _ => Err(PyRuntimeError::new_err(
@@ -123,7 +122,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
             .borrow()
             .unwrap()
             .clone()
-            .conv(Lovm2ValueType::Float)
+            .conv(lovm2::value::LV2ValueType::Float)
         {
             Ok(val) => Ok(Value::from_struct(val).to_py(py)),
             _ => Err(PyRuntimeError::new_err(

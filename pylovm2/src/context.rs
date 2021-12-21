@@ -1,15 +1,14 @@
 use pyo3::prelude::*;
 
-use crate::lv2::*;
 use crate::value::lovm2py;
 
 #[pyclass(unsendable)]
 pub struct Context {
-    inner: *mut Lovm2Context,
+    inner: *mut lovm2::vm::LV2Context,
 }
 
 impl Context {
-    pub fn new(inner: *mut Lovm2Context) -> Self {
+    pub fn new(inner: *mut lovm2::vm::LV2Context) -> Self {
         Self { inner }
     }
 }
@@ -20,7 +19,7 @@ impl Context {
         unsafe {
             match (*self.inner).frame_mut() {
                 Ok(frame) => {
-                    let frame_ref = frame as *mut Lovm2Frame;
+                    let frame_ref = frame as *mut lovm2::vm::LV2StackFrame;
                     let obj = Py::new(py, Frame::new(frame_ref))?.to_object(py);
 
                     Ok(obj)
@@ -43,11 +42,11 @@ impl Context {
 
 #[pyclass(unsendable)]
 pub struct Frame {
-    inner: *mut Lovm2Frame,
+    inner: *mut lovm2::vm::LV2StackFrame,
 }
 
 impl Frame {
-    pub fn new(inner: *mut Lovm2Frame) -> Self {
+    pub fn new(inner: *mut lovm2::vm::LV2StackFrame) -> Self {
         Self { inner }
     }
 }

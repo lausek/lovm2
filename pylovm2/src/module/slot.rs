@@ -2,44 +2,63 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 
 use lovm2::error::err_custom;
-use lovm2::gen::{HasBlock, Hir};
-use lovm2::Variable;
+//use lovm2::gen::{HasBlock, Hir};
+//use lovm2::Variable;
 
 use crate::err_to_exception;
-use crate::lv2::*;
 
 use super::builder::*;
 
+#[pyclass(unsendable)]
+#[derive(Clone)]
+pub struct LV2Block {
+    pub inner: lovm2::prelude::LV2Block,
+}
+
+impl LV2Block {
+    pub fn new() -> Self {
+        Self {
+            inner: lovm2::prelude::LV2Block::new(),
+        }
+    }
+}
+
+pub type LV2Function = (Vec<lovm2::prelude::LV2Variable>, Py<LV2Block>);
+
 #[derive(Clone)]
 pub(super) enum ModuleBuilderSlot {
-    Lovm2Hir(Hir),
+    // TODO: rename to LV2Function
+    Lovm2Hir(LV2Function),
     PyFn(PyObject),
 }
 
 impl ModuleBuilderSlot {
     pub fn new() -> Self {
-        Self::Lovm2Hir(Hir::new())
+        Python::with_gil(|py| {
+            let block = Py::new(py, LV2Block::new()).unwrap();
+            Self::Lovm2Hir((vec![], block))
+        })
     }
 
     pub fn with_args(args: &PyList) -> Self {
-        let vars = args
-            .iter()
-            .map(|arg| arg.str().unwrap().to_string())
-            .map(Variable::from)
-            .collect();
-
-        Self::Lovm2Hir(Hir::with_args(vars))
+        Python::with_gil(|py| {
+            let block = Py::new(py, LV2Block::new()).unwrap();
+            let args = args
+                .iter()
+                .map(|arg| arg.str().unwrap().to_string())
+                .map(lovm2::prelude::LV2Variable::from)
+                .collect();
+            Self::Lovm2Hir((args, block))
+        })
     }
 
     pub fn pyfn(pyfn: PyObject) -> Self {
         Self::PyFn(pyfn)
     }
 
-    pub fn code(&mut self) -> PyResult<BlockBuilder> {
+    pub fn code(&mut self) -> PyResult<Py<LV2Block>> {
         if let Self::Lovm2Hir(ref mut hir) = self {
-            let inner = hir.block_mut() as *mut Lovm2Block;
-
-            Ok(BlockBuilder { inner })
+            Ok(hir.1.clone())
         } else {
             Err(err_to_exception(err_custom("slot is not a hir")))
         }

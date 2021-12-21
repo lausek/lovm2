@@ -50,7 +50,7 @@ class Internals:
     def __init__(self):
         self.vm = pylovm2.Vm()
         self.mod = pylovm2.ModuleBuilder("main")
-        self.main = self.mod.add(pylovm2.ENTRY_POINT)
+        self.main = self.mod.add(pylovm2.LV2_ENTRY_POINT)
 
 @pytest.fixture
 def internals():

@@ -42,7 +42,7 @@ pub enum LV2Expr {
         key: Box<LV2Expr>,
     },
     // TODO: change name to `Set`
-    Insert {
+    Set {
         base: Box<LV2Expr>,
         key: Box<LV2Expr>,
         value: Box<LV2Expr>,
@@ -154,7 +154,7 @@ impl LV2Expr {
             LV2Expr::Call(_) => todo!(),
             LV2Expr::Conv { .. } => todo!(),
             LV2Expr::Get { .. } => todo!(),
-            LV2Expr::Insert { base, key, value } => {
+            LV2Expr::Set { base, key, value } => {
                 let mut base = base.eval(ctx)?;
                 let (key, value) = (key.eval(ctx)?, value.eval(ctx)?);
                 base.set(&key, value)?;
@@ -226,7 +226,7 @@ impl LV2Expr {
         }
     }
 
-    pub fn insert<T: Into<LV2Expr>, U: Into<LV2Expr>>(mut self, key: T, value: U) -> Self {
+    pub fn set<T: Into<LV2Expr>, U: Into<LV2Expr>>(mut self, key: T, value: U) -> Self {
         if let LV2Expr::Value {
             val: LV2Value::Dict(_) | LV2Value::List(_),
             boxed,
@@ -235,7 +235,7 @@ impl LV2Expr {
             *boxed = true;
         }
 
-        LV2Expr::Insert {
+        LV2Expr::Set {
             base: Box::new(self),
             key: Box::new(key.into()),
             value: Box::new(value.into()),
@@ -390,8 +390,8 @@ impl LV2HirLowering for LV2Expr {
                 key.lower(runtime);
                 runtime.emit(LirElement::RGet);
             }
-            LV2Expr::Insert { base, key, value } => {
-                lower_insert(runtime, base, key, value);
+            LV2Expr::Set { base, key, value } => {
+                lower_set(runtime, base, key, value);
             }
             LV2Expr::IterCreate { expr } => {
                 expr.lower(runtime);
@@ -519,7 +519,7 @@ impl LV2HirLowering for ExprBranch {
     }
 }
 
-fn lower_insert<'lir, 'hir: 'lir>(
+fn lower_set<'lir, 'hir: 'lir>(
     runtime: &mut LV2HirLoweringRuntime<'lir>,
     base: &'hir LV2Expr,
     key: &'hir LV2Expr,

@@ -1,26 +1,24 @@
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use lovm2::code;
-use lovm2::error;
-use lovm2::prelude::Lovm2Result;
-use lovm2::vm;
+//use lovm2::code;
+use lovm2::error::*;
+//use lovm2::prelude::Lovm2Result;
+//use lovm2::vm;
 
 use crate::exception_to_err;
 use crate::expr::any_to_value;
 use crate::value::Value;
 
-pub type Lovm2CodeObject = lovm2::code::CodeObject;
-
-// TODO: change this to hold a Rc<CallProtocol>
+// TODO: change this to hold a Rc<LV2CallProtocol>
 #[pyclass(unsendable)]
 #[derive(Debug)]
 pub struct CodeObject {
     inner: CodeObjectWrapper,
 }
 
-impl code::CallProtocol for CodeObject {
-    fn run(&self, vm: &mut vm::Vm) -> Lovm2Result<()> {
+impl lovm2::code::LV2CallProtocol for CodeObject {
+    fn run(&self, vm: &mut lovm2::vm::LV2Vm) -> lovm2::prelude::LV2Result<()> {
         match &self.inner {
             CodeObjectWrapper::Lovm2(co) => co.run(vm),
             CodeObjectWrapper::Py(pyfn) => {
@@ -44,7 +42,7 @@ impl code::CallProtocol for CodeObject {
 
                 // convert result of call into ruvalue representation
                 let res = any_to_value(res.as_ref(py))
-                    .or_else(|_| error::err_from_string("error in ruvalue conversion"))?;
+                    .or_else(|_| err_from_string("error in ruvalue conversion"))?;
 
                 vm.context_mut().push_value(res.clone());
 
@@ -54,8 +52,8 @@ impl code::CallProtocol for CodeObject {
     }
 }
 
-impl From<Lovm2CodeObject> for CodeObject {
-    fn from(inner: Lovm2CodeObject) -> Self {
+impl From<lovm2::code::LV2CodeObject> for CodeObject {
+    fn from(inner: lovm2::code::LV2CodeObject) -> Self {
         Self {
             inner: CodeObjectWrapper::Lovm2(inner),
         }
@@ -73,6 +71,6 @@ impl From<PyObject> for CodeObject {
 // needed because pyo3 cannot use pyclass on enum
 #[derive(Debug)]
 enum CodeObjectWrapper {
-    Lovm2(Lovm2CodeObject),
+    Lovm2(lovm2::code::LV2CodeObject),
     Py(PyObject),
 }
