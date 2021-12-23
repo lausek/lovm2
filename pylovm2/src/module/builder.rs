@@ -182,7 +182,6 @@ impl LV2Block {
         Ok(())
     }
 
-    // TODO: rename this
     pub fn trigger(&mut self, id: u16) -> PyResult<()> {
         self.block().trigger(id);
         Ok(())
