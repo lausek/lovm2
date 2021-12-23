@@ -39,9 +39,7 @@ fn dynamic_call() {
     let (n, i) = &lv2_var!(n, i);
 
     let mut vm = run_module_test(|builder| {
-        let hir = builder
-            .add("return_argn")
-            .assign(n, lv2_call!(argn));
+        let hir = builder.add("return_argn").assign(n, lv2_call!(argn));
 
         hir.assign(i, n)
             .repeat_until(LV2Expr::from(i).eq(0))

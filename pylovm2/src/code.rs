@@ -1,10 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-//use lovm2::code;
 use lovm2::error::*;
-//use lovm2::prelude::Lovm2Result;
-//use lovm2::vm;
 
 use crate::exception_to_err;
 use crate::expr::any_to_value;
