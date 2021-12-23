@@ -113,6 +113,7 @@ impl Optimizer for StandardOptimizer {
                         LV2Operator2::Add => left.add(right),
                         LV2Operator2::Sub => left.sub(right),
                         LV2Operator2::Mul => left.mul(right),
+                        // TODO: avoid "divide by zero" panic
                         LV2Operator2::Div => left.div(right),
                         LV2Operator2::Pow => left.pow(right),
                         LV2Operator2::Rem => left.rem(right),

@@ -83,6 +83,7 @@ impl LV2Vm {
         self.add_module(module, Some(false))
     }
 
+    // TODO: why do we need this?
     pub fn add_main_module(&mut self, module: &mut LV2Module) -> PyResult<()> {
         let module = module
             .inner

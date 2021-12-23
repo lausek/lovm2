@@ -137,6 +137,7 @@ impl LV2Block {
         Ok(())
     }
 
+    // TODO: remove and add `local`/`global` method instead
     pub fn assign_global(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
         let (target, source) = (&any_to_ident(target)?, any_to_expr(source)?);
         self.block().global(target);
@@ -155,6 +156,7 @@ impl LV2Block {
         Ok(LV2Branch::from_ptr(branch))
     }
 
+    // TODO: this is actually not part of `LV2Block`
     #[args(args = "*")]
     pub fn call(&mut self, name: String, args: &PyTuple) -> PyResult<()> {
         let mut call = lovm2::prelude::LV2Call::new(name);
@@ -168,11 +170,13 @@ impl LV2Block {
         Ok(())
     }
 
+    // TODO: rename this
     pub fn load(&mut self, name: &LV2Expr) -> PyResult<()> {
         self.block().import(name.inner.clone());
         Ok(())
     }
 
+    // TODO: rename this
     pub fn interrupt(&mut self, id: u16) -> PyResult<()> {
         self.block().trigger(id);
         Ok(())
@@ -211,6 +215,12 @@ impl LV2Block {
     pub fn ret(&mut self, val: &PyAny) -> PyResult<()> {
         let val = any_to_expr(val)?;
         self.block().return_value(val);
+        Ok(())
+    }
+
+    pub fn step(&mut self, expr: &PyAny) -> PyResult<()> {
+        let expr = any_to_expr(expr)?;
+        self.block().step(expr);
         Ok(())
     }
 }

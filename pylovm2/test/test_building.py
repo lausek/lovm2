@@ -233,3 +233,17 @@ class TestBuilding(Test):
             assert 5 == int(ctx.globals(m))
 
         self.run_module_test(internals.mod.build(), testfn)
+
+    def test_putting_expr(self, internals):
+        var, val = LV2Variable("var"), LV2Variable("val")
+
+        internals.main.step(LV2Expr.call("wrt", 5))
+        internals.main.interrupt(10)
+
+        wrt_hir = internals.mod.add("wrt", [val])
+        wrt_hir.assign_global(var, val)
+
+        def testfn(ctx):
+            assert 5 == int(ctx.globals(var))
+
+        self.run_module_test(internals.mod.build(), testfn)

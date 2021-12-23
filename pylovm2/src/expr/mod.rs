@@ -105,8 +105,11 @@ auto_implement!(Div, div);
 auto_implement!(Shl, shl);
 auto_implement!(Shr, shr);
 auto_implement!(Rem, rem);
+// TODO: this should be called and_
 auto_implement!(And, land);
+// TODO: this should be called or_
 auto_implement!(Or, lor);
+// TODO: xor is missing
 auto_implement!(Eq, eq);
 auto_implement!(Ne, ne);
 auto_implement!(Ge, ge);
@@ -122,6 +125,7 @@ impl LV2Expr {
         any_to_expr(from).map(|inner| Self { inner })
     }
 
+    // TODO: this should be called not_
     pub fn lnot(&self) -> Self {
         Self {
             inner: self.inner.clone().not(),
@@ -182,6 +186,9 @@ impl LV2Expr {
             })
         }
     }
+
+    // TODO `has_next` is missing
+    // TODO `next` is missing
 
     pub fn reverse(&mut self) -> PyResult<Self> {
         Ok(LV2Expr {

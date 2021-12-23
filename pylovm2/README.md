@@ -9,24 +9,27 @@ pip3 install pylovm2
 ## Example
 
 ``` python
-from pylovm2 import Expr, ModuleBuilder, Vm
+from pylovm2 import LV2Expr, LV2ModuleBuilder, LV2Variable, LV2Vm
 
 # initialize a new module
-module = ModuleBuilder()
+module = LV2ModuleBuilder()
+
+# declare the variables we want to use
+n, a, b = LV2Variable("n"), LV2Variable("a"), LV2Variable("b")
 
 # add the main entry point
 main_hir = module.entry()
-main_hir.assign('n', 2)
+main_hir.assign("n", 2)
 # call the module local function `add` with the value of `n`
-main_hir.call('print', 'got result:', Expr.call('add', Expr.var('n'), 1), '\n')
-main_hir.call('print', 'got result from pyfn:', Expr.call('pyadd', Expr.var('n'), 1), '\n')
+main_hir.call("print", "got result:", LV2Expr.call("add", n, 1), "\n")
+main_hir.call("print", "got result from pyfn:", LV2Expr.call("pyadd", n, 1), "\n")
 
 # add new entry with arguments `a` and `b`
-add_hir = module.add('add', ['a', 'b'])
-add_hir.ret(Expr.add(Expr.var('a'), Expr.var('b')))
+add_hir = module.add("add", [a, b])
+add_hir.ret(LV2Expr(a).add(b))
 
 # add a python function to the module
-module.add_pyfn('pyadd', lambda a, b: a.to_py() + b.to_py())
+module.add_pyfn("pyadd", lambda a, b: a.to_py() + b.to_py())
 
 # build the module and print it
 module = module.build()
@@ -34,7 +37,7 @@ print(module)
 
 # create vm, load and run module
 vm = Vm.with_std()
-vm.add_module(module)
+vm.add_main_module(module)
 vm.run()
 ```
 
