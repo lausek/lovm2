@@ -63,8 +63,7 @@ class TestBuilding(Test):
 
         result = internals.mod.build()
         print(result)
-        assert False
-        #self.run_module_test(result, lambda ctx: None)
+        self.run_module_test(result, lambda ctx: None)
 
     def test_repeat_endless(self, internals):
         main_hir = internals.main
