@@ -1,11 +1,11 @@
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
-use pyo3::types::{PyString, PyTuple};
+use pyo3::types::PyTuple;
 
-use crate::context::Context;
-use crate::expr::any_to_expr;
+use crate::context::LV2Context;
+use crate::expr::{any_to_expr, any_to_ident};
 use crate::module::LV2Module;
-use crate::value::Value;
+use crate::value::LV2Value;
 use crate::{err_to_exception, exception_to_err};
 
 #[pyclass(unsendable)]
@@ -46,8 +46,8 @@ impl LV2Vm {
     }
 
     #[args(args = "*")]
-    pub fn call(&mut self, name: &PyString, args: &PyTuple) -> PyResult<Value> {
-        let name = name.to_str()?.to_string();
+    pub fn call(&mut self, name: &PyAny, args: &PyTuple) -> PyResult<LV2Value> {
+        let name = any_to_ident(name)?;
         let ruargs: PyResult<Vec<lovm2::value::LV2Value>> = args
             .iter()
             .map(|arg| {
@@ -59,12 +59,12 @@ impl LV2Vm {
 
         self.inner
             .call(&name, ruargs?.as_slice())
-            .map(Value::from_struct)
+            .map(LV2Value::from_struct)
             .map_err(err_to_exception)
     }
 
-    pub fn ctx(&mut self) -> PyResult<Context> {
-        Ok(Context::new(self.inner.context_mut()))
+    pub fn ctx(&mut self) -> PyResult<LV2Context> {
+        Ok(LV2Context::new(self.inner.context_mut()))
     }
 
     pub fn add_module(&mut self, module: &mut LV2Module, namespaced: Option<bool>) -> PyResult<()> {
@@ -112,7 +112,7 @@ impl LV2Vm {
                 let py = guard.python();
 
                 let context_ref = vm.context_mut() as *mut lovm2::vm::LV2Context;
-                let ctx = Py::new(py, Context::new(context_ref)).unwrap();
+                let ctx = Py::new(py, LV2Context::new(context_ref)).unwrap();
                 let args = PyTuple::new(py, vec![ctx]);
 
                 if let Err(e) = func.call1(py, args) {

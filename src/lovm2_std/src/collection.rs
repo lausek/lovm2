@@ -85,7 +85,7 @@ fn filter(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result
         let item = it.next()?;
 
         if vm
-            .call(func_name.as_ref(), &[item.clone()])?
+            .call(func_name.clone(), &[item.clone()])?
             .as_bool_inner()?
         {
             ls.push(item);
@@ -107,7 +107,7 @@ fn map(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV
 
     while it.has_next() {
         let item = it.next()?;
-        let result = vm.call(func_name.as_ref(), &[item])?;
+        let result = vm.call(func_name.clone(), &[item])?;
 
         ls.push(result);
     }

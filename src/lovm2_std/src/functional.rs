@@ -17,7 +17,7 @@ pub fn argn(vm: &mut LV2Vm) -> LV2Result<i64> {
 pub fn call(vm: &mut LV2Vm, function_name: String, mut args: LV2Value) -> LV2Result<LV2Value> {
     args.unref_inplace()?;
     match args {
-        LV2Value::List(args) => vm.call(function_name.as_ref(), args.as_slice()),
+        LV2Value::List(args) => vm.call(function_name.clone(), args.as_slice()),
         _ => err_not_supported(),
     }
 }

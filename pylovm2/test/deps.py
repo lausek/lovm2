@@ -52,7 +52,7 @@ class Test:
         vm.add_main_module(module)
         vm.run()
 
-        self.assertTrue(out["called"])
+        assert out["called"], "no tests were executed"
 
 
 class Internals:

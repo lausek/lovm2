@@ -5,7 +5,7 @@ use lovm2::error::*;
 
 use crate::exception_to_err;
 use crate::expr::any_to_value;
-use crate::value::Value;
+use crate::value::LV2Value;
 
 // TODO: change this to hold a Rc<LV2CallProtocol>
 #[pyclass(unsendable)]
@@ -27,7 +27,7 @@ impl lovm2::code::LV2CallProtocol for CodeObject {
 
                 for _ in 0..frame.argn {
                     let val = vm.context_mut().pop_value()?;
-                    let obj: PyObject = Value::from_struct(val).into_py(py);
+                    let obj: PyObject = LV2Value::from_struct(val).into_py(py);
 
                     args.insert(0, obj);
                 }

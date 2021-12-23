@@ -187,8 +187,17 @@ impl LV2Expr {
         }
     }
 
-    // TODO `has_next` is missing
-    // TODO `next` is missing
+    pub fn has_next(&mut self) -> PyResult<Self> {
+        Ok(LV2Expr {
+            inner: self.inner.clone().has_next(),
+        })
+    }
+
+    pub fn next(&mut self) -> PyResult<Self> {
+        Ok(LV2Expr {
+            inner: self.inner.clone().next(),
+        })
+    }
 
     pub fn reverse(&mut self) -> PyResult<Self> {
         Ok(LV2Expr {

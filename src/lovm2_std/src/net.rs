@@ -87,7 +87,7 @@ fn serve(vm: &mut LV2Vm, host: String, callback: String) -> LV2Result<()> {
             .unwrap();
 
         let (status_code, content_type, body) = {
-            let response = vm.call(callback.as_ref(), &[parsed_request.into()])?;
+            let response = vm.call(callback.clone(), &[parsed_request.into()])?;
             let status_code = response.get(&0.into())?.as_integer_inner()?;
             let content_type = response.get(&1.into())?.as_str_inner()?;
             let body = response.get(&2.into())?.as_str_inner()?;

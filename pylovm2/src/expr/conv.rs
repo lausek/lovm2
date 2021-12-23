@@ -2,7 +2,7 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList, PyTuple};
 
-use crate::value::Value;
+use crate::value::LV2Value;
 use crate::{LV2Expr, LV2Variable};
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<lovm2::prelude::LV2Expr> {
@@ -127,7 +127,7 @@ pub fn any_to_value(any: &PyAny) -> PyResult<lovm2::value::LV2Value> {
         }
         "NoneType" => Ok(lovm2::value::LV2Value::Nil),
         "Value" => {
-            let data = any.extract::<Value>()?;
+            let data = any.extract::<LV2Value>()?;
 
             Ok(lovm2::value::LV2Value::Ref(data.inner))
         }
@@ -149,12 +149,12 @@ pub fn any_to_value(any: &PyAny) -> PyResult<lovm2::value::LV2Value> {
     }
 }
 
-pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<Value> {
+pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<LV2Value> {
     let ty = any.get_type().name();
 
     match ty.as_ref() {
-        stringify!(Value) => any.extract::<Value>(),
-        _ => any_to_value(any).map(Value::from_struct),
+        stringify!(Value) => any.extract::<LV2Value>(),
+        _ => any_to_value(any).map(LV2Value::from_struct),
     }
 }
 

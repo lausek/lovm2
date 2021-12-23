@@ -115,8 +115,12 @@ impl LV2Vm {
     }
 
     /// Call a function by name with given arguments.
-    pub fn call(&mut self, name: &str, args: &[LV2Value]) -> LV2Result<LV2Value> {
-        let name = LV2Variable::from(name);
+    pub fn call<T: Into<LV2Variable>>(
+        &mut self,
+        name: T,
+        args: &[LV2Value],
+    ) -> LV2Result<LV2Value> {
+        let name = name.into();
         let co = self.ctx.lookup_code_object(&name)?;
 
         let mut argn: u8 = 0;
@@ -165,10 +169,7 @@ impl LV2Vm {
     }
 
     /// Add the module and all of its slots to `scope`.
-    pub fn add_module<T>(&mut self, module: T, namespaced: bool) -> LV2Result<()>
-    where
-        T: Into<LV2Module>,
-    {
+    pub fn add_module<T: Into<LV2Module>>(&mut self, module: T, namespaced: bool) -> LV2Result<()> {
         let module = module.into();
 
         if self.modules.get(module.name()).is_none() {
@@ -246,10 +247,7 @@ impl LV2Vm {
     }
 
     /// Add the module and all of its slots to `scope`.
-    pub fn add_main_module<T>(&mut self, module: T) -> LV2Result<()>
-    where
-        T: Into<LV2Module>,
-    {
+    pub fn add_main_module<T: Into<LV2Module>>(&mut self, module: T) -> LV2Result<()> {
         let module = module.into();
 
         if let Some(co) = module.slots.get(&crate::module::LV2_ENTRY_POINT.into()) {

@@ -48,11 +48,11 @@ pub fn lovm2py(val: &lovm2::value::LV2Value, py: Python) -> PyObject {
 // TODO: implement ToPyObject, FromPyObject for this type
 #[pyclass(unsendable)]
 #[derive(Clone)]
-pub struct Value {
+pub struct LV2Value {
     pub(crate) inner: lovm2::value::LV2ValueRef,
 }
 
-impl Value {
+impl LV2Value {
     pub fn from(inner: lovm2::value::LV2ValueRef) -> Self {
         Self { inner }
     }
@@ -63,14 +63,14 @@ impl Value {
 }
 
 #[pymethods]
-impl Value {
+impl LV2Value {
     pub fn to_py(&self, py: Python) -> PyObject {
         lovm2py(&*self.inner.borrow().unwrap(), py)
     }
 }
 
 #[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for Value {
+impl pyo3::class::basic::PyObjectProtocol for LV2Value {
     fn __bool__(&self) -> PyResult<bool> {
         let result = match &*self.inner.borrow().unwrap() {
             lovm2::value::LV2Value::Bool(b) => *b,
@@ -94,7 +94,7 @@ impl pyo3::class::basic::PyObjectProtocol for Value {
 }
 
 #[pyproto]
-impl pyo3::class::number::PyNumberProtocol for Value {
+impl pyo3::class::number::PyNumberProtocol for LV2Value {
     fn __int__(&self) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
@@ -106,7 +106,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
             .clone()
             .conv(lovm2::value::LV2ValueType::Int)
         {
-            Ok(val) => Ok(Value::from_struct(val).to_py(py)),
+            Ok(val) => Ok(LV2Value::from_struct(val).to_py(py)),
             _ => Err(PyRuntimeError::new_err(
                 "cannot convert value to int".to_string(),
             )),
@@ -124,7 +124,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
             .clone()
             .conv(lovm2::value::LV2ValueType::Float)
         {
-            Ok(val) => Ok(Value::from_struct(val).to_py(py)),
+            Ok(val) => Ok(LV2Value::from_struct(val).to_py(py)),
             _ => Err(PyRuntimeError::new_err(
                 "cannot convert value to float".to_string(),
             )),
@@ -133,7 +133,7 @@ impl pyo3::class::number::PyNumberProtocol for Value {
 }
 
 #[pyproto]
-impl pyo3::class::mapping::PyMappingProtocol for Value {
+impl pyo3::class::mapping::PyMappingProtocol for LV2Value {
     fn __delitem__(&mut self, key: &PyAny) -> PyResult<()> {
         let key = any_to_pylovm2_value(key)?;
         let key = key.inner.borrow().unwrap();
@@ -154,7 +154,7 @@ impl pyo3::class::mapping::PyMappingProtocol for Value {
             Ok(val) => {
                 let val = lovm2::value::box_value(val);
 
-                Ok(Value::from_struct(val).to_py(py))
+                Ok(LV2Value::from_struct(val).to_py(py))
             }
             Err(_) => Err(PyRuntimeError::new_err(format!(
                 "key {} not found on value",

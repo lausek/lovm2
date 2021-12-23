@@ -247,3 +247,20 @@ class TestBuilding(Test):
             assert 5 == int(ctx.globals(var))
 
         self.run_module_test(internals.mod.build(), testfn)
+
+    def test_manual_iteration(self, internals):
+        it, c, has = LV2Variable("it"), LV2Variable("c"), LV2Variable("has")
+
+        main_hir = internals.main
+        main_hir.assign_global(c, 0)
+        main_hir.assign_global(it, LV2Expr([1, 2, 3, 4]).to_iter())
+        repeat = main_hir.repeat_until(LV2Expr(it).has_next().lnot())
+        repeat.assign_global(c, LV2Expr(it).next().add(c))
+        main_hir.assign_global(has, LV2Expr(it).has_next())
+        main_hir.interrupt(10)
+
+        def testfn(ctx):
+            assert 10 == int(ctx.globals(c))
+            assert False == ctx.globals(has)
+
+        self.run_module_test(internals.mod.build(), testfn)
