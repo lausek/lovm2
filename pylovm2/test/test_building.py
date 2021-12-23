@@ -53,14 +53,18 @@ class TestBuilding(Test):
 
         self.assertIsInstance(result, pylovm2.Module)
 
-    def test_repeat(self, internals):
+    def test_repeat_until(self, internals):
+        i = Expr.var('i')
+
         main_hir = internals.main
-        main_hir.assign('i', 0)
-        main_hir.repeat_until(Expr.eq(Expr.var('i'), 10)).assign('i', Expr.add(Expr.var('i'), 1))
+        main_hir.assign(i, 0)
+        main_hir.repeat_until(Expr.eq(i, 10)).assign(i, Expr.add(i, 1))
         main_hir.interrupt(10)
 
         result = internals.mod.build()
-        self.run_module_test(result, lambda ctx: None)
+        print(result)
+        assert False
+        #self.run_module_test(result, lambda ctx: None)
 
     def test_repeat_endless(self, internals):
         main_hir = internals.main
@@ -162,12 +166,12 @@ class TestBuilding(Test):
 
         sum_hir = internals.mod.add('sum')
         sum_hir.assign(var, 0)
-        sum_hir.repeat_iterating([1, 2, 3, 4], 'i').assign('sum', Expr.add(var, Expr.var('i')))
+        sum_hir.repeat_iterating([1, 2, 3, 4], 'i').assign(var, Expr.add(var, Expr.var('i')))
         sum_hir.ret(var)
 
         iter_sum_hir = internals.mod.add('iter_sum', ['collection'])
         iter_sum_hir.assign(var, 0)
-        iter_sum_hir.assign('it', Expr.iter(Expr.var('collection')))
+        iter_sum_hir.assign('it', Expr.var('collection').to_iter())
         iter_sum_hir.repeat_iterating(Expr.var('it'), 'i').assign('sum', Expr.add(var, Expr.var('i')))
         iter_sum_hir.ret(var)
 

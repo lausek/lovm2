@@ -25,6 +25,22 @@ impl LV2Block {
 
 pub type LV2Function = (Vec<lovm2::prelude::LV2Variable>, Py<LV2Block>);
 
+#[pyclass(unsendable)]
+#[derive(Clone)]
+pub struct LV2Repeat {
+    pub ty: lovm2::prelude::LV2RepeatType,
+    pub block: Py<LV2Block>,
+}
+
+impl lovm2::prelude::LV2HirLowering for LV2Repeat {
+    fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut lovm2::prelude::LV2HirLoweringRuntime<'lir>) {
+        Python::with_gil(|py| {
+            let block = self.block.as_ref(py).borrow();
+            lovm2::gen::lv2_lower_repeat(runtime, &self.ty, &block.inner);
+        })
+    }
+}
+
 #[derive(Clone)]
 pub(super) enum ModuleBuilderSlot {
     // TODO: rename to LV2Function

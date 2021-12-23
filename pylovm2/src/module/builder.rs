@@ -9,7 +9,7 @@ use lovm2::gen::LV2AddStatements as _;
 
 use crate::code::CodeObject;
 use crate::expr::{any_to_expr, any_to_ident, Expr};
-use crate::module::slot::LV2Block;
+use crate::module::slot::{LV2Block, LV2Repeat};
 
 use super::{Module, ModuleBuilderSlot};
 
@@ -135,7 +135,9 @@ pub struct BlockBuilder {
 
 #[pymethods]
 impl LV2Block {
-    pub fn assign(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
+    pub fn assign(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
+        let (target, source) = (&any_to_ident(target)?, any_to_expr(source)?);
+        self.inner.assign(target, source);
         // TODO: allow usage of Expr::Variable here
 
         // unsafe {
@@ -145,10 +147,10 @@ impl LV2Block {
         Ok(())
     }
 
-    pub fn assign_global(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
+    pub fn assign_global(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
         // TODO: allow usage of Expr::Variable here
 
-        let ident = &any_to_ident(n)?;
+        let (target, source) = (&any_to_ident(target)?, any_to_expr(source)?);
 
         self.inner.global(ident);
         self.inner.assign(ident, any_to_expr(expr)?);
@@ -156,7 +158,9 @@ impl LV2Block {
         Ok(())
     }
 
-    pub fn set(&mut self, n: &PyAny, expr: &PyAny) -> PyResult<()> {
+    pub fn set(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
+        let (target, source) = (any_to_expr(target)?, any_to_expr(source)?);
+        self.inner.set(target, source);
         // TODO: allow usage of Expr::Variable here
 
         // unsafe {
@@ -183,9 +187,7 @@ impl LV2Block {
             call = call.arg(any_to_expr(arg)?);
         }
 
-        // unsafe {
-        //     (*self.inner).step(call);
-        // }
+        self.inner.step(call);
 
         Ok(())
     }
@@ -203,9 +205,7 @@ impl LV2Block {
     }
 
     pub fn load(&mut self, name: &Expr) -> PyResult<()> {
-        // unsafe {
-        //     (*self.inner).import(name.inner.clone());
-        // }
+        self.inner.import(name.inner.clone());
 
         Ok(())
     }
@@ -219,17 +219,26 @@ impl LV2Block {
         Ok(())
     }
 
-    pub fn repeat(&mut self) -> PyResult<LV2Block> {
+    pub fn repeat(&mut self, py: Python) -> PyResult<Py<LV2Block>> {
+        let repeat = LV2Repeat {
+            ty: lovm2::prelude::LV2RepeatType::Endless,
+            block: Py::new(py, LV2Block::new()).unwrap(),
+        };
+        let ret = repeat.block.clone();
+
+        self.inner.step(lovm2::prelude::LV2Statement::embed(std::rc::Rc::new(repeat)));
+
+        Ok(ret)
         // unsafe {
         //     let repeat = (*self.inner).repeat();
         //     let inner = repeat.block_mut() as *mut lovm2::prelude::LV2Block;
 
         //     Ok(BlockBuilder { inner })
         // }
-        todo!()
     }
 
     pub fn repeat_break(&mut self) -> PyResult<()> {
+        self.inner.break_repeat();
         // unsafe {
         //     (*self.inner).break_repeat();
         // }
@@ -238,6 +247,7 @@ impl LV2Block {
     }
 
     pub fn repeat_continue(&mut self) -> PyResult<()> {
+        self.inner.continue_repeat();
         // unsafe {
         //     (*self.inner).continue_repeat();
         // }
@@ -245,8 +255,15 @@ impl LV2Block {
         Ok(())
     }
 
-    pub fn repeat_until(&mut self, condition: &PyAny) -> PyResult<LV2Block> {
+    pub fn repeat_until(&mut self, condition: &PyAny, py: Python) -> PyResult<Py<LV2Block>> {
         let condition = any_to_expr(condition)?;
+        let repeat = LV2Repeat {
+            ty: lovm2::prelude::LV2RepeatType::Until { condition },
+            block: Py::new(py, LV2Block::new()).unwrap(),
+        };
+        let ret = repeat.block.clone();
+
+        self.inner.step(lovm2::prelude::LV2Statement::embed(std::rc::Rc::new(repeat)));
 
         // unsafe {
         //     let repeat = (*self.inner).repeat_until(condition);
@@ -257,8 +274,16 @@ impl LV2Block {
         todo!()
     }
 
-    pub fn repeat_iterating(&mut self, collection: &PyAny, item: String) -> PyResult<LV2Block> {
+    pub fn repeat_iterating(&mut self, collection: &PyAny, item: &PyAny, py: Python) -> PyResult<Py<LV2Block>> {
         let collection = any_to_expr(collection)?;
+        let item = any_to_ident(item)?;
+        let repeat = LV2Repeat {
+            ty: lovm2::prelude::LV2RepeatType::Iterating { collection, item },
+            block: Py::new(py, LV2Block::new()).unwrap(),
+        };
+        let ret = repeat.block.clone();
+
+        self.inner.step(lovm2::prelude::LV2Statement::embed(std::rc::Rc::new(repeat)));
 
         // unsafe {
         //     let repeat = (*self.inner).repeat_iterating(collection, item);
@@ -272,9 +297,12 @@ impl LV2Block {
     pub fn ret(&mut self, val: &PyAny) -> PyResult<()> {
         // unsafe {
         //     let val = any_to_expr(val)?;
-
         //     (*self.inner).return_value(val);
         // }
+        //     (*self.inner).return_value(val);
+        // }
+        let val = any_to_expr(val)?;
+        self.inner.return_value(val);
 
         Ok(())
     }
