@@ -342,12 +342,12 @@ fn folding_expr() {
     main.global(&a)
         .assign(
             &a,
-            LV2Expr::from_opn(LV2Operator2::Div, vec![8.into(), 4.into()]),
+            LV2Expr::from(8).expand_op(LV2Operator2::Div, vec![4.into()]),
         )
         .global(&n)
         .assign(
             &n,
-            LV2Expr::from_opn(LV2Operator2::Div, vec![8.into(), 4.into(), 2.into()]),
+            LV2Expr::from(8).expand_op(LV2Operator2::Div, vec![4.into(), 2.into()]),
         )
         .trigger(10);
 

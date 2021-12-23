@@ -177,14 +177,13 @@ impl LV2Expr {
         }
     }
 
-    pub fn from_opn(op: LV2Operator2, args: Vec<LV2Expr>) -> Self {
-        if args.len() < 2 {
-            unimplemented!();
+    pub fn expand_op(self, op: LV2Operator2, args: Vec<LV2Expr>) -> Self {
+        if args.is_empty() {
+            return self;
         }
 
         let mut it = args.into_iter();
-        let expr = Self::from_op(&op, it.next().unwrap(), it.next().unwrap());
-
+        let expr = Self::from_op(&op, self, it.next().unwrap());
         it.fold(expr, |left, right| Self::from_op(&op, left, right))
     }
 
