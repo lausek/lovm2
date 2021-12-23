@@ -13,17 +13,17 @@ fn native_set_predicates() {
         builder
             .add("init")
             .global(a)
-            .step(Assign::var(a, lv2_list!(true)))
+            .assign(a, lv2_list!(true))
             .global(b)
-            .step(Assign::var(b, lv2_list!(true, "abc", 1)))
+            .assign(b, lv2_list!(true, "abc", 1))
             .global(c)
-            .step(Assign::var(c, lv2_list!(true, "", 1)))
+            .assign(c, lv2_list!(true, "", 1))
             .global(d)
-            .step(Assign::var(d, lv2_list!()))
+            .assign(d, lv2_list!())
             .global(e)
-            .step(Assign::var(e, lv2_list!(false, true)))
+            .assign(e, lv2_list!(false, true))
             .global(f)
-            .step(Assign::var(f, lv2_list!(false)));
+            .assign(f, lv2_list!(false));
     });
 
     vm.call("init", &[]).unwrap();
@@ -58,13 +58,13 @@ fn native_contains() {
         builder
             .add("init")
             .global(n)
-            .step(Assign::var(n, 10))
+            .assign(n, 10)
             .global(s)
-            .step(Assign::var(s, "abc10d"))
+            .assign(s, "abc10d")
             .global(d)
-            .step(Assign::var(d, lv2_dict!(10 => 1, "b" => 2)))
+            .assign(d, lv2_dict!(10 => 1, "b" => 2))
             .global(ls)
-            .step(Assign::var(ls, lv2_list!("a", true, n)));
+            .assign(ls, lv2_list!("a", true, n));
     });
 
     vm.call("init", &[]).unwrap();
@@ -100,13 +100,13 @@ fn native_len() {
         builder
             .add("init")
             .global(n)
-            .step(Assign::var(n, 10))
+            .assign(n, 10)
             .global(s)
-            .step(Assign::var(s, "abc10d"))
+            .assign(s, "abc10d")
             .global(d)
-            .step(Assign::var(d, lv2_dict!(10 => 1, "b" => 2)))
+            .assign(d, lv2_dict!(10 => 1, "b" => 2))
             .global(ls)
-            .step(Assign::var(ls, lv2_list!("a", true, n)));
+            .assign(ls, lv2_list!("a", true, n));
     });
 
     vm.call("init", &[]).unwrap();
@@ -208,13 +208,13 @@ fn native_sort() {
         builder
             .add("init")
             .global(d)
-            .step(Assign::var(d, lv2_dict!("b" => 1, "a" => 1)))
+            .assign(d, lv2_dict!("b" => 1, "a" => 1))
             .global(ds)
-            .step(Assign::var(ds, lv2_dict!("a" => 1, "b" => 1)))
+            .assign(ds, lv2_dict!("a" => 1, "b" => 1))
             .global(ls)
-            .step(Assign::var(ls, lv2_list!(3, 1, 2)))
+            .assign(ls, lv2_list!(3, 1, 2))
             .global(lss)
-            .step(Assign::var(lss, lv2_list!(1, 2, 3)));
+            .assign(lss, lv2_list!(1, 2, 3));
     });
 
     vm.call("init", &[]).unwrap();
@@ -239,13 +239,14 @@ fn native_sort() {
 #[test]
 fn native_map() {
     let mut vm = run_module_test(|builder| {
+        let x = &lv2_var!(x);
         builder
-            .add_with_args("inc", vec![lv2_var!(x)])
-            .step(Return::value(LV2Expr::add(lv2_var!(x), 1)));
+            .add_with_args("inc", vec![x.clone()])
+            .return_value(LV2Expr::from(x).add(1));
 
         builder
-            .add_with_args("toe", vec![lv2_var!(x)])
-            .step(Return::value(LV2Value::from("e")));
+            .add_with_args("toe", vec![x.clone()])
+            .return_value(LV2Value::from("e"));
     });
 
     assert_eq!(
@@ -262,9 +263,10 @@ fn native_map() {
 #[test]
 fn native_filter() {
     let mut vm = run_module_test(|builder| {
+        let x = &lv2_var!(x);
         builder
-            .add_with_args("even", vec![lv2_var!(x)])
-            .step(Return::value(LV2Expr::eq(LV2Expr::rem(lv2_var!(x), 2), 0)));
+            .add_with_args("even", vec![x.clone()])
+            .return_value(LV2Expr::from(x).rem(2).eq(0));
     });
 
     assert_eq!(

@@ -11,15 +11,15 @@ fn dynamic_varargs() {
     let mut vm = run_module_test(|builder| {
         let hir = builder
             .add("sum")
-            .step(Assign::var(args, lv2_call!(argn)))
-            .step(Assign::var(result, 0));
+            .assign(args, lv2_call!(argn))
+            .assign(result, 0);
 
-        hir.repeat_until(LV2Expr::eq(args, 0))
-            .step(Assign::var(arg, lv2_call!(pop_vstack)))
-            .step(Assign::var(result, LV2Expr::add(result, arg)))
-            .step(Assign::decrement(args));
+        hir.repeat_until(LV2Expr::from(args).eq(0))
+            .assign(arg, lv2_call!(pop_vstack))
+            .assign(result, LV2Expr::from(result).add(arg))
+            .decrement(args);
 
-        hir.step(Return::value(result));
+        hir.return_value(result);
     });
 
     assert_eq!(
@@ -41,14 +41,14 @@ fn dynamic_call() {
     let mut vm = run_module_test(|builder| {
         let hir = builder
             .add("return_argn")
-            .step(Assign::var(n, lv2_call!(argn)));
+            .assign(n, lv2_call!(argn));
 
-        hir.step(Assign::var(i, n))
-            .repeat_until(LV2Expr::eq(i, 0))
+        hir.assign(i, n)
+            .repeat_until(LV2Expr::from(i).eq(0))
             .step(lv2_call!(pop_vstack))
-            .step(Assign::decrement(i));
+            .decrement(i);
 
-        hir.step(Return::value(n));
+        hir.return_value(n);
     });
 
     let mut args = vec![];

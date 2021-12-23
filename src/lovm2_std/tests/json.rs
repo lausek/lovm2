@@ -12,9 +12,9 @@ fn native_decode() {
         builder
             .add("init")
             .global(a)
-            .step(Assign::var(a, lv2_dict!("a" => 10, "b" => LV2Value::Nil)))
+            .assign(a, lv2_dict!("a" => 10, "b" => LV2Value::Nil))
             .global(b)
-            .step(Assign::var(b, lv2_list!(lv2_dict!(), lv2_dict!(), 1.5)));
+            .assign(b, lv2_list!(lv2_dict!(), lv2_dict!(), 1.5));
     });
 
     vm.call("init", &[]).unwrap();
@@ -38,13 +38,13 @@ fn native_encode() {
         builder
             .add("init")
             .global(d)
-            .step(Assign::var(d, lv2_dict!(true => 0.5)))
+            .assign(d, lv2_dict!(true => 0.5))
             .global(dd)
-            .step(Assign::var(dd, lv2_dict!("a" => lv2_dict!("b" => "c"))))
+            .assign(dd, lv2_dict!("a" => lv2_dict!("b" => "c")))
             .global(ls)
-            .step(Assign::var(ls, lv2_list!(1, "abc", d, LV2Value::Nil)))
+            .assign(ls, lv2_list!(1, "abc", d, LV2Value::Nil))
             .global(n)
-            .step(Assign::var(n, 2));
+            .assign(n, 2);
     });
 
     vm.call("init", &[]).unwrap();

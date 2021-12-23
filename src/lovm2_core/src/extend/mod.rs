@@ -37,7 +37,7 @@
 //! use lovm2_core::extend::prelude::*;
 //!
 //! #[lovm2_function(extern)]
-//! fn div(a: i64, b: i64) -> Lovm2Result<i64> {
+//! fn div(a: i64, b: i64) -> LV2Result<i64> {
 //!     if b == 0 {
 //!         return err_from_string("div by zero");
 //!     }
@@ -69,7 +69,7 @@
 //! }
 //!
 //! // Generate module bloat (required)
-//! lovm2_module_init!();
+//! lv2_module_init!();
 //! ```
 //!
 //! ## Supported Types

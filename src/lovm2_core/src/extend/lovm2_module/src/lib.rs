@@ -30,7 +30,7 @@ lazy_static! {
 
 /// Generates the module initializer (always required)
 #[proc_macro]
-pub fn lovm2_module_init(_args: TokenStream) -> TokenStream {
+pub fn lv2_module_init(_args: TokenStream) -> TokenStream {
     let initfn = Ident::new(LV2_EXTERN_INITIALIZER, proc_macro2::Span::call_site());
     let funcs = FUNCS.lock().unwrap();
     let names = funcs.iter();
@@ -38,7 +38,7 @@ pub fn lovm2_module_init(_args: TokenStream) -> TokenStream {
     let result = quote! {
         #[doc(hidden)]
         #[no_mangle]
-        pub extern fn #initfn(lib: Rc<Library>, slots: &mut HashMap<LV2Variable, CallableRef>) {
+        pub extern fn #initfn(lib: Rc<Library>, slots: &mut HashMap<LV2Variable, LV2CallableRef>) {
             #(
                 let slot = SharedObjectSlot::new(lib.clone(), #names).expect("name not found");
                 slots.insert(

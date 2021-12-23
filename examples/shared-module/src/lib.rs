@@ -36,7 +36,7 @@ fn assert_this(b: bool) {
 }
 
 #[lovm2_function(extern)]
-fn use_context(context: &mut Vm) -> i64 {
+fn use_context(context: &mut LV2Vm) -> i64 {
     assert!(context.context_mut().frame_mut().is_ok());
     2
 }
@@ -62,4 +62,4 @@ fn set_name(session: &mut Session, name: String) {
     session.name = Some(name);
 }
 
-lovm2_module_init!();
+lv2_module_init!();

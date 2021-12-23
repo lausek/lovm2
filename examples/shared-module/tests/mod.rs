@@ -2,12 +2,12 @@
 
 use lovm2_core::extend::prelude::*;
 
-fn create_caller(modder: fn(&mut Hir)) -> Vm {
-    let mut builder = ModuleBuilder::new();
+fn create_caller(modder: fn(&mut LV2Function)) -> LV2Vm {
+    let mut builder = LV2ModuleBuilder::new();
 
-    let hir = builder.entry();
-    hir.step(Include::import_from("libshared_module"));
-    modder(hir);
+    let f = builder.entry();
+    f.import_from("libshared_module");
+    modder(f);
 
     let module = builder.build().unwrap();
     println!("{}", module);
@@ -22,50 +22,55 @@ fn create_caller(modder: fn(&mut Hir)) -> Vm {
 #[test]
 fn native_add() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::global(&lv2_var!(n), lv2_call!(native_add, 1, 2)));
+        let n = &lv2_var!(n);
+        hir.global(n).assign(n, lv2_call!(native_add, 1, 2));
     });
 
     let n = vm.context_mut().value_of("n").unwrap();
-    assert_eq!(Value::Int(3), *n);
+    assert_eq!(LV2Value::Int(3), *n);
 }
 
 #[test]
 fn native_negate() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::var(&lv2_var!(b), false));
-        hir.step(Assign::global(&lv2_var!(n), lv2_call!(negate, b)));
+        let (b,  n) = &lv2_var!(b, n);
+        hir.assign(b, false);
+        hir.global(n).assign(n, lv2_call!(negate, b));
     });
 
     let n = vm.context_mut().value_of("n").unwrap();
-    assert_eq!(Value::Bool(true), *n);
+    assert_eq!(LV2Value::Bool(true), *n);
 }
 
 #[test]
 fn native_to_string() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::var(&lv2_var!(f), 5.));
-        hir.step(Assign::var(&lv2_var!(ext), "so"));
-        hir.step(Assign::global(&lv2_var!(n), lv2_call!(to_string, f, ext)));
+        let (f, ext, n) = &lv2_var!(f, ext, n);
+        hir.assign(f, 5.);
+        hir.assign(ext, "so");
+        hir.global(n).assign(n, lv2_call!(to_string, f, ext));
     });
 
     let n = vm.context_mut().value_of("n").unwrap();
-    assert_eq!(Value::from("5.so"), *n);
+    assert_eq!(LV2Value::from("5.so"), *n);
 }
 
 #[test]
 fn native_only_create() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::global(&lv2_var!(n), lv2_call!(enden_der_wurst)));
+        let n = &lv2_var!(n);
+        hir.global(n).assign(n, lv2_call!(enden_der_wurst));
     });
 
     let n = vm.context_mut().value_of("n").unwrap();
-    assert_eq!(Value::from(2), *n);
+    assert_eq!(LV2Value::from(2), *n);
 }
 
 #[test]
 fn native_assert_this() {
     create_caller(|hir| {
-        hir.step(Assign::global(&lv2_var!(b), true));
+        let b = &lv2_var!(b);
+        hir.global(b).assign(b, true);
         hir.step(lv2_call!(assert_this, b));
     });
 }
@@ -73,36 +78,36 @@ fn native_assert_this() {
 #[test]
 fn native_use_context() {
     let mut vm = create_caller(|hir| {
-        hir.step(Assign::global(&lv2_var!(n), lv2_call!(use_context)));
+        let n = &lv2_var!(n);
+        hir.global(n).assign(n, lv2_call!(use_context));
     });
 
     let n = vm.context_mut().value_of("n").unwrap();
-    assert_eq!(Value::from(2), *n);
+    assert_eq!(LV2Value::from(2), *n);
 }
 
 #[test]
 fn run_module() {
     let mut vm = create_test_vm();
     let s = &lv2_var!(s);
-    const NAME: &str = "yolo";
 
-    let mut builder = ModuleBuilder::new();
+    let mut builder = LV2ModuleBuilder::new();
     builder
         .entry()
-        .step(Include::import_from("libshared_module"))
-        .global(s).step(Assign::var(s, lv2_call!(new)));
+        .import_from("libshared_module")
+        .global(s).assign(s, lv2_call!(new));
     builder
         .add("name")
-        .step(Return::value(lv2_call!(get_name, s)));
+        .return_value(lv2_call!(get_name, s));
     builder
         .add("update")
-        .step(Call::new("set_name").arg(s).arg(NAME));
+        .step(lv2_call!(set_name, s, "yolo"));
     let module = builder.build().unwrap();
 
     vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
-    assert_eq!(Value::Nil, vm.call("name", &[]).unwrap());
+    assert_eq!(LV2Value::Nil, vm.call("name", &[]).unwrap());
     vm.call("update", &[]).unwrap();
-    assert_eq!(Value::from(NAME), vm.call("name", &[]).unwrap());
+    assert_eq!(LV2Value::from("yolo"), vm.call("name", &[]).unwrap());
 }

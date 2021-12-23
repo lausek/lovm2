@@ -64,8 +64,11 @@ impl LV2HirLowering for LV2Repeat {
     }
 }
 
-pub fn lv2_lower_repeat<'lir, 'hir: 'lir>(runtime: &mut LV2HirLoweringRuntime<'lir>, ty: &'hir LV2RepeatType, block: &'hir LV2Block)
-{
+pub fn lv2_lower_repeat<'lir, 'hir: 'lir>(
+    runtime: &mut LV2HirLoweringRuntime<'lir>,
+    ty: &'hir LV2RepeatType,
+    block: &'hir LV2Block,
+) {
     runtime.push_loop();
 
     match &ty {
@@ -140,7 +143,10 @@ fn lower_repeat_prelude(runtime: &mut LV2HirLoweringRuntime) {
     runtime.emit(LirElement::Label(repeat_start));
 }
 
-fn lower_repeat_postlude<'lir, 'hir: 'lir>(runtime: &mut LV2HirLoweringRuntime<'lir>, block: &'hir LV2Block) {
+fn lower_repeat_postlude<'lir, 'hir: 'lir>(
+    runtime: &mut LV2HirLoweringRuntime<'lir>,
+    block: &'hir LV2Block,
+) {
     let repeat = runtime.loop_mut().unwrap();
     let repeat_start = repeat.start();
     let repeat_end = repeat.end();
