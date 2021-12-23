@@ -137,17 +137,14 @@ impl LV2Block {
         Ok(())
     }
 
-    // TODO: remove and add `local`/`global` method instead
+    /// This temporarily set the scope of `target` to global.
     pub fn assign_global(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
         let (target, source) = (&any_to_ident(target)?, any_to_expr(source)?);
+
         self.block().global(target);
         self.block().assign(target, source);
-        Ok(())
-    }
+        self.block().local(target);
 
-    pub fn set(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
-        let (target, source) = (any_to_expr(target)?, any_to_expr(source)?);
-        self.block().set(target, source);
         Ok(())
     }
 
@@ -170,6 +167,12 @@ impl LV2Block {
         Ok(())
     }
 
+    pub fn global_(&mut self, target: &PyAny) -> PyResult<()> {
+        let target = any_to_ident(target)?;
+        self.block().global(&target);
+        Ok(())
+    }
+
     pub fn import_(&mut self, name: &PyAny) -> PyResult<()> {
         let name = any_to_expr(name)?;
         self.block().import(name);
@@ -182,8 +185,9 @@ impl LV2Block {
         Ok(())
     }
 
-    pub fn trigger(&mut self, id: u16) -> PyResult<()> {
-        self.block().trigger(id);
+    pub fn local(&mut self, target: &PyAny) -> PyResult<()> {
+        let target = any_to_ident(target)?;
+        self.block().local(&target);
         Ok(())
     }
 
@@ -223,9 +227,20 @@ impl LV2Block {
         Ok(())
     }
 
+    pub fn set(&mut self, target: &PyAny, source: &PyAny) -> PyResult<()> {
+        let (target, source) = (any_to_expr(target)?, any_to_expr(source)?);
+        self.block().set(target, source);
+        Ok(())
+    }
+
     pub fn step(&mut self, expr: &PyAny) -> PyResult<()> {
         let expr = any_to_expr(expr)?;
         self.block().step(expr);
+        Ok(())
+    }
+
+    pub fn trigger(&mut self, id: u16) -> PyResult<()> {
+        self.block().trigger(id);
         Ok(())
     }
 }

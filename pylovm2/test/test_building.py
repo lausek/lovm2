@@ -225,8 +225,10 @@ class TestBuilding(Test):
         n, m = LV2Variable("n"), LV2Variable("m")
 
         main_hir = internals.main
-        main_hir.assign_global(n, LV2Expr(1).add(2))
-        main_hir.assign_global(m, LV2Expr(n).add(2))
+        main_hir.global_(n)
+        main_hir.assign(n, LV2Expr(1).add(2))
+        main_hir.global_(m)
+        main_hir.assign(m, LV2Expr(n).add(2))
         main_hir.trigger(10)
 
         def testfn(ctx):
@@ -253,8 +255,10 @@ class TestBuilding(Test):
         it, c, has = LV2Variable("it"), LV2Variable("c"), LV2Variable("has")
 
         main_hir = internals.main
-        main_hir.assign_global(c, 0)
-        main_hir.assign_global(it, LV2Expr([1, 2, 3, 4]).to_iter())
+        main_hir.global_(c)
+        main_hir.assign(c, 0)
+        main_hir.global_(it)
+        main_hir.assign(it, LV2Expr([1, 2, 3, 4]).to_iter())
         repeat = main_hir.repeat_until(LV2Expr(it).has_next().not_())
         repeat.assign_global(c, LV2Expr(it).next().add(c))
         main_hir.assign_global(has, LV2Expr(it).has_next())
@@ -263,5 +267,21 @@ class TestBuilding(Test):
         def testfn(ctx):
             assert 10 == int(ctx.globals(c))
             assert False == ctx.globals(has)
+
+        self.run_module_test(internals.mod.build(), testfn)
+
+    def test_local_global_scope(self, internals):
+        v = LV2Variable("v")
+
+        main_hir = internals.main
+        main_hir.global_(v)
+        main_hir.assign(v, 2)
+        main_hir.local(v)
+        main_hir.assign(v, 1)
+        main_hir.trigger(10)
+
+        def testfn(ctx):
+            assert 2 == int(ctx.globals(v))
+            assert 1 == int(ctx.frame().local(v))
 
         self.run_module_test(internals.mod.build(), testfn)
