@@ -3,20 +3,22 @@ mod conv;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 
-//use lovm2::prelude::Operator2;
-//use lovm2::Variable;
-
 pub use self::conv::*;
 
-macro_rules! auto_wrapper {
-    ($method_name:ident, $($arg:expr),*) => {
-        Ok(Self {
-            inner: lovm2::prelude::LV2Expr::$method_name(
-                $( any_to_expr($arg)? ),*
-            ),
-        })
+macro_rules! auto_implement {
+    ($operator:ident, $method:ident) => {
+        #[pymethods]
+        impl LV2Expr {
+            #[args(args = "*")]
+            pub fn $method(&self, args: &PyTuple) -> PyResult<Self> {
+                auto_wrapper!(self.clone(), lovm2::prelude::LV2Operator2::$operator, args)
+            }
+        }
     };
-    ($op:path, $args:expr) => {{
+}
+
+macro_rules! auto_wrapper {
+    ($self:expr, $op:path, $args:expr) => {{
         let mut args = vec![];
 
         for arg in $args.iter() {
@@ -24,7 +26,7 @@ macro_rules! auto_wrapper {
         }
 
         Ok(Self {
-            inner: lovm2::prelude::LV2Expr::from_opn(
+            inner: $self.inner.expand_op(
                 $op,
                 args
             ),
@@ -34,33 +36,19 @@ macro_rules! auto_wrapper {
 
 #[pyclass(unsendable)]
 #[derive(Clone)]
-pub struct Expr {
+pub struct LV2Expr {
     pub inner: lovm2::gen::LV2Expr,
 }
 
 #[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for Expr {
+impl pyo3::class::basic::PyObjectProtocol for LV2Expr {
     fn __str__(&self) -> PyResult<String> {
         Ok(format!("{:?}", self.inner))
     }
 }
 
-/*
 #[pymethods]
-impl Expr {
-    pub fn ty(&self) -> PyResult<String> {
-        let name = match &self.inner {
-            Lovm2Expr::Access(_) => "access",
-            _ => "none",
-        };
-
-        Ok(name.to_string())
-    }
-}
-*/
-
-#[pymethods]
-impl Expr {
+impl LV2Expr {
     #[args(args = "*")]
     pub fn get(&mut self, _this: &PyAny, key: &PyAny) -> PyResult<Self> {
         let key = any_to_expr(key)?;
@@ -84,7 +72,6 @@ impl Expr {
     #[classmethod]
     pub fn slice(_this: &PyAny, target: &PyAny, start: &PyAny, end: &PyAny) -> PyResult<Self> {
         let target = any_to_expr(target)?;
-        //let (mut start, mut end): (lovm2::prelude::LV2Expr, lovm2::prelude::LV2Expr) = (lovm2::value::LV2Value::Nil.into(), lovm2::value::LV2Value::Nil.into());
         let (start, end) = (any_to_expr(start)?, any_to_expr(end)?);
 
         let slice = target.slice(start, end);
@@ -111,114 +98,40 @@ impl Expr {
     }
 }
 
+auto_implement!(Add, add);
+auto_implement!(Sub, sub);
+auto_implement!(Mul, mul);
+auto_implement!(Div, div);
+auto_implement!(Shl, shl);
+auto_implement!(Shr, shr);
+auto_implement!(Rem, rem);
+auto_implement!(And, land);
+auto_implement!(Or, lor);
+auto_implement!(Eq, eq);
+auto_implement!(Ne, ne);
+auto_implement!(Ge, ge);
+auto_implement!(Gt, gt);
+auto_implement!(Le, le);
+auto_implement!(Lt, lt);
+auto_implement!(Pow, pow);
+
 #[pymethods]
-impl Expr {
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn add(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Add, args)
+impl LV2Expr {
+    #[new]
+    pub fn new(from: &PyAny) -> PyResult<Self> {
+        any_to_expr(from).map(|inner| Self { inner })
     }
 
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn sub(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Sub, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn mul(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Mul, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn div(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Div, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn shl(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Shl, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn shr(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Shr, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn rem(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Rem, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn land(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::And, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn lor(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Or, args)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn lnot(_this: &PyAny, arg1: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(not, arg1)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn eq(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(eq, arg1, arg2)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn ne(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(ne, arg1, arg2)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn ge(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(ge, arg1, arg2)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn gt(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(gt, arg1, arg2)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn le(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(le, arg1, arg2)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn lt(_this: &PyAny, arg1: &PyAny, arg2: &PyAny) -> PyResult<Self> {
-        auto_wrapper!(lt, arg1, arg2)
-    }
-
-    #[classmethod]
-    #[args(args = "*")]
-    pub fn pow(_this: &PyAny, args: &PyTuple) -> PyResult<Self> {
-        auto_wrapper!(lovm2::prelude::LV2Operator2::Pow, args)
+    pub fn lnot(&self) -> Self {
+        Self {
+            inner: self.inner.clone().not(),
+        }
     }
 }
 
 // conversion methods
 #[pymethods]
-impl Expr {
+impl LV2Expr {
     pub fn to_bool(&mut self) -> PyResult<Self> {
         Ok(Self {
             inner: self.inner.clone().to_bool(),
@@ -252,26 +165,26 @@ impl Expr {
 
 // iterator methods
 #[pymethods]
-impl Expr {
+impl LV2Expr {
     #[classmethod]
     pub fn range(_this: &PyAny, from: &PyAny, to: Option<&PyAny>) -> PyResult<Self> {
         if let Some(to) = to {
             let (from, to) = (any_to_expr(from)?, any_to_expr(to)?);
 
-            Ok(Expr {
+            Ok(LV2Expr {
                 inner: lovm2::prelude::LV2Expr::iter_ranged(from, to).into(),
             })
         } else {
             let to = any_to_expr(from)?;
 
-            Ok(Expr {
+            Ok(LV2Expr {
                 inner: lovm2::prelude::LV2Expr::iter_ranged(lovm2::value::LV2Value::Nil, to).into(),
             })
         }
     }
 
     pub fn reverse(&mut self) -> PyResult<Self> {
-        Ok(Expr {
+        Ok(LV2Expr {
             inner: self.inner.clone().reverse(),
         })
     }

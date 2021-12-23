@@ -2,6 +2,8 @@ import pytest
 
 from .deps import *
 
+from pylovm2 import LV2Expr
+
 class TestVm(Test):
     def test_no_entry_point(self, capfd, internals):
         vm = internals.vm
@@ -36,7 +38,7 @@ class TestVm(Test):
             raise Exception()
 
         main_hir = internals.mod.entry()
-        main_hir.load(pylovm2.Expr.val('std'))
+        main_hir.load(LV2Expr.val('std'))
 
         internals.vm.set_load_hook(load_hook)
         internals.vm.add_main_module(internals.mod.build())
@@ -47,7 +49,7 @@ class TestVm(Test):
 
     def test_unknown_use(self, internals):
         main_hir = internals.mod.entry()
-        main_hir.load(pylovm2.Expr.val('unkown_module'))
+        main_hir.load(LV2Expr.val('unkown_module'))
 
         internals.vm.add_main_module(internals.mod.build())
 

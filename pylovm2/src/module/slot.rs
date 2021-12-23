@@ -3,6 +3,7 @@ use pyo3::types::PyList;
 
 use lovm2::error::err_custom;
 
+use crate::expr::any_to_ident;
 use crate::err_to_exception;
 
 #[pyclass(unsendable)]
@@ -37,14 +38,13 @@ impl ModuleBuilderSlot {
         Self::LV2Function(lovm2::prelude::LV2Function::new())
     }
 
-    pub fn with_args(args: &PyList) -> Self {
+    pub fn with_args(args: &PyList) -> PyResult<Self> {
         let vars = args
             .iter()
-            .map(|arg| arg.str().unwrap().to_string())
-            .map(lovm2::prelude::LV2Variable::from)
-            .collect();
+            .map(|arg| any_to_ident(arg))
+            .collect::<PyResult<_>>()?;
 
-        Self::LV2Function(lovm2::prelude::LV2Function::with_args(vars))
+        Ok(Self::LV2Function(lovm2::prelude::LV2Function::with_args(vars)))
     }
 
     pub fn pyfn(pyfn: PyObject) -> Self {

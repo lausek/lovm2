@@ -7,20 +7,20 @@ use pyo3::types::{PyList, PyTuple};
 use lovm2::gen::LV2AddStatements as _;
 
 use crate::code::CodeObject;
-use crate::expr::{any_to_expr, any_to_ident, Expr};
+use crate::expr::{any_to_expr, any_to_ident, LV2Expr};
 use crate::module::slot::LV2Block;
 
-use super::{Module, ModuleBuilderSlot};
+use super::{LV2Module, ModuleBuilderSlot};
 
 #[pyclass(unsendable)]
-pub struct ModuleBuilder {
+pub struct LV2ModuleBuilder {
     name: String,
     slots: HashMap<String, ModuleBuilderSlot>,
     uses: Vec<String>,
 }
 
 #[pymethods]
-impl ModuleBuilder {
+impl LV2ModuleBuilder {
     #[new]
     pub fn new(name: Option<String>) -> Self {
         Self {
@@ -30,16 +30,17 @@ impl ModuleBuilder {
         }
     }
 
-    pub fn add(&mut self, name: String, args: Option<&PyList>) -> LV2Block {
+    pub fn add(&mut self, name: String, args: Option<&PyList>) -> PyResult<LV2Block> {
         let slot = if let Some(args) = args {
-            ModuleBuilderSlot::with_args(args)
+            ModuleBuilderSlot::with_args(args)?
         } else {
             ModuleBuilderSlot::new()
         };
 
         self.slots.insert(name.clone(), slot);
-        
-        self.slots.get_mut(&name).unwrap().code().unwrap()
+        let block = self.slots.get_mut(&name).unwrap().code().unwrap();
+
+        Ok(block)
     }
 
     pub fn add_pyfn(&mut self, name: String, pyfn: PyObject) -> PyResult<()> {
@@ -55,7 +56,7 @@ impl ModuleBuilder {
     }
 
     // TODO: can we avoid duplicating the code here?
-    pub fn build(&mut self, module_location: Option<String>) -> PyResult<Module> {
+    pub fn build(&mut self, module_location: Option<String>) -> PyResult<LV2Module> {
         let meta =
             lovm2::gen::LV2ModuleMeta::new(self.name.clone(), module_location, self.uses.clone());
         let mut builder = lovm2::gen::LV2ModuleBuilder::with_meta(meta);
@@ -83,15 +84,16 @@ impl ModuleBuilder {
             module.slots.insert(key.clone(), callable.clone());
         }
 
-        Ok(Module::from(module))
+        Ok(LV2Module::from(module))
     }
 
-    pub fn entry(&mut self) -> LV2Block {
+    pub fn entry(&mut self) -> PyResult<LV2Block> {
         let name = lovm2::module::LV2_ENTRY_POINT.to_string();
         if !self.slots.contains_key(&name) {
             self.add(name, None)
         } else {
-            self.slots.get_mut(&name).unwrap().code().unwrap()
+            let block = self.slots.get_mut(&name).unwrap().code().unwrap();
+            Ok(block)
         }
     }
 }
@@ -166,7 +168,7 @@ impl LV2Block {
         Ok(())
     }
 
-    pub fn load(&mut self, name: &Expr) -> PyResult<()> {
+    pub fn load(&mut self, name: &LV2Expr) -> PyResult<()> {
         self.block().import(name.inner.clone());
         Ok(())
     }

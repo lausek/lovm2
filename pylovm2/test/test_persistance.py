@@ -1,10 +1,9 @@
 import os
 import os.path
-import pytest
 
 from .deps import *
 
-from pylovm2 import Expr
+from pylovm2 import LV2Module
 
 class TestPersistance(Test):
     def test_persistance(self, internals):
@@ -14,7 +13,7 @@ class TestPersistance(Test):
 
         result = internals.mod.build()
 
-        self.assertIsInstance(result, pylovm2.Module)
+        self.assertIsInstance(result, LV2Module)
 
         path = '/tmp/persistance.lovm2'
         if os.path.exists(path):
@@ -26,5 +25,5 @@ class TestPersistance(Test):
         def testfn(ctx):
             assert 2 == int(ctx.globals('n'))
 
-        module = pylovm2.Module.load(path)
+        module = LV2Module.load(path)
         self.run_module_test(module, testfn)

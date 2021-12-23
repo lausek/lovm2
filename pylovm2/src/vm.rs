@@ -2,22 +2,19 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
 
-//use lovm2::prelude::*;
-//use lovm2::vm::LoadRequest;
-
 use crate::context::Context;
 use crate::expr::any_to_expr;
-use crate::module::Module;
+use crate::module::LV2Module;
 use crate::value::Value;
 use crate::{err_to_exception, exception_to_err};
 
 #[pyclass(unsendable)]
-pub struct Vm {
+pub struct LV2Vm {
     inner: lovm2::vm::LV2Vm,
 }
 
 #[pymethods]
-impl Vm {
+impl LV2Vm {
     #[new]
     pub fn new() -> Self {
         Self {
@@ -70,7 +67,7 @@ impl Vm {
         Ok(Context::new(self.inner.context_mut()))
     }
 
-    pub fn add_module(&mut self, module: &mut Module, namespaced: Option<bool>) -> PyResult<()> {
+    pub fn add_module(&mut self, module: &mut LV2Module, namespaced: Option<bool>) -> PyResult<()> {
         let namespaced = namespaced.unwrap_or(true);
         let module = module
             .inner
@@ -82,11 +79,11 @@ impl Vm {
             .map_err(err_to_exception)
     }
 
-    pub fn add_module_unnamespaced(&mut self, module: &mut Module) -> PyResult<()> {
+    pub fn add_module_unnamespaced(&mut self, module: &mut LV2Module) -> PyResult<()> {
         self.add_module(module, Some(false))
     }
 
-    pub fn add_main_module(&mut self, module: &mut Module) -> PyResult<()> {
+    pub fn add_main_module(&mut self, module: &mut LV2Module) -> PyResult<()> {
         let module = module
             .inner
             .take()
@@ -142,7 +139,7 @@ impl Vm {
                 return Ok(None);
             }
 
-            match ret.extract::<Module>(py) {
+            match ret.extract::<LV2Module>(py) {
                 Ok(data) => Ok(Some(data.inner.unwrap())),
                 Err(e) => Err(exception_to_err(&e, py).into()),
             }

@@ -2,11 +2,8 @@ use pyo3::exceptions::*;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList, PyTuple};
 
-//use lovm2::prelude::*;
-//use lovm2::Variable;
-
 use crate::value::Value;
-use crate::Expr;
+use crate::{LV2Expr, LV2Variable};
 
 pub fn any_to_expr(any: &PyAny) -> PyResult<lovm2::prelude::LV2Expr> {
     match any.get_type().name().as_ref() {
@@ -34,10 +31,14 @@ pub fn any_to_expr(any: &PyAny) -> PyResult<lovm2::prelude::LV2Expr> {
 
             Ok(obj.into())
         }
-        "Expr" => {
-            let data = any.extract::<Expr>()?;
+        stringify!(LV2Expr) => {
+            let data = any.extract::<LV2Expr>()?;
 
             Ok(data.inner)
+        }
+        stringify!(LV2Variable) => {
+            let data = any.extract::<LV2Variable>()?;
+            Ok(data.inner.into())
         }
         _ => {
             if let Ok(val) = any_to_value(any) {
@@ -59,8 +60,8 @@ pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::prelude::LV2Variable> {
 
             Ok(lovm2::prelude::LV2Variable::from(name).into())
         }
-        "Expr" => {
-            let data = any.extract::<Expr>()?;
+        stringify!(LV2Expr) => {
+            let data = any.extract::<LV2Expr>()?;
 
             match &data.inner {
                 lovm2::prelude::LV2Expr::Variable(var) => Ok(var.clone()),
@@ -68,6 +69,10 @@ pub fn any_to_ident(any: &PyAny) -> PyResult<lovm2::prelude::LV2Variable> {
                     "expression is not an identifier".to_string(),
                 )),
             }
+        }
+        stringify!(LV2Variable) => {
+            let data = any.extract::<LV2Variable>()?;
+            Ok(data.inner.clone())
         }
         _ => Err(PyRuntimeError::new_err(format!(
             "value {} cannot be converted to identifier",
@@ -126,8 +131,8 @@ pub fn any_to_value(any: &PyAny) -> PyResult<lovm2::value::LV2Value> {
 
             Ok(lovm2::value::LV2Value::Ref(data.inner))
         }
-        "Expr" => {
-            let data = any.extract::<Expr>()?;
+        stringify!(LV2Expr) => {
+            let data = any.extract::<LV2Expr>()?;
 
             match data.inner {
                 lovm2::prelude::LV2Expr::Value { val, .. } => Ok(val),
@@ -152,23 +157,6 @@ pub fn any_to_pylovm2_value(any: &PyAny) -> PyResult<Value> {
         _ => any_to_value(any).map(Value::from_struct),
     }
 }
-
-/*
-pub fn any_to_access(any: &PyAny) -> PyResult<Lovm2Access> {
-    match any.get_type().name().as_ref() {
-        "Expr" => {
-            let data = any.extract::<Expr>()?;
-
-            if let Lovm2Expr::Access(var) = &data.inner {
-                Ok(var.clone().into())
-            } else {
-                any_to_ident(any).map(Lovm2Access::from)
-            }
-        }
-        _ => any_to_ident(any).map(Lovm2Access::from),
-    }
-}
-*/
 
 pub fn pyargs_to_exprs(args: &PyTuple) -> PyResult<Vec<lovm2::prelude::LV2Expr>> {
     args.iter().map(any_to_expr).collect()

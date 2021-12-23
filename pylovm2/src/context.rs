@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 
+use crate::expr::any_to_ident;
 use crate::value::lovm2py;
 
 #[pyclass(unsendable)]
@@ -29,14 +30,16 @@ impl Context {
         }
     }
 
-    pub fn globals(&mut self, py: Python, name: String) -> Option<PyObject> {
+    pub fn globals(&mut self, py: Python, name: &PyAny) -> PyResult<Option<PyObject>> {
+        let name = any_to_ident(name)?;
+
         unsafe {
             if let Some(val) = (*self.inner).value_of(name).ok() {
-                return Some(lovm2py(&val, py));
+                return Ok(Some(lovm2py(&val, py)));
             }
         }
 
-        None
+        Ok(None)
     }
 }
 
@@ -54,12 +57,15 @@ impl Frame {
 // TODO: implement indexing for this type
 #[pymethods]
 impl Frame {
-    pub fn local(&self, py: Python, key: String) -> Option<PyObject> {
+    pub fn local(&self, py: Python, name: &PyAny) -> PyResult<Option<PyObject>> {
+        let name = any_to_ident(name)?;
+
         unsafe {
-            (*self.inner)
-                .value_of(key)
+            let result = (*self.inner)
+                .value_of(name)
                 .ok()
-                .map(|val| lovm2py(&val, py))
+                .map(|val| lovm2py(&val, py));
+            Ok(result)
         }
     }
 }

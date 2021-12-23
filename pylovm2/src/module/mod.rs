@@ -4,16 +4,16 @@ mod slot;
 use pyo3::exceptions::*;
 use pyo3::prelude::*;
 
-pub use self::builder::ModuleBuilder;
+pub use self::builder::LV2ModuleBuilder;
 use self::slot::ModuleBuilderSlot;
 
 #[pyclass(unsendable)]
 #[derive(Clone)]
-pub struct Module {
+pub struct LV2Module {
     pub inner: Option<lovm2::prelude::LV2Module>,
 }
 
-impl From<lovm2::prelude::LV2Module> for Module {
+impl From<lovm2::prelude::LV2Module> for LV2Module {
     fn from(inner: lovm2::prelude::LV2Module) -> Self {
         Self {
             inner: Some(inner.into()),
@@ -22,7 +22,7 @@ impl From<lovm2::prelude::LV2Module> for Module {
 }
 
 #[pymethods]
-impl Module {
+impl LV2Module {
     #[classmethod]
     pub fn load(_this: &PyAny, path: &PyAny) -> PyResult<Self> {
         let path = path.str()?.to_str()?;
@@ -66,14 +66,14 @@ impl Module {
 }
 
 #[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for Module {
+impl pyo3::class::basic::PyObjectProtocol for LV2Module {
     fn __str__(&self) -> PyResult<String> {
         Ok(format!("{}", self.inner.as_ref().unwrap()))
     }
 }
 
 #[pyproto]
-impl pyo3::class::sequence::PySequenceProtocol for Module {
+impl pyo3::class::sequence::PySequenceProtocol for LV2Module {
     fn __contains__(&self, key: &PyAny) -> PyResult<bool> {
         let key = key.str()?.to_str()?;
 

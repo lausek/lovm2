@@ -30,7 +30,7 @@ class Test:
         assert expr
 
     def run_module_test(self, module, fn):
-        self.assertIsInstance(module, pylovm2.Module)
+        self.assertIsInstance(module, pylovm2.LV2Module)
             
         out = {
             'called': False
@@ -39,7 +39,7 @@ class Test:
             out['called'] = True
             fn(ctx)
     
-        vm = pylovm2.Vm()
+        vm = pylovm2.LV2Vm()
         vm.add_interrupt(10, callback)
         vm.add_main_module(module)
         vm.run()
@@ -48,8 +48,8 @@ class Test:
 
 class Internals:
     def __init__(self):
-        self.vm = pylovm2.Vm()
-        self.mod = pylovm2.ModuleBuilder("main")
+        self.vm = pylovm2.LV2Vm()
+        self.mod = pylovm2.LV2ModuleBuilder("main")
         self.main = self.mod.add(pylovm2.LV2_ENTRY_POINT)
 
 @pytest.fixture
