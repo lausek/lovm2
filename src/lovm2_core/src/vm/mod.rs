@@ -1,4 +1,4 @@
-//! Runs modules and maintains program state
+//! Runs modules and maintains program state.
 
 use std::collections::HashMap;
 use std::ops::*;
@@ -20,7 +20,7 @@ pub use self::frame::LV2StackFrame;
 pub const LOVM2_RESERVED_INTERRUPTS: u16 = 63;
 pub const LOVM2_INT_DEBUG: u16 = 10;
 
-/// Virtual machine for executing [modules](crate::module::LV2Module)
+/// Virtual machine for executing [LV2Module].
 ///
 /// Call convention is pascal style. If you have a function like `f(a, b, c)` it will be translated
 /// to
@@ -45,7 +45,7 @@ pub const LOVM2_INT_DEBUG: u16 = 10;
 pub type LV2LoadHookFn = dyn Fn(&LV2LoadRequest) -> LV2Result<Option<LV2Module>>;
 /// Function signature of interrupts.
 pub type LV2InterruptFn = dyn Fn(&mut LV2Vm) -> LV2Result<()>;
-/// Function signature for `LV2Callable` importing.
+/// Function signature for [LV2Callable] importing.
 pub type LV2ImportHookFn = dyn Fn(Option<&str>, &str) -> LV2Result<Option<String>>;
 
 /// Structure containing relevant information for module resolvement.
@@ -79,10 +79,10 @@ macro_rules! value_compare {
     }};
 }
 
-/// VM structure containing hooks and loaded modules
+/// VM structure containing hooks and loaded modules.
 pub struct LV2Vm {
     ctx: LV2Context,
-    /// List of loaded modules: `LV2Module` or `SharedObjectModule`.
+    /// List of loaded [LV2Module]s.
     modules: HashMap<String, Rc<LV2Module>>,
 
     import_hook: Rc<LV2ImportHookFn>,
@@ -147,7 +147,7 @@ impl LV2Vm {
         Ok(val)
     }
 
-    /// Get a mutable reference to the current `Context`
+    /// Get a mutable reference to the current [LV2Context].
     pub fn context_mut(&mut self) -> &mut LV2Context {
         &mut self.ctx
     }
@@ -168,7 +168,7 @@ impl LV2Vm {
         Ok(())
     }
 
-    /// Add the module and all of its slots to `scope`.
+    /// Add the module and all of its slots to scope.
     pub fn add_module<T: Into<LV2Module>>(&mut self, module: T, namespaced: bool) -> LV2Result<()> {
         let module = module.into();
 
@@ -246,7 +246,7 @@ impl LV2Vm {
         self.add_module(module.unwrap(), namespaced)
     }
 
-    /// Add the module and all of its slots to `scope`.
+    /// Add the module and all of its slots to scope.
     pub fn add_main_module<T: Into<LV2Module>>(&mut self, module: T) -> LV2Result<()> {
         let module = module.into();
 
@@ -267,7 +267,7 @@ impl LV2Vm {
         self.ctx.pop_value()
     }
 
-    /// Start the execution at `LV2_ENTRY_POINT`.
+    /// Start the execution at [LV2_ENTRY_POINT].
     pub fn run(&mut self) -> LV2Result<LV2Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())
@@ -474,7 +474,7 @@ impl LV2Vm {
         Ok(())
     }
 
-    /// implementation of lovm2 bytecode behavior
+    /// Implementation of bytecode behavior.
     ///
     /// **Note:** This function does not push a stack frame and could therefore mess up local variables
     /// if not handled correctly. See [LV2Vm::run_object].

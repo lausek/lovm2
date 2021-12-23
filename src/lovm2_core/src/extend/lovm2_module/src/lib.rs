@@ -15,6 +15,7 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 use syn::{Block, Ident, ItemFn, ReturnType};
 
+// TODO: move this somewhere else
 const LV2_EXTERN_INITIALIZER: &str = "lovm2_module_initialize";
 
 use self::args::*;

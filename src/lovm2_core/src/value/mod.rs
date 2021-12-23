@@ -1,4 +1,4 @@
-//! Representation and operations for lovm2 values
+//! Representation and operations for [LV2Value].
 
 mod conv;
 mod op;
@@ -19,12 +19,12 @@ use std::rc::Rc;
 
 use crate::error::*;
 
-/// Reference to a generic lovm2 object
+/// Reference to a generic lovm2 object.
 pub type LV2AnyRef = Rc<RefCell<LV2Handle>>;
-/// Reference to a lovm2 [LV2Value]
+/// Reference to a lovm2 [LV2Value].
 pub type LV2ValueRef = LV2Reference;
 
-/// Value type mostly used to handle extern values
+/// Value type mostly used to handle extern values.
 pub struct LV2Handle(pub Box<dyn std::any::Any>);
 
 impl PartialEq for LV2Handle {
@@ -34,7 +34,7 @@ impl PartialEq for LV2Handle {
     }
 }
 
-/// Wrap the given value inside a `Ref(_)`. `Dict` and `List` values will be wrapped deeply.
+/// Wrap the given value inside a [LV2Value::Ref]. [LV2Value::Dict] and [LV2Value::List] values will be wrapped deeply.
 pub fn box_value(value: LV2Value) -> LV2Value {
     let outer = match value {
         LV2Value::Dict(d) => {
@@ -61,7 +61,7 @@ pub fn box_value(value: LV2Value) -> LV2Value {
     LV2Value::Ref(LV2Reference::from(outer))
 }
 
-/// Runtime representation of values
+/// Runtime representation of values.
 #[derive(Clone, Deserialize, Serialize)]
 pub enum LV2Value {
     Nil,
@@ -69,13 +69,16 @@ pub enum LV2Value {
     Int(i64),
     Float(f64),
     Str(String),
+
     #[serde(with = "indexmap::serde_seq")]
     Dict(IndexMap<LV2Value, LV2Value>),
     List(Vec<LV2Value>),
     Ref(LV2Reference),
+
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
     Iter(Rc<RefCell<LV2Iter>>),
+
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
     Any(LV2AnyRef),
@@ -97,7 +100,7 @@ impl LV2Value {
             _ => Err((LV2ErrorTy::OperationNotSupported, "append").into()),
         }
     }
-    /// Create a `Handle` to the given value.
+    /// Create a [LV2Handle] to the given value.
     pub fn create_any<T>(from: T) -> Self
     where
         T: std::any::Any,
@@ -105,7 +108,7 @@ impl LV2Value {
         LV2Value::Any(Rc::new(RefCell::new(LV2Handle(Box::new(from)))))
     }
 
-    /// If the current value is an instance of `Ref`, this function
+    /// If the current value is an instance of [LV2Value::Ref], this function
     /// will return an owned clone of the innermost value. If the value
     /// is not a reference, this is just a clone.
     pub fn clone_inner(&self) -> LV2Result<LV2Value> {
@@ -137,8 +140,8 @@ impl LV2Value {
     }
 
     /// Returns a completely independent version of the value.
-    /// This will recursively clone the items of `List` and `Dict`
-    /// as well as `Ref`.
+    /// This will recursively clone the items of [LV2Value::Dict] and [LV2Value::List]
+    /// as well as [LV2Value::Ref].
     pub fn deep_clone(&self) -> Self {
         match self {
             LV2Value::Dict(d) => {
@@ -261,12 +264,12 @@ impl LV2Value {
 }
 
 impl LV2Value {
-    /// Create a new instance of `Dict`.
+    /// Create a new instance of [LV2Value::Dict].
     pub fn dict() -> Self {
         Self::Dict(IndexMap::new())
     }
 
-    /// Create a new instance of `List`.
+    /// Create a new instance of [LV2Value::List].
     pub fn list() -> Self {
         Self::List(vec![])
     }

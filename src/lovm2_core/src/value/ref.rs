@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use super::*;
 
-/// Reference to another value
+/// Reference to another value.
 #[derive(Clone, Deserialize, Serialize)]
 pub struct LV2Reference(
     #[serde(serialize_with = "serialize_value_ref")]

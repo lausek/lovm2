@@ -1,4 +1,4 @@
-//! VM state
+//! VM state.
 
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -41,7 +41,7 @@ impl LV2Context {
         }
     }
 
-    /// Try to resolve the given name to a callable
+    /// Try to resolve the given name to a callable.
     pub fn lookup_code_object(&self, name: &LV2Variable) -> LV2Result<LV2CallableRef> {
         self.scope
             .get(name)
@@ -49,61 +49,58 @@ impl LV2Context {
             .ok_or_else(|| (LV2ErrorTy::LookupFailed, name).into())
     }
 
-    /// Get a mutable reference to the value stack itself
+    /// Get a mutable reference to the value stack itself.
     pub fn stack_mut(&mut self) -> &mut Vec<LV2Value> {
         &mut self.vstack
     }
 
-    /// Get a mutable reference to the value lstack itself
+    /// Get a mutable reference to the value lstack itself.
     pub fn lstack_mut(&mut self) -> &mut Vec<LV2StackFrame> {
         &mut self.lstack
     }
 
-    /// Get a mutable reference to the last stack frame
+    /// Get a mutable reference to the last stack frame.
     pub fn frame_mut(&mut self) -> LV2Result<&mut LV2StackFrame> {
         self.lstack
             .last_mut()
             .ok_or_else(|| LV2ErrorTy::FrameStackEmpty.into())
     }
 
-    /// Set value of a global variable
-    pub fn set_global<T>(&mut self, var: T, val: LV2Value)
-    where
-        T: AsRef<str>,
-    {
+    /// Set value of a global variable.
+    pub fn set_global<T: AsRef<str>>(&mut self, var: T, val: LV2Value) {
         self.globals.insert(var.as_ref().to_string(), val);
     }
 
-    /// Create a frame on the callstack
+    /// Create a frame on the callstack.
     pub fn push_frame(&mut self, argn: u8) {
         self.lstack.push(LV2StackFrame::new(argn));
     }
 
-    /// Remove a frame from the callstack
+    /// Remove a frame from the callstack.
     pub fn pop_frame(&mut self) {
         self.lstack.pop();
     }
 
-    /// Put a new value on the stack
+    /// Put a new value on the stack.
     pub fn push_value(&mut self, value: LV2Value) {
         self.vstack.push(value);
     }
 
-    /// Remove the last value on stack
+    /// Remove the last value on stack.
     pub fn pop_value(&mut self) -> LV2Result<LV2Value> {
         self.vstack
             .pop()
             .ok_or_else(|| LV2ErrorTy::ValueStackEmpty.into())
     }
 
-    /// Get a mutable reference to the last value on stack
+    /// Get a mutable reference to the last value on stack.
     pub fn last_value_mut(&mut self) -> LV2Result<&mut LV2Value> {
         self.vstack
             .last_mut()
             .ok_or_else(|| LV2ErrorTy::ValueStackEmpty.into())
     }
 
-    /// Lookup a global value
+    /// Lookup a global value.
     pub fn value_of<T>(&self, var: T) -> LV2Result<&LV2Value>
     where
         T: AsRef<str>,

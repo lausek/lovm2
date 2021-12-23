@@ -1,4 +1,4 @@
-/// Compiletime error
+/// Compiletime error.
 #[derive(Debug)]
 pub struct LV2CompileError {
     pub ty: Option<String>,

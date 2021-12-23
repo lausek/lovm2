@@ -4,11 +4,11 @@ pub use std::rc::Rc;
 
 pub use crate::code::LV2CallableRef;
 pub use crate::error::{LV2Error, LV2ErrorTy, LV2Result};
-pub use crate::module::SharedObjectSlot;
+pub use crate::module::LV2SharedObjectSlot;
 pub use crate::prelude::*;
 pub use crate::value::box_value;
 pub use crate::vm::LV2Vm;
 
 pub use lovm2_module::*;
 
-pub use super::{create_callable, create_test_vm};
+pub use super::{create_callable, create_test_vm, LV2_EXTERN_INITIALIZER};

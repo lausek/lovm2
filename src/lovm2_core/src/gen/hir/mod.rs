@@ -1,4 +1,4 @@
-//! Highlevel Intermediate Representation
+//! Highlevel Intermediate Representation.
 
 mod lowering;
 
@@ -22,7 +22,7 @@ pub use self::lowering::{LV2HirJumpable, LV2HirLowering, LV2HirLoweringRuntime};
 pub use self::repeat::{lv2_lower_repeat, LV2Repeat, LV2RepeatType};
 pub use self::stmt::LV2Statement;
 
-/// Highlevel representation of a function
+/// Highlevel representation of a function.
 #[derive(Clone)]
 pub struct LV2Function {
     args: Vec<LV2Variable>,
@@ -30,7 +30,7 @@ pub struct LV2Function {
 }
 
 impl LV2Function {
-    /// Create a new function
+    /// Create a new function.
     pub fn new() -> Self {
         Self {
             args: vec![],
@@ -38,14 +38,14 @@ impl LV2Function {
         }
     }
 
-    /// Create a new function with arguments
+    /// Create a new function with arguments.
     pub fn with_args(args: Vec<LV2Variable>) -> Self {
         let mut hir = Self::new();
         hir.args = args;
         hir
     }
 
-    /// Add a HIR to the lowering runtime
+    /// Add a HIR to the lowering runtime.
     pub fn build<'hir, 'lir>(
         &'hir self,
         ru: &mut LV2HirLoweringRuntime<'lir>,

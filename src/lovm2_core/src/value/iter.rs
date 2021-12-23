@@ -13,7 +13,7 @@ enum IterType {
     Over(LV2Value),
 }
 
-/// Runtime iterator implementation
+/// Iterator implementation.
 #[derive(Clone, Debug)]
 pub struct LV2Iter {
     current: i64,
@@ -92,6 +92,7 @@ impl LV2Iter {
     // otherwise `reversed => inclusive range`. example:
     //     4..=0 -> [4, 3, 2, 1, 0]
     //     mapping rules (new <- old): current <- limit, limit <- current + 1
+    /// Put the iterator in reverse order.
     pub fn reverse(self) -> Self {
         let reversed = !self.reversed;
 
@@ -130,7 +131,7 @@ impl LV2Iter {
         }
     }
 
-    /// Consume the iterator into a vector of values.
+    /// Collect the iterators items into a vector of [LV2Value].
     pub fn collect(mut self) -> Vec<LV2Value> {
         let mut result = vec![];
 

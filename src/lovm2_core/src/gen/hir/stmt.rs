@@ -1,41 +1,51 @@
-//! Sum type for every HIR element
+//! Highlevel programming constructs.
 
 use super::*;
 
-/// Sum type for every HIR element
+/// Highlevel programming constructs.
 #[derive(Clone)]
 pub enum LV2Statement {
+    /// Set the value of a [Ref][LV2Value::Ref].
     AssignReference {
         target: LV2Expr,
         source: LV2Expr,
     },
+    /// Assign a variable to a new value.
     AssignVariable {
         target: LV2Variable,
         source: LV2Expr,
     },
+    /// Conditional execution of code.
     Branch(LV2Branch),
     /// Highlevel `break` statement
     Break,
     Call(LV2Call),
     /// Highlevel `continue` statement
     Continue,
+    /// Evaluate an expression and dispose the result.
     Drop {
         expr: LV2Expr,
     },
+    /// Import some module into the runtime.
     Import {
         name: LV2Expr,
         namespaced: bool,
     },
+    /// Trigger an interrupt.
     Interrupt {
         n: u16,
     },
+    /// Repeating a block of code.
     Repeat(LV2Repeat),
+    /// Explicitly return a value from a function.
     Return {
         expr: LV2Expr,
     },
+    /// Change the scope of `ident` to global.
     ScopeGlobal {
         ident: LV2Variable,
     },
+    /// Change the scope of `ident` to local.
     ScopeLocal {
         ident: LV2Variable,
     },

@@ -1,4 +1,4 @@
-//! Wrapper type for identifiers
+//! Variable names.
 
 use serde::{Deserialize, Serialize};
 

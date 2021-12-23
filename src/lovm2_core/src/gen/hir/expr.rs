@@ -1,4 +1,4 @@
-//! Expressions and operations that produce `Values`
+//! Expressions and operations that produce a [LV2Value].
 
 use super::*;
 
@@ -22,7 +22,7 @@ macro_rules! auto_implement {
     };
 }
 
-/// Expressions and operations that produce `Values`
+/// Expressions and operations that produce a [LV2Value].
 #[derive(Clone, Debug)]
 pub enum LV2Expr {
     Append {
@@ -32,59 +32,68 @@ pub enum LV2Expr {
     Box {
         expr: Box<LV2Expr>,
     },
-    Branch(Box<ExprBranch>),
+    Branch(Box<LV2ExprBranch>),
     Call(LV2Call),
-    /// Do type conversion on a lowered `Expr` at runtime
+    /// Do type conversion on a lowered [LV2Expr] at runtime.
     Conv {
         ty: LV2ValueType,
         expr: Box<LV2Expr>,
     },
-    /// Consecutive read on a `List` or `Dict`
+    // Get an item from [LV2Value::Dict], [LV2Value::List], or [LV2Value::Str].
     Get {
         target: Box<LV2Expr>,
         key: Box<LV2Expr>,
     },
-    // TODO: change name to `Set`
+    /// Set the value of a [Ref][LV2Value::Ref].
     Set {
         base: Box<LV2Expr>,
         key: Box<LV2Expr>,
         value: Box<LV2Expr>,
     },
-    /// Create an iterator from some collection
+    /// Create an iterator from some collection.
     IterCreate {
         expr: Box<LV2Expr>,
     },
-    /// Create an iterator for a range
+    /// Create an iterator for a range.
     IterCreateRanged {
         from: Box<LV2Expr>,
         to: Box<LV2Expr>,
     },
+    /// Check if the iterator is exhausted.
     IterHasNext {
         expr: Box<LV2Expr>,
     },
+    /// Retrieve next item from the iterator.
     IterNext {
         expr: Box<LV2Expr>,
     },
+    /// Create new iterator from existing but in reverse order.
     IterReverse {
         expr: Box<LV2Expr>,
     },
+    /// Applies an operation on the contained [LV2Expr].
     Operation1(LV2Operator1, Box<LV2Expr>),
+    /// Computes the value of the contained [LV2Expr]s.
     Operation2(LV2Operator2, Box<LV2Expr>, Box<LV2Expr>),
+    /// Create a slice from [List][LV2Value::List] or [Str][LV2Value::Str].
     Slice {
         target: Box<LV2Expr>,
         start: Box<LV2Expr>,
         end: Box<LV2Expr>,
     },
+    /// (not implemented)
     Unbox {
         expr: Box<LV2Expr>,
     },
+    /// Constant value.
     Value {
         val: LV2Value,
     },
+    /// Read a variable.
     Variable(LV2Variable),
 }
 
-/// Operator with two operands
+/// Operator with two operands.
 #[derive(Clone, Debug, PartialEq)]
 pub enum LV2Operator2 {
     Add,
@@ -107,7 +116,7 @@ pub enum LV2Operator2 {
     Lt,
 }
 
-/// Operator with one operand
+/// Operator with one operand.
 #[derive(Clone, Debug, PartialEq)]
 pub enum LV2Operator1 {
     Not,
@@ -127,8 +136,8 @@ impl LV2Expr {
         }
     }
 
-    pub fn branch() -> ExprBranchIncomplete {
-        ExprBranchIncomplete::new()
+    pub fn branch() -> LV2ExprBranchIncomplete {
+        LV2ExprBranchIncomplete::new()
     }
 
     pub fn dict() -> Self {
@@ -334,8 +343,8 @@ impl LV2Expr {
     auto_implement!(1, Not, not);
 }
 
-impl From<ExprBranch> for LV2Expr {
-    fn from(branch: ExprBranch) -> LV2Expr {
+impl From<LV2ExprBranch> for LV2Expr {
+    fn from(branch: LV2ExprBranch) -> LV2Expr {
         LV2Expr::Branch(Box::new(branch))
     }
 }
@@ -460,11 +469,12 @@ impl LV2HirLowering for LV2Expr {
     }
 }
 
-pub struct ExprBranchIncomplete {
+/// [LV2ExprBranch] without a default value (required).
+pub struct LV2ExprBranchIncomplete {
     branches: Vec<(LV2Expr, LV2Expr)>,
 }
 
-impl ExprBranchIncomplete {
+impl LV2ExprBranchIncomplete {
     pub fn new() -> Self {
         Self { branches: vec![] }
     }
@@ -478,24 +488,25 @@ impl ExprBranchIncomplete {
         self
     }
 
-    pub fn default_value<T>(self, default: T) -> ExprBranch
+    pub fn default_value<T>(self, default: T) -> LV2ExprBranch
     where
         T: Into<LV2Expr>,
     {
-        ExprBranch {
+        LV2ExprBranch {
             branches: self.branches,
             default: Some(default.into()),
         }
     }
 }
 
+/// Conditional evaluation of [LV2Expr].
 #[derive(Clone, Debug)]
-pub struct ExprBranch {
+pub struct LV2ExprBranch {
     branches: Vec<(LV2Expr, LV2Expr)>,
     default: Option<LV2Expr>,
 }
 
-impl ExprBranch {
+impl LV2ExprBranch {
     pub fn add_condition<T, U>(mut self, condition: T, value: U) -> Self
     where
         T: Into<LV2Expr>,
@@ -514,7 +525,7 @@ impl ExprBranch {
     }
 }
 
-impl LV2HirLowering for ExprBranch {
+impl LV2HirLowering for LV2ExprBranch {
     fn lower<'lir, 'hir: 'lir>(&'hir self, runtime: &mut LV2HirLoweringRuntime<'lir>) {
         super::branch::lower_map_structure(runtime, &self.branches, &self.default);
     }

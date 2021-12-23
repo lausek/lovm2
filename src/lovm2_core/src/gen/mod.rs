@@ -1,4 +1,4 @@
-//! Tools for generating bytecode
+//! Tools for generating bytecode.
 
 pub mod hir;
 pub mod lir;
@@ -13,7 +13,7 @@ pub(crate) use self::lir::*;
 pub use self::module::{LV2ModuleBuilder, LV2ModuleMeta, LV2_DEFAULT_MODULE_NAME};
 pub(crate) use self::opt::*;
 
-/// Settings for lowering to bytecode
+/// Settings for lowering to bytecode.
 #[derive(Clone, Debug)]
 pub struct LV2CompileOptions {
     /// If this is `false`, do not run any optimization.

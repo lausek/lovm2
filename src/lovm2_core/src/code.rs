@@ -1,4 +1,4 @@
-//! Runnable bytecode objects
+//! Runnable bytecode objects.
 
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -21,7 +21,7 @@ pub type LV2CallableRef = Rc<dyn LV2CallProtocol>;
 /// - Dynamically linked functions ([SharedObjectSlot](crate::module::SharedObjectSlot))
 ///
 /// Functions implementing this protocol can support variadic arguments by looking at
-/// the amount of passed values on stack inside `ctx.frame_mut()?.argn`
+/// the amount of passed values on stack inside `ctx.frame_mut()?.argn`.
 pub trait LV2CallProtocol: std::fmt::Debug {
     fn module(&self) -> Option<String> {
         None
@@ -97,7 +97,7 @@ impl LV2CodeObject {
         Self::default()
     }
 
-    /// Tries to load the file as shared object first and falls back to regular deserialization if it failed
+    /// Tries to load the file as shared object first and falls back to regular deserialization if it failed.
     pub fn load_from_file<T>(path: T) -> LV2Result<Self>
     where
         T: AsRef<std::path::Path>,

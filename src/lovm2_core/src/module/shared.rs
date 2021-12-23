@@ -13,7 +13,7 @@ use std::rc::Rc;
 
 use crate::code::{LV2CallProtocol, LV2CallableRef, LV2CodeObject};
 use crate::error::*;
-use crate::module::{LV2Module, Slots};
+use crate::module::{LV2Module, LV2ModuleSlots};
 use crate::var::LV2Variable;
 use crate::vm::LV2Vm;
 
@@ -21,17 +21,17 @@ use crate::vm::LV2Vm;
 pub const LV2_EXTERN_INITIALIZER: &str = "lovm2_module_initialize";
 
 /// Definition for dynamically linked function.
-pub type ExternFunction = unsafe extern "C" fn(&mut LV2Vm) -> LV2Result<()>;
+pub type LV2ExternFunction = unsafe extern "C" fn(&mut LV2Vm) -> LV2Result<()>;
 /// Function signature of the extern module initializer.
-pub type ExternInitializer =
+pub type LV2ExternInitializer =
     extern "C" fn(lib: Rc<Library>, &mut HashMap<LV2Variable, LV2CallableRef>);
 
-fn load_slots(_name: &str, lib: Library) -> LV2Result<Slots> {
+fn load_slots(_name: &str, lib: Library) -> LV2Result<LV2ModuleSlots> {
     unsafe {
         let lib = Rc::new(lib);
 
         // try to lookup named initializer first, fallback to initializer without name
-        let lookup: Result<Symbol<ExternInitializer>, Error> =
+        let lookup: Result<Symbol<LV2ExternInitializer>, Error> =
             lib.get(LV2_EXTERN_INITIALIZER.as_bytes());
 
         match lookup {
@@ -40,7 +40,7 @@ fn load_slots(_name: &str, lib: Library) -> LV2Result<Slots> {
 
                 initializer(lib.clone(), &mut slots);
 
-                Ok(Slots::from(slots))
+                Ok(LV2ModuleSlots::from(slots))
             }
             Err(_) => Err(LV2ErrorTy::Basic.into()),
         }
@@ -65,7 +65,7 @@ where
     library.or_else(err_from_string)
 }
 
-/// Turn the loaded shared object into a `lovm2` [Module].
+/// Turn the loaded shared object into a `lovm2` [LV2Module].
 pub fn module_from_library<T>(path: T, lib: Library) -> LV2Result<LV2Module>
 where
     T: AsRef<Path>,
@@ -86,14 +86,14 @@ where
 
 // As the `Library` is always valid for this structure, it should be fine to
 // call `into_raw` on the loaded symbol and then use the function pointer afterwards.
-/// Contains a function name, imported by `EXTERN_LOVM2_INITIALIZER`.
-pub struct SharedObjectSlot(
+/// Contains a function name, imported by [LV2_EXTERN_INITIALIZER](crate::extend::LV2_EXTERN_INITIALIZER).
+pub struct LV2SharedObjectSlot(
     Rc<Library>,
-    #[cfg(unix)] ::libloading::os::unix::Symbol<ExternFunction>,
-    #[cfg(windows)] ::libloading::os::windows::Symbol<ExternFunction>,
+    #[cfg(unix)] ::libloading::os::unix::Symbol<LV2ExternFunction>,
+    #[cfg(windows)] ::libloading::os::windows::Symbol<LV2ExternFunction>,
 );
 
-impl SharedObjectSlot {
+impl LV2SharedObjectSlot {
     pub fn new<T>(lib: Rc<Library>, name: T) -> LV2Result<Self>
     where
         T: AsRef<str>,
@@ -101,7 +101,7 @@ impl SharedObjectSlot {
         let name = name.as_ref();
 
         unsafe {
-            let lookup: Result<Symbol<ExternFunction>, Error> = lib.get(name.as_bytes());
+            let lookup: Result<Symbol<LV2ExternFunction>, Error> = lib.get(name.as_bytes());
 
             match lookup {
                 Ok(symbol) => Ok(Self(lib.clone(), symbol.into_raw())),
@@ -111,13 +111,13 @@ impl SharedObjectSlot {
     }
 }
 
-impl LV2CallProtocol for SharedObjectSlot {
+impl LV2CallProtocol for LV2SharedObjectSlot {
     fn run(&self, vm: &mut LV2Vm) -> LV2Result<()> {
         unsafe { self.1(vm) }
     }
 }
 
-impl std::fmt::Debug for SharedObjectSlot {
+impl std::fmt::Debug for LV2SharedObjectSlot {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "<extern function>")
     }

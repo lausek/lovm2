@@ -89,6 +89,8 @@ pub use lovm2_module::*;
 
 pub use self::wrapper::create_callable;
 
+pub const LV2_EXTERN_INITIALIZER: &str = "lovm2_module_initialize";
+
 /// Returns a virtual machine with the crates `target/debug` directory in the load path.
 pub fn create_test_vm() -> LV2Vm {
     let cargo_root = std::env::var("CARGO_MANIFEST_DIR").expect("no cargo manifest");

@@ -15,8 +15,8 @@ use crate::code::{LV2CodeObject, LV2CodeObjectFunction, LV2_MAGIC_NUMBER};
 use crate::error::*;
 use crate::var::LV2Variable;
 
-pub use self::shared::{SharedObjectSlot, LV2_EXTERN_INITIALIZER};
-pub use self::slots::Slots;
+pub use self::shared::{LV2SharedObjectSlot, LV2_EXTERN_INITIALIZER};
+pub use self::slots::LV2ModuleSlots;
 
 /// Name of the [LV2CodeObject] entry that is used as a programs starting point inside
 /// [LV2Vm::run](crate::vm::LV2Vm::run).
@@ -28,7 +28,7 @@ pub struct LV2Module {
     /// Always required. Shared object libraries will only fill the `name` and `loc` attribute.
     pub code_object: Rc<LV2CodeObject>,
     /// Contains `CallProtocol` entries that will be added to the context.
-    pub slots: Slots,
+    pub slots: LV2ModuleSlots,
 }
 
 impl LV2Module {
@@ -76,16 +76,16 @@ impl LV2Module {
         self.code_object.loc.as_ref()
     }
 
-    pub fn slots(&self) -> &Slots {
+    pub fn slots(&self) -> &LV2ModuleSlots {
         &self.slots
     }
 
-    /// Try looking up a `LV2Callable` by name.
+    /// Try looking up a [LV2CallProtocol] object by name.
     pub fn slot(&self, name: &LV2Variable) -> Option<Rc<dyn LV2CallProtocol>> {
         self.slots.get(name).cloned()
     }
 
-    /// Write the contained `LV2CodeObject` into a file. This wil do nothing
+    /// Write the contained [LV2CodeObject] into a file. This wil do nothing
     /// for shared object modules.
     pub fn store_to_file<T>(&self, path: T) -> LV2Result<()>
     where
@@ -108,7 +108,7 @@ impl LV2Module {
 impl From<LV2CodeObject> for LV2Module {
     fn from(code_object: LV2CodeObject) -> Self {
         let code_object = Rc::new(code_object);
-        let mut slots = Slots::new();
+        let mut slots = LV2ModuleSlots::new();
 
         // make code object functions available in module
         for (iidx, offset) in code_object.entries.iter() {

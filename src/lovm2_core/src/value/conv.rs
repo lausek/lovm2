@@ -1,8 +1,8 @@
-//! Conversion of values
+//! Conversion between [LV2Value].
 
 use super::*;
 
-/// Type of a value as integer
+/// Type of a value as integer.
 #[derive(Clone, Debug)]
 #[repr(u16)]
 pub enum LV2ValueType {
@@ -39,32 +39,32 @@ impl LV2Value {
         Ok(())
     }
 
-    /// Try turning a value into `Bool`.
+    /// Try turning a value into [Bool][LV2Value::Bool].
     pub fn as_bool(&self) -> LV2Result<LV2Value> {
         self.as_bool_inner().map(LV2Value::Bool)
     }
 
-    /// Try turning a value into `Float`.
+    /// Try turning a value into [Float][LV2Value::Float].
     pub fn as_float(&self) -> LV2Result<LV2Value> {
         self.as_float_inner().map(LV2Value::Float)
     }
 
-    /// Try turning a value into `Int`.
+    /// Try turning a value into [Int][LV2Value::Int].
     pub fn as_integer(&self) -> LV2Result<LV2Value> {
         self.as_integer_inner().map(LV2Value::Int)
     }
 
-    /// Try turning a value into `Int` while doing correct float rounding.
+    /// Try turning a value into [Int][LV2Value::Int] while rounding.
     pub fn as_integer_round(&self) -> LV2Result<LV2Value> {
         self.as_integer_round_inner().map(LV2Value::Int)
     }
 
-    /// Try turning a value into `Str`.
+    /// Try turning a value into [Str][LV2Value::Str].
     pub fn as_str(&self) -> LV2Result<LV2Value> {
         self.as_str_inner().map(LV2Value::Str)
     }
 
-    /// Try getting the contained `AnyRef`.
+    /// Try getting the contained [LV2AnyRef].
     pub fn as_any_inner(&self) -> LV2Result<LV2AnyRef> {
         match self {
             LV2Value::Any(r) => Ok(r.clone()),
@@ -125,7 +125,7 @@ impl LV2Value {
         }
     }
 
-    /// Try turning a value into a Rust `i64` while doing correct float rounding.
+    /// Try turning a value into a Rust `i64` while rounding.
     pub fn as_integer_round_inner(&self) -> LV2Result<i64> {
         if let LV2Value::Float(n) = self {
             Ok(n.round() as i64)

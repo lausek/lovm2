@@ -1,15 +1,15 @@
-//! Own type for maintaining callable functions inside a module
+//! Own type for maintaining callable functions inside a module.
 
 use std::collections::HashMap;
 
 use crate::code::LV2CallableRef;
 use crate::var::LV2Variable;
 
-/// Own type for maintaining callable functions inside a module
+/// Own type for maintaining callable functions inside a module.
 #[derive(Clone, Debug)]
-pub struct Slots(HashMap<LV2Variable, LV2CallableRef>);
+pub struct LV2ModuleSlots(HashMap<LV2Variable, LV2CallableRef>);
 
-impl Slots {
+impl LV2ModuleSlots {
     pub fn new() -> Self {
         Self(HashMap::new())
     }

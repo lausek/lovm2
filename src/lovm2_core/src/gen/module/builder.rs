@@ -1,4 +1,4 @@
-//! Building modules
+//! Tools for building [LV2Module].
 
 use std::collections::HashMap;
 use std::rc::Rc;

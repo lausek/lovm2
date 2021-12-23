@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Definition of the bytecode
+/// Definition of the bytecode.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Instruction {
     /// Push local variable.
@@ -24,7 +24,7 @@ pub enum Instruction {
     RGet,
     /// Write second argument into first argument which must be a reference.
     Set,
-    /// Append second argument to first argument
+    /// Append second argument to first argument.
     Append,
 
     /// = first + second
@@ -45,13 +45,13 @@ pub enum Instruction {
     /// Logical shift right `first` by `second` places.
     Shr,
 
-    /// Logical and for `Bool`, Bitwise and for `Int`.
+    /// Logical and for [LV2Value::Bool] / Bitwise and for [LV2Value::Int].
     And,
-    /// Logical or for `Bool`, Bitwise or for `Int`.
+    /// Logical or for [LV2Value::Bool] / Bitwise or for [LV2Value::Int].
     Or,
-    /// Logical xor for `Bool`, Bitwise xor for `Int`.
+    /// Logical xor for [LV2Value::Bool] / Bitwise xor for [LV2Value::Int].
     XOr,
-    /// Logical not for `Bool`, Bitwise not for `Int`.
+    /// Logical not for [LV2Value::Bool] / Bitwise not for [LV2Value::Int].
     Not,
 
     /// = first == second
@@ -84,7 +84,7 @@ pub enum Instruction {
     /// Trigger interrupt `n`.
     Interrupt(u16),
 
-    /// Convert top of stack into type. See `Value::type_id`.
+    /// Convert top of stack into type. See [LV2Value::type_id].
     Conv(u16),
     /// Take top of stack as name of module to load and import functions without module prefix as
     /// well.

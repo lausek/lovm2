@@ -8,13 +8,13 @@ pub use self::compile::LV2CompileError;
 pub use self::methods::*;
 pub use self::ty::LV2ErrorTy;
 
-/// Runtime Result
+/// Runtime Result.
 pub type LV2Result<T> = Result<T, LV2Error>;
-/// Compile Result
+/// Compile Result.
 pub type LV2CompileResult<T> = Result<T, LV2CompileError>;
 
 // TODO: format output/display; only output first backtrace line that starts with `lovm2`
-/// Runtime Error
+/// Runtime Error.
 #[derive(Debug)]
 pub struct LV2Error {
     pub ty: LV2ErrorTy,

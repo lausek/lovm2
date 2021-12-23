@@ -1,4 +1,4 @@
-//! Optimization on LIR
+//! Optimization on LIR.
 
 pub(crate) mod standard;
 pub(crate) mod valid;

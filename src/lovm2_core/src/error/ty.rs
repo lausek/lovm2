@@ -1,3 +1,4 @@
+/// Id for an error type.
 #[derive(Debug, PartialEq)]
 pub enum LV2ErrorTy {
     Custom(String),

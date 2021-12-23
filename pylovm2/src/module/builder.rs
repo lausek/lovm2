@@ -60,7 +60,7 @@ impl LV2ModuleBuilder {
         let meta =
             lovm2::gen::LV2ModuleMeta::new(self.name.clone(), module_location, self.uses.clone());
         let mut builder = lovm2::gen::LV2ModuleBuilder::with_meta(meta);
-        let mut slots = lovm2::module::Slots::new();
+        let mut slots = lovm2::module::LV2ModuleSlots::new();
 
         for (key, co_builder) in self.slots.drain() {
             let mut co_builder: ModuleBuilderSlot = co_builder;

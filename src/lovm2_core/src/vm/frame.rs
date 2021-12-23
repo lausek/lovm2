@@ -1,4 +1,4 @@
-//! Stores local function values
+//! Stores local function values.
 //!
 //! Each frame contains the amount of arguments passed to the `CodeObject` on stack. Make
 //! sure to pop exactly `argn` values from stack and leave one value as return.
@@ -9,12 +9,12 @@ use crate::value::LV2Value;
 
 use super::*;
 
-/// A stack frame used in `Context.lstack`
+/// A stack frame used in `Context.lstack`.
 #[derive(Debug)]
 pub struct LV2StackFrame {
-    /// Amount of parameters passed to the frame
+    /// Amount of parameters passed to the frame.
     pub argn: u8,
-    /// Local variables
+    /// Local variables.
     locals: HashMap<String, LV2Value>,
 }
 

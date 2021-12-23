@@ -1,7 +1,8 @@
-//! Runs a [LV2Block] forever or until a condition is met
+//! Runs a [LV2Block] forever or until a condition is met.
 
 use super::*;
 
+/// Conditional/Unconditional repeat.
 #[derive(Clone)]
 pub enum LV2RepeatType {
     Endless,
@@ -14,7 +15,7 @@ pub enum LV2RepeatType {
     },
 }
 
-/// Runs a [LV2Block] forever or until a condition is met
+/// Runs a [LV2Block] forever or until a condition is met.
 #[derive(Clone)]
 pub struct LV2Repeat {
     block: LV2Block,
@@ -64,6 +65,7 @@ impl LV2HirLowering for LV2Repeat {
     }
 }
 
+/// Lowering for [LV2Repeat].
 pub fn lv2_lower_repeat<'lir, 'hir: 'lir>(
     runtime: &mut LV2HirLoweringRuntime<'lir>,
     ty: &'hir LV2RepeatType,
