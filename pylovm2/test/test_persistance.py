@@ -10,7 +10,7 @@ class TestPersistance(Test):
     def test_persistance(self, internals):
         main_hir = internals.main
         main_hir.assign_global("n", 2)
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         result = internals.mod.build()
 

@@ -20,7 +20,7 @@ class TestBuilding(Test):
     def test_assign_global(self, internals):
         main_hir = internals.main
         main_hir.assign_global("n", 5)
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         result = internals.mod.build()
 
@@ -38,9 +38,10 @@ class TestBuilding(Test):
         main_hir.assign("c", LV2Expr(2).mul(3))
         main_hir.assign("d", LV2Expr(2).div(3))
         main_hir.assign("e", LV2Expr(2).rem(3))
-        main_hir.assign("f", LV2Expr(True).land(False))
-        main_hir.assign("g", LV2Expr(True).lor(False))
-        main_hir.assign("h", LV2Expr(True).lnot())
+        main_hir.assign("f", LV2Expr(True).and_(False))
+        main_hir.assign("g", LV2Expr(True).or_(False))
+        main_hir.assign("h", LV2Expr(True).not_())
+        main_hir.assign("i", LV2Expr(True).xor(False))
 
         result = internals.mod.build()
 
@@ -60,7 +61,7 @@ class TestBuilding(Test):
         main_hir = internals.main
         main_hir.assign(i, 0)
         main_hir.repeat_until(LV2Expr(i).eq(10)).assign(i, LV2Expr(i).add(1))
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         self.run_module_test(internals.mod.build(), lambda ctx: None)
 
@@ -74,7 +75,7 @@ class TestBuilding(Test):
         repeat.branch().add_condition(LV2Expr(i).eq(10)).repeat_break()
         repeat.assign(i, LV2Expr(i).add(1))
 
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         def validate(ctx):
             frame = ctx.frame()
@@ -93,7 +94,7 @@ class TestBuilding(Test):
         repeat.assign(i, LV2Expr(i).add(1))
         repeat.branch().add_condition(LV2Expr(i).ne(10)).repeat_continue()
         repeat.repeat_break()
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         def validate(ctx):
             frame = ctx.frame()
@@ -113,7 +114,7 @@ class TestBuilding(Test):
         branch.add_condition(LV2Expr(a).eq(3)).assign(result, "fizz")
         branch.add_condition(LV2Expr(a).eq(5)).assign(result, "buzz")
         branch.default_condition().assign(result, "none")
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         def validate(ctx):
             frame = ctx.frame()
@@ -127,7 +128,7 @@ class TestBuilding(Test):
 
         main_hir = internals.main
         main_hir.assign("doubled", LV2Expr.call("double", 5))
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         double_hir = internals.mod.add("double", [n])
         double_hir.ret(LV2Expr(n).mul(2))
@@ -144,7 +145,7 @@ class TestBuilding(Test):
         main_hir = internals.main
         main_hir.assign("d", {1: 1, "2": 2, "3": True})
         main_hir.assign("l", [1, 2, 3])
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         def validate(ctx):
             frame = ctx.frame()
@@ -211,7 +212,7 @@ class TestBuilding(Test):
         main_hir = internals.main
         main_hir.assign_global("a", LV2Expr(2).shl(2))
         main_hir.assign_global("b", LV2Expr(16).shr(2))
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
         module = internals.mod.build()
 
         def testfn(ctx):
@@ -226,7 +227,7 @@ class TestBuilding(Test):
         main_hir = internals.main
         main_hir.assign_global(n, LV2Expr(1).add(2))
         main_hir.assign_global(m, LV2Expr(n).add(2))
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         def testfn(ctx):
             assert 3 == int(ctx.globals(n))
@@ -238,7 +239,7 @@ class TestBuilding(Test):
         var, val = LV2Variable("var"), LV2Variable("val")
 
         internals.main.step(LV2Expr.call("wrt", 5))
-        internals.main.interrupt(10)
+        internals.main.trigger(10)
 
         wrt_hir = internals.mod.add("wrt", [val])
         wrt_hir.assign_global(var, val)
@@ -254,10 +255,10 @@ class TestBuilding(Test):
         main_hir = internals.main
         main_hir.assign_global(c, 0)
         main_hir.assign_global(it, LV2Expr([1, 2, 3, 4]).to_iter())
-        repeat = main_hir.repeat_until(LV2Expr(it).has_next().lnot())
+        repeat = main_hir.repeat_until(LV2Expr(it).has_next().not_())
         repeat.assign_global(c, LV2Expr(it).next().add(c))
         main_hir.assign_global(has, LV2Expr(it).has_next())
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         def testfn(ctx):
             assert 10 == int(ctx.globals(c))

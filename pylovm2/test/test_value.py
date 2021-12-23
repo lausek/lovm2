@@ -7,7 +7,7 @@ class TestValue(Test):
     def test_to_string(self, internals):
         main_hir = internals.main
         main_hir.assign_global("a", 10)
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
         module = internals.mod.build()
 
         def testfn(ctx):
@@ -18,7 +18,7 @@ class TestValue(Test):
     def test_to_int(self, internals):
         main_hir = internals.main
         main_hir.assign_global("a", 10)
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
         module = internals.mod.build()
 
         def testfn(ctx):
@@ -29,7 +29,7 @@ class TestValue(Test):
     def test_to_float(self, internals):
         main_hir = internals.main
         main_hir.assign_global("a", 22.0)
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
         module = internals.mod.build()
 
         def testfn(ctx):

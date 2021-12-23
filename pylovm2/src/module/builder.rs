@@ -7,7 +7,7 @@ use pyo3::types::{PyList, PyTuple};
 use lovm2::gen::LV2AddStatements as _;
 
 use crate::code::CodeObject;
-use crate::expr::{any_to_expr, any_to_ident, LV2Expr};
+use crate::expr::{any_to_expr, any_to_ident};
 use crate::module::slot::LV2Block;
 
 use super::{LV2Module, ModuleBuilderSlot};
@@ -170,14 +170,20 @@ impl LV2Block {
         Ok(())
     }
 
-    // TODO: rename this
-    pub fn load(&mut self, name: &LV2Expr) -> PyResult<()> {
-        self.block().import(name.inner.clone());
+    pub fn import_(&mut self, name: &PyAny) -> PyResult<()> {
+        let name = any_to_expr(name)?;
+        self.block().import(name);
+        Ok(())
+    }
+
+    pub fn import_from(&mut self, name: &PyAny) -> PyResult<()> {
+        let name = any_to_expr(name)?;
+        self.block().import_from(name);
         Ok(())
     }
 
     // TODO: rename this
-    pub fn interrupt(&mut self, id: u16) -> PyResult<()> {
+    pub fn trigger(&mut self, id: u16) -> PyResult<()> {
         self.block().trigger(id);
         Ok(())
     }

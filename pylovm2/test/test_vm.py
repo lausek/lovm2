@@ -2,7 +2,7 @@ import pytest
 
 from .deps import *
 
-from pylovm2 import LV2Expr
+from pylovm2 import LV2ModuleBuilder
 
 
 class TestVm(Test):
@@ -14,7 +14,7 @@ class TestVm(Test):
     def test_interrupt(self, internals):
         vm = internals.vm
         main_hir = internals.main
-        main_hir.interrupt(10)
+        main_hir.trigger(10)
 
         out = {"called": False}
 
@@ -34,24 +34,39 @@ class TestVm(Test):
             internals.vm.call("main.ret")
 
     def test_load_hook_exception(self, internals):
-        def load_hook(name):
-            raise Exception()
+        def load_hook(_name, _relative_to):
+            raise ImportError()
 
         main_hir = internals.mod.entry()
-        main_hir.load(LV2Expr.val("std"))
+        main_hir.import_("std")
 
         internals.vm.set_load_hook(load_hook)
         internals.vm.add_main_module(internals.mod.build())
 
-        with pytest.raises(Exception):
+        with pytest.raises(ImportError):
             internals.vm.run()
-            assert False
 
     def test_unknown_use(self, internals):
         main_hir = internals.mod.entry()
-        main_hir.load(LV2Expr.val("unkown_module"))
+        main_hir.import_("unkown_module")
 
         internals.vm.add_main_module(internals.mod.build())
 
         with pytest.raises(Exception):
             internals.vm.run()
+
+    def test_import_from(self, internals):
+        def load_hook(_name, _relative_to):
+            m = LV2ModuleBuilder()
+
+            m.add("what").ret(42)
+
+            return m.build()
+
+        internals.main.import_from("other")
+
+        internals.vm.set_load_hook(load_hook)
+        internals.vm.add_main_module(internals.mod.build())
+        internals.vm.run()
+
+        assert 42 == int(internals.vm.call("what"))
