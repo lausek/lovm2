@@ -24,7 +24,7 @@ pub enum Instruction {
     RGet,
     /// Write second argument into first argument which must be a reference.
     Set,
-    /// Append second argumetn to first argument
+    /// Append second argument to first argument
     Append,
 
     /// = first + second
