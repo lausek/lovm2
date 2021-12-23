@@ -49,12 +49,12 @@ impl Optimizer for StandardOptimizer {
                 [LirElement::Operation(Operator::Operator2(op)), LirElement::Operation(Operator::Operator1(LV2Operator1::Not))] =>
                 {
                     match op {
-                        LV2Operator2::Equal => *op = LV2Operator2::NotEqual,
-                        LV2Operator2::NotEqual => *op = LV2Operator2::Equal,
-                        LV2Operator2::GreaterEqual => *op = LV2Operator2::LessThan,
-                        LV2Operator2::GreaterThan => *op = LV2Operator2::LessEqual,
-                        LV2Operator2::LessEqual => *op = LV2Operator2::GreaterThan,
-                        LV2Operator2::LessThan => *op = LV2Operator2::GreaterEqual,
+                        LV2Operator2::Eq => *op = LV2Operator2::Ne,
+                        LV2Operator2::Ne => *op = LV2Operator2::Eq,
+                        LV2Operator2::Ge => *op = LV2Operator2::Lt,
+                        LV2Operator2::Gt => *op = LV2Operator2::Le,
+                        LV2Operator2::Le => *op = LV2Operator2::Gt,
+                        LV2Operator2::Lt => *op = LV2Operator2::Ge,
                         _ => continue,
                     }
 
@@ -121,12 +121,12 @@ impl Optimizer for StandardOptimizer {
                         LV2Operator2::And => left.bitand(right),
                         LV2Operator2::Or => left.bitor(right),
                         LV2Operator2::XOr => left.bitxor(right),
-                        LV2Operator2::Equal => Ok(left.eq(&right).into()),
-                        LV2Operator2::NotEqual => Ok(left.ne(&right).into()),
-                        LV2Operator2::GreaterEqual => Ok(left.ge(&right).into()),
-                        LV2Operator2::GreaterThan => Ok(left.gt(&right).into()),
-                        LV2Operator2::LessEqual => Ok(left.le(&right).into()),
-                        LV2Operator2::LessThan => Ok(left.lt(&right).into()),
+                        LV2Operator2::Eq => Ok(left.eq(&right).into()),
+                        LV2Operator2::Ne => Ok(left.ne(&right).into()),
+                        LV2Operator2::Ge => Ok(left.ge(&right).into()),
+                        LV2Operator2::Gt => Ok(left.gt(&right).into()),
+                        LV2Operator2::Le => Ok(left.le(&right).into()),
+                        LV2Operator2::Lt => Ok(left.lt(&right).into()),
                     }
                     .unwrap();
 

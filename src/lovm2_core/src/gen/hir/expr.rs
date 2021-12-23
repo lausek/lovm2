@@ -94,12 +94,12 @@ pub enum LV2Operator2 {
     Or,
     XOr,
 
-    Equal,
-    NotEqual,
-    GreaterEqual,
-    GreaterThan,
-    LessEqual,
-    LessThan,
+    Eq,
+    Ne,
+    Ge,
+    Gt,
+    Le,
+    Lt,
 }
 
 /// Operator with one operand
@@ -201,12 +201,12 @@ impl LV2Expr {
             LV2Operator2::Or => Self::or(left, right),
             LV2Operator2::XOr => Self::xor(left, right),
 
-            LV2Operator2::Equal => Self::eq(left, right),
-            LV2Operator2::NotEqual => Self::ne(left, right),
-            LV2Operator2::GreaterEqual => Self::ge(left, right),
-            LV2Operator2::GreaterThan => Self::gt(left, right),
-            LV2Operator2::LessEqual => Self::le(left, right),
-            LV2Operator2::LessThan => Self::lt(left, right),
+            LV2Operator2::Eq => Self::eq(left, right),
+            LV2Operator2::Ne => Self::ne(left, right),
+            LV2Operator2::Ge => Self::ge(left, right),
+            LV2Operator2::Gt => Self::gt(left, right),
+            LV2Operator2::Le => Self::le(left, right),
+            LV2Operator2::Lt => Self::lt(left, right),
         }
     }
 
@@ -323,12 +323,12 @@ impl LV2Expr {
     auto_implement!(2, Or, or);
     auto_implement!(2, XOr, xor);
 
-    auto_implement!(2, Equal, eq);
-    auto_implement!(2, NotEqual, ne);
-    auto_implement!(2, GreaterEqual, ge);
-    auto_implement!(2, GreaterThan, gt);
-    auto_implement!(2, LessEqual, le);
-    auto_implement!(2, LessThan, lt);
+    auto_implement!(2, Eq, eq);
+    auto_implement!(2, Ne, ne);
+    auto_implement!(2, Ge, ge);
+    auto_implement!(2, Gt, gt);
+    auto_implement!(2, Le, le);
+    auto_implement!(2, Lt, lt);
 
     auto_implement!(1, Not, not);
 }
