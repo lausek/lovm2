@@ -98,6 +98,7 @@ impl LirLoweringRuntime {
 
                 self.code.push(Instruction::Call(iidx, argn));
             }
+            LirElement::Box => self.code.push(Instruction::Box),
             LirElement::Conv { ty } => self.code.push(Instruction::Conv(ty as u16)),
             LirElement::Entry { ident } => {
                 let iidx = self.index_ident(&ident);
@@ -171,7 +172,6 @@ impl LirLoweringRuntime {
                 }
             }
 
-            LirElement::Box => self.code.push(Instruction::Box),
             LirElement::Drop => self.code.push(Instruction::Drop),
             LirElement::Duplicate => self.code.push(Instruction::Dup),
             LirElement::Get => self.code.push(Instruction::Get),
@@ -187,6 +187,8 @@ impl LirLoweringRuntime {
             LirElement::Ret => self.code.push(Instruction::Ret),
             LirElement::Set => self.code.push(Instruction::Set),
             LirElement::Slice => self.code.push(Instruction::Slice),
+            // TODO: implement this once reference logic was updated
+            LirElement::Unbox => unimplemented!(),
 
             LirElement::IterCreate => self.code.push(Instruction::IterCreate),
             LirElement::IterCreateRanged => self.code.push(Instruction::IterCreateRanged),

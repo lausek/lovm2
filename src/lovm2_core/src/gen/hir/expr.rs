@@ -29,6 +29,9 @@ pub enum LV2Expr {
         base: Box<LV2Expr>,
         value: Box<LV2Expr>,
     },
+    Box {
+        expr: Box<LV2Expr>,
+    },
     Branch(Box<ExprBranch>),
     Call(LV2Call),
     /// Do type conversion on a lowered `Expr` at runtime
@@ -72,9 +75,11 @@ pub enum LV2Expr {
         start: Box<LV2Expr>,
         end: Box<LV2Expr>,
     },
+    Unbox {
+        expr: Box<LV2Expr>,
+    },
     Value {
         val: LV2Value,
-        boxed: bool,
     },
     Variable(LV2Variable),
 }
@@ -116,12 +121,10 @@ impl LV2Expr {
         }
     }
 
-    pub fn boxed(mut self) -> Self {
-        match &mut self {
-            LV2Expr::Value { boxed, .. } => *boxed = true,
-            _ => {}
+    pub fn boxed(self) -> Self {
+        LV2Expr::Box {
+            expr: Box::new(self),
         }
-        self
     }
 
     pub fn branch() -> ExprBranchIncomplete {
@@ -129,9 +132,11 @@ impl LV2Expr {
     }
 
     pub fn dict() -> Self {
-        LV2Expr::Value {
+        let expr = LV2Expr::Value {
             val: LV2Value::dict(),
-            boxed: false,
+        };
+        LV2Expr::Box {
+            expr: Box::new(expr),
         }
     }
 
@@ -150,6 +155,7 @@ impl LV2Expr {
                 base.set(&key.into(), value)?;
                 Ok(base)
             }
+            LV2Expr::Box { expr } => Ok(crate::value::box_value(expr.eval(ctx)?)),
             LV2Expr::Branch(_) => todo!(),
             LV2Expr::Call(_) => todo!(),
             LV2Expr::Conv { .. } => todo!(),
@@ -171,6 +177,7 @@ impl LV2Expr {
             LV2Expr::Operation2(_, _, _) => todo!(),
 
             LV2Expr::Slice { .. } => todo!(),
+            LV2Expr::Unbox { .. } => todo!(),
             LV2Expr::Value { val, .. } => Ok(val.clone()),
             // TODO: wait until `result_cloned` is stabilized
             LV2Expr::Variable(var) => Ok(ctx.value_of(&var)?.clone()),
@@ -225,15 +232,7 @@ impl LV2Expr {
         }
     }
 
-    pub fn set<T: Into<LV2Expr>, U: Into<LV2Expr>>(mut self, key: T, value: U) -> Self {
-        if let LV2Expr::Value {
-            val: LV2Value::Dict(_) | LV2Value::List(_),
-            boxed,
-        } = &mut self
-        {
-            *boxed = true;
-        }
-
+    pub fn set<T: Into<LV2Expr>, U: Into<LV2Expr>>(self, key: T, value: U) -> Self {
         LV2Expr::Set {
             base: Box::new(self),
             key: Box::new(key.into()),
@@ -249,9 +248,11 @@ impl LV2Expr {
     }
 
     pub fn list() -> Self {
-        LV2Expr::Value {
+        let expr = LV2Expr::Value {
             val: LV2Value::list(),
-            boxed: false,
+        };
+        LV2Expr::Box {
+            expr: Box::new(expr),
         }
     }
 
@@ -350,10 +351,7 @@ where
     T: Into<LV2Value>,
 {
     fn from(val: T) -> LV2Expr {
-        LV2Expr::Value {
-            val: val.into(),
-            boxed: false,
-        }
+        LV2Expr::Value { val: val.into() }
     }
 }
 
@@ -377,6 +375,10 @@ impl LV2HirLowering for LV2Expr {
                 runtime.emit(LirElement::Duplicate);
                 value.lower(runtime);
                 runtime.emit(LirElement::Append);
+            }
+            LV2Expr::Box { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::Box);
             }
             LV2Expr::Branch(branch) => branch.lower(runtime),
             LV2Expr::Call(call) => call.lower(runtime),
@@ -444,12 +446,12 @@ impl LV2HirLowering for LV2Expr {
                 }
             }
             LV2Expr::Slice { target, start, end } => lower_slice(runtime, target, start, end),
-            LV2Expr::Value { ref val, boxed } => {
+            LV2Expr::Unbox { expr } => {
+                expr.lower(runtime);
+                runtime.emit(LirElement::Unbox);
+            }
+            LV2Expr::Value { ref val } => {
                 runtime.emit(LirElement::push_constant(val));
-
-                if *boxed || matches!(val, LV2Value::Dict(_) | LV2Value::List(_)) {
-                    runtime.emit(LirElement::Box);
-                }
             }
             LV2Expr::Variable(ref var) => {
                 runtime.emit(LirElement::push_dynamic(var));

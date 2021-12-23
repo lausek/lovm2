@@ -62,6 +62,7 @@ pub enum LirElement<'hir> {
     Ret,
     Set,
     Slice,
+    Unbox,
 
     IterCreate,
     IterCreateRanged,
