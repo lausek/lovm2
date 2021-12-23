@@ -14,15 +14,12 @@ use self::legacy::*;
 
 fn fibonacci(c: &mut Criterion) {
     let mut module = LV2ModuleBuilder::new();
-    // TODO: not needed (?)
-    module.entry();
 
     let (h, l, n, r) = &lv2_var!(h, l, n, r);
     let fib_hir = module.add_with_args("fib", vec![n.clone()]);
 
     fib_hir
         .branch()
-        //.add_condition(LV2Expr::or(LV2Expr::eq(n, 0), LV2Expr::eq(n, 1)))
         .add_condition(LV2Expr::from(n).eq(0).or(LV2Expr::from(n).eq(1)))
         .return_value(n);
 

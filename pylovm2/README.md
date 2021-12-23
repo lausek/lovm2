@@ -19,7 +19,7 @@ n, a, b = LV2Variable("n"), LV2Variable("a"), LV2Variable("b")
 
 # add the main entry point
 main_hir = module.entry()
-main_hir.assign("n", 2)
+main_hir.assign(n, 2)
 # call the module local function `add` with the value of `n`
 main_hir.call("print", "got result:", LV2Expr.call("add", n, 1), "\n")
 main_hir.call("print", "got result from pyfn:", LV2Expr.call("pyadd", n, 1), "\n")
