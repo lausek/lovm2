@@ -8,6 +8,7 @@ use crate::expr::any_to_value;
 use crate::value::LV2Value;
 
 // TODO: change this to hold a Rc<LV2CallProtocol>
+// TODO: change name
 #[pyclass(unsendable)]
 #[derive(Debug)]
 pub struct CodeObject {

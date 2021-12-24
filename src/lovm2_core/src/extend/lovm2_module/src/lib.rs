@@ -39,12 +39,12 @@ pub fn lv2_module_init(_args: TokenStream) -> TokenStream {
     let result = quote! {
         #[doc(hidden)]
         #[no_mangle]
-        pub extern fn #initfn(lib: Rc<Library>, slots: &mut HashMap<LV2Variable, LV2CallableRef>) {
+        pub extern fn #initfn(lib: std::rc::Rc<Library>, slots: &mut std::collections::HashMap<lovm2_core::LV2Variable, lovm2_core::code::LV2CallableRef>) {
             #(
-                let slot = SharedObjectSlot::new(lib.clone(), #names).expect("name not found");
+                let slot = lovm2_core::module::LV2SharedObjectSlot::new(lib.clone(), #names).expect("name not found");
                 slots.insert(
-                    LV2Variable::from(#names),
-                    Rc::new(slot)
+                    lovm2_core::LV2Variable::from(#names),
+                    std::rc::Rc::new(slot)
                 );
             )*
         }
