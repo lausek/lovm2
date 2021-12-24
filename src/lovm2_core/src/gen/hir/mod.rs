@@ -18,7 +18,7 @@ pub use self::block::LV2Block;
 pub use self::branch::LV2Branch;
 pub use self::call::LV2Call;
 pub use self::expr::{LV2Expr, LV2Operator1, LV2Operator2};
-pub use self::lowering::{LV2HirJumpable, LV2HirLowering, LV2HirLoweringRuntime};
+pub use self::lowering::{LV2HirLowering, LV2HirLoweringRuntime};
 pub use self::repeat::{lv2_lower_repeat, LV2Repeat, LV2RepeatType};
 pub use self::stmt::LV2Statement;
 

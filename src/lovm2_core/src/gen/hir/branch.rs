@@ -59,16 +59,16 @@ pub(crate) fn lower_map_structure<'hir, 'lir, T>(
     runtime.emit(LirElement::Label(branch_start));
 
     for (condition, block) in branches.iter() {
-        let cond = runtime.branch_mut().unwrap().add_condition();
+        let section = runtime.counter_mut().create_section(LV2LabelTy::Condition);
 
         // declare the start of a new condition
-        runtime.emit(LirElement::Label(cond.start()));
+        runtime.emit(LirElement::Label(section.start()));
 
         // lower condition expression. if this evaluates to false at runtime, jump
         // to the condition section's end - which is also the starting offset
         // for the next condition section.
         condition.lower(runtime);
-        runtime.emit(LirElement::jump_conditional(false, cond.end()));
+        runtime.emit(LirElement::jump_conditional(false, section.end()));
 
         // lower the actual code that should be executed if the condition is true
         block.lower(runtime);
@@ -76,7 +76,7 @@ pub(crate) fn lower_map_structure<'hir, 'lir, T>(
         // if above block was executed, terminate the whole branch by jumping to its
         // end label
         runtime.emit(LirElement::jump(branch_end.clone()));
-        runtime.emit(LirElement::Label(cond.end()));
+        runtime.emit(LirElement::Label(section.end()));
     }
 
     if let Some(default_block) = &default {

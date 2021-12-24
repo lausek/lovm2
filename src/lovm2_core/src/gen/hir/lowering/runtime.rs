@@ -1,8 +1,5 @@
 //! Shared lowering state.
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use crate::code::LV2CodeObject;
 use crate::gen::LV2ModuleMeta;
 use crate::var::LV2Variable;
@@ -12,13 +9,13 @@ use super::*;
 /// Information for the process of lowering HIR to LIR.
 pub struct LV2HirLoweringRuntime<'lir> {
     code: Vec<LirElement<'lir>>,
-    counter: LabelCounterRef,
+    counter: LV2LabelCounter,
     meta: LV2ModuleMeta,
     optimizer: &'lir mut dyn Optimizer,
 
-    branch_stack: Vec<HirLoweringBranch>,
+    branch_stack: Vec<LV2Section>,
     locals: Vec<&'lir LV2Variable>,
-    loop_stack: Vec<HirLoweringRepeat>,
+    loop_stack: Vec<LV2Section>,
 }
 
 impl<'lir> LV2HirLoweringRuntime<'lir> {
@@ -29,7 +26,7 @@ impl<'lir> LV2HirLoweringRuntime<'lir> {
     ) -> Self {
         Self {
             code: vec![],
-            counter: Rc::new(RefCell::new(LV2LabelCounter::default())),
+            counter: LV2LabelCounter::default(),
             meta,
             optimizer,
 
@@ -40,7 +37,11 @@ impl<'lir> LV2HirLoweringRuntime<'lir> {
     }
 
     pub fn create_new_label(&mut self) -> LV2Label {
-        self.counter.borrow_mut().create_new_label()
+        self.counter_mut().create_new_label()
+    }
+
+    pub fn counter_mut(&mut self) -> &mut LV2LabelCounter {
+        &mut self.counter
     }
 
     pub fn add_hir(&mut self, hir: &'lir LV2Function) -> LV2CompileResult<()> {
@@ -84,31 +85,31 @@ impl<'lir> LV2HirLoweringRuntime<'lir> {
         self.locals.contains(&var)
     }
 
-    pub fn loop_mut(&mut self) -> Option<&mut HirLoweringRepeat> {
+    pub fn loop_mut(&mut self) -> Option<&mut LV2Section> {
         self.loop_stack.last_mut()
     }
 
-    pub fn push_loop(&mut self) -> &HirLoweringRepeat {
-        self.loop_stack
-            .push(HirLoweringRepeat::new(self.counter.clone()));
+    pub fn push_loop(&mut self) -> &LV2Section {
+        let section = self.counter_mut().create_section(LV2LabelTy::Repeat);
+        self.loop_stack.push(section);
         self.loop_stack.last_mut().unwrap()
     }
 
-    pub fn pop_loop(&mut self) -> Option<HirLoweringRepeat> {
+    pub fn pop_loop(&mut self) -> Option<LV2Section> {
         self.loop_stack.pop()
     }
 
-    pub fn branch_mut(&mut self) -> Option<&mut HirLoweringBranch> {
+    pub fn branch_mut(&mut self) -> Option<&mut LV2Section> {
         self.branch_stack.last_mut()
     }
 
-    pub fn push_branch(&mut self) -> &HirLoweringBranch {
-        self.branch_stack
-            .push(HirLoweringBranch::new(self.counter.clone()));
+    pub fn push_branch(&mut self) -> &LV2Section {
+        let section = self.counter_mut().create_section(LV2LabelTy::Branch);
+        self.branch_stack.push(section);
         self.branch_stack.last_mut().unwrap()
     }
 
-    pub fn pop_branch(&mut self) -> Option<HirLoweringBranch> {
+    pub fn pop_branch(&mut self) -> Option<LV2Section> {
         self.branch_stack.pop()
     }
 }
