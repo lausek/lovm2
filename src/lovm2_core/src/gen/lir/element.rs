@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use crate::value::{LV2Value, LV2ValueType};
 use crate::var::LV2Variable;
 
-use super::{Label, Operator};
+use super::{LV2Label, Operator};
 
 /// Sum type for every LIR element.
 #[derive(Clone, Debug)]
@@ -24,9 +24,9 @@ pub enum LirElement<'hir> {
     // Jmp(u16), Jt(u16), Jf(u16)
     Jump {
         condition: Option<bool>,
-        label: Label,
+        label: LV2Label,
     },
-    Label(Label),
+    Label(LV2Label),
     // Add, Sub, Mul, Div, Pow, Rem, And, Or, Not, Eq, Ne, Ge, Gt, Le, Lt
     Operation(Operator),
     // CPush(u16)
@@ -80,14 +80,14 @@ impl<'hir> LirElement<'hir> {
         Self::Entry { ident }
     }
 
-    pub fn jump(label: Label) -> Self {
+    pub fn jump(label: LV2Label) -> Self {
         Self::Jump {
             condition: None,
             label,
         }
     }
 
-    pub fn jump_conditional(cond: bool, label: Label) -> Self {
+    pub fn jump_conditional(cond: bool, label: LV2Label) -> Self {
         Self::Jump {
             condition: Some(cond),
             label,

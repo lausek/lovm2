@@ -44,7 +44,7 @@ pub struct LirLoweringRuntime {
     code: Vec<Instruction>,
 
     globals: HashSet<LV2Variable>,
-    offsets: HashMap<Label, Offset>,
+    offsets: HashMap<LV2Label, Offset>,
 }
 
 impl LirLoweringRuntime {

@@ -1,4 +1,4 @@
-//! Shared lowering state
+//! Shared lowering state.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -9,7 +9,7 @@ use crate::var::LV2Variable;
 
 use super::*;
 
-/// Information for the process of lowering HIR to LIR
+/// Information for the process of lowering HIR to LIR.
 pub struct LV2HirLoweringRuntime<'lir> {
     code: Vec<LirElement<'lir>>,
     counter: LabelCounterRef,
@@ -29,7 +29,7 @@ impl<'lir> LV2HirLoweringRuntime<'lir> {
     ) -> Self {
         Self {
             code: vec![],
-            counter: Rc::new(RefCell::new(LabelCounter::default())),
+            counter: Rc::new(RefCell::new(LV2LabelCounter::default())),
             meta,
             optimizer,
 
@@ -39,7 +39,7 @@ impl<'lir> LV2HirLoweringRuntime<'lir> {
         }
     }
 
-    pub fn create_new_label(&mut self) -> Label {
+    pub fn create_new_label(&mut self) -> LV2Label {
         self.counter.borrow_mut().create_new_label()
     }
 

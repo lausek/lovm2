@@ -1,8 +1,8 @@
-//! General collection for program statements
+//! General collection for program statements.
 
 use super::*;
 
-/// List of statements forming a code block
+/// List of statements forming a code block.
 #[derive(Clone)]
 pub struct LV2Block(Vec<LV2Statement>);
 
@@ -161,6 +161,7 @@ impl LV2HirLowering for LV2Block {
             // every call has to leave a return value on stack.
             // if that value isn't needed - as in a statement position - we
             // need to get rid of it.
+            // TODO: is this still needed if `Call` is enclosed in a `LV2Expr::Drop`?
             let requires_drop = matches!(element, LV2Statement::Call(_));
 
             element.lower(runtime);

@@ -11,11 +11,19 @@ impl LV2HirJumpable for HirLoweringRepeat {
         }
     }
 
-    fn end(&self) -> Label {
-        Label::from(format!("rep_{}_end", self.id))
+    fn end(&self) -> LV2Label {
+        LV2Label {
+            id: self.id,
+            is_start: false,
+            ty: LV2LabelTy::Repeat,
+        }
     }
 
-    fn start(&self) -> Label {
-        Label::from(format!("rep_{}_start", self.id))
+    fn start(&self) -> LV2Label {
+        LV2Label {
+            id: self.id,
+            is_start: true,
+            ty: LV2LabelTy::Repeat,
+        }
     }
 }

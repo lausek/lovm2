@@ -30,12 +30,20 @@ impl LV2HirJumpable for HirLoweringBranch {
         }
     }
 
-    fn end(&self) -> Label {
-        Label::from(format!("branch_{}_end", self.id))
+    fn end(&self) -> LV2Label {
+        LV2Label {
+            id: self.id,
+            is_start: false,
+            ty: LV2LabelTy::Branch,
+        }
     }
 
-    fn start(&self) -> Label {
-        Label::from(format!("branch_{}_start", self.id))
+    fn start(&self) -> LV2Label {
+        LV2Label {
+            id: self.id,
+            is_start: true,
+            ty: LV2LabelTy::Branch,
+        }
     }
 }
 
@@ -50,11 +58,19 @@ impl LV2HirJumpable for HirLoweringCondition {
         }
     }
 
-    fn end(&self) -> Label {
-        Label::from(format!("cond_{}_end", self.id))
+    fn end(&self) -> LV2Label {
+        LV2Label {
+            id: self.id,
+            is_start: false,
+            ty: LV2LabelTy::Condition,
+        }
     }
 
-    fn start(&self) -> Label {
-        Label::from(format!("cond_{}_start", self.id))
+    fn start(&self) -> LV2Label {
+        LV2Label {
+            id: self.id,
+            is_start: true,
+            ty: LV2LabelTy::Condition,
+        }
     }
 }
