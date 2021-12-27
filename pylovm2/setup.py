@@ -5,7 +5,7 @@ from setuptools_rust import Binding, RustExtension
 
 setup(
     name="pylovm2",
-    version="0.4.9",
+    version="0.5.0",
     author="lausek",
     author_email="spam@lausek.eu",
     description="bindings for lovm2",
