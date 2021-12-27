@@ -1,4 +1,4 @@
-//! Error values for compilation and runtime
+//! Error values for compilation and runtime.
 
 mod compile;
 mod methods;
