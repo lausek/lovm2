@@ -45,13 +45,13 @@ pub enum Instruction {
     /// Logical shift right `first` by `second` places.
     Shr,
 
-    /// Logical and for [LV2Value::Bool] / Bitwise and for [LV2Value::Int].
+    /// Logical and for [LV2Value::Bool](crate::prelude::LV2Value::Bool) / Bitwise and for [LV2Value::Int](crate::prelude::LV2Value::Int).
     And,
-    /// Logical or for [LV2Value::Bool] / Bitwise or for [LV2Value::Int].
+    /// Logical or for [LV2Value::Bool](crate::prelude::LV2Value::Bool) / Bitwise or for [LV2Value::Int](crate::prelude::LV2Value::Int).
     Or,
-    /// Logical xor for [LV2Value::Bool] / Bitwise xor for [LV2Value::Int].
+    /// Logical xor for [LV2Value::Bool](crate::prelude::LV2Value::Bool) / Bitwise xor for [LV2Value::Int](crate::prelude::LV2Value::Int).
     XOr,
-    /// Logical not for [LV2Value::Bool] / Bitwise not for [LV2Value::Int].
+    /// Logical not for [LV2Value::Bool](crate::prelude::LV2Value::Bool) / Bitwise not for [LV2Value::Int](crate::prelude::LV2Value::Int).
     Not,
 
     /// = first == second
@@ -84,7 +84,7 @@ pub enum Instruction {
     /// Trigger interrupt `n`.
     Interrupt(u16),
 
-    /// Convert top of stack into type. See [LV2Value::type_id].
+    /// Convert top of stack into type. See [LV2Value::type_id](crate::prelude::LV2Value::type_id).
     Conv(u16),
     /// Take top of stack as name of module to load and import functions without module prefix as
     /// well.

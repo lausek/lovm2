@@ -1,6 +1,6 @@
 //! Helper functionality for solving small tasks.
 
-/// Creates an [LV2Expr::Get] expression recursively.
+/// Creates an [LV2Expr::Get](crate::prelude::LV2Expr::Get) expression recursively.
 #[macro_export]
 macro_rules! lv2_access {
     ($name:expr, $key:expr $(, $rest:expr)* $(,)?) => {{
@@ -12,7 +12,7 @@ macro_rules! lv2_access {
     }};
 }
 
-/// Creates a [LV2Expr::Call] expression.
+/// Creates a [LV2Expr::Call](crate::prelude::LV2Expr::Call) expression.
 #[macro_export]
 macro_rules! lv2_call {
     ($name:ident $(, $arg:tt)* $(,)?) => {{
@@ -27,7 +27,7 @@ macro_rules! lv2_call {
     (1, $arg:expr) => {{ $arg }};
 }
 
-/// Creates a dict expression using [LV2Expr] as items.
+/// Creates a dict expression using [LV2Expr](crate::prelude::LV2Expr) as items.
 #[macro_export]
 macro_rules! lv2_dict {
     ($($key:expr => $val:expr),* $(,)?) => {{
@@ -39,7 +39,7 @@ macro_rules! lv2_dict {
     }};
 }
 
-/// Creates a list expression using [LV2Expr] as items.
+/// Creates a list expression using [LV2Expr](crate::prelude::LV2Expr) as items.
 #[macro_export]
 macro_rules! lv2_list {
     ($($val:expr),* $(,)?) => {{
@@ -51,7 +51,7 @@ macro_rules! lv2_list {
     }};
 }
 
-/// Creates a [LV2Variable] from a rust identifier.
+/// Creates a [LV2Variable](crate::prelude::LV2Variable) from a rust identifier.
 #[macro_export]
 macro_rules! lv2_var {
     ($name:ident) => {

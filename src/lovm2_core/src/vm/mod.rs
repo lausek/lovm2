@@ -45,7 +45,7 @@ pub const LOVM2_INT_DEBUG: u16 = 10;
 pub type LV2LoadHookFn = dyn Fn(&LV2LoadRequest) -> LV2Result<Option<LV2Module>>;
 /// Function signature of interrupts.
 pub type LV2InterruptFn = dyn Fn(&mut LV2Vm) -> LV2Result<()>;
-/// Function signature for [LV2Callable] importing.
+/// Function signature for [LV2CallProtocol] importing.
 pub type LV2ImportHookFn = dyn Fn(Option<&str>, &str) -> LV2Result<Option<String>>;
 
 /// Structure containing relevant information for module resolvement.
@@ -267,7 +267,7 @@ impl LV2Vm {
         self.ctx.pop_value()
     }
 
-    /// Start the execution at [LV2_ENTRY_POINT].
+    /// Start the execution at [LV2_ENTRY_POINT](crate::module::LV2_ENTRY_POINT).
     pub fn run(&mut self) -> LV2Result<LV2Value> {
         if let Some(callable) = self.ctx.entry.take() {
             self.run_object(callable.as_ref())

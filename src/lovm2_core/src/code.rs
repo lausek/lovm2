@@ -12,13 +12,13 @@ use crate::vm::LV2Vm;
 /// 4 bytes at the start of each serialized lovm2 module.
 pub const LV2_MAGIC_NUMBER: &[u8] = &[0x7f, b'L', b'V', b'2'];
 
-/// Generic object implementing the [LV2CallProtocol]
+/// Generic object implementing the [LV2CallProtocol].
 pub type LV2CallableRef = Rc<dyn LV2CallProtocol>;
 
-/// Generalization for runnable objects
+/// Generalization for runnable objects.
 /// - lovm2 bytecode ([LV2CodeObject])
-/// - Statically linked functions (standard library is an example, `create_callable`)
-/// - Dynamically linked functions ([SharedObjectSlot](crate::module::SharedObjectSlot))
+/// - Statically linked functions (standard library is an example, [lv2_create_callable](crate::extend::lv2_create_callable))
+/// - Dynamically linked functions ([LV2SharedObjectSlot](crate::module::LV2SharedObjectSlot))
 ///
 /// Functions implementing this protocol can support variadic arguments by looking at
 /// the amount of passed values on stack inside `ctx.frame_mut()?.argn`.
