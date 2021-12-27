@@ -11,9 +11,9 @@ let repeat_endless = main_hir.repeat();
 let repeat_until = main_hir.repeat_until(expr);
 ```
 
-To avoid namespace collissions in Rust, there is no `while` construct but you can simply create it via `.repeat_until(Expr::not(..))`. The optimizer makes sure that no instruction overhead is generated.
+To avoid namespace collissions in Rust, there is no `while` construct but you can simply create it via `.repeat_until(LV2Expr::from(..).not())`. The optimizer makes sure that no instruction overhead is generated.
 
-Inside loop blocks you are free to use `Break` and `Continue` to precisely control the flow. As in every programming language, `Break` terminates the loop while `Continue` jumps to its start again. 
+Inside repeat blocks you are free to use `.break_repeat()` and `.continue_repeat()` to precisely control the flow. As in every programming language, `Break` terminates the loop while `Continue` jumps to its start again.
 
 The `.repeat_iterating(collection, item)` constructor is able to consecutively assign every entity to the variable passed as `item` as long as the `collection` value supports iteration. Check the [Iterators](./iterators.md) chapter if you want to find out more about this.
 
@@ -22,7 +22,7 @@ The `.repeat_iterating(collection, item)` constructor is able to consecutively a
 let repeat_iterating = main_hir.repeat_iterating(lv2_list!(1, 2, 3), lv2_var!(i));
 
 // ... and this is the elaborate variant
-let it = Iter::create(lv2_list!(1, 2, 3));
+let it = lv2_list!(1, 2, 3).to_iter();
 let repeat_iterating = main_hir.repeat_iterating(it, lv2_var!(i));
 ```
 
@@ -41,9 +41,10 @@ while True:
     print(i)
 ```
 
-Translating it to `HIR` one by one could look like this:
+Translating it into a `LV2Function` one by one could look like this:
 
 ``` rust,no_run
+# use lovm2::prelude::LV2Expr;
 let i = &lv2_var!(i);
 
 // i = 0
@@ -54,17 +55,17 @@ let repeat = main_hir.repeat();
 // if i == 10: break
 repeat
     .branch()
-    .add_condition(Expr::eq(i, 10))
-    .step(Break::new());
+    .add_condition(LV2Expr::from(i).eq(10))
+    .break_repeat();
 
 // i += 1
-repeat.step(Assign::increment(i));
+repeat.increment(i);
 
 // if i % 2 == 0: continue
 repeat
     .branch()
-    .add_condition(Expr::eq(Expr::rem(i, 2), 0))
-    .step(Continue::new());
+    .add_condition(LV2Expr::from(i).rem(2).eq(0))
+    .continue_repeat();
 
 // print(i)
 repeat.step(lv2_call!(print, i, "\n"));
@@ -84,7 +85,7 @@ To terminate the loop once the counter variable reaches 10, we add a conditional
 
 ``` lir
 .cond_0_start:
-	PushLocal(i)
+	Push(i)
 	CPush(10)
 	Operator2(Equal)
 	JumpIfFalse(.cond_0_end)

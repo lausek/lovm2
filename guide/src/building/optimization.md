@@ -2,7 +2,7 @@
 
 A rudimentary peephole optimizer is enabled by default. It acts upon the generated `LIR`. If you want to disable optimization at all, use the method `build_with_options` and set the attribute `optimize` to false.
 
-`lovm2` gives you a guarantee that your `HIR` will not be unexpectedly altered when lowering.
+`lovm2` gives you a guarantee that your `LV2Function` will not be unexpectedly altered when lowering.
 
 ## Dead Code elimination
 
@@ -18,7 +18,7 @@ main:
 
 ## Constant evaluation
 
-Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the `CodeObject` reducing its size. Bytecode sequences will be tranformed like this:
+Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the `LV2CodeObject` reducing its size. Bytecode sequences will be tranformed like this:
 
 ``` bytecode
 CPush(0)

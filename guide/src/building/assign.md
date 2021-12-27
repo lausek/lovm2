@@ -3,36 +3,38 @@
 Whenever a function is called, the call stack is adjusted guaranteeing that no local variables will interfere each other. To create or change a local variable, it is sufficient to use this construct:
 
 ``` rust,no_run
-use lovm2::prelude::*;
-
+#use lovm2::prelude::*;
 #fn main() {
-    let n = &lv2_var!(n);
-    builder
-        .entry()
-        .assign(n, expr)
+let n = &lv2_var!(n);
+builder
+    .entry()
+    .assign(n, expr)
 #}
 ```
 
 It is possible to store data in the global scope allowing values to live across function calls. This requires usage of the following assignment variant:
 
 ``` rust,no_run
-use lovm2::prelude::*;
-
+#use lovm2::prelude::*;
 #fn main() {
-    let n = &lv2_var!(n);
-    builder
-        .entry()
-        .global(n)
-        .assign(n, expr)
+let n = &lv2_var!(n);
+builder
+    .entry()
+    .global(n)
+    .assign(n, expr)
 #}
 ```
 
-`Assign::increment(n)` and `Assign::decrement(n)` are also quite handy for updating variable values.
+`block.increment(n)` and `block.decrement(n)` are also quite handy for updating variable values.
 
-There is even a way of setting the values on lists and dictionaries. Under the hood, `Set` is actually expecting a `Ref` as the target location - which is retrieved by `Access` - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.
+There is even a way of setting the values on lists and dictionaries. Under the hood, `Set` is actually expecting a `Ref` as the target location - which is retrieved by `Get` - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.
 
 ``` rust,no_run
-Assign::local(&lv2_var!(point), lv2_dict!());
-Assign::set(&lv2_access!(point, x), x_coord);
-Assign::set(&lv2_access!(point, y), y_coord);
+let (point, x, y) = &lv2_var!(point, x, y);
+
+builder
+    .entry()
+    .assign(point, LV2Expr::dict())
+    .set(LV2Expr::from(point).get(x), 4)
+    .set(LV2Expr::from(point).get(y), 2);
 ```

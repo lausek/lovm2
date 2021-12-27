@@ -20,20 +20,20 @@ equal_check
 
 ## Expression Branches
 
-Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant `Expr::branch()` that lets you create the adhoc version of a ternary operator.
+Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant `LV2Expr::branch()` that lets you create the adhoc version of a ternary operator.
 
 ``` rust,no_run
 // f(n) = n == 2 ? "a" : "b"
 
 let n = lv2_var!(n);
-let f_body = Expr::branch().add_condition(Expr::eq(n, 2), "a").default_value("b");
+let f_body = LV2Expr::branch().add_condition(LV2Expr::from(n).eq(2), "a").default_value("b");
 
 builder
     .add_with_args("f", vec![n])
     .return_value(f_body);
 ```
 
-> **Note:** `ExprBranch` must always return a value meaning that you have to call the `default_value` method at least once. Otherwise the compiler will complain that a structure of type `ExprBranchIncomplete` cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.
+> **Note:** `LV2ExprBranch` must always return a value meaning that you have to call the `default_value` method at least once. Otherwise the compiler will complain that a structure of type `LV2ExprBranchIncomplete` cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.
 
 ## Example
 
@@ -44,7 +44,7 @@ let main = builder.add_with_args("is_2", vec![n.clone()]);
 let branch = main.branch();
 
 branch
-    .add_condition(Expr::eq(n, 2))
+    .add_condition(LV2Expr::from(n).eq(2))
     .return_value(1);
 
 branch
@@ -56,16 +56,16 @@ The representation will be translated temporarily to the following optimized LIR
 
 ``` lir
 is_2:
-	StoreLocal(n)
-.branch_0_start:
-.cond_0_start:
-	PushLocal(n)
+	Store(n)
+.branch_start:
+.cond_start:
+	Push(n)
 	CPush(2)
 	Operator2(Equal)
-	JumpIfFalse(.cond_0_end)
+	JumpIfFalse(.cond_end)
 	CPush(1)
 	Ret
-.cond_0_end:
+.cond_end:
 	CPush(0)
 	Ret
 ```

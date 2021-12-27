@@ -4,7 +4,7 @@ This chapter aims to give you a brief overview of the internal principles. Even 
 
 The general steps of producing a runnable program are roughly:
 
-- Create a new `ModuleBuilder` and populate it with functions aka. `HIR` data
-- Call `module_builder.build()` constructing a runnable `Module` from the current state
-- Load the module into an instance of a virtual machine `Vm` using `add_main_module()`
+- Create a new `LV2ModuleBuilder` and populate it with `LV2Function` 
+- Call `module_builder.build()` constructing a runnable `LV2Module` from the current state
+- Load the module into an instance of a virtual machine `LV2Vm` using `add_main_module()`
 - Start the program by calling `run` on the virtual machine

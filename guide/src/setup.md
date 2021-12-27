@@ -1,19 +1,19 @@
 # Setup
 
-1. Modify your `Cargo.toml`
+1. Modify your `Cargo.toml`.
 
     - Add the latest crates.io version
     
     ``` toml
-    lovm2 = "0.4.8"
+    lovm2 = "0.5.0"
     ```
     
-    - ... or - if you feel lucky - use the current master branch directly
+    - ... or use the current master branch directly
 
     ``` toml
     lovm2 = { git = "https://github.com/lausek/lovm2" }
     ```
 
-2. Run `cargo update` on your terminal
+2. Run `cargo update`.
 
-3. Import the useful `lovm2` components into scope using `use lovm2::prelude::*;`
+3. Import useful `lovm2` components into scope using `use lovm2::prelude::*;`.
