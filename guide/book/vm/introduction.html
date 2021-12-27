@@ -164,23 +164,23 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#virtual-machine" id="virtual-machine">Virtual Machine</a></h1>
-<p>The virtual machine is the heart of <code>lovm2</code> projects and thrives computation forward. It maintains the whole program state inside a <code>Context</code> and shares said data with every function and module interested in it.</p>
+<p>The virtual machine is the heart of <code>lovm2</code> projects and thrives computation forward. It maintains the whole program state inside a <code>LV2Context</code> and shares said data with every function and module interested in it.</p>
 <h2><a class="header" href="#context" id="context">Context</a></h2>
 <p>The context stores the programs state.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub struct Context {
+</span>pub struct LV2Context {
     /// the module that will be run first
-    pub entry: Option&lt;Rc&lt;dyn CallProtocol&gt;&gt;,
+    entry: Option&lt;Rc&lt;dyn LV2CallProtocol&gt;&gt;,
     /// available functions
-    scope: HashMap&lt;Variable, CallableRef&gt;,
+    scope: HashMap&lt;LV2Variable, LV2CallableRef&gt;,
     /// global variables
-    globals: HashMap&lt;Variable, Value&gt;,
+    globals: HashMap&lt;LV2Variable, LV2Value&gt;,
     /// call stack with local variables
-    lstack: Vec&lt;Frame&gt;,
+    lstack: Vec&lt;LV2Frame&gt;,
     /// value stack
-    vstack: Vec&lt;Value&gt;,
+    vstack: Vec&lt;LV2Value&gt;,
 }
 <span class="boring">}
 </span></code></pre></pre>
@@ -222,6 +222,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

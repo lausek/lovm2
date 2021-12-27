@@ -173,32 +173,32 @@
 <h1><a class="header" href="#setup" id="setup">Setup</a></h1>
 <ol>
 <li>
-<p>Modify your <code>Cargo.toml</code></p>
+<p>Modify your <code>Cargo.toml</code>.</p>
 <ul>
 <li>Add the latest crates.io version</li>
 </ul>
-<pre><code class="language-toml">lovm2 = &quot;0.4.8&quot;
+<pre><code class="language-toml">lovm2 = &quot;0.5.0&quot;
 </code></pre>
 <ul>
-<li>... or - if you feel lucky - use the current master branch directly</li>
+<li>... or use the current master branch directly</li>
 </ul>
 <pre><code class="language-toml">lovm2 = { git = &quot;https://github.com/lausek/lovm2&quot; }
 </code></pre>
 </li>
 <li>
-<p>Run <code>cargo update</code> on your terminal</p>
+<p>Run <code>cargo update</code>.</p>
 </li>
 <li>
-<p>Import the useful <code>lovm2</code> components into scope using <code>use lovm2::prelude::*;</code></p>
+<p>Import <code>lovm2</code> components into scope using <code>use lovm2::prelude::*;</code>.</p>
 </li>
 </ol>
 <h1><a class="header" href="#concepts" id="concepts">Concepts</a></h1>
 <p>This chapter aims to give you a brief overview of the internal principles. Even though <code>lovm2</code> is designed to be as simple as possible, it is still quite important to grasp the implementation concepts behind it.</p>
 <p>The general steps of producing a runnable program are roughly:</p>
 <ul>
-<li>Create a new <code>ModuleBuilder</code> and populate it with functions aka. <code>HIR</code> data</li>
-<li>Call <code>module_builder.build()</code> constructing a runnable <code>Module</code> from the current state</li>
-<li>Load the module into an instance of a virtual machine <code>Vm</code> using <code>add_main_module()</code></li>
+<li>Create a new <code>LV2ModuleBuilder</code> and populate it with <code>LV2Function</code> </li>
+<li>Call <code>module_builder.build()</code> constructing a runnable <code>LV2Module</code> from the current state</li>
+<li>Load the module into an instance of a virtual machine <code>LV2Vm</code> using <code>add_main_module()</code></li>
 <li>Start the program by calling <code>run</code> on the virtual machine</li>
 </ul>
 <h1><a class="header" href="#bytecode" id="bytecode">Bytecode</a></h1>
@@ -212,20 +212,20 @@
  Mul            | [1, 6]
  Add            | [7]
 </code></pre>
-<p>You do not need to micromanage the bytecode itself. There are common language constructs with which you can built pretty much everything. These constructs are composed into a <strong>h</strong>igh-level <strong>i</strong>ntermediate <strong>r</strong>epresentation so every new function gets its own <code>HIR</code> structure. Below you can see the transformation process of a function into a runnable <code>CodeObject</code> where each arrow means &quot;lowering&quot; to the next level.</p>
-<pre><code>HIR -&gt; LIR -&gt; CodeObject
+<p>You do not need to micromanage the bytecode itself. There are common language constructs with which you can built pretty much everything. These constructs are composed into a <strong>h</strong>igh-level <strong>i</strong>ntermediate <strong>r</strong>epresentation so every new function gets its own <code>LV2Function</code> structure. Below you can see the transformation process of a function into a runnable <code>LV2CodeObject</code> where each arrow means &quot;lowering&quot; to the next level.</p>
+<pre><code>LV2Function -&gt; LIR -&gt; LV2CodeObject
 </code></pre>
 <p><code>LIR</code> or <strong>l</strong>ow-level <strong>i</strong>ntermediate <strong>r</strong>epresentation is not directly exposed to the user but it is quite crucial if you want to understand how the bytecode generator works under the hood.</p>
-<p><code>CodeObject</code>'s on their own are already valid programs bundling together instructions, constants and variables. As usual in every language, functions can be grouped together and exposed to the virtual machine in a construct called <code>Module</code>. Introducing this module level abstraction makes sense as we will later work with collections that are not backed by <code>lovm2</code> bytecode but native functions.</p>
-<pre><code>HIR -&gt; LIR 
-            \
-HIR -&gt; LIR    -&gt; CodeObject -&gt; Module --&gt; load into VM
-            /
-HIR -&gt; LIR 
+<p><code>LV2CodeObject</code>'s on their own are already valid programs bundling together instructions, constants and variables. As usual in every language, functions can be grouped together and exposed to the virtual machine in a construct called <code>LV2Module</code>. Introducing this module level abstraction makes sense as we will later work with collections that are not backed by <code>lovm2</code> bytecode but native functions.</p>
+<pre><code>LV2Function -&gt; LIR 
+                    \
+LV2Function -&gt; LIR    -&gt; LV2CodeObject -&gt; LV2Module --&gt; LV2Vm
+                    /
+LV2Function -&gt; LIR 
 </code></pre>
 <h1><a class="header" href="#modules" id="modules">Modules</a></h1>
-<p>While you are already familiar with <code>lovm2</code>'s own representation of executable code, <code>Modules</code> are far more abstract under the hood. <code>lovm2</code> is able to load specifically compiled shared objects - or DLLs as you would call them in the Windows world - at runtime and execute real native functions as well.</p>
-<p>And that's not all. As long as your structure complies with the <code>CallProtocol</code> trait you are free to even implement native functions inside your own compiler or runtime. This job can be done using the <a href="concepts/..">lovm2_extend</a> package which allows you to write your own modules in Rust.</p>
+<p>While you are already familiar with <code>lovm2</code>'s own representation of executable code, <code>LV2Module</code> is far more abstract under the hood. <code>lovm2</code> is able to load specifically compiled shared objects - or DLLs as you would call them in the Windows world - at runtime and execute real native functions as well.</p>
+<p>And that's not all. As long as your structure complies with the <code>LV2CallProtocol</code> trait you are free to even implement native functions inside your own compiler or runtime. This job can be done using the <a href="https://github.com/lausek/lovm2/blob/master/README-extend.md">lovm2_extend</a> package which allows you to write your own modules in Rust.</p>
 <h1><a class="header" href="#types" id="types">Types</a></h1>
 <p><code>lovm2</code> embraces dynamic typing. The most basic ones are <code>Bool</code>, <code>Int</code>, <code>Float</code>, <code>String</code>.</p>
 <p><code>Nil</code> is the default return type of functions that do not have return values. You can also use it to mark the absence of a value.</p>
@@ -241,39 +241,39 @@ HIR -&gt; LIR
 <tr><td align="center">Bool</td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">Int</td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">Float</td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
-<tr><td align="center">String</td><td align="center"></td><td align="center"></td><td align="center">~</td><td align="center">~</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
+<tr><td align="center">String</td><td align="center"></td><td align="center"></td><td align="center">✓¹</td><td align="center">✓¹</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">List</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">Dict</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center"></td><td align="center">✓</td><td align="center"></td></tr>
 <tr><td align="center">Ref</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center">✓</td></tr>
 </tbody></table>
-<p><em>~: implies parsing overhead</em></p>
+<p><em>¹ implies parsing overhead</em></p>
 <h1><a class="header" href="#building-programs" id="building-programs">Building Programs</a></h1>
 <p>This chapter will show you how to utilize the <code>gen</code> module in order to compile your own <code>lovm2</code> programs. It is also possible to persist compiled modules onto your disk and load them later.</p>
 <pre><pre class="playground"><code class="language-rust no_run">use lovm2::prelude::*;
 
 <span class="boring">fn main() {
-</span>let mut builder = ModuleBuilder::new();
+</span>let mut builder = LV2ModuleBuilder::new();
 
-// creates the entry point `HIR` and returns a mutable reference.
-// this is actually a shortcut for builder.add(ENTRY_POINT)
-let main_hir = builder.entry();
-
-// modify `main_hir` with statements
-// if in doubt, just call the `step` method and pass it the hir element
-main_hir.step(Interrupt::new(10));
+// creates the entry point function and trigger a debug interrupt.
+builder
+    .entry()
+    .trigger(10);
 
 let module = builder.build().except(&quot;compile error&quot;);
 println!(&quot;{}&quot;, module);
 <span class="boring">}
 </span></code></pre></pre>
-<p>The main generation functionality is exposed via <code>Block</code> and every structure that contains it like <code>Branch</code>, <code>Repeat</code> and functions. You can use these methods on all of them:</p>
+<p>The main generation functionality is exposed via <code>LV2Block</code> and every structure that contains it like <code>LV2Branch</code>, <code>LV2Repeat</code> and functions. You can use these methods on all of them:</p>
 <ul>
 <li><code>step(..)</code> append a new statement to the block.</li>
-<li><code>branch()</code> create a new branch at the current position. This returns a <code>BranchBuilder</code>.</li>
+<li><code>branch()</code> create a new branch at the current position. This returns a <code>LV2BranchBuilder</code>.</li>
 <li><code>repeat()</code> and <code>repeat_until(..)</code> which return a mutable reference to a new block. The first variant is an endless loop, while the latter supports breaking once a condition is met.</li>
+<li><code>return_nil()</code>, <code>return_value(&lt;expr&gt;)</code> return early from a block.</li>
+<li><code>assign(&lt;var&gt;, &lt;expr&gt;)</code> stores an evaluated expression in <code>&lt;var&gt;</code>.</li>
+<li><code>global(&lt;var&gt;)</code>, <code>local(&lt;var&gt;)</code> change scope of <code>&lt;var&gt;</code> .</li>
 </ul>
 <h2><a class="header" href="#functions" id="functions">Functions</a></h2>
-<p>The whole <code>ModuleBuilder</code> is centered around the creation of <code>HIR</code>. As we already found out in the <a href="building/../concepts/bytecode.html">Concepts</a> chapter, a <code>HIR</code> is conceptually equal to a function. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.</p>
+<p>The whole <code>LV2ModuleBuilder</code> is centered around the creation of <code>LV2Function</code>s. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.</p>
 <p>As you can see in this example listing, you should not need to create such data manually as there is functionality for adding it to the builder directly.</p>
 <pre><pre class="playground"><code class="language-rust no_run">use lovm2::prelude::*;
 
@@ -285,24 +285,24 @@ let fn_no_args = builder.add(&quot;fn1&quot;);
 let fn_with_args = builder.add_with_args(&quot;fn2&quot;, &amp;[lv2_var!(n)]);
 <span class="boring">}
 </span></code></pre></pre>
-<p>To return from function, add a <code>Return::value(expr)</code> to the hir specifying the returned value or <code>Return::nil()</code> if no value is produced.</p>
-<p>Due to the convention that every function has to return a value, an implicit <code>Return::nil()</code> is appended if the last instruction is not a return already.</p>
+<p>To return from function, call <code>.return_value(expr)</code> on the block specifying the returned value or <code>.return_nil()</code> if no value is produced.</p>
+<p>Due to the convention that every function has to return a value, an implicit nil push is appended if the last instruction is not a return already.</p>
 <h2><a class="header" href="#helper-macros" id="helper-macros">Helper Macros</a></h2>
 <p>There are a bunch of macros inside the prelude that trivialize creating more complicated <code>lovm2</code> constructs for developers.</p>
 <ul>
-<li><code>lv2_var!(ident, ...)</code> turns all the identifiers given into the special type <code>Variable</code> which is needed basically everywhere. If more than one ident is declared, this returns a tuple.</li>
-<li><code>lv2_dict!(ident =&gt; expr, ...)</code> creates an <code>Expr</code> that will dynamically initialize a dictionary with the key-values pairs specified.</li>
-<li><code>lv2_list!(item, ...)</code> creates an <code>Expr</code> that initializes a list dynamically.</li>
-<li><code>lv2_call!(ident, ... args)</code> syntactic sugar for the <code>Call</code> element.</li>
-<li><code>lv2_access!(ident, ... keys)</code> syntactic sugar for the <code>Access</code> element.</li>
+<li><code>lv2_var!(ident, ...)</code> turns all the identifiers given into the special type <code>LV2Variable</code> which is needed basically everywhere. If more than one ident is declared, this returns a tuple.</li>
+<li><code>lv2_dict!(ident =&gt; expr, ...)</code> creates an <code>LV2Expr</code> that will dynamically initialize a dictionary with the key-values pairs specified.</li>
+<li><code>lv2_list!(item, ...)</code> creates an <code>LV2Expr</code> that initializes a list dynamically.</li>
+<li><code>lv2_call!(ident, ... args)</code> syntactic sugar for the <code>LV2Call</code> element.</li>
+<li><code>lv2_access!(ident, ... keys)</code> syntactic sugar for retrieving items of a dictionary or list.</li>
 </ul>
 <h1><a class="header" href="#expressions" id="expressions">Expressions</a></h1>
-<p>The <code>Expr</code> represents any computation that leads to a new value on the stack. Expressions can be nested arbitrarily.</p>
+<p>The <code>LV2Expr</code> structure represents any computation that leads to a new value on the stack. Expressions can be nested arbitrarily.</p>
 <p>To give you an overview of what an expression could look like, here is the stripped down version of its actual implementation.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub enum Expr {
+</span>pub enum LV2Expr {
     // a constant value
     Value,
     // variable in read position
@@ -315,20 +315,12 @@ let fn_with_args = builder.add_with_args(&quot;fn2&quot;, &amp;[lv2_var!(n)]);
     Operation1,
     // operations with two operands
     Operation2,
-    // result of a type conversion
-    Conv,
-    // attribute read on a list or dict
-    Access,
-    // special variant for creating lists and dicts
-    DynamicValue,
-    // create a mutable subpart of a list
-    Slice,
+    // ... and many more.
 }
 <span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#resolvement-of-variables" id="resolvement-of-variables">Resolvement of Variables</a></h2>
 <p>While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.</p>
-<p><code>Expr</code> variants relying on this functionality are <code>Variable</code> and <code>Access</code>. As such, their macro helper functions <code>lv2_var!</code> and <code>lv2_access!</code> follow the same rules.</p>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
 <p>We want to transform the formula <code>(1 + 2) * f(2)</code> to <code>lovm2</code> bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that <code>lovm2</code> does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your AST should look something like this:</p>
 <pre><code>Value(1)
@@ -339,17 +331,16 @@ Value(2)                 -- Operation(*)
                         / 
               Call(f, 2)
 </code></pre>
-<p>And here is the compiletime representation of said formula. As you can see, every operation has an equivalent static method on <code>Expr</code>. Also note that calling a function has its own construct. This is due to calls being allowed in statement position as well.</p>
+<p>And here is the compiletime representation of said formula:</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let formula = Expr::mul(
-    Expr::add(1, 2),
-    Call::new(&quot;f&quot;).arg(2),
+</span>let formula = LV2Expr::from(1).add(2)
+                .mul(LV2Call::new(&quot;f&quot;).arg(2));
 );
 <span class="boring">}
 </span></code></pre></pre>
-<p>The (unoptimized) <code>LIR</code> now looks like this:</p>
+<p>The unoptimized <code>LIR</code> now looks like this:</p>
 <pre><code class="language-lir">CPush(1)
 CPush(2)
 Operator2(Add)
@@ -359,27 +350,35 @@ Operator2(Mul)
 </code></pre>
 <h1><a class="header" href="#assignment" id="assignment">Assignment</a></h1>
 <p>Whenever a function is called, the call stack is adjusted guaranteeing that no local variables will interfere each other. To create or change a local variable, it is sufficient to use this construct:</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use lovm2::prelude::*;
 </span><span class="boring">fn main() {
-</span>Assign::local(&amp;lv2_var!(n), expr)
+</span>let n = &amp;lv2_var!(n);
+builder
+    .entry()
+    .assign(n, expr)
 <span class="boring">}
 </span></code></pre></pre>
 <p>It is possible to store data in the global scope allowing values to live across function calls. This requires usage of the following assignment variant:</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use lovm2::prelude::*;
 </span><span class="boring">fn main() {
-</span>Assign::global(&amp;lv2_var!(n), expr)
+</span>let n = &amp;lv2_var!(n);
+builder
+    .entry()
+    .global(n)
+    .assign(n, expr)
 <span class="boring">}
 </span></code></pre></pre>
-<p><code>Assign::increment(n)</code> and <code>Assign::decrement(n)</code> are also quite handy for updating variable values.</p>
-<p>There is even a way of setting the values on lists and dictionaries. Under the hood, <code>Set</code> is actually expecting a <code>Ref</code> as the target location - which is retrieved by <code>Access</code> - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
+<p><code>block.increment(n)</code> and <code>block.decrement(n)</code> are also quite handy for updating variable values.</p>
+<p>There is even a way of setting the values on lists and dictionaries. Under the hood, <code>Set</code> is actually expecting a <code>Ref</code> as the target location - which is retrieved by <code>Get</code> - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use lovm2::prelude::*;
 </span><span class="boring">fn main() {
-</span>Assign::local(&amp;lv2_var!(point), lv2_dict!());
-Assign::set(&amp;lv2_access!(point, x), x_coord);
-Assign::set(&amp;lv2_access!(point, y), y_coord);
+</span>let (point, x, y) = &amp;lv2_var!(point, x, y);
+
+builder
+    .entry()
+    .assign(point, LV2Expr::dict())
+    .set(LV2Expr::from(point).get(x), 4)
+    .set(LV2Expr::from(point).get(y), 2);
 <span class="boring">}
 </span></code></pre></pre>
 <h1><a class="header" href="#branching" id="branching">Branching</a></h1>
@@ -403,22 +402,22 @@ equal_check
 <span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#expression-branches" id="expression-branches">Expression Branches</a></h2>
-<p>Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant <code>Expr::branch()</code> that lets you create the adhoc version of a ternary operator.</p>
+<p>Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant <code>LV2Expr::branch()</code> that lets you create the adhoc version of a ternary operator.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>// f(n) = n == 2 ? &quot;a&quot; : &quot;b&quot;
 
 let n = lv2_var!(n);
-let f_body = Expr::branch().add_condition(Expr::eq(n, 2), &quot;a&quot;).default_value(&quot;b&quot;);
+let f_body = LV2Expr::branch().add_condition(LV2Expr::from(n).eq(2), &quot;a&quot;).default_value(&quot;b&quot;);
 
 builder
     .add_with_args(&quot;f&quot;, vec![n])
-    .step(Return::value(f_body));
+    .return_value(f_body);
 <span class="boring">}
 </span></code></pre></pre>
 <blockquote>
-<p><strong>Note:</strong> <code>ExprBranch</code> must always return a value meaning that you have to call the <code>default_value</code> method at least once. Otherwise the compiler will complain that a structure of type <code>ExprBranchIncomplete</code> cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.</p>
+<p><strong>Note:</strong> <code>LV2ExprBranch</code> must always return a value meaning that you have to call the <code>default_value</code> method at least once. Otherwise the compiler will complain that a structure of type <code>LV2ExprBranchIncomplete</code> cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.</p>
 </blockquote>
 <h2><a class="header" href="#example-1" id="example-1">Example</a></h2>
 <p>Let's implement a function that returns <em>1</em> if the given value is equal to 2 and <em>0</em> otherwise. From a Rust perspective, we could generate the function like this:</p>
@@ -429,26 +428,26 @@ builder
 let branch = main.branch();
 
 branch
-    .add_condition(Expr::eq(n, 2))
-    .step(Return::value(1));
+    .add_condition(LV2Expr::from(n).eq(2))
+    .return_value(1);
 
 branch
     .default_condition()
-    .step(Return::value(0));
+    .return_value(0);
 <span class="boring">}
 </span></code></pre></pre>
 <p>The representation will be translated temporarily to the following optimized LIR. As you can see, a lot of labels (prefixed with a <code>.</code>) got involved right now. Everything between <code>.cond_0</code>'s start and end label is derived from our first conditions predicate and body. The <code>JumpIfFalse</code> instruction separates them by making sure that the body will be skipped if the expression evaluates to false. As usual, whenever we hit a return instruction, the function will terminate assuring that we will not fall through into our default branch.</p>
 <pre><code class="language-lir">is_2:
-	StoreLocal(n)
-.branch_0_start:
-.cond_0_start:
-	PushLocal(n)
+	Store(n)
+.branch_start:
+.cond_start:
+	Push(n)
 	CPush(2)
 	Operator2(Equal)
-	JumpIfFalse(.cond_0_end)
+	JumpIfFalse(.cond_end)
 	CPush(1)
 	Ret
-.cond_0_end:
+.cond_end:
 	CPush(0)
 	Ret
 </code></pre>
@@ -466,8 +465,8 @@ let repeat_endless = main_hir.repeat();
 let repeat_until = main_hir.repeat_until(expr);
 <span class="boring">}
 </span></code></pre></pre>
-<p>To avoid namespace collissions in Rust, there is no <code>while</code> construct but you can simply create it via <code>.repeat_until(Expr::not(..))</code>. The optimizer makes sure that no instruction overhead is generated.</p>
-<p>Inside loop blocks you are free to use <code>Break</code> and <code>Continue</code> to precisely control the flow. As in every programming language, <code>Break</code> terminates the loop while <code>Continue</code> jumps to its start again. </p>
+<p>To avoid namespace collissions in Rust, there is no <code>while</code> construct but you can simply create it via <code>.repeat_until(LV2Expr::from(..).not())</code>. The optimizer makes sure that no instruction overhead is generated.</p>
+<p>Inside repeat blocks you are free to use <code>.break_repeat()</code> and <code>.continue_repeat()</code> to precisely control the flow. As in every programming language, <code>Break</code> terminates the loop while <code>Continue</code> jumps to its start again.</p>
 <p>The <code>.repeat_iterating(collection, item)</code> constructor is able to consecutively assign every entity to the variable passed as <code>item</code> as long as the <code>collection</code> value supports iteration. Check the <a href="building/./iterators.html">Iterators</a> chapter if you want to find out more about this.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
@@ -476,7 +475,7 @@ let repeat_until = main_hir.repeat_until(expr);
 let repeat_iterating = main_hir.repeat_iterating(lv2_list!(1, 2, 3), lv2_var!(i));
 
 // ... and this is the elaborate variant
-let it = Iter::create(lv2_list!(1, 2, 3));
+let it = lv2_list!(1, 2, 3).to_iter();
 let repeat_iterating = main_hir.repeat_iterating(it, lv2_var!(i));
 <span class="boring">}
 </span></code></pre></pre>
@@ -491,31 +490,32 @@ while True:
         continue
     print(i)
 </code></pre>
-<p>Translating it to <code>HIR</code> one by one could look like this:</p>
+<p>Translating it into a <code>LV2Function</code> one by one could look like this:</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
+</span><span class="boring">use lovm2::prelude::LV2Expr;
 </span>let i = &amp;lv2_var!(i);
 
 // i = 0
-main_hir.step(Assign::local(i, 0));
+main_hir.assign(i, 0);
 
 let repeat = main_hir.repeat();
 
 // if i == 10: break
 repeat
     .branch()
-    .add_condition(Expr::eq(i, 10))
-    .step(Break::new());
+    .add_condition(LV2Expr::from(i).eq(10))
+    .break_repeat();
 
 // i += 1
-repeat.step(Assign::increment(i));
+repeat.increment(i);
 
 // if i % 2 == 0: continue
 repeat
     .branch()
-    .add_condition(Expr::eq(Expr::rem(i, 2), 0))
-    .step(Continue::new());
+    .add_condition(LV2Expr::from(i).rem(2).eq(0))
+    .continue_repeat();
 
 // print(i)
 repeat.step(lv2_call!(print, i, &quot;\n&quot;));
@@ -523,71 +523,71 @@ repeat.step(lv2_call!(print, i, &quot;\n&quot;));
 </span></code></pre></pre>
 <p>You can imagine that the resulting <code>LIR</code> is a lot more elaborate than the previous examples so we will only focus on the essential parts. From a intermediate perspective an endless loop is implemented by appending an unconditional jump to the loops body.</p>
 <pre><code class="language-lir">main:
-.rep_0_start:
+.repeat_start:
     ...
-	Jump(.rep_0_start)
-.rep_0_end:
+	Jump(.repeat_start)
+.repeat_end:
 </code></pre>
 <p>To terminate the loop once the counter variable reaches 10, we add a conditional break to the body. This is solely a jump targeting the loops end label.</p>
-<pre><code class="language-lir">.cond_0_start:
-	PushLocal(i)
+<pre><code class="language-lir">.cond_start:
+	Push(i)
 	CPush(10)
 	Operator2(Equal)
-	JumpIfFalse(.cond_0_end)
-	Jump(.rep_0_end)
-.cond_0_end:
+	JumpIfFalse(.cond_end)
+	Jump(.repeat_end)
+.cond_end:
 </code></pre>
 <p>On the other hand <code>Continue</code> targets the start label.</p>
 <h1><a class="header" href="#iterators" id="iterators">Iterators</a></h1>
-<p>Iterators are special values that are used to step through the items of <code>Str</code>, <code>List</code> and <code>Dict</code>. Creating them from a <code>HIR</code> perspective is as easy as passing the source expression into <code>Iter::create(..)</code>. Depending on the base collection, the return type of <code>Iter::next(..)</code> will change:</p>
+<p>Iterators are special values that are used to step through the items of <code>Str</code>, <code>List</code> and <code>Dict</code>. Creating them from a <code>HIR</code> perspective is as easy as calling <code>.to_iter()</code> on the source expression. Depending on the base collection, the return type of <code>LV2Expr::from(it).next(..)</code> will change:</p>
 <ul>
 <li><code>Str</code>: Characters of the string.</li>
 <li><code>Dict</code>: A <code>List</code> in which the first item is the <code>key</code> and the second item is the <code>value</code>.</li>
 </ul>
 <p>Only <code>List</code> causes the iterator to return a contained value as is.</p>
 <h2><a class="header" href="#ranges" id="ranges">Ranges</a></h2>
-<p>You can also use <code>Iter::create_ranged(from, to)</code> if you want to have a sequence of numbers.  Note that <code>from</code> is inclusive and <code>to</code> is exclusive.</p>
+<p>You can also use <code>LV2Expr::iter_ranged(from, to)</code> if you want to have a sequence of numbers.  Note that <code>from</code> is inclusive and <code>to</code> is exclusive.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let it1 = Iter::create_ranged(0, 5);
+</span>let it1 = LV2Expr::iter_ranged(0, 5);
 // =&gt; [0, 1, 2, 3, 4]
 
-let it2 = Iter::create_ranged(-5, 5);
+let it2 = LV2Expr::iter_ranged(-5, 5);
 // =&gt; [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4]
 
 // passing an iterator expression into `Iter::reverse` does 
 // exactly what you would expect
 
-let it3 = Iter::reverse(Iter::create_ranged(0, 5));
+let it3 = LV2Expr::create_ranged(0, 5).reverse();
 // =&gt; [4, 3, 2, 1, 0]
 
 // you can also omit `from` and `to` by passing a `Nil` value
 
-let it4 = Iter::create_ranged(Value::Nil, 5)
+let it4 = LV2Expr::iter_ranged(Value::Nil, 5)
 // =&gt; [0, 1, 2, 3, 4]
 
-let it5 = Iter::create_ranged(10, Value::Nil)
+let it5 = LV2Expr::iter_ranged(10, Value::Nil)
 // =&gt; [10, 11, 12, ...]
 <span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#example-3" id="example-3">Example</a></h2>
-<p>If you want to control the iterator more granularly, feel free to use <code>Iter::has_next(it)</code> and <code>Iter::next(it)</code>.</p>
+<p>If you want to control the iterator more granularly, feel free to use <code>LV2Expr::from(it).has_next()</code> and <code>LV2Expr::from(it).next()</code>.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let (it, item) = &amp;lv2_var!(it, item);
 
-main_hir.step(Assign::local(it, Iter::create(lv2_list!(1, 2, 3, 4))));
+main_hir.assign(it, lv2_list!(1, 2, 3, 4).to_iter());
 
 main_hir
-    .repeat_until(Expr::not(Iter::has_next(it)))
-    .step(Assign::local(item, Iter::next(it)));
+    .repeat_until(LV2Expr::from(it).has_next().not()))
+    .assign(item, LV2Expr::from(it).next());
 <span class="boring">}
 </span></code></pre></pre>
 <h1><a class="header" href="#optimization" id="optimization">Optimization</a></h1>
 <p>A rudimentary peephole optimizer is enabled by default. It acts upon the generated <code>LIR</code>. If you want to disable optimization at all, use the method <code>build_with_options</code> and set the attribute <code>optimize</code> to false.</p>
-<p><code>lovm2</code> gives you a guarantee that your <code>HIR</code> will not be unexpectedly altered when lowering.</p>
+<p><code>lovm2</code> gives you a guarantee that your <code>LV2Function</code> will not be unexpectedly altered when lowering.</p>
 <h2><a class="header" href="#dead-code-elimination" id="dead-code-elimination">Dead Code elimination</a></h2>
 <p>After lowering the <code>LIR</code>, the optimizer will eliminate code that is not reachable.</p>
 <pre><code class="language-lir">main:               
@@ -597,7 +597,7 @@ main_hir
     ...
 </code></pre>
 <h2><a class="header" href="#constant-evaluation" id="constant-evaluation">Constant evaluation</a></h2>
-<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>CodeObject</code> reducing its size. Bytecode sequences will be tranformed like this:</p>
+<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>LV2CodeObject</code> reducing its size. Bytecode sequences will be tranformed like this:</p>
 <pre><code class="language-bytecode">CPush(0)
 CPush(1)   =&gt;   CPush(2)
 Add
@@ -614,30 +614,30 @@ Not   =&gt;   Jf
 Jt
 </code></pre>
 <h1><a class="header" href="#virtual-machine" id="virtual-machine">Virtual Machine</a></h1>
-<p>The virtual machine is the heart of <code>lovm2</code> projects and thrives computation forward. It maintains the whole program state inside a <code>Context</code> and shares said data with every function and module interested in it.</p>
+<p>The virtual machine is the heart of <code>lovm2</code> projects and thrives computation forward. It maintains the whole program state inside a <code>LV2Context</code> and shares said data with every function and module interested in it.</p>
 <h2><a class="header" href="#context" id="context">Context</a></h2>
 <p>The context stores the programs state.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub struct Context {
+</span>pub struct LV2Context {
     /// the module that will be run first
-    pub entry: Option&lt;Rc&lt;dyn CallProtocol&gt;&gt;,
+    entry: Option&lt;Rc&lt;dyn LV2CallProtocol&gt;&gt;,
     /// available functions
-    scope: HashMap&lt;Variable, CallableRef&gt;,
+    scope: HashMap&lt;LV2Variable, LV2CallableRef&gt;,
     /// global variables
-    globals: HashMap&lt;Variable, Value&gt;,
+    globals: HashMap&lt;LV2Variable, LV2Value&gt;,
     /// call stack with local variables
-    lstack: Vec&lt;Frame&gt;,
+    lstack: Vec&lt;LV2Frame&gt;,
     /// value stack
-    vstack: Vec&lt;Value&gt;,
+    vstack: Vec&lt;LV2Value&gt;,
 }
 <span class="boring">}
 </span></code></pre></pre>
 <h1><a class="header" href="#hooks" id="hooks">Hooks</a></h1>
 <h2><a class="header" href="#load-hook" id="load-hook">Load Hook</a></h2>
 <p><code>vm.set_load_hook(callback)</code></p>
-<p>The load hook is a special function bound to the <code>Vm</code> that will be consulted first whenever a module should be loaded into the <code>Vm</code>. It returns an <code>Option</code> containing the correct <code>Module</code> structure if the hook was able to resolve the requested name on its own.</p>
+<p>The load hook is a special function bound to the <code>LV2Vm</code> that will be consulted first whenever a module should be loaded into the <code>LV2Vm</code>. It returns an <code>Option</code> containing the correct <code>LV2Module</code> structure if the hook was able to resolve the requested name on its own.</p>
 <h2><a class="header" href="#import-hook" id="import-hook">Import Hook</a></h2>
 <p><code>vm.set_import_hook(callback)</code></p>
 <p>The import hook handles naming of functions being imported into the scope. As such it can also be used to adjust the naming scheme of the <code>lovm2</code> standard library.</p>
@@ -681,6 +681,21 @@ Jt
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

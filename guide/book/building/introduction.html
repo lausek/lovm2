@@ -168,28 +168,28 @@
 <pre><pre class="playground"><code class="language-rust no_run">use lovm2::prelude::*;
 
 <span class="boring">fn main() {
-</span>let mut builder = ModuleBuilder::new();
+</span>let mut builder = LV2ModuleBuilder::new();
 
-// creates the entry point `HIR` and returns a mutable reference.
-// this is actually a shortcut for builder.add(ENTRY_POINT)
-let main_hir = builder.entry();
-
-// modify `main_hir` with statements
-// if in doubt, just call the `step` method and pass it the hir element
-main_hir.step(Interrupt::new(10));
+// creates the entry point function and trigger a debug interrupt.
+builder
+    .entry()
+    .trigger(10);
 
 let module = builder.build().except(&quot;compile error&quot;);
 println!(&quot;{}&quot;, module);
 <span class="boring">}
 </span></code></pre></pre>
-<p>The main generation functionality is exposed via <code>Block</code> and every structure that contains it like <code>Branch</code>, <code>Repeat</code> and functions. You can use these methods on all of them:</p>
+<p>The main generation functionality is exposed via <code>LV2Block</code> and every structure that contains it like <code>LV2Branch</code>, <code>LV2Repeat</code> and functions. You can use these methods on all of them:</p>
 <ul>
 <li><code>step(..)</code> append a new statement to the block.</li>
-<li><code>branch()</code> create a new branch at the current position. This returns a <code>BranchBuilder</code>.</li>
+<li><code>branch()</code> create a new branch at the current position. This returns a <code>LV2BranchBuilder</code>.</li>
 <li><code>repeat()</code> and <code>repeat_until(..)</code> which return a mutable reference to a new block. The first variant is an endless loop, while the latter supports breaking once a condition is met.</li>
+<li><code>return_nil()</code>, <code>return_value(&lt;expr&gt;)</code> return early from a block.</li>
+<li><code>assign(&lt;var&gt;, &lt;expr&gt;)</code> stores an evaluated expression in <code>&lt;var&gt;</code>.</li>
+<li><code>global(&lt;var&gt;)</code>, <code>local(&lt;var&gt;)</code> change scope of <code>&lt;var&gt;</code> .</li>
 </ul>
 <h2><a class="header" href="#functions" id="functions">Functions</a></h2>
-<p>The whole <code>ModuleBuilder</code> is centered around the creation of <code>HIR</code>. As we already found out in the <a href="../concepts/bytecode.html">Concepts</a> chapter, a <code>HIR</code> is conceptually equal to a function. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.</p>
+<p>The whole <code>LV2ModuleBuilder</code> is centered around the creation of <code>LV2Function</code>s. The resulting bytecode is able to process a given amount of parameters and leave a return value in place.</p>
 <p>As you can see in this example listing, you should not need to create such data manually as there is functionality for adding it to the builder directly.</p>
 <pre><pre class="playground"><code class="language-rust no_run">use lovm2::prelude::*;
 
@@ -201,16 +201,16 @@ let fn_no_args = builder.add(&quot;fn1&quot;);
 let fn_with_args = builder.add_with_args(&quot;fn2&quot;, &amp;[lv2_var!(n)]);
 <span class="boring">}
 </span></code></pre></pre>
-<p>To return from function, add a <code>Return::value(expr)</code> to the hir specifying the returned value or <code>Return::nil()</code> if no value is produced.</p>
-<p>Due to the convention that every function has to return a value, an implicit <code>Return::nil()</code> is appended if the last instruction is not a return already.</p>
+<p>To return from function, call <code>.return_value(expr)</code> on the block specifying the returned value or <code>.return_nil()</code> if no value is produced.</p>
+<p>Due to the convention that every function has to return a value, an implicit nil push is appended if the last instruction is not a return already.</p>
 <h2><a class="header" href="#helper-macros" id="helper-macros">Helper Macros</a></h2>
 <p>There are a bunch of macros inside the prelude that trivialize creating more complicated <code>lovm2</code> constructs for developers.</p>
 <ul>
-<li><code>lv2_var!(ident, ...)</code> turns all the identifiers given into the special type <code>Variable</code> which is needed basically everywhere. If more than one ident is declared, this returns a tuple.</li>
-<li><code>lv2_dict!(ident =&gt; expr, ...)</code> creates an <code>Expr</code> that will dynamically initialize a dictionary with the key-values pairs specified.</li>
-<li><code>lv2_list!(item, ...)</code> creates an <code>Expr</code> that initializes a list dynamically.</li>
-<li><code>lv2_call!(ident, ... args)</code> syntactic sugar for the <code>Call</code> element.</li>
-<li><code>lv2_access!(ident, ... keys)</code> syntactic sugar for the <code>Access</code> element.</li>
+<li><code>lv2_var!(ident, ...)</code> turns all the identifiers given into the special type <code>LV2Variable</code> which is needed basically everywhere. If more than one ident is declared, this returns a tuple.</li>
+<li><code>lv2_dict!(ident =&gt; expr, ...)</code> creates an <code>LV2Expr</code> that will dynamically initialize a dictionary with the key-values pairs specified.</li>
+<li><code>lv2_list!(item, ...)</code> creates an <code>LV2Expr</code> that initializes a list dynamically.</li>
+<li><code>lv2_call!(ident, ... args)</code> syntactic sugar for the <code>LV2Call</code> element.</li>
+<li><code>lv2_access!(ident, ... keys)</code> syntactic sugar for retrieving items of a dictionary or list.</li>
 </ul>
 
                     </main>
@@ -250,6 +250,21 @@ let fn_with_args = builder.add_with_args(&quot;fn2&quot;, &amp;[lv2_var!(n)]);
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

@@ -167,9 +167,9 @@
 <p>This chapter aims to give you a brief overview of the internal principles. Even though <code>lovm2</code> is designed to be as simple as possible, it is still quite important to grasp the implementation concepts behind it.</p>
 <p>The general steps of producing a runnable program are roughly:</p>
 <ul>
-<li>Create a new <code>ModuleBuilder</code> and populate it with functions aka. <code>HIR</code> data</li>
-<li>Call <code>module_builder.build()</code> constructing a runnable <code>Module</code> from the current state</li>
-<li>Load the module into an instance of a virtual machine <code>Vm</code> using <code>add_main_module()</code></li>
+<li>Create a new <code>LV2ModuleBuilder</code> and populate it with <code>LV2Function</code> </li>
+<li>Call <code>module_builder.build()</code> constructing a runnable <code>LV2Module</code> from the current state</li>
+<li>Load the module into an instance of a virtual machine <code>LV2Vm</code> using <code>add_main_module()</code></li>
 <li>Start the program by calling <code>run</code> on the virtual machine</li>
 </ul>
 
@@ -210,6 +210,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

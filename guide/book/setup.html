@@ -166,23 +166,23 @@
                         <h1><a class="header" href="#setup" id="setup">Setup</a></h1>
 <ol>
 <li>
-<p>Modify your <code>Cargo.toml</code></p>
+<p>Modify your <code>Cargo.toml</code>.</p>
 <ul>
 <li>Add the latest crates.io version</li>
 </ul>
-<pre><code class="language-toml">lovm2 = &quot;0.4.8&quot;
+<pre><code class="language-toml">lovm2 = &quot;0.5.0&quot;
 </code></pre>
 <ul>
-<li>... or - if you feel lucky - use the current master branch directly</li>
+<li>... or use the current master branch directly</li>
 </ul>
 <pre><code class="language-toml">lovm2 = { git = &quot;https://github.com/lausek/lovm2&quot; }
 </code></pre>
 </li>
 <li>
-<p>Run <code>cargo update</code> on your terminal</p>
+<p>Run <code>cargo update</code>.</p>
 </li>
 <li>
-<p>Import the useful <code>lovm2</code> components into scope using <code>use lovm2::prelude::*;</code></p>
+<p>Import <code>lovm2</code> components into scope using <code>use lovm2::prelude::*;</code>.</p>
 </li>
 </ol>
 
@@ -223,6 +223,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

@@ -176,8 +176,8 @@ let repeat_endless = main_hir.repeat();
 let repeat_until = main_hir.repeat_until(expr);
 <span class="boring">}
 </span></code></pre></pre>
-<p>To avoid namespace collissions in Rust, there is no <code>while</code> construct but you can simply create it via <code>.repeat_until(Expr::not(..))</code>. The optimizer makes sure that no instruction overhead is generated.</p>
-<p>Inside loop blocks you are free to use <code>Break</code> and <code>Continue</code> to precisely control the flow. As in every programming language, <code>Break</code> terminates the loop while <code>Continue</code> jumps to its start again. </p>
+<p>To avoid namespace collissions in Rust, there is no <code>while</code> construct but you can simply create it via <code>.repeat_until(LV2Expr::from(..).not())</code>. The optimizer makes sure that no instruction overhead is generated.</p>
+<p>Inside repeat blocks you are free to use <code>.break_repeat()</code> and <code>.continue_repeat()</code> to precisely control the flow. As in every programming language, <code>Break</code> terminates the loop while <code>Continue</code> jumps to its start again.</p>
 <p>The <code>.repeat_iterating(collection, item)</code> constructor is able to consecutively assign every entity to the variable passed as <code>item</code> as long as the <code>collection</code> value supports iteration. Check the <a href="./iterators.html">Iterators</a> chapter if you want to find out more about this.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
@@ -186,7 +186,7 @@ let repeat_until = main_hir.repeat_until(expr);
 let repeat_iterating = main_hir.repeat_iterating(lv2_list!(1, 2, 3), lv2_var!(i));
 
 // ... and this is the elaborate variant
-let it = Iter::create(lv2_list!(1, 2, 3));
+let it = lv2_list!(1, 2, 3).to_iter();
 let repeat_iterating = main_hir.repeat_iterating(it, lv2_var!(i));
 <span class="boring">}
 </span></code></pre></pre>
@@ -201,31 +201,32 @@ while True:
         continue
     print(i)
 </code></pre>
-<p>Translating it to <code>HIR</code> one by one could look like this:</p>
+<p>Translating it into a <code>LV2Function</code> one by one could look like this:</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
+</span><span class="boring">use lovm2::prelude::LV2Expr;
 </span>let i = &amp;lv2_var!(i);
 
 // i = 0
-main_hir.step(Assign::local(i, 0));
+main_hir.assign(i, 0);
 
 let repeat = main_hir.repeat();
 
 // if i == 10: break
 repeat
     .branch()
-    .add_condition(Expr::eq(i, 10))
-    .step(Break::new());
+    .add_condition(LV2Expr::from(i).eq(10))
+    .break_repeat();
 
 // i += 1
-repeat.step(Assign::increment(i));
+repeat.increment(i);
 
 // if i % 2 == 0: continue
 repeat
     .branch()
-    .add_condition(Expr::eq(Expr::rem(i, 2), 0))
-    .step(Continue::new());
+    .add_condition(LV2Expr::from(i).rem(2).eq(0))
+    .continue_repeat();
 
 // print(i)
 repeat.step(lv2_call!(print, i, &quot;\n&quot;));
@@ -233,19 +234,19 @@ repeat.step(lv2_call!(print, i, &quot;\n&quot;));
 </span></code></pre></pre>
 <p>You can imagine that the resulting <code>LIR</code> is a lot more elaborate than the previous examples so we will only focus on the essential parts. From a intermediate perspective an endless loop is implemented by appending an unconditional jump to the loops body.</p>
 <pre><code class="language-lir">main:
-.rep_0_start:
+.repeat_start:
     ...
-	Jump(.rep_0_start)
-.rep_0_end:
+	Jump(.repeat_start)
+.repeat_end:
 </code></pre>
 <p>To terminate the loop once the counter variable reaches 10, we add a conditional break to the body. This is solely a jump targeting the loops end label.</p>
-<pre><code class="language-lir">.cond_0_start:
-	PushLocal(i)
+<pre><code class="language-lir">.cond_start:
+	Push(i)
 	CPush(10)
 	Operator2(Equal)
-	JumpIfFalse(.cond_0_end)
-	Jump(.rep_0_end)
-.cond_0_end:
+	JumpIfFalse(.cond_end)
+	Jump(.repeat_end)
+.cond_end:
 </code></pre>
 <p>On the other hand <code>Continue</code> targets the start label.</p>
 
@@ -286,6 +287,21 @@ repeat.step(lv2_call!(print, i, &quot;\n&quot;));
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

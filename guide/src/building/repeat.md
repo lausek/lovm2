@@ -75,22 +75,22 @@ You can imagine that the resulting `LIR` is a lot more elaborate than the previo
 
 ``` lir
 main:
-.rep_0_start:
+.repeat_start:
     ...
-	Jump(.rep_0_start)
-.rep_0_end:
+	Jump(.repeat_start)
+.repeat_end:
 ```
 
 To terminate the loop once the counter variable reaches 10, we add a conditional break to the body. This is solely a jump targeting the loops end label.
 
 ``` lir
-.cond_0_start:
+.cond_start:
 	Push(i)
 	CPush(10)
 	Operator2(Equal)
-	JumpIfFalse(.cond_0_end)
-	Jump(.rep_0_end)
-.cond_0_end:
+	JumpIfFalse(.cond_end)
+	Jump(.repeat_end)
+.cond_end:
 ```
 
 On the other hand `Continue` targets the start label.

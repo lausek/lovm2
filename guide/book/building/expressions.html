@@ -164,12 +164,12 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#expressions" id="expressions">Expressions</a></h1>
-<p>The <code>Expr</code> represents any computation that leads to a new value on the stack. Expressions can be nested arbitrarily.</p>
+<p>The <code>LV2Expr</code> structure represents any computation that leads to a new value on the stack. Expressions can be nested arbitrarily.</p>
 <p>To give you an overview of what an expression could look like, here is the stripped down version of its actual implementation.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub enum Expr {
+</span>pub enum LV2Expr {
     // a constant value
     Value,
     // variable in read position
@@ -182,20 +182,12 @@
     Operation1,
     // operations with two operands
     Operation2,
-    // result of a type conversion
-    Conv,
-    // attribute read on a list or dict
-    Access,
-    // special variant for creating lists and dicts
-    DynamicValue,
-    // create a mutable subpart of a list
-    Slice,
+    // ... and many more.
 }
 <span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#resolvement-of-variables" id="resolvement-of-variables">Resolvement of Variables</a></h2>
 <p>While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.</p>
-<p><code>Expr</code> variants relying on this functionality are <code>Variable</code> and <code>Access</code>. As such, their macro helper functions <code>lv2_var!</code> and <code>lv2_access!</code> follow the same rules.</p>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
 <p>We want to transform the formula <code>(1 + 2) * f(2)</code> to <code>lovm2</code> bytecode. Use a parser of your choice to generate an abstract syntax tree from the textual representation. Note that <code>lovm2</code> does not care about operator priorities so its your parsers duty to correctly handle them. After processing the input, your AST should look something like this:</p>
 <pre><code>Value(1)
@@ -206,17 +198,16 @@ Value(2)                 -- Operation(*)
                         / 
               Call(f, 2)
 </code></pre>
-<p>And here is the compiletime representation of said formula. As you can see, every operation has an equivalent static method on <code>Expr</code>. Also note that calling a function has its own construct. This is due to calls being allowed in statement position as well.</p>
+<p>And here is the compiletime representation of said formula:</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let formula = Expr::mul(
-    Expr::add(1, 2),
-    Call::new(&quot;f&quot;).arg(2),
+</span>let formula = LV2Expr::from(1).add(2)
+                .mul(LV2Call::new(&quot;f&quot;).arg(2));
 );
 <span class="boring">}
 </span></code></pre></pre>
-<p>The (unoptimized) <code>LIR</code> now looks like this:</p>
+<p>The unoptimized <code>LIR</code> now looks like this:</p>
 <pre><code class="language-lir">CPush(1)
 CPush(2)
 Operator2(Add)
@@ -262,6 +253,21 @@ Operator2(Mul)
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

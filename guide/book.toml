@@ -5,4 +5,5 @@ multilingual = false
 src = "src"
 title = "The lovm2 Guide"
 
-[output.linkcheck]
+#[output.html]
+#[output.linkcheck]

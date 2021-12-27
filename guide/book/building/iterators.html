@@ -164,50 +164,50 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#iterators" id="iterators">Iterators</a></h1>
-<p>Iterators are special values that are used to step through the items of <code>Str</code>, <code>List</code> and <code>Dict</code>. Creating them from a <code>HIR</code> perspective is as easy as passing the source expression into <code>Iter::create(..)</code>. Depending on the base collection, the return type of <code>Iter::next(..)</code> will change:</p>
+<p>Iterators are special values that are used to step through the items of <code>Str</code>, <code>List</code> and <code>Dict</code>. Creating them from a <code>HIR</code> perspective is as easy as calling <code>.to_iter()</code> on the source expression. Depending on the base collection, the return type of <code>LV2Expr::from(it).next(..)</code> will change:</p>
 <ul>
 <li><code>Str</code>: Characters of the string.</li>
 <li><code>Dict</code>: A <code>List</code> in which the first item is the <code>key</code> and the second item is the <code>value</code>.</li>
 </ul>
 <p>Only <code>List</code> causes the iterator to return a contained value as is.</p>
 <h2><a class="header" href="#ranges" id="ranges">Ranges</a></h2>
-<p>You can also use <code>Iter::create_ranged(from, to)</code> if you want to have a sequence of numbers.  Note that <code>from</code> is inclusive and <code>to</code> is exclusive.</p>
+<p>You can also use <code>LV2Expr::iter_ranged(from, to)</code> if you want to have a sequence of numbers.  Note that <code>from</code> is inclusive and <code>to</code> is exclusive.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let it1 = Iter::create_ranged(0, 5);
+</span>let it1 = LV2Expr::iter_ranged(0, 5);
 // =&gt; [0, 1, 2, 3, 4]
 
-let it2 = Iter::create_ranged(-5, 5);
+let it2 = LV2Expr::iter_ranged(-5, 5);
 // =&gt; [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4]
 
 // passing an iterator expression into `Iter::reverse` does 
 // exactly what you would expect
 
-let it3 = Iter::reverse(Iter::create_ranged(0, 5));
+let it3 = LV2Expr::create_ranged(0, 5).reverse();
 // =&gt; [4, 3, 2, 1, 0]
 
 // you can also omit `from` and `to` by passing a `Nil` value
 
-let it4 = Iter::create_ranged(Value::Nil, 5)
+let it4 = LV2Expr::iter_ranged(Value::Nil, 5)
 // =&gt; [0, 1, 2, 3, 4]
 
-let it5 = Iter::create_ranged(10, Value::Nil)
+let it5 = LV2Expr::iter_ranged(10, Value::Nil)
 // =&gt; [10, 11, 12, ...]
 <span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
-<p>If you want to control the iterator more granularly, feel free to use <code>Iter::has_next(it)</code> and <code>Iter::next(it)</code>.</p>
+<p>If you want to control the iterator more granularly, feel free to use <code>LV2Expr::from(it).has_next()</code> and <code>LV2Expr::from(it).next()</code>.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let (it, item) = &amp;lv2_var!(it, item);
 
-main_hir.step(Assign::local(it, Iter::create(lv2_list!(1, 2, 3, 4))));
+main_hir.assign(it, lv2_list!(1, 2, 3, 4).to_iter());
 
 main_hir
-    .repeat_until(Expr::not(Iter::has_next(it)))
-    .step(Assign::local(item, Iter::next(it)));
+    .repeat_until(LV2Expr::from(it).has_next().not()))
+    .assign(item, LV2Expr::from(it).next());
 <span class="boring">}
 </span></code></pre></pre>
 
@@ -248,6 +248,21 @@ main_hir
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         
