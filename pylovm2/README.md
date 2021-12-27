@@ -36,7 +36,7 @@ module = module.build()
 print(module)
 
 # create vm, load and run module
-vm = Vm.with_std()
+vm = LV2Vm.with_std()
 vm.add_main_module(module)
 vm.run()
 ```
