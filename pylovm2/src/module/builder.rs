@@ -6,7 +6,7 @@ use pyo3::types::{PyList, PyTuple};
 
 use lovm2::gen::LV2AddStatements as _;
 
-use crate::code::CodeObject;
+use crate::code::LV2CodeObject;
 use crate::expr::{any_to_expr, any_to_ident};
 use crate::module::slot::LV2Block;
 
@@ -70,7 +70,7 @@ impl LV2ModuleBuilder {
                     *builder.add(key) = f.clone();
                 }
                 ModuleBuilderSlot::PyFn(ref mut pyfn) => {
-                    let func = CodeObject::from(pyfn.clone());
+                    let func = LV2CodeObject::from(pyfn.clone());
 
                     slots.insert(key, Rc::new(func));
                 }

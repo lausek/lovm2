@@ -8,14 +8,13 @@ use crate::expr::any_to_value;
 use crate::value::LV2Value;
 
 // TODO: change this to hold a Rc<LV2CallProtocol>
-// TODO: change name
 #[pyclass(unsendable)]
 #[derive(Debug)]
-pub struct CodeObject {
+pub struct LV2CodeObject {
     inner: CodeObjectWrapper,
 }
 
-impl lovm2::code::LV2CallProtocol for CodeObject {
+impl lovm2::code::LV2CallProtocol for LV2CodeObject {
     fn run(&self, vm: &mut lovm2::vm::LV2Vm) -> lovm2::prelude::LV2Result<()> {
         match &self.inner {
             CodeObjectWrapper::Lovm2(co) => co.run(vm),
@@ -50,7 +49,7 @@ impl lovm2::code::LV2CallProtocol for CodeObject {
     }
 }
 
-impl From<lovm2::code::LV2CodeObject> for CodeObject {
+impl From<lovm2::code::LV2CodeObject> for LV2CodeObject {
     fn from(inner: lovm2::code::LV2CodeObject) -> Self {
         Self {
             inner: CodeObjectWrapper::Lovm2(inner),
@@ -58,7 +57,7 @@ impl From<lovm2::code::LV2CodeObject> for CodeObject {
     }
 }
 
-impl From<PyObject> for CodeObject {
+impl From<PyObject> for LV2CodeObject {
     fn from(inner: PyObject) -> Self {
         Self {
             inner: CodeObjectWrapper::Py(inner),
