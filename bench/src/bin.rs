@@ -5,12 +5,13 @@ use lovm2::prelude::*;
 
 mod ack;
 mod bisect;
-#[macro_use]
-mod legacy;
 
 use self::ack::ackermann;
 use self::bisect::bisect;
-use self::legacy::*;
+
+pub(crate) fn create_vm() -> lovm2::vm::LV2Vm {
+    lovm2::create_vm_with_std()
+}
 
 fn fibonacci(c: &mut Criterion) {
     let mut module = LV2ModuleBuilder::new();

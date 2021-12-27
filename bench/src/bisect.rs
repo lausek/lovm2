@@ -100,6 +100,9 @@ pub fn bisect_hir(module: &mut LV2ModuleBuilder) {
 pub fn bisect(c: &mut Criterion) {
     let mut module = LV2ModuleBuilder::new();
 
+    // make module importable as main
+    module.entry();
+
     calc_hir(&mut module);
     derive_hir(&mut module);
     bisect_hir(&mut module);
