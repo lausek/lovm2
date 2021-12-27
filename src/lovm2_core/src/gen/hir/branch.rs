@@ -1,8 +1,8 @@
-//! Conditional execution
+//! Conditional execution.
 
 use super::*;
 
-/// Conditional execution
+/// Conditional execution.
 #[derive(Clone)]
 pub struct LV2Branch {
     branches: Vec<(LV2Expr, LV2Block)>,
@@ -17,7 +17,7 @@ impl LV2Branch {
         }
     }
 
-    /// Expects a condition that evaluates to boolean `true`
+    /// Expects a condition that evaluates to boolean `true`.
     pub fn add_condition(&mut self, condition: LV2Expr) -> &mut LV2Block {
         self.branches.push((condition, LV2Block::new()));
 
@@ -26,7 +26,7 @@ impl LV2Branch {
         block
     }
 
-    /// `Block` to execute if no condition evaluates to `true`
+    /// [LV2Block] to execute if no condition evaluates to `true`.
     pub fn default_condition(&mut self) -> &mut LV2Block {
         self.default = Some(LV2Block::new());
         self.default.as_mut().unwrap()

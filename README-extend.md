@@ -1,7 +1,7 @@
-# lovm2_core::extend
+`lovm2::extend` bundles functionality for writing `lovm2` extensions in Rust.
 
-`lovm2::extend` bundles functionality for writing `lovm2` extensions using Rust. You can either statically import functions or produce a shared object that can be loaded at runtime.
-Shared object libraries created using this crate can be imported by `lovm2` and used like regular modules. You just need to add the shared object to `lovm2`s module search path e.g. `~/.local/lib/lovm2/`. When searching for a module, the file extension is stripped. This means that a file named `libmymodule.so` will only be imported if you have a `Import("libmymodule")` instruction.
+You can either statically import functions or produce a shared object that can be loaded at runtime.
+Shared object libraries created using this crate can be imported by `lovm2` and used like regular modules. You just need to add the shared object to the module search path e.g. `~/.local/lib/lovm2/`. When searching for a module, the file extension is stripped. This means that a file named `libmymodule.so` will only be imported if you have a `Import("libmymodule")` instruction.
 
 ## Examples
 
@@ -13,17 +13,16 @@ Shared object libraries created using this crate can be imported by `lovm2` and 
 
 ### Setup
 
-1. Create a new library crate `cargo init <name> --lib`
+1. Create a new library crate `cargo init <name> --lib`.
 
-2. Change your crate-type inside `Cargo.toml`
+2. Change your crate-type inside `Cargo.toml`:
 
 ``` toml
 [lib]
 crate-type = ["cdylib"]
 ```
 
-3. Write your functions and use `cargo build --release` to produce
-a shared object inside `target/release/`
+3. Write your functions and use `cargo build --release` to produce a shared object inside `target/release/`.
 
 ### Usage
 

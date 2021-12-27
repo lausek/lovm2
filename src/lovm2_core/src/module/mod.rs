@@ -1,4 +1,4 @@
-//! Generic protocol for module like objects
+//! Generic protocol for module like objects.
 //!
 //! A `LV2Module` can be created from a `LV2CodeObject` or by loading a lovm2 compatible shared object
 //! library. It maintains an internal map of callable objects, meaning that everything

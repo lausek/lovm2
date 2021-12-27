@@ -19,11 +19,7 @@ crate-type = ["cdylib", "rlib"]
 shrinkwraprs = "0.3.0"
 
 [dependencies.lovm2]
-#version = "0.4.8"
 path = "../"
-#path = "/deps/"
-#git = "https://github.com/lausek/lovm2"
-#branch = "v0.4.8"
 default-features = false
 
 [dependencies.pyo3]

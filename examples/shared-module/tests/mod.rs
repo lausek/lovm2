@@ -12,7 +12,7 @@ fn create_caller(modder: fn(&mut LV2Function)) -> LV2Vm {
     let module = builder.build().unwrap();
     println!("{}", module);
 
-    let mut vm = create_test_vm();
+    let mut vm = lv2_create_test_vm();
     vm.add_main_module(module).unwrap();
     vm.run().unwrap();
 
@@ -88,7 +88,7 @@ fn native_use_context() {
 
 #[test]
 fn run_module() {
-    let mut vm = create_test_vm();
+    let mut vm = lv2_create_test_vm();
     let s = &lv2_var!(s);
 
     let mut builder = LV2ModuleBuilder::new();

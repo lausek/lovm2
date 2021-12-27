@@ -131,7 +131,7 @@ impl LV2CodeObject {
         Ok(co)
     }
 
-    /// Return the objects representation as bytes
+    /// Return the objects representation as bytes.
     pub fn to_bytes(&self) -> LV2Result<Vec<u8>> {
         use bincode::Options;
 
@@ -147,7 +147,7 @@ impl LV2CodeObject {
     }
 
     // TODO: could lead to errors when two threads serialize to the same file
-    /// Write the object to a file at given path
+    /// Write the object to a file at given path.
     pub fn store_to_file<T>(&self, path: T) -> LV2Result<()>
     where
         T: AsRef<std::path::Path>,

@@ -1,10 +1,10 @@
 use super::*;
 
 // TODO: wrapped functions either return:
-// () -> no errors expected, Lovm2Result == Ok(_)
-// Lovm2CResult -> convert errors to Lovm2Result or push Value on stack
+// () -> no errors expected, LV2Result == Ok(_)
+// Lovm2CResult -> convert errors to LV2Result or push Value on stack
 // Value -> no errors expected, push Value on stack
-// Option<Lovm2CResult> -> convert errors to Lovm2Result or push Nil
+// Option<Lovm2CResult> -> convert errors to LV2Result or push Nil
 // Option<Value> -> no errors expected, push Value or Nil on stack
 //
 // + check if the expected arguments in `argn` have been taken from stack

@@ -13,4 +13,4 @@ pub use crate::vm::LV2Vm;
 
 pub use lovm2_module::*;
 
-pub use super::{create_test_vm, lv2_create_callable, LV2_EXTERN_INITIALIZER};
+pub use super::{lv2_create_callable, lv2_create_test_vm, LV2_EXTERN_INITIALIZER};

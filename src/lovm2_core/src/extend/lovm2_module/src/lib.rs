@@ -29,7 +29,7 @@ lazy_static! {
     static ref FUNCS: Mutex<HashSet<String>> = Mutex::new(HashSet::new());
 }
 
-/// Generates the module initializer (always required)
+/// Generates the module initializer (always required).
 #[proc_macro]
 pub fn lv2_module_init(_args: TokenStream) -> TokenStream {
     let initfn = Ident::new(LV2_EXTERN_INITIALIZER, proc_macro2::Span::call_site());
@@ -53,7 +53,7 @@ pub fn lv2_module_init(_args: TokenStream) -> TokenStream {
     result.into()
 }
 
-/// Makes the function available inside the module
+/// Makes the function available inside the module.
 #[proc_macro_attribute]
 pub fn lv2_function(attrs: TokenStream, item: TokenStream) -> TokenStream {
     use crate::quote::ToTokens;
@@ -74,7 +74,7 @@ pub fn lv2_function(attrs: TokenStream, item: TokenStream) -> TokenStream {
     function.generate_rust_function().into_token_stream().into()
 }
 
-/// Makes the structure available inside the module
+/// Makes the structure available inside the module.
 #[proc_macro_attribute]
 pub fn lv2_object(_attr: TokenStream, item: TokenStream) -> TokenStream {
     use crate::quote::ToTokens;

@@ -1,8 +1,7 @@
-//! Execute a `CodeObject` by name using the given arguments
-
+///! Execute a [LV2CodeObject](crate::code::LV2CodeObject) by name using the given arguments.
 use super::*;
 
-/// Execute a `CodeObject` by name using the given arguments
+/// Execute a [LV2CodeObject](crate::code::LV2CodeObject) by name using the given arguments.
 #[derive(Clone, Debug)]
 pub struct LV2Call {
     name: LV2Variable,
