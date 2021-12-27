@@ -28,7 +28,6 @@ impl LV2Block {
 
 #[derive(Clone)]
 pub(super) enum ModuleBuilderSlot {
-    // TODO: rename to LV2Function
     LV2Function(lovm2::prelude::LV2Function),
     PyFn(PyObject),
 }
