@@ -24,9 +24,9 @@ The `Conv` instruction is able to convert data according to the following rules:
 | Bool  |     |  ✓   |  ✓  |       |   ✓    |      |      |     |
 | Int   |     |  ✓   |  ✓  |   ✓   |   ✓    |      |      |     |
 | Float |     |      |  ✓  |   ✓   |   ✓    |      |      |     |
-| String|     |      |  ~  |   ~   |   ✓    |      |      |     |
+| String|     |      |  ✓¹  |   ✓¹   |   ✓    |      |      |     |
 | List  |     |      |     |       |   ✓    |  ✓   |      |     |
 | Dict  |     |      |     |       |   ✓    |      |  ✓   |     |
 | Ref   |     |      |     |       |   ✓    |      |      |  ✓  |
 
-*~: implies parsing overhead*
+*¹ implies parsing overhead*

@@ -4,7 +4,7 @@
 
 `vm.set_load_hook(callback)`
 
-The load hook is a special function bound to the `Vm` that will be consulted first whenever a module should be loaded into the `Vm`. It returns an `Option` containing the correct `Module` structure if the hook was able to resolve the requested name on its own.
+The load hook is a special function bound to the `LV2Vm` that will be consulted first whenever a module should be loaded into the `LV2Vm`. It returns an `Option` containing the correct `LV2Module` structure if the hook was able to resolve the requested name on its own.
 
 ## Import Hook
 
