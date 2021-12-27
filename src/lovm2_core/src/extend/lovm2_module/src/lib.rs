@@ -55,7 +55,7 @@ pub fn lv2_module_init(_args: TokenStream) -> TokenStream {
 
 /// Makes the function available inside the module
 #[proc_macro_attribute]
-pub fn lovm2_function(attrs: TokenStream, item: TokenStream) -> TokenStream {
+pub fn lv2_function(attrs: TokenStream, item: TokenStream) -> TokenStream {
     use crate::quote::ToTokens;
 
     let is_extern = match attrs.into_iter().next() {
@@ -76,7 +76,7 @@ pub fn lovm2_function(attrs: TokenStream, item: TokenStream) -> TokenStream {
 
 /// Makes the structure available inside the module
 #[proc_macro_attribute]
-pub fn lovm2_object(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn lv2_object(_attr: TokenStream, item: TokenStream) -> TokenStream {
     use crate::quote::ToTokens;
 
     let obj = Object::from(item);

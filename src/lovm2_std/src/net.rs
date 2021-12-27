@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::*;
 
-#[lovm2_function]
+#[lv2_function]
 fn new_response() -> Response {
     Response {
         status: 200,
@@ -11,7 +11,7 @@ fn new_response() -> Response {
     }
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn new_request(url: String) -> Request {
     Request {
         url,
@@ -21,17 +21,17 @@ fn new_request(url: String) -> Request {
     }
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn get_url(req: &mut Request) -> String {
     req.url.clone()
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn set_header(req: &mut Request, key: String, val: String) {
     req.headers.insert(key, val);
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn set_body(req: &mut Request, mut body: LV2Value) -> LV2Result<bool> {
     body.unref_inplace()?;
 
@@ -50,14 +50,14 @@ fn set_body(req: &mut Request, mut body: LV2Value) -> LV2Result<bool> {
     err_not_supported()
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn set_method(req: &mut Request, method: String) -> LV2Result<bool> {
     use std::convert::TryFrom;
     req.method = Method::try_from(method)?;
     Ok(true)
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn serve(vm: &mut LV2Vm, host: String, callback: String) -> LV2Result<()> {
     let server = tiny_http::Server::http(host).unwrap();
 
@@ -107,7 +107,7 @@ fn serve(vm: &mut LV2Vm, host: String, callback: String) -> LV2Result<()> {
     Ok(())
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn exec(req: &Request) -> LV2Result<Response> {
     use curl::easy::Easy;
 
@@ -156,17 +156,17 @@ fn exec(req: &Request) -> LV2Result<Response> {
     })
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn get_status(res: &Response) -> i64 {
     res.status
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn get_body_as_string(res: &Response) -> LV2Result<String> {
     String::from_utf8(res.body.clone()).or_else(|_| err_from_string("response is not valid utf-8"))
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn get_body_as_buffer(res: &Response) -> LV2Result<Buffer> {
     Ok(Buffer {
         inner: res.body.clone(),

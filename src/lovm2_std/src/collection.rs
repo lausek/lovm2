@@ -1,6 +1,6 @@
 use super::*;
 
-#[lovm2_function]
+#[lv2_function]
 fn all(collection: &LV2Value) -> LV2Result<bool> {
     match collection {
         LV2Value::List(ls) => {
@@ -15,7 +15,7 @@ fn all(collection: &LV2Value) -> LV2Result<bool> {
     }
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn any(collection: &LV2Value) -> LV2Result<bool> {
     match collection {
         LV2Value::List(ls) => {
@@ -30,7 +30,7 @@ fn any(collection: &LV2Value) -> LV2Result<bool> {
     }
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn append(collection: &mut LV2Value, value: LV2Value) -> LV2Result<()> {
     match collection {
         LV2Value::List(ls) => {
@@ -41,7 +41,7 @@ fn append(collection: &mut LV2Value, value: LV2Value) -> LV2Result<()> {
     }
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn contains(haystack: &LV2Value, needle: LV2Value) -> LV2Result<bool> {
     match haystack {
         LV2Value::Dict(_) => Ok(haystack.get(&needle).is_ok()),
@@ -66,17 +66,17 @@ fn contains(haystack: &LV2Value, needle: LV2Value) -> LV2Result<bool> {
     }
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn deep_clone(val: LV2Value) -> LV2Value {
     val.deep_clone()
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn delete(collection: &mut LV2Value, key: LV2Value) -> LV2Result<bool> {
     collection.delete(&key).map(|_| true)
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn filter(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
@@ -95,12 +95,12 @@ fn filter(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result
     Ok(box_value(LV2Value::List(ls)))
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn get(collection: &LV2Value, key: LV2Value) -> LV2Result<LV2Value> {
     collection.get(&key)
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn map(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV2Value> {
     let mut it = collection.iter()?;
     let mut ls = vec![];
@@ -115,12 +115,12 @@ fn map(vm: &mut LV2Vm, collection: &LV2Value, func_name: String) -> LV2Result<LV
     Ok(box_value(LV2Value::List(ls)))
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn set(collection: &mut LV2Value, key: LV2Value, val: LV2Value) -> LV2Result<bool> {
     collection.set(&key, val).map(|_| true)
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn sort(collection: &LV2Value) -> LV2Result<LV2Value> {
     let sorted = match collection {
         LV2Value::Str(s) => {

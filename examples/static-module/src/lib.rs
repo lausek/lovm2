@@ -1,6 +1,6 @@
 use lovm2_core::extend::prelude::*;
 
-#[lovm2_function]
+#[lv2_function]
 fn minus(op1: i64, op2: i64) -> i64 {
     op1 - op2
 }
@@ -11,7 +11,7 @@ impl CustomVm {
     pub fn new() -> Self {
         let mut inner = LV2Vm::new();
         inner
-            .add_function("minus", create_callable(minus))
+            .add_function("minus", lv2_create_callable(minus))
             .unwrap();
         Self(inner)
     }

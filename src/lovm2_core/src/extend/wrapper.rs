@@ -22,6 +22,6 @@ impl<T> std::fmt::Debug for StaticFunctionWrapper<T> {
 }
 
 /// Wrap a static function inside `Callable`.
-pub fn create_callable(from: impl Fn(&mut LV2Vm) -> LV2Result<()> + 'static) -> LV2CallableRef {
+pub fn lv2_create_callable(from: impl Fn(&mut LV2Vm) -> LV2Result<()> + 'static) -> LV2CallableRef {
     Rc::new(StaticFunctionWrapper(from)) as LV2CallableRef
 }

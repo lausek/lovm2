@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use super::*;
 
 // buffer
-#[lovm2_object]
+#[lv2_object]
 #[derive(Default)]
 pub struct Buffer {
     pub inner: Vec<u8>,
@@ -11,19 +11,19 @@ pub struct Buffer {
 }
 
 // fs
-#[lovm2_object]
+#[lv2_object]
 pub struct File {
     pub inner: std::fs::File,
 }
 
 // regex
-#[lovm2_object]
+#[lv2_object]
 pub struct Regex {
     pub inner: ::regex::Regex,
 }
 
 // net
-#[lovm2_object]
+#[lv2_object]
 pub struct Request {
     pub url: String,
     pub headers: HashMap<String, String>,
@@ -31,7 +31,7 @@ pub struct Request {
     pub body: Vec<u8>,
 }
 
-#[lovm2_object]
+#[lv2_object]
 pub struct Response {
     pub status: i64,
     pub headers: HashMap<String, String>,

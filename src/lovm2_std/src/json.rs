@@ -2,14 +2,14 @@ use ::json::{object::Object, JsonValue};
 
 use super::*;
 
-#[lovm2_function]
+#[lv2_function]
 fn decode(json: String) -> LV2Result<LV2Value> {
     ::json::parse(&json)
         .or_else(err_from_string)
         .and_then(|val| from_json_value(&val))
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn encode(val: LV2Value) -> LV2Result<String> {
     let val = to_json_value(val)?;
 

@@ -28,7 +28,7 @@ macro_rules! add_function {
     ($module:expr, $name:ident) => {
         $module
             .slots
-            .insert(stringify!($name), create_callable($name))
+            .insert(stringify!($name), lv2_create_callable($name))
     };
 }
 
@@ -133,7 +133,7 @@ pub fn input(vm: &mut LV2Vm) -> LV2Result<()> {
     Ok(())
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn len(val: &LV2Value) -> LV2Result<i64> {
     val.as_any_inner()
         .and_then(|any| {

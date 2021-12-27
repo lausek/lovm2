@@ -1,13 +1,13 @@
 use super::*;
 
-#[lovm2_function]
+#[lv2_function]
 fn new_regex(pat: String) -> LV2Result<Regex> {
     let inner = ::regex::Regex::new(&pat).or_else(err_from_string)?;
 
     Ok(Regex { inner })
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn captures(regex: &Regex, text: String) -> Option<LV2Value> {
     regex.inner.captures(&text).map(|c| {
         let mut vals = vec![];
@@ -24,7 +24,7 @@ fn captures(regex: &Regex, text: String) -> Option<LV2Value> {
     })
 }
 
-#[lovm2_function]
+#[lv2_function]
 fn is_match(regex: &Regex, text: String) -> bool {
     regex.inner.is_match(&text)
 }
