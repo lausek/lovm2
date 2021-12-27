@@ -1,4 +1,4 @@
-#[doc = include_str!("../README.md")]
+#![doc = include_str!("../README.md")]
 pub use lovm2_core::*;
 
 /// Create a new instance with standard functions already imported.
