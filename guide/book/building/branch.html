@@ -184,22 +184,22 @@ equal_check
 <span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#expression-branches" id="expression-branches">Expression Branches</a></h2>
-<p>Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant <code>Expr::branch()</code> that lets you create the adhoc version of a ternary operator.</p>
+<p>Regular branches are considered statements and do not leave values on stack as such. However, there is a special expression variant <code>LV2Expr::branch()</code> that lets you create the adhoc version of a ternary operator.</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>// f(n) = n == 2 ? &quot;a&quot; : &quot;b&quot;
 
 let n = lv2_var!(n);
-let f_body = Expr::branch().add_condition(Expr::eq(n, 2), &quot;a&quot;).default_value(&quot;b&quot;);
+let f_body = LV2Expr::branch().add_condition(LV2Expr::from(n).eq(2), &quot;a&quot;).default_value(&quot;b&quot;);
 
 builder
     .add_with_args(&quot;f&quot;, vec![n])
-    .step(Return::value(f_body));
+    .return_value(f_body);
 <span class="boring">}
 </span></code></pre></pre>
 <blockquote>
-<p><strong>Note:</strong> <code>ExprBranch</code> must always return a value meaning that you have to call the <code>default_value</code> method at least once. Otherwise the compiler will complain that a structure of type <code>ExprBranchIncomplete</code> cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.</p>
+<p><strong>Note:</strong> <code>LV2ExprBranch</code> must always return a value meaning that you have to call the <code>default_value</code> method at least once. Otherwise the compiler will complain that a structure of type <code>LV2ExprBranchIncomplete</code> cannot be converted into an expression. This is a compile time check to ensure that those branches always evaluate to a value.</p>
 </blockquote>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
 <p>Let's implement a function that returns <em>1</em> if the given value is equal to 2 and <em>0</em> otherwise. From a Rust perspective, we could generate the function like this:</p>
@@ -210,26 +210,26 @@ builder
 let branch = main.branch();
 
 branch
-    .add_condition(Expr::eq(n, 2))
-    .step(Return::value(1));
+    .add_condition(LV2Expr::from(n).eq(2))
+    .return_value(1);
 
 branch
     .default_condition()
-    .step(Return::value(0));
+    .return_value(0);
 <span class="boring">}
 </span></code></pre></pre>
 <p>The representation will be translated temporarily to the following optimized LIR. As you can see, a lot of labels (prefixed with a <code>.</code>) got involved right now. Everything between <code>.cond_0</code>'s start and end label is derived from our first conditions predicate and body. The <code>JumpIfFalse</code> instruction separates them by making sure that the body will be skipped if the expression evaluates to false. As usual, whenever we hit a return instruction, the function will terminate assuring that we will not fall through into our default branch.</p>
 <pre><code class="language-lir">is_2:
-	StoreLocal(n)
-.branch_0_start:
-.cond_0_start:
-	PushLocal(n)
+	Store(n)
+.branch_start:
+.cond_start:
+	Push(n)
 	CPush(2)
 	Operator2(Equal)
-	JumpIfFalse(.cond_0_end)
+	JumpIfFalse(.cond_end)
 	CPush(1)
 	Ret
-.cond_0_end:
+.cond_end:
 	CPush(0)
 	Ret
 </code></pre>
@@ -272,6 +272,21 @@ branch
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

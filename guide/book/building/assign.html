@@ -165,27 +165,35 @@
                     <main>
                         <h1><a class="header" href="#assignment" id="assignment">Assignment</a></h1>
 <p>Whenever a function is called, the call stack is adjusted guaranteeing that no local variables will interfere each other. To create or change a local variable, it is sufficient to use this construct:</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use lovm2::prelude::*;
 </span><span class="boring">fn main() {
-</span>Assign::local(&amp;lv2_var!(n), expr)
+</span>let n = &amp;lv2_var!(n);
+builder
+    .entry()
+    .assign(n, expr)
 <span class="boring">}
 </span></code></pre></pre>
 <p>It is possible to store data in the global scope allowing values to live across function calls. This requires usage of the following assignment variant:</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use lovm2::prelude::*;
 </span><span class="boring">fn main() {
-</span>Assign::global(&amp;lv2_var!(n), expr)
+</span>let n = &amp;lv2_var!(n);
+builder
+    .entry()
+    .global(n)
+    .assign(n, expr)
 <span class="boring">}
 </span></code></pre></pre>
-<p><code>Assign::increment(n)</code> and <code>Assign::decrement(n)</code> are also quite handy for updating variable values.</p>
-<p>There is even a way of setting the values on lists and dictionaries. Under the hood, <code>Set</code> is actually expecting a <code>Ref</code> as the target location - which is retrieved by <code>Access</code> - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.</p>
-<pre><pre class="playground"><code class="language-rust no_run">
-<span class="boring">#![allow(unused)]
+<p><code>block.increment(n)</code> and <code>block.decrement(n)</code> are also quite handy for updating variable values.</p>
+<p>There is even a way of setting the values on lists and dictionaries. Under the hood, <code>Set</code> is actually expecting a <code>Ref</code> as the target location - which is retrieved by <code>Get</code> - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use lovm2::prelude::*;
 </span><span class="boring">fn main() {
-</span>Assign::local(&amp;lv2_var!(point), lv2_dict!());
-Assign::set(&amp;lv2_access!(point, x), x_coord);
-Assign::set(&amp;lv2_access!(point, y), y_coord);
+</span>let (point, x, y) = &amp;lv2_var!(point, x, y);
+
+builder
+    .entry()
+    .assign(point, LV2Expr::dict())
+    .set(LV2Expr::from(point).get(x), 4)
+    .set(LV2Expr::from(point).get(y), 2);
 <span class="boring">}
 </span></code></pre></pre>
 
@@ -226,6 +234,21 @@ Assign::set(&amp;lv2_access!(point, y), y_coord);
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

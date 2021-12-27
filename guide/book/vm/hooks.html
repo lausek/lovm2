@@ -166,7 +166,7 @@
                         <h1><a class="header" href="#hooks" id="hooks">Hooks</a></h1>
 <h2><a class="header" href="#load-hook" id="load-hook">Load Hook</a></h2>
 <p><code>vm.set_load_hook(callback)</code></p>
-<p>The load hook is a special function bound to the <code>Vm</code> that will be consulted first whenever a module should be loaded into the <code>Vm</code>. It returns an <code>Option</code> containing the correct <code>Module</code> structure if the hook was able to resolve the requested name on its own.</p>
+<p>The load hook is a special function bound to the <code>LV2Vm</code> that will be consulted first whenever a module should be loaded into the <code>LV2Vm</code>. It returns an <code>Option</code> containing the correct <code>LV2Module</code> structure if the hook was able to resolve the requested name on its own.</p>
 <h2><a class="header" href="#import-hook" id="import-hook">Import Hook</a></h2>
 <p><code>vm.set_import_hook(callback)</code></p>
 <p>The import hook handles naming of functions being imported into the scope. As such it can also be used to adjust the naming scheme of the <code>lovm2</code> standard library.</p>
@@ -209,6 +209,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

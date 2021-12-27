@@ -165,7 +165,7 @@
                     <main>
                         <h1><a class="header" href="#optimization" id="optimization">Optimization</a></h1>
 <p>A rudimentary peephole optimizer is enabled by default. It acts upon the generated <code>LIR</code>. If you want to disable optimization at all, use the method <code>build_with_options</code> and set the attribute <code>optimize</code> to false.</p>
-<p><code>lovm2</code> gives you a guarantee that your <code>HIR</code> will not be unexpectedly altered when lowering.</p>
+<p><code>lovm2</code> gives you a guarantee that your <code>LV2Function</code> will not be unexpectedly altered when lowering.</p>
 <h2><a class="header" href="#dead-code-elimination" id="dead-code-elimination">Dead Code elimination</a></h2>
 <p>After lowering the <code>LIR</code>, the optimizer will eliminate code that is not reachable.</p>
 <pre><code class="language-lir">main:               
@@ -175,7 +175,7 @@
     ...
 </code></pre>
 <h2><a class="header" href="#constant-evaluation" id="constant-evaluation">Constant evaluation</a></h2>
-<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>CodeObject</code> reducing its size. Bytecode sequences will be tranformed like this:</p>
+<p>Computing constant operations ahead can not only improve the programs performance, but also drop certain constants out of the <code>LV2CodeObject</code> reducing its size. Bytecode sequences will be tranformed like this:</p>
 <pre><code class="language-bytecode">CPush(0)
 CPush(1)   =&gt;   CPush(2)
 Add
@@ -229,6 +229,21 @@ Jt
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

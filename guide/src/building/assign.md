@@ -30,6 +30,8 @@ builder
 There is even a way of setting the values on lists and dictionaries. Under the hood, `Set` is actually expecting a `Ref` as the target location - which is retrieved by `Get` - and overwrites the value inside. This is compatible with the way dictionaries and lists are internally constructed.
 
 ``` rust,no_run
+#use lovm2::prelude::*;
+#fn main() {
 let (point, x, y) = &lv2_var!(point, x, y);
 
 builder
@@ -37,4 +39,5 @@ builder
     .assign(point, LV2Expr::dict())
     .set(LV2Expr::from(point).get(x), 4)
     .set(LV2Expr::from(point).get(y), 2);
+#}
 ```

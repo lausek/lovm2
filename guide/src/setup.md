@@ -16,4 +16,4 @@
 
 2. Run `cargo update`.
 
-3. Import useful `lovm2` components into scope using `use lovm2::prelude::*;`.
+3. Import `lovm2` components into scope using `use lovm2::prelude::*;`.

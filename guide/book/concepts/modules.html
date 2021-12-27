@@ -164,8 +164,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#modules" id="modules">Modules</a></h1>
-<p>While you are already familiar with <code>lovm2</code>'s own representation of executable code, <code>Modules</code> are far more abstract under the hood. <code>lovm2</code> is able to load specifically compiled shared objects - or DLLs as you would call them in the Windows world - at runtime and execute real native functions as well.</p>
-<p>And that's not all. As long as your structure complies with the <code>CallProtocol</code> trait you are free to even implement native functions inside your own compiler or runtime. This job can be done using the <a href="..">lovm2_extend</a> package which allows you to write your own modules in Rust.</p>
+<p>While you are already familiar with <code>lovm2</code>'s own representation of executable code, <code>LV2Module</code> is far more abstract under the hood. <code>lovm2</code> is able to load specifically compiled shared objects - or DLLs as you would call them in the Windows world - at runtime and execute real native functions as well.</p>
+<p>And that's not all. As long as your structure complies with the <code>LV2CallProtocol</code> trait you are free to even implement native functions inside your own compiler or runtime. This job can be done using the <a href="https://github.com/lausek/lovm2/blob/master/README-extend.md">lovm2_extend</a> package which allows you to write your own modules in Rust.</p>
 
                     </main>
 
@@ -204,6 +204,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

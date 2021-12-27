@@ -178,12 +178,12 @@
 <tr><td align="center">Bool</td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">Int</td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">Float</td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
-<tr><td align="center">String</td><td align="center"></td><td align="center"></td><td align="center">~</td><td align="center">~</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
+<tr><td align="center">String</td><td align="center"></td><td align="center"></td><td align="center">✓¹</td><td align="center">✓¹</td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">List</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center">✓</td><td align="center"></td><td align="center"></td></tr>
 <tr><td align="center">Dict</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center"></td><td align="center">✓</td><td align="center"></td></tr>
 <tr><td align="center">Ref</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center">✓</td><td align="center"></td><td align="center"></td><td align="center">✓</td></tr>
 </tbody></table>
-<p><em>~: implies parsing overhead</em></p>
+<p><em>¹ implies parsing overhead</em></p>
 
                     </main>
 
@@ -222,6 +222,21 @@
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         
