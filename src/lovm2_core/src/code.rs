@@ -48,7 +48,7 @@ pub trait LV2CallProtocol: std::fmt::Debug {
 ///
 /// Values will be returned over the value stack. Every code object has
 /// to return some value on termination. If no value is produced, `Nil` is implicitly returned.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct LV2CodeObject {
     /// Name of the object. This is used as the modules name when imported.
     pub name: String,
@@ -74,21 +74,7 @@ impl LV2CallProtocol for LV2CodeObject {
     }
 
     fn run(&self, vm: &mut LV2Vm) -> LV2Result<()> {
-        vm.run_bytecode(&self, 0)
-    }
-}
-
-impl std::default::Default for LV2CodeObject {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            loc: None,
-            uses: vec![],
-            entries: vec![],
-            consts: vec![],
-            idents: vec![],
-            code: vec![],
-        }
+        vm.run_bytecode(self, 0)
     }
 }
 

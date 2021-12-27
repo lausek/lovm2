@@ -84,5 +84,5 @@ pub fn err_from_string<T, U: ToString>(msg: U) -> LV2Result<T> {
 /// `next` was called on an iterator even though it is empty.
 #[inline]
 pub fn err_iterator_exhausted<T>() -> LV2Result<T> {
-    err_from_string(format!("iterator exhausted"))
+    err_from_string("iterator exhausted".to_string())
 }

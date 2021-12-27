@@ -74,10 +74,10 @@ pub fn lv2_lower_repeat<'lir, 'hir: 'lir>(
     runtime.push_loop();
 
     match &ty {
-        LV2RepeatType::Endless => lower_repeat_endless(runtime, &block),
-        LV2RepeatType::Until { condition } => lower_repeat_until(runtime, condition, &block),
+        LV2RepeatType::Endless => lower_repeat_endless(runtime, block),
+        LV2RepeatType::Until { condition } => lower_repeat_until(runtime, condition, block),
         LV2RepeatType::Iterating { collection, item } => {
-            lower_repeat_iterating(runtime, collection, item, &block)
+            lower_repeat_iterating(runtime, collection, item, block)
         }
     }
 
@@ -113,7 +113,7 @@ fn lower_repeat_iterating<'lir, 'hir: 'lir>(
 
     runtime.emit(LirElement::Duplicate);
     runtime.emit(LirElement::IterNext);
-    runtime.emit(LirElement::store(&item));
+    runtime.emit(LirElement::store(item));
 
     lower_repeat_postlude(runtime, block);
 

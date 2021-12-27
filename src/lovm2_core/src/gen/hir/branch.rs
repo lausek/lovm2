@@ -42,7 +42,7 @@ impl LV2HirLowering for LV2Branch {
 // generic lowering for control structures that evaluate expressions in order to execute code
 pub(crate) fn lower_map_structure<'hir, 'lir, T>(
     runtime: &mut LV2HirLoweringRuntime<'lir>,
-    branches: &'hir Vec<(LV2Expr, T)>,
+    branches: &'hir [(LV2Expr, T)],
     default: &'hir Option<T>,
 ) where
     T: LV2HirLowering,

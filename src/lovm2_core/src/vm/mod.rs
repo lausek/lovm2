@@ -183,8 +183,7 @@ impl LV2Vm {
 
             for (key, co) in module.slots().iter() {
                 // if `import` was set, all function names should be patched with the import_hook
-                if let Some(nfunc) = (self.import_hook)(Some(module.name().as_ref()), key.as_ref())?
-                {
+                if let Some(nfunc) = (self.import_hook)(Some(module.name()), key.as_ref())? {
                     self.add_function(nfunc, co.clone())?;
 
                     // add unnamespaced function as well
@@ -547,16 +546,14 @@ pub fn find_module(name: &str, load_paths: &[String]) -> LV2Result<String> {
 
     for path in load_paths.iter() {
         if let Ok(dir) = read_dir(path) {
-            for entry in dir {
-                if let Ok(entry) = entry {
-                    let fname = entry.path();
+            for entry in dir.flatten() {
+                let fname = entry.path();
 
-                    if fname.file_stem().unwrap() == name && LV2Module::is_loadable(&fname)? {
-                        let abspath = std::fs::canonicalize(fname).unwrap();
-                        let abspath = abspath.to_string_lossy();
+                if fname.file_stem().unwrap() == name && LV2Module::is_loadable(&fname)? {
+                    let abspath = std::fs::canonicalize(fname).unwrap();
+                    let abspath = abspath.to_string_lossy();
 
-                        return Ok(abspath.into_owned());
-                    }
+                    return Ok(abspath.into_owned());
                 }
             }
         }

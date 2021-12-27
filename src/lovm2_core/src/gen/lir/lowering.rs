@@ -94,14 +94,14 @@ impl LirLoweringRuntime {
         match lir_element {
             LirElement::Append => self.code.push(Instruction::Append),
             LirElement::Call { argn, ident } => {
-                let iidx = self.index_ident(&ident) as u16;
+                let iidx = self.index_ident(ident) as u16;
 
                 self.code.push(Instruction::Call(iidx, argn));
             }
             LirElement::Box => self.code.push(Instruction::Box),
             LirElement::Conv { ty } => self.code.push(Instruction::Conv(ty as u16)),
             LirElement::Entry { ident } => {
-                let iidx = self.index_ident(&ident);
+                let iidx = self.index_ident(ident);
                 let off = self.code.len();
 
                 self.entries.push((iidx, off));
@@ -154,7 +154,7 @@ impl LirLoweringRuntime {
                 self.globals.remove(ident);
             }
             LirElement::PushDynamic { ident, .. } => {
-                let iidx = self.index_ident(&ident) as u16;
+                let iidx = self.index_ident(ident) as u16;
 
                 if self.globals.contains(ident) {
                     self.code.push(Instruction::GPush(iidx));
@@ -163,7 +163,7 @@ impl LirLoweringRuntime {
                 }
             }
             LirElement::StoreDynamic { ident, .. } => {
-                let iidx = self.index_ident(&ident) as u16;
+                let iidx = self.index_ident(ident) as u16;
 
                 if self.globals.contains(ident) {
                     self.code.push(Instruction::GMove(iidx));

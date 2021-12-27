@@ -186,13 +186,13 @@ impl LV2Value {
             LV2Value::Str(_) => self.get_by_index(key.as_integer_inner()? as usize),
             LV2Value::Dict(dict) => match dict.get(key) {
                 Some(val) => Ok(val.clone()),
-                None => err_key_not_found(self, &key)?,
+                None => err_key_not_found(self, key)?,
             },
             LV2Value::List(list) => {
                 if let LV2Value::Int(idx) = key.as_integer()? {
                     match list.get(idx as usize) {
                         Some(val) => Ok(val.clone()),
-                        None => err_key_not_found(self, &key)?,
+                        None => err_key_not_found(self, key)?,
                     }
                 } else {
                     unreachable!()
@@ -387,27 +387,27 @@ impl From<LV2Iter> for LV2Value {
     }
 }
 
-impl Into<bool> for LV2Value {
-    fn into(self) -> bool {
-        self.as_bool_inner().unwrap()
+impl From<LV2Value> for bool {
+    fn from(value: LV2Value) -> bool {
+        value.as_bool_inner().unwrap()
     }
 }
 
-impl Into<i64> for LV2Value {
-    fn into(self) -> i64 {
-        self.as_integer_inner().unwrap()
+impl From<LV2Value> for i64 {
+    fn from(value: LV2Value) -> i64 {
+        value.as_integer_inner().unwrap()
     }
 }
 
-impl Into<f64> for LV2Value {
-    fn into(self) -> f64 {
-        self.as_float_inner().unwrap()
+impl From<LV2Value> for f64 {
+    fn from(value: LV2Value) -> f64 {
+        value.as_float_inner().unwrap()
     }
 }
 
-impl Into<String> for LV2Value {
-    fn into(self) -> String {
-        self.as_str_inner().unwrap()
+impl From<LV2Value> for String {
+    fn from(value: LV2Value) -> String {
+        value.as_str_inner().unwrap()
     }
 }
 

@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use super::*;
 
+#[derive(Default)]
 pub(super) struct ValidPath {
     // TODO: can this be done more efficiently?
     offsets: HashSet<usize>,
@@ -72,14 +73,6 @@ impl ValidPath {
             }
 
             off += 1;
-        }
-    }
-}
-
-impl std::default::Default for ValidPath {
-    fn default() -> Self {
-        Self {
-            offsets: HashSet::new(),
         }
     }
 }
