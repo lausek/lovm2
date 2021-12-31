@@ -12,20 +12,24 @@ title: lovm2
 
 ## Features
 
-- [X] Dynamic typing
-- [X] Generate bytecode using a High-Level Intermediate Representation
-- [X] Define own instructions as `Interrupt`s
-- [X] Standard library included: [lovm2_std]({{ site.github_repository }}/tree/master/src/lovm2_std/README.md)
-- [X] Extend your programs with Rust: [lovm2_extend]({{ site.github_repository }}/tree/master/README-extend.md)
-- [X] Python bindings: [pylovm2]({{ site.github_repository }}/tree/master/pylovm2/README.md)
+- Dynamic typing
+- Generate bytecode using a High-Level Intermediate Representation
+- Define own instructions as `Interrupt`s
+- Standard library included: [lovm2_std]({{ site.github_repository }}/tree/master/src/lovm2_std/README.md)
+- Extend your programs with Rust: [lovm2 extend]({{ site.github_repository }}/tree/master/README-extend.md)
+- Python bindings: [pylovm2]({{ site.github_repository }}/tree/master/pylovm2/README.md)
 
 ## Examples
 
 Add this line to your `Cargo.toml`:
 
+``` toml
+lovm2 = "0.5.0"
 ```
-lovm2 = "0.4.8"
-```
+
+### Resources
+
+- [The lovm2 Guide](https://lausek.eu/lovm2/guide/book/)
 
 ### Projects
 
@@ -37,28 +41,24 @@ lovm2 = "0.4.8"
 ``` rust
 use lovm2::prelude::*;
 
-let mut module = ModuleBuilder::new();
+let mut module = LV2ModuleBuilder::new();
 
+// declare the variables our code will use
+let n = &lv2_var!(n);
 // a module needs a code object called `main`
 // if you want to make it runnable
 let main_hir = module.entry();
-
 // set the local variable n to 10
-main_hir.step(Assign::local(&lv2_var!(n), 10));
-
-// `print` is a builtin function. the `lv2_var!` macro
-// ensures that the given identifier is not confused
-// with a string.
-main_hir.step(Call::new("print").arg(lv2_var!(n)).arg("Hello World"));
-// ... this is equivalent to the developer-friendly version:
-main_hir.step(lv2_call!(print, n, "Hello World"));
+main_hir.assign(n, 10);
+// `print` is a builtin function
+main_hir.step(LV2Call::new("print").arg(n).arg("Hello World"));
 
 // creates a `Module` from the `ModuleBuilder`
 let module = module.build().unwrap();
 println!("{}", module);
 
 // load the module and run it
-let mut vm = create_vm_with_std();
+let mut vm = lovm2::create_vm_with_std();
 vm.add_main_module(module).expect("load error");
 vm.run().expect("run error");
 ```
