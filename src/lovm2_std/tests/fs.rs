@@ -1,16 +1,15 @@
 #![cfg(test)]
 
-use test_utils::*;
-
 use tempfile::tempdir;
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
+use lovm2_test_utils::*;
 
 #[test]
 fn file_creation_deletion() {
     let dir = tempdir().unwrap();
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let path = dir.path().join(".file");
     let path_str = path.to_str().unwrap();
@@ -28,7 +27,7 @@ fn file_creation_deletion() {
 fn file_rename() {
     let dir = tempdir().unwrap();
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let path = dir.path().join(".file");
     let path_str = path.to_str().unwrap();
@@ -51,7 +50,7 @@ fn file_rename() {
 fn file_list_dir() {
     let dir = tempdir().unwrap();
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let root = dir.path().join("root").join("next");
     let root_str = root.to_str().unwrap();
@@ -129,7 +128,7 @@ fn file_list_dir() {
 fn filepath_operations() {
     let dir = tempdir().unwrap();
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let root = dir.path().join("a").join("b");
     let root_str = root.to_str().unwrap();

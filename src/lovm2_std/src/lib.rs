@@ -22,7 +22,7 @@ pub use self::net::*;
 pub use self::regex::*;
 pub use self::string::*;
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 macro_rules! add_function {
     ($module:expr, $name:ident) => {

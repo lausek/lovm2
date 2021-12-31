@@ -1,0 +1,11 @@
+[package]
+name = "lovm2_extend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libloading = "0.6.6"
+lovm2_core = { path = "../lovm2_core" }
+lovm2_extend_proc = { path = "../lovm2_extend_proc" }

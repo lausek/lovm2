@@ -1,12 +1,12 @@
 #![cfg(test)]
 
-use test_utils::*;
+use lovm2_test_utils::*;
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 #[test]
 fn native_consts() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         std::f64::consts::E,
@@ -20,7 +20,7 @@ fn native_consts() {
 
 #[test]
 fn native_trigonometry() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
     let pi2 = 2. * std::f64::consts::PI;
     let pih = std::f64::consts::PI * 0.5;
     let n = 0f64;
@@ -80,7 +80,7 @@ fn native_trigonometry() {
 
 #[test]
 fn native_clamp() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from(1.5),
@@ -98,7 +98,7 @@ fn native_clamp() {
 
 #[test]
 fn native_ceil() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(LV2Value::from(2.), vm.call("ceil", &[1.5.into()]).unwrap());
     assert_eq!(LV2Value::from(2.), vm.call("ceil", &[1.2.into()]).unwrap());
@@ -107,7 +107,7 @@ fn native_ceil() {
 
 #[test]
 fn native_floor() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(LV2Value::from(1.), vm.call("floor", &[1.5.into()]).unwrap());
     assert_eq!(LV2Value::from(1.), vm.call("floor", &[1.2.into()]).unwrap());
@@ -116,7 +116,7 @@ fn native_floor() {
 
 #[test]
 fn native_round() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(LV2Value::from(2.), vm.call("round", &[1.6.into()]).unwrap());
     assert_eq!(LV2Value::from(2.), vm.call("round", &[1.5.into()]).unwrap());
@@ -126,7 +126,7 @@ fn native_round() {
 
 #[test]
 fn native_log() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from(2.),
@@ -140,7 +140,7 @@ fn native_log() {
 
 #[test]
 fn native_sqrt() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(LV2Value::from(2.), vm.call("sqrt", &[4.into()]).unwrap());
     assert_eq!(LV2Value::from(3.), vm.call("sqrt", &[9.into()]).unwrap());

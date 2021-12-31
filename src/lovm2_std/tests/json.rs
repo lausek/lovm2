@@ -1,14 +1,14 @@
 #![cfg(test)]
 
-use test_utils::*;
+use lovm2_test_utils::*;
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 #[test]
 fn native_decode() {
     let (a, b) = &lv2_var!(a, b);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(a)
@@ -34,7 +34,7 @@ fn native_decode() {
 fn native_encode() {
     let (ls, d, dd, n) = &lv2_var!(ls, d, dd, n);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(d)

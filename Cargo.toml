@@ -11,6 +11,18 @@ keywords = ["interpreter"]
 license-file = "LICENSE"
 description = "a lightweight virtual machine with a focus on simplicity and extendability."
 
+[workspace]
+members = [
+    "src/lovm2_bench",
+    "src/lovm2_core",
+    "src/lovm2_extend",
+    "src/lovm2_python",
+    "src/lovm2_std",
+]
+exclude = [
+    "examples/*",
+]
+
 [[bin]]
 name = "lovm2-repl"
 path = "bin/bin.rs"
@@ -33,7 +45,7 @@ dirs = "3.0.1"
 indexmap = { version = "1.6.1", features = ["serde"] }
 
 [dev-dependencies]
-test-utils = { path = "./tests/test-utils" }
+lovm2_test_utils = { path = "./src/lovm2_test_utils" }
 
 [features]
 default = ["stdlib", "stdlib-net", "stdlib-ssl"]

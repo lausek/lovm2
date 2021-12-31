@@ -1,12 +1,11 @@
 #![cfg(test)]
 
-use test_utils::*;
-
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
+use lovm2_test_utils::*;
 
 #[test]
 fn native_format() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("abcd"),
@@ -17,7 +16,7 @@ fn native_format() {
 
 #[test]
 fn native_join() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("a & b"),
@@ -32,7 +31,7 @@ fn native_join() {
 
 #[test]
 fn native_split() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::List(vec!["a".into(), "b".into(), "c".into()]),
@@ -46,7 +45,7 @@ fn native_split() {
 
 #[test]
 fn native_index_of() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::Int(0),
@@ -64,7 +63,7 @@ fn native_index_of() {
 
 #[test]
 fn native_char_conversion() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let x_as_str = LV2Value::from("x");
     let x_as_int = LV2Value::from(120);
@@ -89,7 +88,7 @@ fn native_char_conversion() {
 
 #[test]
 fn native_replace() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("abb"),
@@ -110,7 +109,7 @@ fn native_replace() {
 
 #[test]
 fn native_to_upper() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("AA"),
@@ -120,7 +119,7 @@ fn native_to_upper() {
 
 #[test]
 fn native_to_lower() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("aa"),
@@ -130,7 +129,7 @@ fn native_to_lower() {
 
 #[test]
 fn native_trim() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("a"),

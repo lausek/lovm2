@@ -9,4 +9,6 @@ name = "shared_module"
 crate-type = ["cdylib"]
 
 [dependencies]
-lovm2_core = { path = "../../src/lovm2_core" }
+lovm2_extend = { path = "../../src/lovm2_extend" }
+
+[workspace]

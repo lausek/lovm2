@@ -1,6 +1,6 @@
 [package]
-name = "lovm2_core"
-version = "0.5.0"
+name = "lovm2_extend_proc"
+version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
@@ -12,13 +12,14 @@ license-file = "LICENSE"
 description = "a lightweight virtual machine with a focus on simplicity and extendability."
 
 [lib]
-name = "lovm2_core"
-path = "src/lib.rs"
+name = "lovm2_extend_proc"
+proc-macro = true
 
 [dependencies]
-backtrace = { version = "0.3.53", optional = true }
-bincode = "1.3.1"
-dirs = "3.0.1"
-indexmap = { version = "1.6.1", features = ["serde"] }
-libloading = "0.6.6"
-serde = { version = "1.0", features = ["derive"] }
+lazy_static = "1.4.0"
+proc-macro2 = "1.0.24"
+quote = "1.0.7"
+
+[dependencies.syn]
+version = "1.0.48"
+features = ["full", "printing", "extra-traits"]

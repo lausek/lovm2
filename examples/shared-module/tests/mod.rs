@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 fn create_caller(modder: fn(&mut LV2Function)) -> LV2Vm {
     let mut builder = LV2ModuleBuilder::new();

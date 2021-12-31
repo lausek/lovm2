@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 use static_module::*;
 

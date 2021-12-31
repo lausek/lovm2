@@ -3,7 +3,6 @@
 
 pub mod code;
 pub mod error;
-pub mod extend;
 pub mod gen;
 pub mod module;
 pub mod prelude;
