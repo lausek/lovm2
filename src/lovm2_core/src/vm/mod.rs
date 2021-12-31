@@ -372,8 +372,11 @@ impl LV2Vm {
                 Instruction::XOr => value_operation!(self, xor_inplace),
                 Instruction::Not => {
                     let first = self.ctx.pop_value()?;
-
                     self.ctx.push_value(first.not()?);
+                }
+                Instruction::Abs => {
+                    let first = self.ctx.pop_value()?;
+                    self.ctx.push_value(first.abs()?);
                 }
                 Instruction::Eq => value_compare!(self, eq),
                 Instruction::Ne => value_compare!(self, ne),

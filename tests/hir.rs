@@ -822,3 +822,37 @@ fn iterators() {
     })
     .unwrap();
 }
+
+#[test]
+fn test_absolute_values() {
+    let mut builder = LV2ModuleBuilder::new();
+    let x = &lv2_var!(x);
+
+    // allow loading of module as main
+    builder.entry();
+
+    builder
+        .add_with_args("is_absolute", vec![x.clone()])
+        .return_value(LV2Expr::from(x).abs());
+
+    let mut vm = LV2Vm::new();
+    vm.add_main_module(builder.build().unwrap()).unwrap();
+
+    assert_eq!(
+        LV2Value::from(1),
+        vm.call("is_absolute", &[LV2Value::from(1)]).unwrap()
+    );
+    assert_eq!(
+        LV2Value::from(1),
+        vm.call("is_absolute", &[LV2Value::from(-1)]).unwrap()
+    );
+    assert_eq!(
+        LV2Value::from(1.),
+        vm.call("is_absolute", &[LV2Value::from(1.)]).unwrap()
+    );
+    assert_eq!(
+        LV2Value::from(1.),
+        vm.call("is_absolute", &[LV2Value::from(-1.)]).unwrap()
+    );
+    assert!(vm.call("is_absolute", &[LV2Value::from(false)]).is_err());
+}

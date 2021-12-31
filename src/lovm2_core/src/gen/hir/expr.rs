@@ -119,6 +119,7 @@ pub enum LV2Operator2 {
 /// Operator with one operand.
 #[derive(Clone, Debug, PartialEq)]
 pub enum LV2Operator1 {
+    Abs,
     Not,
 }
 
@@ -340,6 +341,7 @@ impl LV2Expr {
     auto_implement!(2, Le, le);
     auto_implement!(2, Lt, lt);
 
+    auto_implement!(1, Abs, abs);
     auto_implement!(1, Not, not);
 }
 

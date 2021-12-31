@@ -5,6 +5,16 @@ use std::cmp::Ordering;
 use super::LV2Value::*;
 use super::*;
 
+impl LV2Value {
+    pub fn abs(self) -> LV2Result<Self> {
+        match self {
+            Int(a) => Ok(Int(a.abs())),
+            Float(a) => Ok(Float(a.abs())),
+            _ => err_not_supported(),
+        }
+    }
+}
+
 impl std::ops::Add for LV2Value {
     type Output = LV2Result<LV2Value>;
 

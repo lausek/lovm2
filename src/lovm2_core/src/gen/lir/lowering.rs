@@ -255,6 +255,7 @@ impl From<Operator> for Instruction {
                 LV2Operator2::Lt => Instruction::Lt,
             },
             Operator::Operator1(op) => match op {
+                LV2Operator1::Abs => Instruction::Abs,
                 LV2Operator1::Not => Instruction::Not,
             },
         }

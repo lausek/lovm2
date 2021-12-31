@@ -16,6 +16,9 @@ pub(crate) fn create_vm() -> lovm2::vm::LV2Vm {
 fn fibonacci(c: &mut Criterion) {
     let mut module = LV2ModuleBuilder::new();
 
+    // make module importable as main
+    module.entry();
+
     let (h, l, n, r) = &lv2_var!(h, l, n, r);
     let fib_hir = module.add_with_args("fib", vec![n.clone()]);
 

@@ -259,8 +259,10 @@ class TestBuilding(Test):
         main_hir.assign(c, 0)
         main_hir.global_(it)
         main_hir.assign(it, LV2Expr([1, 2, 3, 4]).to_iter())
+
         repeat = main_hir.repeat_until(LV2Expr(it).has_next().not_())
         repeat.assign_global(c, LV2Expr(it).next().add(c))
+
         main_hir.assign_global(has, LV2Expr(it).has_next())
         main_hir.trigger(10)
 

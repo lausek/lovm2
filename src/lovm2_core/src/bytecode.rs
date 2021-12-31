@@ -45,6 +45,9 @@ pub enum Instruction {
     /// Logical shift right `first` by `second` places.
     Shr,
 
+    /// Strip sign of `first`
+    Abs,
+
     /// Logical and for [LV2Value::Bool](crate::prelude::LV2Value::Bool) / Bitwise and for [LV2Value::Int](crate::prelude::LV2Value::Int).
     And,
     /// Logical or for [LV2Value::Bool](crate::prelude::LV2Value::Bool) / Bitwise or for [LV2Value::Int](crate::prelude::LV2Value::Int).

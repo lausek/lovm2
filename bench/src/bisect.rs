@@ -87,10 +87,15 @@ pub fn bisect_hir(module: &mut LV2ModuleBuilder) {
         .add_condition(LV2Expr::from(d2).eq(0.))
         .assign(d2, 0.001);
     computation_loop.assign(d1, lv2_call!(calc, coeffs, x));
-    computation_loop.assign(x, LV2Expr::from(d1).div(d2).sub(x));
+    computation_loop.assign(x, LV2Expr::from(x).sub(LV2Expr::from(d1).div(d2)));
     computation_loop
         .branch()
-        .add_condition(LV2Expr::from(prev).eq(x))
+        .add_condition(
+            LV2Expr::from(prev).ne(LV2Value::Nil)
+            .and(
+                LV2Expr::from(prev).sub(x).abs().lt(0.0000001)
+            )
+        )
         .break_repeat();
     computation_loop.assign(prev, x);
 
