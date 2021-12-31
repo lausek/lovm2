@@ -1,12 +1,11 @@
 #![cfg(test)]
 
-use test_utils::*;
-
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
+use lovm2_test_utils::*;
 
 #[test]
 fn test_reading() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let buf = vm.call("new_buffer", &[]).unwrap();
 
@@ -32,7 +31,7 @@ fn test_reading() {
 
 #[test]
 fn test_readline() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let buf = vm.call("new_buffer", &[]).unwrap();
 

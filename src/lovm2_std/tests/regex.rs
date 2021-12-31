@@ -1,14 +1,13 @@
 #![cfg(test)]
 
-use test_utils::*;
-
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
+use lovm2_test_utils::*;
 
 #[test]
 fn native_is_match() {
     let re = &lv2_var!(re);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(re)
@@ -37,7 +36,7 @@ fn native_is_match() {
 fn native_captures() {
     let re = &lv2_var!(re);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(re)

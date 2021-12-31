@@ -1,4 +1,4 @@
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 // lmove 0
 // lmove 1

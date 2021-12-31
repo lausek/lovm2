@@ -1,10 +1,9 @@
 #![cfg(test)]
 
-use test_utils::*;
-
 use httptest::{all_of, matchers::request, responders::*, Expectation, ServerPool};
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
+use lovm2_test_utils::*;
 
 static SERVER_POOL: ServerPool = ServerPool::new(2);
 
@@ -19,7 +18,7 @@ fn get_body_as_string() {
         .respond_with(json_encoded(vec!["a", "b"])),
     );
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let host = server.url("/simple-get").to_string();
     let req = vm.call("new_request", &[host.into()]).unwrap();
@@ -42,7 +41,7 @@ fn post_request() {
         .respond_with(status_code(200)),
     );
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let host = server.url("/receive-data").to_string();
     let req = vm.call("new_request", &[host.into()]).unwrap();
@@ -65,7 +64,7 @@ fn error_status_code() {
         .respond_with(status_code(403)),
     );
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let host = server.url("/receive-data").to_string();
     let req = vm.call("new_request", &[host.into()]).unwrap();

@@ -8,12 +8,12 @@ cd $(dirname `realpath $0`)
 cargo test
 
 # assure that benchmark code compiles
-pushd bench
+pushd src/lovm2_bench
 env RUSTFLAGS="--cfg lovm2_version=\"0.4.8\"" cargo build --benches
 popd
 
 # build python bindings and run tests
-pushd pylovm2
+pushd src/lovm2_python
 cargo build
 pytest
 popd

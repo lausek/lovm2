@@ -1,7 +1,7 @@
 use lovm2::create_vm_with_std;
 use lovm2::prelude::*;
 
-use test_utils::*;
+use lovm2_test_utils::*;
 
 #[test]
 fn load_avoid_sigabrt() {

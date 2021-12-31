@@ -1,0 +1,13 @@
+[package]
+name = "lovm2_test_utils"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "lovm2_test_utils"
+path = "src/lib.rs"
+
+[dependencies]
+lovm2_core = { path = "../lovm2_core", default-features = false }
+lovm2_std = { path = "../lovm2_std" }

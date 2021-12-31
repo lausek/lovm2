@@ -1,14 +1,14 @@
 #![cfg(test)]
 
-use test_utils::*;
+use lovm2_test_utils::*;
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 // TODO: use new api
 #[test]
 fn dynamic_varargs() {
     let (arg, args, result) = &lv2_var!(arg, args, result);
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         let hir = builder
             .add("sum")
             .assign(args, lv2_call!(argn))
@@ -38,7 +38,7 @@ fn dynamic_varargs() {
 fn dynamic_call() {
     let (n, i) = &lv2_var!(n, i);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         let hir = builder.add("return_argn").assign(n, lv2_call!(argn));
 
         hir.assign(i, n)

@@ -1,15 +1,15 @@
 #![cfg(test)]
 
-use test_utils::*;
+use lovm2_test_utils::*;
 
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 // TODO: use new api
 #[test]
 fn native_set_predicates() {
     let (a, b, c, d, e, f) = &lv2_var!(a, b, c, d, e, f);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(a)
@@ -54,7 +54,7 @@ fn native_set_predicates() {
 fn native_contains() {
     let (n, s, d, ls) = &lv2_var!(n, s, d, ls);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(n)
@@ -96,7 +96,7 @@ fn native_contains() {
 fn native_len() {
     let (n, s, d, ls) = &lv2_var!(n, s, d, ls);
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(n)
@@ -130,7 +130,7 @@ fn native_deep_clone() {
     d.set(&1.into(), 2.into()).unwrap();
     let d = box_value(d);
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let mut dc = vm.call("deep_clone", &[d.clone()]).unwrap();
     dc.set(&1.into(), 3.into()).unwrap();
@@ -145,7 +145,7 @@ fn native_deep_clone() {
 fn native_delete() {
     let ls = box_value(LV2Value::List(vec![1.into(), 2.into()]));
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(2, ls.len().unwrap());
     vm.call("delete", &[ls.clone(), 1.into()]).unwrap();
@@ -163,7 +163,7 @@ fn native_get() {
     d.set(&1.into(), 2.into()).unwrap();
     let d = box_value(d);
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(
         LV2Value::from("c"),
@@ -187,7 +187,7 @@ fn native_set() {
     d.set(&1.into(), 2.into()).unwrap();
     let d = box_value(d);
 
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     assert_eq!(LV2Value::from(1), ls.get(&0.into()).unwrap());
     vm.call("set", &[ls.clone(), 0.into(), 2.into()]).unwrap();
@@ -204,7 +204,7 @@ fn native_sort() {
     let (d, ds, ls, lss) = &lv2_var!(d, ds, ls, lss);
     let s = LV2Value::from("bcda");
 
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         builder
             .add("init")
             .global(d)
@@ -238,7 +238,7 @@ fn native_sort() {
 
 #[test]
 fn native_map() {
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         let x = &lv2_var!(x);
         builder
             .add_with_args("inc", vec![x.clone()])
@@ -262,7 +262,7 @@ fn native_map() {
 
 #[test]
 fn native_filter() {
-    let mut vm = run_module_test(|builder| {
+    let mut vm = run_module_test_builder(|builder| {
         let x = &lv2_var!(x);
         builder
             .add_with_args("even", vec![x.clone()])
@@ -278,7 +278,7 @@ fn native_filter() {
 
 #[test]
 fn native_append() {
-    let mut vm = run_module_test(|_| {});
+    let mut vm = run_module_test_builder(|_| {});
 
     let ls = box_value(LV2Value::List(vec![]));
     assert_eq!(0, ls.len().unwrap());
