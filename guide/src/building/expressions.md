@@ -24,7 +24,10 @@ pub enum LV2Expr {
 
 ## Resolvement of Variables
 
-While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.
+The scope of a variable is determined by the previously emitted `Global` and `Local` declarations.
+In a block, the variable's scope is not fixed but can change after each statement.
+
+> **Behavior before v0.5.0:** While lowering, the runtime keeps track of locally assigned identifiers. This is crucial for determining the scope during read access later. If a variable is not known locally, a fallback to global scope happens.
 
 ## Example
 
@@ -43,9 +46,9 @@ Value(2)                 -- Operation(*)
 And here is the compiletime representation of said formula:
 
 ``` rust,no_run
-let formula = LV2Expr::from(1).add(2)
+let formula = LV2Expr::from(1)
+                .add(2)
                 .mul(LV2Call::new("f").arg(2));
-);
 ```
 
 The unoptimized `LIR` now looks like this:
