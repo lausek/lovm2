@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v0.5.0 (2022-04-10)
 
+<csr-id-79a2caa12079f82103553f9aacfd6d127a539416/>
+<csr-id-1f1377e848a46d3a13db4a6dc41381ca1a5e65a9/>
+<csr-id-acbbe3e0835c4d453ebed29eab83973dfc187c21/>
+<csr-id-e97d91761bb8d2b7db980577a38a0f602ed769a4/>
+<csr-id-4064ee4dc1c2359f9d0d1944f41e5562b6c45665/>
+<csr-id-d76a87c3070751fee913f2c814caf8d295378690/>
+<csr-id-9368a70931eb566d5d738f33cf28e6b98ec417cd/>
+<csr-id-68d5dfb21833904dded6bc02d2980378eb4df11c/>
+<csr-id-fc4351fe3c05c88a93ad8a85289b66099263496d/>
+<csr-id-09a71f200d8142863af4f10c7966c1b09b2bb594/>
+<csr-id-a69af4f47c3d84978877276bde291af05f5e3e93/>
+<csr-id-e7806882e6da93c7268b964c2a08b711b8ea0d14/>
+<csr-id-0d08a489341935d5d7b1f8787dce07f46ffd8c76/>
+<csr-id-1b686201009f409e0f79dbccfc7b274ec31d0816/>
+<csr-id-495d42d793bed6da1259aa0ed3fbb84a504076a0/>
+<csr-id-30517c58869ab30b81f42b55ea2b6d6f045bebc0/>
+<csr-id-cde95503ae2ac335993e4cf704f87e2dbf41eaaa/>
+<csr-id-81d84d9b29ab86fdc98d3d0925b24dacd79d0255/>
+<csr-id-fcb116db2ab0d5ef65190f06efa3d5edc20ba65d/>
+<csr-id-5560e48f89aca3ecb15d1b9011a50a9ec023313a/>
+<csr-id-72843a4fe75d48da3455269adf236623fee774f9/>
+<csr-id-8755fecffff595ac6e63c0c621961a9e27850a30/>
+<csr-id-5d5d6394a3af788349ba5f98445726da498a464e/>
+<csr-id-7cda9b045d0b8056a4b8bb4279a8f950ddc4ba8e/>
+<csr-id-d3878739fdc8c1181d350963dad9f9719ee2dab9/>
+<csr-id-d7b47c2dc12aa102cc0a3de7f7d1c69acd4365ab/>
+<csr-id-b4304d38af8ca0ffec85b5c6fd471474037457da/>
+<csr-id-4c79f5cd792218c2383ad4041a9b580919381be4/>
+<csr-id-3834ba27855ddc8e6a22d5498530dc61c4352e6f/>
+<csr-id-0cbb5ce54ea39f40bfb6c3065cbb1c7bae79df22/>
+<csr-id-c4b0b5936bba50be9062ddfa759f27415d78c45d/>
+<csr-id-4adbe83d9f44e8b6de3ea8a0e2091395cffde465/>
+<csr-id-f5494478d8a659e1158fc52468c61375bb2b6203/>
+<csr-id-9011c51e2d5cf41005576d1a3d01f3860c8639df/>
+<csr-id-72a222fed63be23ebf302c3557be9cf4c251b6a9/>
+<csr-id-2df20f6c6419044ec2fe29fca587e2d0e5a543e6/>
+<csr-id-8bbe83498c864b2d750d2db2686f25912dff6961/>
+<csr-id-bf2e66f596e3f1a452163251176b0fc47e618c0c/>
+<csr-id-a3c515531e5c3e5777787ac2b8862ade9130cd2f/>
+
 ### Documentation
 
  - <csr-id-7ce182e4b48baf74c1a20c93f60e54d215060015/> fix references to exported names
@@ -57,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 582 commits contributed to the release over the course of 557 calendar days.
+ - 583 commits contributed to the release over the course of 657 calendar days.
  - 40 commits where understood as [conventional](https://www.conventionalcommits.org).
  - 3 unique issues were worked on: [#20](https://github.com/lausek/lovm2/issues/20), [#23](https://github.com/lausek/lovm2/issues/23), [#25](https://github.com/lausek/lovm2/issues/25)
 
@@ -74,6 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#25](https://github.com/lausek/lovm2/issues/25)**
     - Refactor code layout to avoid recursive dependencies ([`d94e424`](https://github.com/lausek/lovm2/commit/d94e4240a278c3ca14daa3e6c44028fbee8d72c5))
  * **Uncategorized**
+    - add changelog ([`69a6fc4`](https://github.com/lausek/lovm2/commit/69a6fc4d32f251788fe4966249e3db8fca92cf44))
     - add absolute instruction ([`7e9dc46`](https://github.com/lausek/lovm2/commit/7e9dc465eacb300de49043ed7de9552486b9256f))
     - cargo clippy notes ([`79a2caa`](https://github.com/lausek/lovm2/commit/79a2caa12079f82103553f9aacfd6d127a539416))
     - cargo clippy notes ([`1f1377e`](https://github.com/lausek/lovm2/commit/1f1377e848a46d3a13db4a6dc41381ca1a5e65a9))
