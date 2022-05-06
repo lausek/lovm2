@@ -174,15 +174,7 @@
 <ol>
 <li>
 <p>Modify your <code>Cargo.toml</code>.</p>
-<ul>
-<li>Add the latest crates.io version</li>
-</ul>
-<pre><code class="language-toml">lovm2 = &quot;0.5.0&quot;
-</code></pre>
-<ul>
-<li>... or use the current master branch directly</li>
-</ul>
-<pre><code class="language-toml">lovm2 = { git = &quot;https://github.com/lausek/lovm2&quot; }
+<pre><code class="language-toml">lovm2 = { git = &quot;https://github.com/lausek/lovm2&quot;, rev = &quot;7472952&quot; }
 </code></pre>
 </li>
 <li>
@@ -685,21 +677,6 @@ Jt
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         
