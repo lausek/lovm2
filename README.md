@@ -19,7 +19,7 @@
 Add this line to your `Cargo.toml`:
 
 ``` toml
-lovm2 = "0.5.0"
+lovm2 = { git = "https://github.com/lausek/lovm2", rev = "7472952" }
 ```
 
 ### Resources
