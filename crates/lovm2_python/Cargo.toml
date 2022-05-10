@@ -2,7 +2,7 @@
 name = "lovm2_python"
 version = "0.5.0"
 authors = ["lausek <root@lausek.eu>"]
-edition = "2018"
+edition = "2021"
 
 homepage = "https://github.com/lausek/lovm2"
 repository = "https://github.com/lausek/lovm2"
