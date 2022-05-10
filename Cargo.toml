@@ -13,7 +13,6 @@ description = "a lightweight virtual machine with a focus on simplicity and exte
 
 [workspace]
 members = [
-    "src/lovm2_bench",
     "src/lovm2_core",
     "src/lovm2_extend",
     "src/lovm2_python",
