@@ -254,7 +254,7 @@ impl Transpiler {
                     let rest = self.to_expr_vec(&list[1..])?;
 
                     for item in rest {
-                        ls = ls.add(item);
+                        ls = ls.append(item);
                     }
 
                     Ok(ls.into())

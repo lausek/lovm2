@@ -1,6 +1,6 @@
 # lol
 
-A lisp based on [lovm2](https://github.com/lausek/lovm2).
+S-expressions for lovm2.
 
 ## Example
 
