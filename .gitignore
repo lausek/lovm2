@@ -2,6 +2,5 @@
 **/.jekyll-cache/*
 **/_site/*
 bench/lovm2
-Cargo.lock
 book/book/*
 .vscode/
