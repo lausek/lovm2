@@ -80,7 +80,6 @@ impl LirLoweringRuntime {
 
         co.name = self.meta.name;
         co.loc = self.meta.loc;
-        co.uses = self.meta.uses;
 
         co.entries = self.entries;
         co.consts = self.consts;

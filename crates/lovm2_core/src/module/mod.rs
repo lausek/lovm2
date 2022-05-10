@@ -98,11 +98,6 @@ impl LV2Module {
     pub fn to_bytes(&self) -> LV2Result<Vec<u8>> {
         self.code_object.to_bytes()
     }
-
-    /// List static dependencies of the module.
-    pub fn uses(&self) -> &[String] {
-        &self.code_object.uses
-    }
 }
 
 impl From<LV2CodeObject> for LV2Module {
@@ -129,11 +124,6 @@ impl std::fmt::Display for LV2Module {
             "module({:?}, {:?}):",
             self.code_object.name, self.code_object.loc
         )?;
-
-        // print static dependencies
-        if !self.code_object.uses.is_empty() {
-            writeln!(f, "- uses: {:?}", self.code_object.uses)?;
-        }
 
         // print constants
         if !self.code_object.consts.is_empty() {

@@ -56,8 +56,6 @@ pub struct LV2CodeObject {
     #[serde(skip_serializing)]
     /// Location of objects origin.
     pub loc: Option<String>,
-    /// Modules required for executing this object successfully.
-    pub uses: Vec<String>,
     /// Entry points for the bytecode in the form Vec<(index_into_idents, bytecode_offset)>. These are the functions of the module.
     pub entries: Vec<(usize, usize)>,
     /// Necessary constants.

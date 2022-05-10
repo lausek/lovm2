@@ -49,18 +49,6 @@ impl LV2ModuleBuilder {
         }
     }
 
-    /// Add a module dependency for static inclusion.
-    pub fn add_dependency<T>(&mut self, name: T)
-    where
-        T: ToString,
-    {
-        let name = name.to_string();
-
-        if !self.meta.uses.contains(&name) {
-            self.meta.uses.push(name);
-        }
-    }
-
     /// Create a new function hir without arguments.
     pub fn add<T>(&mut self, name: T) -> &mut LV2Function
     where

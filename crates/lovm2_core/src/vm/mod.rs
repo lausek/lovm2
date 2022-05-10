@@ -173,12 +173,6 @@ impl LV2Vm {
         let module = module.into();
 
         if self.modules.get(module.name()).is_none() {
-            // load static dependencies of module
-            for used_module in module.uses() {
-                // static dependencies are imported
-                self.add_module_by_name(used_module, module.location().cloned(), true)?;
-            }
-
             let module = Rc::new(module);
 
             for (key, co) in module.slots().iter() {

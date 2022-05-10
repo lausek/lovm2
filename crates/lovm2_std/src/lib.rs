@@ -35,7 +35,7 @@ macro_rules! add_function {
 /// Add standard functions to the given vm. If `create_vm_with_std` is used, this
 /// gets loaded automatically.
 pub fn create_std_module() -> LV2Module {
-    let module = LV2ModuleBuilder::with_meta(LV2ModuleMeta::new("std".to_string(), None, vec![]));
+    let module = LV2ModuleBuilder::with_meta(LV2ModuleMeta::new("std".to_string(), None));
     let mut module = module.build().unwrap();
 
     add_function!(module, absolute);

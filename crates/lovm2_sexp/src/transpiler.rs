@@ -94,7 +94,7 @@ impl Transpiler {
         list: &[Sexp],
     ) -> Result<(), String> {
         let name = take_as!(&list[1], Sexp::Sym)?;
-        module.add_dependency(name.to_string());
+        module.entry().import(name.as_ref());
         Ok(())
     }
 
