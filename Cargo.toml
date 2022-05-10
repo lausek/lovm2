@@ -13,11 +13,10 @@ description = "a lightweight virtual machine with a focus on simplicity and exte
 
 [workspace]
 members = [
-    "src/lovm2_core",
-    "src/lovm2_extend",
-    "src/lovm2_sexp",
-    "src/lovm2_std",
-    "src/lovm2_test_utils",
+    "crates/lovm2_core",
+    "crates/lovm2_extend",
+    "crates/lovm2_sexp",
+    "crates/lovm2_std",
 ]
 exclude = [
     "examples/*",
@@ -31,22 +30,20 @@ bench = false
 
 [lib]
 name = "lovm2"
-path = "src/lib.rs"
+path = "crates/lib.rs"
 # required for criterion to work
 bench = false
 
 [dependencies]
-lovm2_core = { path = "./src/lovm2_core", version = "0.5.0" }
-lovm2_std = { path = "./src/lovm2_std", version = "0.5.0", optional = true, default-features = false }
+lovm2_core = { path = "./crates/lovm2_core", version = "0.5.0" }
+lovm2_std = { path = "./crates/lovm2_std", version = "0.5.0", optional = true, default-features = false }
+lovm2_test_utils = { path = "./crates/lovm2_test_utils" }
 
 serde = { version = "1.0", features = ["derive"] }
 bincode = "1.3.1"
 libloading = "0.6.6"
 dirs = "3.0.1"
 indexmap = { version = "1.6.1", features = ["serde"] }
-
-[dev-dependencies]
-lovm2_test_utils = { path = "./src/lovm2_test_utils" }
 
 [features]
 default = ["stdlib", "stdlib-net", "stdlib-ssl"]

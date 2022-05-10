@@ -1,5 +1,5 @@
 FROM konstin2/maturin:v0.12.10
-ENV LOVM2_PYTHON_DIR="/build/src/lovm2_python"
+ENV LOVM2_PYTHON_DIR="/build/crates/lovm2_python"
 
 # required for building stdlibs openssl
 RUN yum update && yum install -y perl-core

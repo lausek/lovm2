@@ -8,17 +8,17 @@ cd $(dirname `realpath $0`)
 cargo test
 
 # assure that benchmark code compiles
-pushd src/lovm2_bench
+pushd crates/lovm2_bench
 env RUSTFLAGS="--cfg lovm2_version=\"0.4.8\"" cargo build --benches
 popd
 
 # build python bindings and run tests
-pushd src/lovm2_python
+pushd crates/lovm2_python
 cargo build
 pytest
 popd
 
-pushd src/lovm2_core
+pushd crates/lovm2_core
 cargo test
 popd
 
@@ -38,7 +38,7 @@ cargo build
 cargo doc
 
 # test standard library
-pushd src/lovm2_std
+pushd crates/lovm2_std
 cargo build
 cargo test
 popd
