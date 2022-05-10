@@ -1,8 +1,8 @@
-FROM konstin2/maturin
+FROM konstin2/maturin:v0.12.10
+ENV LOVM2_PYTHON_DIR="/build/src/lovm2_python"
 
 # required for building stdlibs openssl
-RUN yum update
-RUN yum install -y perl-core
+RUN yum update && yum install -y perl-core
 
 # build openssl with static linkage support
 COPY ./scripts/build-openssl.sh /tmp/build-openssl.sh

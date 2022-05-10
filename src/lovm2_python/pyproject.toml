@@ -2,7 +2,7 @@
 #requires = ["setuptools", "wheel", "setuptools-rust"]
 
 [build-system]
-requires = ["maturin"]
+requires = ["maturin>=0.12,<0.13"]
 build-backend = "maturin"
 
 [tool.maturin]

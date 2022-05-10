@@ -1,0 +1,14 @@
+[package]
+name = "lovm2_sexp"
+version = "0.1.0"
+authors = ["lausek <root@lausek.eu>"]
+edition = "2018"
+
+[lib]
+name = "lovm2_sexp"
+path = "src/lib.rs"
+
+[dependencies]
+ess = "0.4.2"
+lovm2 = { path = "../../" }
+structopt = "0.3.21"

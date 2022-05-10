@@ -11,8 +11,10 @@ keywords = ["interpreter"]
 license-file = "LICENSE"
 description = "bindings for lausek's own virtual machine."
 
+[workspace]
+
 [lib]
-name = "lovm2_python"
+name = "pylovm2"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
