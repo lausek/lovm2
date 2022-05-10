@@ -1,6 +1,5 @@
 use std::path::Path;
 
-use lovm2::code::LV2CodeObject;
 use lovm2::create_vm_with_std;
 use lovm2::module::LV2Module;
 use lovm2::prelude::*;
@@ -48,36 +47,4 @@ fn deserialize_module() {
 
     let n = vm.context_mut().value_of(n).unwrap();
     assert_eq!(LV2Value::Int(10), *n);
-}
-
-#[test]
-fn global_uses() {
-    use std::rc::Rc;
-
-    const PRELOADED: &str = "preloaded";
-
-    let mut builder = LV2ModuleBuilder::new();
-    builder.add_dependency(PRELOADED);
-
-    let n = &lv2_var!(n);
-    builder.entry().global(n).assign(n, 10);
-
-    let module = builder.build().unwrap();
-
-    assert!(!module.uses().is_empty());
-
-    let mut vm = create_vm_with_std();
-
-    let called = Rc::new(std::cell::Cell::new(false));
-    let called_ref = called.clone();
-    vm.set_load_hook(move |req| {
-        assert_eq!(req.module, PRELOADED);
-        called_ref.set(true);
-        Ok(Some(LV2CodeObject::new().into()))
-    });
-
-    vm.add_main_module(module).unwrap();
-    vm.run().unwrap();
-
-    assert!(called.get());
 }

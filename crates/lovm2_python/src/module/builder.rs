@@ -16,7 +16,6 @@ use super::{LV2Module, ModuleBuilderSlot};
 pub struct LV2ModuleBuilder {
     name: String,
     slots: HashMap<String, ModuleBuilderSlot>,
-    uses: Vec<String>,
 }
 
 #[pymethods]
@@ -26,7 +25,6 @@ impl LV2ModuleBuilder {
         Self {
             name: name.unwrap_or(lovm2::prelude::LV2_DEFAULT_MODULE_NAME.to_string()),
             slots: HashMap::new(),
-            uses: vec![],
         }
     }
 
@@ -49,16 +47,10 @@ impl LV2ModuleBuilder {
         Ok(())
     }
 
-    pub fn add_dependency(&mut self, name: String) {
-        if !self.uses.contains(&name) {
-            self.uses.push(name);
-        }
-    }
-
     // TODO: can we avoid duplicating the code here?
     pub fn build(&mut self, module_location: Option<String>) -> PyResult<LV2Module> {
         let meta =
-            lovm2::gen::LV2ModuleMeta::new(self.name.clone(), module_location, self.uses.clone());
+            lovm2::gen::LV2ModuleMeta::new(self.name.clone(), module_location);
         let mut builder = lovm2::gen::LV2ModuleBuilder::with_meta(meta);
         let mut slots = lovm2::module::LV2ModuleSlots::new();
 

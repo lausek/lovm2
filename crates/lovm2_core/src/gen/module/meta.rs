@@ -10,18 +10,11 @@ pub struct LV2ModuleMeta {
     pub(crate) loc: Option<String>,
     /// Module name.
     pub(crate) name: String,
-    /// Other required modules to be included on load.
-    pub(crate) uses: Vec<String>,
 }
 
 impl LV2ModuleMeta {
-    pub fn new(name: String, loc: Option<String>, uses: Vec<String>) -> Self {
-        Self { loc, name, uses }
-    }
-
-    /// Overwrite the dependencies.
-    pub fn set_uses(&mut self, uses: Vec<String>) {
-        self.uses = uses;
+    pub fn new(name: String, loc: Option<String>) -> Self {
+        Self { loc, name }
     }
 }
 
@@ -52,7 +45,6 @@ impl std::default::Default for LV2ModuleMeta {
         Self {
             loc: None,
             name: LV2_DEFAULT_MODULE_NAME.to_string(),
-            uses: vec![],
         }
     }
 }
