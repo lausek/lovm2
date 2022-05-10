@@ -17,8 +17,6 @@ fn encode(val: LV2Value) -> LV2Result<String> {
 }
 
 fn from_json_value(val: &JsonValue) -> LV2Result<LV2Value> {
-    use std::convert::TryInto;
-
     let val = match val {
         JsonValue::Null => LV2Value::Nil,
         JsonValue::Short(s) => LV2Value::from(s.as_str().to_string()),

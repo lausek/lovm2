@@ -2,7 +2,7 @@
 name = "static-module"
 version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
-edition = "2018"
+edition = "2021"
 
 [workspace]
 
