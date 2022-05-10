@@ -1,9 +1,9 @@
 #![cfg(test)]
 
+use lovm2_test_utils::run_module_test_builder;
 use tempfile::tempdir;
 
 use lovm2_extend::prelude::*;
-use lovm2_test_utils::*;
 
 #[test]
 fn file_creation_deletion() {

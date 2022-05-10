@@ -1,6 +1,6 @@
 use criterion::Criterion;
 
-use lol::create_lol_module;
+use lovm2_sexp::create_module;
 
 use super::*;
 
@@ -25,7 +25,7 @@ pub fn ackermann(c: &mut Criterion) {
     */
 
     let mut vm = create_vm();
-    let module = create_lol_module(
+    let module = create_module(
         "main",
         "
         (def main ())

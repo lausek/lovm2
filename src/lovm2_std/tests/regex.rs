@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use lovm2_extend::prelude::*;
-use lovm2_test_utils::*;
+use lovm2_test_utils::run_module_test_builder;
 
 #[test]
 fn native_is_match() {

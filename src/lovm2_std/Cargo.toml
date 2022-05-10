@@ -16,8 +16,10 @@ name = "lovm2_std"
 path = "src/lib.rs"
 
 [dependencies]
-json = "0.12.4"
+lovm2_core = { path = "../lovm2_core" }
 lovm2_extend = { path = "../lovm2_extend" }
+
+json = "0.12.4"
 regex = "1.4.2"
 # net dependencies
 curl = { version = "0.4.34", optional = true, default-features = false }

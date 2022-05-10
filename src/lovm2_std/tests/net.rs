@@ -3,7 +3,7 @@
 use httptest::{all_of, matchers::request, responders::*, Expectation, ServerPool};
 
 use lovm2_extend::prelude::*;
-use lovm2_test_utils::*;
+use lovm2_test_utils::run_module_test_builder;
 
 static SERVER_POOL: ServerPool = ServerPool::new(2);
 
