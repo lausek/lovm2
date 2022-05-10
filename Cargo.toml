@@ -22,12 +22,6 @@ exclude = [
     "examples/*",
 ]
 
-[[bin]]
-name = "lovm2-repl"
-path = "bin/bin.rs"
-# required for criterion to work
-bench = false
-
 [lib]
 name = "lovm2"
 path = "crates/lib.rs"
