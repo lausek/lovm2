@@ -35,7 +35,7 @@ This crate exports three macros:
 
 ``` rust
 // Import all required types for writing a module
-use lovm2_core::extend::prelude::*;
+use lovm2_extend::prelude::*;
 
 #[lv2_function(extern)]
 fn div(a: i64, b: i64) -> LV2Result<i64> {

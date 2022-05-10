@@ -5,7 +5,7 @@ set -e
 # move to project root
 cd $(dirname `realpath $0`)
 
-cargo test
+cargo test --all
 
 # assure that benchmark code compiles
 pushd crates/lovm2_bench
