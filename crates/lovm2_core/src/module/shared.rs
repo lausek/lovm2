@@ -4,7 +4,7 @@
 //! after `EXTERN_LOVM2_INITIALIZER`. It is responsible for registering the exported
 //! functions in the given `HashMap`.
 //!
-//! See module [extend](crate::extend) for helper utilities and examples.
+//! See module [extend](lovm2_extend) for helper utilities and examples.
 
 use libloading::{Error, Library, Symbol};
 use std::collections::HashMap;
@@ -86,7 +86,7 @@ where
 
 // As the `Library` is always valid for this structure, it should be fine to
 // call `into_raw` on the loaded symbol and then use the function pointer afterwards.
-/// Contains a function name, imported by [LV2_EXTERN_INITIALIZER](crate::extend::LV2_EXTERN_INITIALIZER).
+/// Contains a function name, imported by [LV2_EXTERN_INITIALIZER](lovm2_extend::LV2_EXTERN_INITIALIZER).
 pub struct LV2SharedObjectSlot(
     Rc<Library>,
     #[cfg(unix)] ::libloading::os::unix::Symbol<LV2ExternFunction>,

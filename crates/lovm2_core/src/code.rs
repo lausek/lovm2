@@ -17,7 +17,7 @@ pub type LV2CallableRef = Rc<dyn LV2CallProtocol>;
 
 /// Generalization for runnable objects.
 /// - lovm2 bytecode ([LV2CodeObject])
-/// - Statically linked functions (standard library is an example, [lv2_create_callable](crate::extend::lv2_create_callable))
+/// - Statically linked functions (standard library is an example, [lv2_create_callable](lovm2_extend::lv2_create_callable))
 /// - Dynamically linked functions ([LV2SharedObjectSlot](crate::module::LV2SharedObjectSlot))
 ///
 /// Functions implementing this protocol can support variadic arguments by looking at
