@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["lausek <root@lausek.eu>"]
 edition = "2018"
 
+[workspace]
+
 [[bench]]
 name = "lovm2_bench"
 path = "src/bin.rs"
