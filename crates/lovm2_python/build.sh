@@ -8,7 +8,7 @@ LOVM2_DIR=$(pwd)
 popd
 
 CONTAINER_DIR="/build"
-CONTAINER_LOVM2_PYTHON_DIR="$CONTAINER_DIR/src/lovm2_python"
+CONTAINER_LOVM2_PYTHON_DIR="$CONTAINER_DIR/crates/lovm2_python"
 MATURIN_RELEASE=0
 
 case "$1" in

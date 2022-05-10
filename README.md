@@ -11,7 +11,7 @@
 - Generate bytecode using a High-Level Intermediate Representation
 - Define own instructions as `Interrupt`s
 - Extend your programs with Rust: [lovm2 extend](README-extend.md)
-- Standard library included: [lovm2_std](src/lovm2_std/README.md)
+- Standard library included: [lovm2_std](crates/lovm2_std/README.md)
 - Python bindings: [pylovm2](pylovm2/README.md)
 
 ## Examples
@@ -60,9 +60,9 @@ vm.run().expect("run error");
 
 ### Internal Source Code References
 
-- [Bytecode](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/bytecode.rs)
-- [Context](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/context.rs)
-- [Vm](https://github.com/lausek/lovm2/blob/master/src/lovm2_core/src/vm/mod.rs)
+- [Bytecode](https://github.com/lausek/lovm2/blob/master/crates/lovm2_core/src/bytecode.rs)
+- [Context](https://github.com/lausek/lovm2/blob/master/crates/lovm2_core/src/vm/context.rs)
+- [Vm](https://github.com/lausek/lovm2/blob/master/crates/lovm2_core/src/vm/mod.rs)
 
 #### Customer Reviews
 

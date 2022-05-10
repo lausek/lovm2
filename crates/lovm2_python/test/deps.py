@@ -1,5 +1,6 @@
 from os.path import abspath, dirname, exists, join
 import pytest
+import subprocess
 import sys
 
 build_folder = abspath(join(dirname(__file__), "../target/debug"))
@@ -8,21 +9,14 @@ if not exists(build_folder):
     print("./target/debug not found. build using project `cargo build` first")
     exit()
 
-if not exists(join(build_folder, "pylovm2.so")):
-    import subprocess
+so, so_importable = join(build_folder, "libpylovm2.so"), join(build_folder, "pylovm2.so")
 
-    subprocess.call(
-        [
-            "ln",
-            "-s",
-            join(build_folder, "libpylovm2.so"),
-            join(build_folder, "pylovm2.so"),
-        ]
-    )
-
+subprocess.call(["rm", so_importable])
+subprocess.call(["ln", "-s", so, so_importable])
 sys.path.insert(0, build_folder)
 
 import pylovm2
+assert so_importable == pylovm2.__file__, "shared object in ./target/debug was not imported"
 
 
 class Test:
