@@ -22,12 +22,12 @@ lovm2_extend = { path = "../lovm2_extend" }
 json = "0.12.4"
 regex = "1.4.2"
 # net dependencies
-curl = { version = "0.4.34", optional = true, default-features = false }
-tiny_http = { version = "0.8.0", optional = true, default-features = false }
+curl = { version = "0.4.44", optional = true, default-features = false }
+tiny_http = { version = "0.11.0", optional = true, default-features = false }
 
 [dev-dependencies]
 lovm2_test_utils = { path = "../lovm2_test_utils" }
-httptest = "0.14.0"
+httptest = "0.15.4"
 tempfile = "3.1.0"
 
 [features]
