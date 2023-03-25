@@ -5,6 +5,8 @@
 
 `lovm2` is a library for building your own programming language in the blink of an eye. It offers you easy to use constructs to generate bytecode for its virtual machine.
 
+> :warning **lovm2** is not actively maintained and might be subject to vulnerabilities.
+
 ## Features
 
 - Dynamic typing
